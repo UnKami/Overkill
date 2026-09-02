@@ -68,38 +68,46 @@ These should scale per-class if playtesting shows some classes naturally generat
 
 ---
 
-## 5. Overkill (OK) currency — pricing formula
+## 5. Overkill (OK) — the single currency
 
-**Formula**: `price = base_price × (1.15 ^ purchases_already_made_this_run_in_that_category)`, as established in the original design doc's anti-inflation guardrail. Track the exponent separately per category (card upgrades, card purchases) so buying a lot of upgrades doesn't also inflate new-card prices.
+Gold has been dropped as a separate currency; OK now covers everything Gold previously did (relics, potions) in addition to cards and upgrades. One economy, one number to track and optimize around.
+
+### 5.1 Passive trickle (safety net)
+
+To keep a rough combat stretch from leaving a player with nothing to spend, a small flat amount of OK is granted independent of overkill performance:
+
+| Source | Flat OK amount |
+|---|---|
+| Per-combat baseline (awarded regardless of overkill quality) | Act 1: +2 / Act 2: +4 / Act 3: +6 |
+| Treasure node | 20-40 flat |
+
+This is a floor, not a real income source — it should never come close to the totals a well-played fight generates through actual overkill. If playtesting shows players leaning on the trickle more than genuine overkill income, the trickle is too generous and should shrink, not the other way around.
+
+### 5.2 Pricing formula
+
+**Formula**: `price = base_price × (1.15 ^ purchases_already_made_this_run_in_that_category)`, as established in the original design doc's anti-inflation guardrail. Track the exponent separately per category (card upgrades, card purchases, relics, potions) so buying a lot in one category doesn't also inflate the others.
 
 | Action | Base price (OK) |
 |---|---|
 | Upgrade a Common card | 15 |
 | Upgrade an Uncommon card | 25 |
 | Upgrade a Rare card | 40 |
-| Buy a new Common card | 20 |
-| Buy a new Uncommon card | 35 |
-| Buy a new Rare card | 55 |
+| Buy a new Common card (shop) | 20 |
+| Buy a new Uncommon card (shop) | 35 |
+| Buy a new Rare card (shop) | 55 |
 | Buy a new Excess-tier card (post-unlock) | 80 |
-| Smelt (sacrifice) a card for partial OK refund | Common: 10 / Uncommon: 15 / Rare: 25 flat refund, no scaling |
-
-**Playtesting target**: a reasonably-played run should have enough OK to make roughly 2-4 real purchases per act (upgrade or buy), not enough to buy everything offered. If players are consistently capped out with unspent OK by Act 2, either enemy HP bands need tightening (less free overshoot) or prices need to rise faster; if players can never afford anything, loosen HP bands or lower base prices — this is the single most important ratio to tune first, since it governs whether OK feels like a real economy or free currency.
-
----
-
-## 6. Gold (secondary currency — kept intentionally simple)
-
-Gold remains for relics and potions specifically, deliberately not touched by the OK redesign, so as not to double up two currencies solving the same problem:
-
-| Item | Gold cost range |
-|---|---|
 | Relic (shop) | 150-300 |
 | Potion (shop) | 20-50 |
-| Card removal service (if kept Gold-priced rather than OK-priced — a decision the earlier data schema doc left open) | 75-150, scaling up per removal this run |
+| Card removal service | 75-150, scaling up per removal this run |
+| Smelt (sacrifice) a card for partial OK refund | Common: 10 / Uncommon: 15 / Rare: 25 flat refund, no scaling |
+
+**Note**: the post-combat card reward screen is never priced — pick freely, per the updated game design doc's Section 3. Everything in the table above is a deliberate shop/rest-site spend, not something charged automatically when a reward is handed to the player.
+
+**Playtesting target**: a reasonably-played run should have enough OK to make roughly 2-4 real purchases per act (upgrade, new card, relic, or potion combined), not enough to buy everything offered. Since a much wider range of things now compete for the same pool of OK than before, this ratio needs closer attention than it did under the two-currency split — if players are consistently capped out with unspent OK by Act 2, either enemy HP bands need tightening or prices need to rise faster; if players can never afford anything, loosen HP bands or lower base prices. This is the single most important ratio to tune first, since it governs whether OK feels like a real economy or free currency.
 
 ---
 
-## 7. Act pacing
+## 6. Act pacing
 
 | Act | Node count (approx.) |
 |---|---|
@@ -111,7 +119,7 @@ Matches the StS-standard node density. Node type distribution within an act (com
 
 ---
 
-## 8. Difficulty scaling (Ascension-equivalent, if included at launch)
+## 7. Difficulty scaling (Ascension-equivalent, if included at launch)
 
 Per the original design doc's guidance to scale difficulty *on-theme* rather than just raising enemy stats:
 
@@ -123,7 +131,7 @@ Per the original design doc's guidance to scale difficulty *on-theme* rather tha
 
 ---
 
-## 9. What still needs a real playtest pass before trusting these numbers
+## 8. What still needs a real playtest pass before trusting these numbers
 
 - Whether the Act 1 trash HP floor (8) is too low and makes some kills feel trivial rather than satisfying
 - Whether the OK pricing curve's exponent (1.15) creates a "cliff" where prices spike too fast by late Act 2

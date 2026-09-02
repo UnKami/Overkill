@@ -1,4 +1,6 @@
-﻿# OVERKILL — Tutorial Callout & First-Time Onboarding Spec
+﻿> **SUPERSEDED — kept for reference only, not authoritative.** Its scope (4 callout moments, once-per-run framing) is fully superseded by `overkill-turn-presentation-tutorial-unlock.md` Parts 2-3 (10 callout moments, explicitly once-per-player-ever, plus the unlock celebration content this doc's Part 4 only partially covered). It's archived rather than deleted because its Part 3 (`TutorialState` GDScript, exact component tree, exact pixel offsets/timing values) is more implementation-specific than the doc that replaced it — worth consulting for those specifics, but defer to the newer doc for the actual list of callouts, their triggers, and the persistence rule.
+
+# OVERKILL — Tutorial Callout & First-Time Onboarding Spec
 
 This document specifies the **First-Time Tutorial Callout System**, directly resolving **Gap 1** and **Gap 2** identified in `overkill-user-journey.md` (Part 3, Step 3 & Step 12).
 
@@ -89,7 +91,7 @@ When `excess_threshold_crossed(threshold)` fires (`overkill-data-schema.md` Part
 1. **Visual Presentation**:
    - Screen briefly pauses background battle ticks (300ms freeze-frame).
    - Fullscreen amber shockwave flash radiates outwards from the kill point.
-   - Large banner text appears: **"EXCESS UNLOCKED: TIER {N}"** (Amber `#EF9F27` font with dark-iron contour).
+   - Large banner text appears: **"EXCESS UNLOCKED: TIER {N}"** — `{N}` is the act number whose threshold was just crossed (balance doc Section 4's per-act threshold table), not a separate sub-tier system; Act 2's threshold reads "TIER 2," etc. (Amber `#EF9F27` font with dark-iron contour).
    - Subtitle explicitly names the unlocked reward: *"Excess-tier cards now unlocked in upcoming Shops & Card Rewards."*
 2. **Timing & Interaction**:
    - Total celebration duration: 1.8 seconds.

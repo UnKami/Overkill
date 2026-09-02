@@ -33,19 +33,19 @@ HP/Block reset for next combat, but the OK counter persists visibly — the numb
 **[governed by: screen composition Part 5 — persistent elements never reset/relocate across screen transitions.]**
 
 ### 6. Reward screen
-Player sees a card-pick screen (per the screen composition doc's note that this is the one screen where full text is correct, not a violation of icon-first design) and, if the class's shop-style economy is active even here, an option to skip for a small consolation of OK or gold — exact reward-screen mechanics beyond "full text is fine here" are a game-design decision, not a UI one, and are covered by the original game design doc's Section 4 (card acquisition sink) rather than this journey doc.
+Player sees a card-pick screen and picks freely — no OK cost, per the game design doc's Section 3. This is a deliberate contrast with the shop screen coming later: one is a gift, the other is a spend.
 
 ### 7. Map screen — first view
 Player sees the branching path with node icons (combat/elite/rest/shop/event/treasure/boss), their current position highlighted, and available next-nodes at full contrast while unreachable/visited nodes recede.
 **[governed by: screen composition doc Part 4.1.]**
 
 ### 8. Rest site
-Player chooses to heal or upgrade a card. If they choose upgrade, the card selection screen shows their current deck with upgrade costs now priced in OK (per the balance doc's Section 5 pricing) rather than the free/gold-based rest-site upgrade some deckbuilders use — this distinction matters because it's the first moment OK is spent, not just earned, closing the resource loop the player has been building toward since their first kill.
+Player chooses to heal or upgrade a card. If they choose upgrade, the card selection screen shows their current deck with upgrade costs priced in OK (per the balance doc's Section 5 pricing) — this is the first moment OK is spent, not just earned, closing the resource loop the player has been building toward since their first kill.
 **[governed by: balance doc Section 5, data schema doc Section 1.5 OKRunState.]**
 
 ### 9. Shop screen
-Player sees cards priced in OK and relics/potions priced in Gold, visually zoned separately (per screen composition Part 4.2) rather than just differing by a small icon. If the player hasn't yet crossed an Excess-tier threshold, one or more cards in the shop appear visibly locked with the exact requirement shown ("requires a 25+ OK hit") rather than being absent — establishing early that this is a concrete, visible goal, not a hidden system.
-**[governed by: screen composition Part 4.2, icon system Part 4, balance doc Section 4-5.]**
+Player sees cards, relics, and potions all priced in the same currency, zoned by item category rather than by currency (per screen composition Part 4.2 — since OK is the only currency, category is what separates one section from another now). If the player hasn't yet crossed an Excess-tier threshold, one or more cards in the shop appear visibly locked with the exact requirement shown ("requires a 25+ OK hit") rather than being absent — establishing early that this is a concrete, visible goal, not a hidden system.
+**[governed by: screen composition Part 4.2, icon system Part 4, balance doc Section 5.]**
 
 ### 10. Event node
 A narrative/choice encounter — full text expected here per the icon-vs-text framework's "narrative" exception. Not otherwise UI-specced in this document set; flagged as future work if events become mechanically complex (e.g., an event that grants OK directly) rather than pure flavor choices.
@@ -85,13 +85,58 @@ Once the mechanics are known, the journey compresses — this is worth stating e
 
 ---
 
+## PART 2.5 — Extended scenarios (added after the gap analysis pass)
+
+The first-time journey (Part 1) covers a clean, idealized run. Real play hits messier situations constantly — these scenarios exercise the rules fixed in the gap analysis and surface a few more.
+
+### A. Targeting and the damage preview (the most important addition here)
+
+When a player picks up a single-target card and it's ready to play, before they commit to a target they should see, on the hovered/highlighted enemy: the enemy's current HP, its current Block if any, and — critically — a live preview of the outcome if this exact card is played on this exact enemy (predicted remaining HP, or predicted OK if the hit would be lethal). This preview updates live as the player drags/hovers between different enemies in a multi-enemy fight, letting them compare "overkill this one for 12 OK" versus "just barely kill that one for 2 OK" before committing energy. Without this, precise overkill play is guesswork rather than the skill the whole design is built around.
+**[status: this is the Tier 1 gap from the fix plan — flagged here as the concrete UX moment that spec needs to cover, not yet a finished spec itself.]**
+
+### B. Multi-enemy AOE fight
+
+Player plays an AOE attack into a 3-enemy fight where one enemy has low HP, one has Block up, and one has high HP. Per the newly-fixed formula (data schema doc, Part 1.6): the low-HP enemy dies with a visible OK pop; the Blocked enemy's damage depletes Block first before any HP/OK math applies to it; the high-HP enemy just takes a clean hit with no OK. All three outcomes should be visually legible in the same instant — this is a good stress-test scenario for the screen composition doc's attention-priority rules (Part 1.2), since three different feedback types are firing simultaneously.
+
+### B.5 A Spillage chain kill
+
+Player has a Spillage-flagged attack card in hand facing a row of three weak enemies. Playing it kills the first, and rather than an OK pop, the player sees the excess damage visually travel to the second enemy (a quick motion/trail effect distinct from a normal hit), which also dies, chaining into the third. No OK is generated from any of these three kills — the preview system (targeting-preview spec) should make this trade-off visible *before* the player commits, showing "this kill will Spillage, 0 OK" rather than letting the player discover the forgone currency only after the fact. This is the moment that should make a Spillage-leaning deck feel distinct in hand from a banking deck, even though both are "just" playing attack cards.
+
+### C. A poison/DOT kill on the enemy's turn
+
+Player has stacked Poison on an enemy and ends their turn without playing a finishing blow. On the enemy's turn, the poison tick resolves and kills it, generating OK per the same formula as a card-source kill (data schema doc, Part 1.6). This should trigger the identical OK-feedback treatment as a card-triggered kill — same amber pop, same priority in the animation queue — even though the player didn't just take an action. If this moment looks or feels different from a card-kill, that inconsistency would quietly teach players that DOT builds don't "really" count, which actively undermines a whole archetype's legitimacy.
+
+### D. Deck runs out mid-combat (reshuffle)
+
+Player has played and discarded most of their deck in a long fight. On their next draw, the game reshuffles the discard pile into the draw pile — this should be visibly communicated (a brief shuffle animation or icon state on the draw pile), not a silent instant swap, so the player understands why cards they discarded are coming back.
+
+### E. A card exhausts
+
+Player plays a card with `exhaust: true` (data schema doc, Part 1.1). Instead of going to the discard pile, it should visibly move to a distinct "exhausted" zone or fade out entirely, communicating it's gone for the rest of combat — different enough from the normal discard motion that a player glancing at their discard pile doesn't miscount what's still available to redraw.
+
+### F. Low-resource tense turn
+
+Player is at low HP with a hand of cards they can't fully afford this turn (not enough energy) — the unplayable cards should visibly dim/gray per the fix-plan's flagged gap (#8), making the "what are my real options right now" question answerable at a glance rather than requiring the player to click every card to find out it won't play.
+
+### G. Deck review between fights
+
+At a rest site or shop, player opens a persistent deck-view screen (fix-plan gap #6) to check exactly which cards they're holding before deciding whether to spend OK on an upgrade or a new card — this screen should show the same card-face treatment used everywhere else (Excess-tier framing, upgrade indicator, etc.) rather than a stripped-down list view, so information stays consistent across every place a card can appear.
+
+### H. Second class, same journey — divergence check
+
+Running the exact same journey with a different class (say, a Burst-archetype class instead of the first class's Volume leaning) should feel different in *pacing* (fewer, bigger OK spikes vs. frequent small ones) without any UI screen itself changing shape — this is a direct test of the "consistency of pattern across classes" principle established in the icon system doc. If a class needs a differently-laid-out combat screen to make sense, that's a sign the archetype was implemented as a UI exception rather than a deck-building pattern, which the original design explicitly wanted to avoid.
+
+### I. Abandoning a run
+
+Player opens a pause/settings menu (fix-plan gap #12) mid-run and selects an option to abandon. This is an irreversible action and should follow whatever confirmation-dialog convention gets established for fix-plan gap #13 — flagged here as a concrete case that convention needs to cover, alongside card removal and relic-choice confirmations.
+
+---
+
 ## PART 3 — Gaps surfaced by this exercise (for the still-open spec list)
 
-Writing the full journey end-to-end surfaced these as genuinely unspecced, not just deprioritized:
+The full list, after both the original journey and the extended-scenario pass, lives in the dedicated gap analysis document (`overkill-gap-analysis-fix-plan.md`), which also fixed several of these directly (Block/OK formula, AOE summation, DOT kills, exhaust/retain fields) rather than just flagging them. Remaining open items, in the priority order that document recommends:
 
-1. **First-time tutorial callouts** (Step 3) — needs its own short spec: which moments get a one-time callout, exact trigger conditions, dismissal behavior.
-2. **Excess-tier unlock celebration content** (Step 12) — whether the unlock explicitly names the reward or leaves discovery implicit.
-3. **Title screen and event-node UI** — lightly touched, not fully specced, though lower risk since they're simpler screens.
-4. **Meta-progression across runs** (Step 16) — not yet decided as in-scope or out-of-scope for v1.
-
-These are good candidates for the next spec pass if you want the full picture airtight before implementation starts.
+1. **Card targeting & damage preview system** (Scenario A) — highest priority, since without it the core mechanic is unplayable at the intended skill level, not just less polished.
+2. **Deck-view screen, card-play interaction model, unplayable-card visual state** (Scenarios F, G) — cluster together as one "how the player handles their hand and deck" spec.
+3. **Enemy-turn presentation, tutorial callouts, unlock celebration content** — smaller confirmations of behavior already implied elsewhere.
+4. **Settings/pause menu, confirmation-dialog convention, meta-progression scope, map generation, audio design, technical architecture** — lower risk, sequenced whenever convenient.

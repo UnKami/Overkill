@@ -33,7 +33,7 @@ Individual components (cards, intents, icons) have been specced already. This do
 
 When multiple things animate or update simultaneously (common in this game — a single card play can trigger a damage number, an OK pop, a status icon change, and a relic trigger all at once), they need a resolved priority order so the eye isn't asked to look at four things at once:
 
-1. **Overkill feedback** (Part 2.3 of the data schema doc) — always wins. If a kill generates OK, that animation takes visual priority over simultaneous relic triggers or status icon updates, since it's the core mechanic and the whole point of that moment.
+1. **Overkill feedback** (Part 2.3 of the data schema doc) — always wins. If a kill generates OK, that animation takes visual priority over simultaneous relic triggers or status icon updates, since it's the core mechanic and the whole point of that moment. **A Spillage chain-kill shares this same top tier** — it's the other branch of the identical core-mechanic moment (spend now vs. bank), not a lesser event, so it never gets bumped down the priority order just because the outcome is 0 OK rather than a number.
 2. **Enemy intent reveal / resolution** — second priority, since it affects the player's very next decision.
 3. **Player stat changes** (HP loss, Block gain) — third, generally represented as fast, low-drama ticks unless a stat crosses a dangerous threshold (see 1.3).
 4. **Relic/status triggers** — lowest priority visually; these should be quick, small, corner-of-eye confirmations, not competing for center-screen attention. A relic firing shouldn't visually upstage the kill that triggered it.
@@ -94,11 +94,13 @@ Brief zone guidance for the remaining screens, following the same "what wins vis
 - Current position and available next-nodes should be the highest-contrast elements on screen; already-visited and unreachable nodes recede (lower opacity or desaturation), so the "what can I do right now" question is answerable without reading anything.
 
 ### 4.2 Shop screen
-- Cards priced in OK and items priced in Gold should be visually zoned separately (e.g., distinct background tint per currency), not just distinguished by a small currency icon next to the price — since OK vs Gold spending is a meaningfully different decision category, per the original economy design.
+- With OK as the single currency (game design doc, Section 3.1), there's no currency-based zoning needed anymore — instead, zone the shop by **item category** (cards / relics / potions / services like removal), since those remain meaningfully different decision types even though they're paid from the same pool. A distinct background tint or section divider per category keeps the "what am I even looking at" question answerable at a glance, the same job the old currency-zoning rule was doing, just organized around category instead of currency.
 - Locked Excess-tier cards (icon doc, Part 4) sit in their normal shop position rather than a separate "locked items" section — visibility of the goal matters more than tidy categorization.
+- Every item's price should be visible at a glance against the player's current OK total — greyed out or marked unaffordable using the same dimmed "not available right now" treatment established in the targeting-preview and deck-view specs, extended here to a fourth context.
 
 ### 4.3 Reward / card-pick screen
 - This is a "read carefully once" screen, not a glance screen — per the icon-vs-text framework, full text is expected and correct here, this is the exception zone, not a violation of the icon-first rule elsewhere.
+- **This screen is never priced.** Cards here are picked freely, per the game design doc's Section 3 — no OK cost, no currency icon anywhere on this screen. This is a deliberate contrast with the shop screen: one is a gift, the other is a spend, and they should look and feel distinct from each other for exactly that reason.
 
 ### 4.4 Run-summary / defeat screen
 - OK earned/spent this run deserves its own highlighted stat line, not buried in a generic stats list — reinforces the core mechanic even at the meta-level, consistent with the "OK gets the most feedback budget" principle established in the data schema doc.

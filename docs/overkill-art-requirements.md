@@ -116,6 +116,7 @@ This is the largest single bucket. Estimate 25-30 cards per class × 4 classes +
 | Card frame — Excess-tier | Template | Amber border + tinted background + "excess" ribbon tag (see mockup already built) |
 | Card back (per class) | 1 per class | Already counted in Section A |
 | Energy cost gem | 1 shared asset | Small icon, top-left of card |
+| Spillage badge | 1 shared asset | Small corner badge, distinct shape (not color-only) per icon system doc's Part 1 addition — marks a card as Spillage-flagged independent of its rarity or type |
 
 **Prompt template — Card illustration:**
 ```
@@ -172,12 +173,12 @@ One-off assets used everywhere — highest priority for legibility since these c
 | HP icon | 1 | |
 | Block icon | 1 | |
 | Energy icon | 1 | |
-| Status effect icons (Vulnerable, Weak, Strength, etc.) | ~15-20 | Small, must each be visually distinct as a set |
+| Status effect icons (Vulnerable, Weak, Strength, etc.) | ~15-20 | Small, must each be visually distinct as a set. Colors follow the intent-icon buff/debuff language (icon system doc, Part 3.1): buffs green, debuffs pink/purple — the two generated so far (Strength, Weak) invert this and need a decision (regenerate vs. documented exception) before the rest of the set is batched. |
 | Enemy intent icons (attack, defend, buff, debuff, unknown) | ~6-8 | |
 | Card type badges (Attack/Skill/Power) | 3 | |
 | Rarity gems (Common/Uncommon/Rare/Excess) | 4 | |
 | Potion icons | ~15-20 | |
-| Currency icons (Gold, OK) | 2 | |
+| Currency icon (Overkill — single currency) | 1 | |
 | Map node icons (combat, elite, rest, shop, event, boss, treasure) | ~7 | |
 
 **Prompt template — Icon:**

@@ -12,7 +12,7 @@ Full list of things this applies to, cross-referenced to the art requirements do
 
 | Category | Icon requirement | Reference |
 |---|---|---|
-| Currencies (Gold, Overkill) | Unique icon each, never confusable | Art doc Section E |
+| Currency (Overkill — the game's single currency) | Unique icon, never confusable with other resources | Art doc Section E |
 | Card types (Attack/Skill/Power) | Shape-coded badge, not a text label | Art doc Section E |
 | Rarity tiers (Common/Uncommon/Rare/Excess) | Color + border treatment, not a printed word | Art doc Section C |
 | Status effects (Vulnerable, Weak, Strength, etc.) | Unique icon per status, silhouette-distinct from every other status | Art doc Section E |
@@ -21,6 +21,9 @@ Full list of things this applies to, cross-referenced to the art requirements do
 | Enemy intents (Attack/Defend/Buff/Debuff/Unknown) | Small fixed shared icon set | Art doc Section E, detailed below |
 | Map node types (combat/elite/rest/shop/event/boss/treasure) | Unique icon per node type | Art doc Section E |
 | Excess-tier gate status (locked/unlocked) | Distinct lock treatment on the card itself | Established in card frame mockup |
+| Spillage-flagged cards | Small badge on the card face, distinct from the type badge and rarity border | Not yet in the art doc's inventory — see note below |
+
+**Spillage has no icon anywhere in this document set, and it needs one.** A player deciding whether to bank or chain has to be able to tell a Spillage card apart from a normal attack card while just browsing their hand — before picking it up, per the "recognize faster than you can read" rule this whole Part exists to enforce. Recommend a small corner badge (a distinct shape, not a color-only treatment, per the same colorblind-accessibility rule already governing intents) added to the card-face anatomy alongside the existing cost gem and type badge, and to the art requirements doc's Section C inventory. This sits independently of rarity and card type — a Spillage card can be Common or Excess, Attack or Skill, with the badge present in either case.
 
 **The test for "is this icon good enough": the silhouette test.** Strip the icon to pure black-and-white silhouette at 32px. If a player who already knows the game can't identify it without color or fine detail, the icon fails, regardless of how good it looks at full size in a portfolio. This is the exact failure mode Casey Yano called out with StS2's early relic icons ("if they're just red boxes, it conveys nothing") — test every icon at deployment size, not at generation size.
 
@@ -74,6 +77,8 @@ This is the highest-frequency, highest-stakes icon in the game — read incorrec
   - Buff: green family
   - Debuff: pink/purple family
   - Unknown: neutral gray
+
+**This color language is not scoped to intent icons only — it's the game's one buff/debuff color vocabulary, and status effect icons must use it too.** Any status that helps the player who has it (Strength, and anything else classified as a buff) uses the green family; any status that hurts whoever it's on (Weak, Vulnerable, and anything else classified as a debuff) uses the pink/purple family. This was never stated explicitly before, and it shows: the two status icons generated so far invert it — Strength (a buff) was rendered in red/orange, and Weak (a debuff) was rendered in green. Vulnerable (a debuff) correctly landed in the purple family, which is what makes the other two read as errors rather than a different-but-consistent scheme. Per Part 5 below, consistency of pattern across every system using the same color is the entire mechanism that makes this UI readable without reading — a status set that contradicts the intent set undermines that for both, not just for the status icons themselves. Whether to regenerate the two existing icons or keep them as a documented exception is a production-cost call, not a spec one — but every status icon generated from here on should follow this rule.
 
 - **Value badge**: small circular or pill badge overlapping the icon's bottom-right corner, showing the exact numeric value (damage amount, block amount). Omit only for non-numeric buffs/debuffs where no single number applies (e.g., "applies Weak" with no stacking choice) — in that case the status icon itself appears in the badge position instead of a number.
 
