@@ -40,6 +40,8 @@ When multiple things animate or update simultaneously (common in this game — a
 
 **Practical rule**: when two things happen in the same instant, stagger their animations by 100-150ms rather than firing simultaneously, in priority order above. This is cheap to implement and prevents the "everything flashes at once and I can't tell what happened" problem.
 
+**This staggering is purely visual — it never locks player input.** The player can play or arm their next card immediately, even while a previous card's kill pop, Spillage chain, or relic flash is still animating; new feedback simply queues in behind whatever's already resolving, in the same priority order. This keeps the pace closer to Slay the Spire's than to a fully animation-gated game, and it's the deliberate choice over locking input until each card's feedback finishes — the tradeoff being a player who plays very fast may see several queued animations resolve in a short burst rather than one at a time, which is accepted as the cost of never adding play-to-play friction.
+
 ### 1.3 Danger-state escalation (avoiding both silence and alarm fatigue)
 
 - **Player HP below ~25%**: the persistent stat bar (Zone D) should shift to a more urgent visual treatment (e.g., a subtle pulsing red edge on the HP number) — this is the one place breaking from "calm, consistent icons" is correct, because urgency is exactly the information being conveyed.

@@ -18,6 +18,8 @@ This closes the highest-priority gap from the fix plan. Everything else in this 
 
 **Cancel**: dragging back into the hand area, or tapping the armed card again, or tapping anywhere that isn't a valid target, cancels cleanly — card returns to hand, no preview, no partial state left behind.
 
+**No input lock while a previous card's feedback is still animating.** A card can be armed and played the instant the player wants to, even mid-animation from the previous play — the FeedbackQueue (screen composition doc, Part 1.2) staggers visuals, it never gates input. The preview system has to be built assuming it can be invoked at any time, not just once the screen is fully "settled" from the last action.
+
 ---
 
 ## 3. What the preview shows

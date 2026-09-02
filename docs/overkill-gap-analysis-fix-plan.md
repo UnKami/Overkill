@@ -62,20 +62,22 @@ Consolidates every gap found across all spec documents to date. Pass 1 (items 1-
 | 29 | Screen composition's attention-priority table assigned "Overkill feedback" the top tier but never mentioned where a Spillage chain-kill's visual ranks | **Fixed** — screen composition doc, Part 1.2: Spillage shares the top tier, since it's the other branch of the same core-mechanic moment, not a lesser event. |
 | 30 | The Spillage rule (data schema doc) never defined what makes an enemy "next," or how Spillage composes with AOE and multi-hit cards, or its interaction with Tempered's OK cap | **Fixed** — data schema doc, Part 1.6: deterministic left-to-right row order; one uniform per-hit check regardless of card shape; Spillage checked before the Tempered cap ever applies. |
 
-### Open — genuine judgment calls, not mechanical fixes
+### Decided
 
-| # | Issue | Notes |
+| # | Issue | Resolution |
 |---|---|---|
-| 31 | Excess-tier threshold act-gating is ambiguous | `best_single_hit_ok_this_run` is a running max with no act-scoping, so an unusually large Act 1 hit could cross the Act 3 or Act 4 threshold before the player has reached those acts. Is that intended (thresholds are pure OK-magnitude tiers; act numbers are just pacing labels/expectations, not gates), or should a threshold only be checkable once the player has actually reached that act? This changes how the Excess economy actually paces itself, not just how it's worded. |
-| 32 | No input-locking policy during animated feedback | Combat animations (kill pops, Spillage chains, enemy-turn sequencing) now take real, specified time to play out. Nothing says whether the player can play — or start dragging, per the preview system — another card while a previous card's animation is still resolving. More load-bearing now than it would've been earlier, since the preview system depends on drag gestures that could overlap with in-flight animations from the previous play. |
+| 31 | Excess-tier threshold act-gating was ambiguous | **Decided: pure magnitude, no gating.** `best_single_hit_ok_this_run` stays a plain running max with no act-scoping — confirmed and documented in the data schema doc (Part 1.5 note). An unusually large Act 1 hit can legitimately unlock a later act's Excess tier early; this rewards exceptional play rather than making the player wait out an act they've already out-performed. |
+| 32 | No input-locking policy during animated feedback | **Decided: no locking.** Documented in both the screen composition doc (Part 1.2) and the targeting-preview doc (Section 2): FeedbackQueue staggers visuals only, it never gates input. A card can be armed/played immediately regardless of in-flight animation from the previous play. |
 
 ---
 
+## Remaining open item
+
+| # | Issue | Notes |
+|---|---|---|
+| 25 | Status-icon regeneration decision (Strength/Weak) | A production-cost call, not a spec-writing task — decide whether to regenerate the two existing icons or keep them as a documented exception before the remaining ~13-18 status icons are batch-generated, so it doesn't get more expensive to fix the longer it waits. |
+
 ## Recommended order of attack
 
-Given what's actually blocking versus merely incomplete, as of both passes:
-
-1. **The two open judgment calls (#31, #32)** — both sit directly underneath systems that are otherwise fully specced, so they're the highest-leverage decisions left: cheap to decide now, expensive to discover mid-implementation.
-2. **The status-icon regeneration decision (#25)** — a production-cost call, not a spec-writing task; worth deciding before the remaining ~13-18 status icons are batch-generated, so it doesn't get more expensive to fix the longer it waits.
-3. **Everything else is resolved.** With Pass 2 closed out, the full spec set — game design, art requirements, data schema, icon system, screen composition, balance baseline, targeting/preview, deck view, turn presentation/tutorial/unlock, pause/settings/confirmation, technical architecture, map generation, and audio — is internally consistent and cross-checked against the delivered art, pending only the two decisions above.
+With Pass 2 and both judgment calls closed out, everything is resolved except #25 above. The full spec set — game design, art requirements, data schema, icon system, screen composition, balance baseline, targeting/preview, deck view, turn presentation/tutorial/unlock, pause/settings/confirmation, technical architecture, map generation, and audio — is internally consistent and cross-checked against the delivered art. Nothing on this list blocks starting implementation.
 
