@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("2_effect")
+effect_type = 5
+value = 5
+status_id = ""
+keyword_icon_override = ""
+
+[resource]
+script = ExtResource("1_relic")
+id = "relic_greed_battery"
+display_name = "Greed Battery"
+trigger = 1
+effects = Array[Resource]([SubResource("1")])
+condition_data = {
+"min_ok": 10
+}
+flavor_text = "It hums louder the harder you hit."
+art_id = "relic_greed_battery"

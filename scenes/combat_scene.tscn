@@ -1,0 +1,108 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/combat/combat_controller.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/combat/feedback_queue.gd" id="2_feedback"]
+[ext_resource type="PackedScene" path="res://scenes/intent_icon.tscn" id="3_intent"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/tutorial_callout_view.tscn" id="5_tutorial"]
+[ext_resource type="Resource" path="res://data/enemies/act1/boneghoul.tres" id="6_enemy"]
+[ext_resource type="Resource" path="res://data/cards/strike.tres" id="7_strike"]
+[ext_resource type="Resource" path="res://data/cards/defend.tres" id="8_defend"]
+[ext_resource type="Resource" path="res://data/cards/executioner/split_strike.tres" id="9_split"]
+[ext_resource type="Resource" path="res://data/relics/relic_greed_battery.tres" id="10_relic"]
+
+[node name="CombatScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_controller")
+enemy_data = ExtResource("6_enemy")
+starting_deck = Array[Resource]([ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("9_split")])
+relics = Array[Resource]([ExtResource("10_relic")])
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+expand_mode = 1
+stretch_mode = 6
+
+[node name="EnemySprite" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.35
+anchor_right = 0.5
+anchor_bottom = 0.35
+offset_left = -96.0
+offset_top = -96.0
+offset_right = 96.0
+offset_bottom = 96.0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IntentIcon" parent="EnemySprite" instance=ExtResource("3_intent")]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -24.0
+offset_top = -56.0
+offset_right = 24.0
+offset_bottom = -8.0
+
+[node name="HPLabel" type="Label" parent="EnemySprite"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = 4.0
+offset_bottom = 24.0
+horizontal_alignment = 1
+text = "0/0"
+
+[node name="RelicBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 60.0
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+layout_mode = 1
+
+[node name="HandContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -280.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="EndTurnButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -140.0
+offset_top = -220.0
+offset_right = -20.0
+offset_bottom = -180.0
+text = "End Turn"
+
+[node name="FeedbackQueue" type="Node" parent="."]
+script = ExtResource("2_feedback")
+
+[node name="TutorialCalloutView" parent="." instance=ExtResource("5_tutorial")]
+layout_mode = 1
