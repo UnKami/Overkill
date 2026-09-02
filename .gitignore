@@ -1,0 +1,16 @@
+# Godot 4 project-specific
+.godot/
+*.translation
+export.cfg
+export_presets.cfg
+
+# Imported binary/text data
+.import/
+
+# Mono-specific
+.mono/
+data_*/
+
+# System/OS
+.DS_Store
+Thumbs.db
