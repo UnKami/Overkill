@@ -21,13 +21,13 @@ func _ready() -> void:
 	var socket: ClockSocketData = battle.player_sockets[0]
 	socket.slotted_relic = ContentDatabase.get_clock_relic("REL-13")
 	battle._apply_damage_to_enemy(3, socket)
-	await get_tree().create_timer(0.39).timeout
+	while battle.enemy_hp == 1000: await get_tree().process_frame
 	assert(battle.enemy_hp == 999 and battle.enemy_block == 0 and battle.player_hp == 61)
 	assert(has_feedback("HP") and has_feedback("BLOCKED") and has_feedback("HEAL"))
 	await capture("lifesteal-impact")
 	await get_tree().create_timer(0.6).timeout
 	battle._apply_damage_to_player(4, battle.enemy_sockets[0])
-	await get_tree().create_timer(0.39).timeout
+	while battle.player_block == 5: await get_tree().process_frame
 	assert(battle.player_hp == 61 and battle.player_block == 1)
 	assert(has_feedback("BLOCKED"))
 	await capture("guard-impact")
@@ -38,6 +38,19 @@ func _ready() -> void:
 	get_window().size = Vector2i(1280,720)
 	await get_tree().create_timer(0.2).timeout
 	await capture("compact")
+	for fast: bool in [false,true]:
+		for reduced: bool in [false,true]:
+			AudioManager.fast_mode = fast
+			AudioManager.reduced_motion = reduced
+			var before_enemy: int = battle.enemy_hp
+			await battle._apply_damage_to_enemy(3,socket)
+			assert(battle.enemy_hp == before_enemy-3,"Contact must apply damage exactly once in every motion mode")
+			battle.player_block = 0
+			var before_player: int = battle.player_hp
+			await battle._apply_damage_to_player(1,battle.enemy_sockets[0])
+			assert(battle.player_hp == before_player-1)
+			print("MODE_CONTACT_OK fast=",fast," reduced=",reduced)
+	AudioManager.fast_mode = false
 	AudioManager.reduced_motion = false
 	print("CINEMATIC_FINISH_OK: rendered materials, labeled HP/block/heal, unchanged damage, world-space guard, reduced motion and 720p")
 	get_tree().quit()

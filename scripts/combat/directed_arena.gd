@@ -64,7 +64,8 @@ func _ready() -> void:
 	key.light_color = Color("c4dfef")
 	key.light_energy = 1.1
 	key.shadow_enabled = true
-	key.directional_shadow_max_distance = 24
+	key.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	key.directional_shadow_max_distance = 14
 	_world.add_child(key)
 	_light(Vector3(-3, 3.5, 1.5), Color("a1ccdf"), 1.8, 7)
 	_light(Vector3(3, 3.8, -1.5), Color("ffbd77"), 2.8, 8)
@@ -72,7 +73,7 @@ func _ready() -> void:
 	_build_environment()
 	player = preload("res://scripts/combat/rigged_combatant.gd").new()
 	_world.add_child(player)
-	player.position = Vector3(-0.9, 0, 0.2)
+	player.position = Vector3(-0.72, 0, 0.2)
 	player.rotation.y = 1.4
 	_replace_enemy()
 	_add_contact_shadow(player)
@@ -143,31 +144,56 @@ func _build_environment() -> void:
 		batched.multimesh = marks
 		batched.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_world.add_child(batched)
-	# Receding architectural rhythm frames the action without crossing silhouettes.
-	for side in [-1.0, 1.0]:
-		for row in range(4):
-			var at := Vector3(side * (5.8 + row * 0.8), 0, -2.5 - row * 3.5)
-			var column := CylinderMesh.new()
-			column.top_radius = 0.25
-			column.bottom_radius = 0.36
-			column.height = 7
-			column.radial_segments = 24
-			_mesh(column, at + Vector3(0, 3.5, 0), stone)
-			for y in [0.12, 0.32, 2.1, 5.4]:
-				var band := CylinderMesh.new()
-				band.top_radius = 0.4
-				band.bottom_radius = 0.43
-				band.height = 0.09
-				_mesh(band, at + Vector3(0, y, 0), bronze)
-			if row < 2:
-				var lamp_mat := _material(Color("ffb361"))
-				lamp_mat.emission_enabled = true
-				lamp_mat.emission = Color("ff9639")
-				lamp_mat.emission_energy_multiplier = 3
-				var lamp := SphereMesh.new()
-				lamp.radius = 0.075
-				lamp.height = 0.28
-				_mesh(lamp, at + Vector3(-side * 0.3, 2.3, 0.1), lamp_mat)
+	# Repeated architecture uses two instanced draws rather than forty meshes.
+	var columns: Array[Transform3D] = []
+	var bands: Array[Transform3D] = []
+	for side: float in [-1.0, 1.0]:
+		for row: int in 4:
+			var at: Vector3 = Vector3(side * (5.8 + row * 0.8), 0, -2.5 - row * 3.5)
+			columns.append(Transform3D(Basis.IDENTITY,at+Vector3(0,3.5,0)))
+			for y: float in [0.12,0.32,2.1,5.4]: bands.append(Transform3D(Basis.IDENTITY,at+Vector3(0,y,0)))
+	var column: CylinderMesh = CylinderMesh.new()
+	column.top_radius = 0.25
+	column.bottom_radius = 0.36
+	column.height = 7
+	column.radial_segments = 20
+	_batch(column,columns,stone)
+	var band: CylinderMesh = CylinderMesh.new()
+	band.top_radius = 0.4
+	band.bottom_radius = 0.43
+	band.height = 0.09
+	band.radial_segments = 20
+	_batch(band,bands,bronze)
+	# A real stepped dais bridges the floor and the distant cathedral plate.
+	var step_mat: StandardMaterial3D = floor_mat.duplicate()
+	step_mat.uv1_scale = Vector3(3,1,1)
+	for level: int in 3:
+		var step: BoxMesh = BoxMesh.new()
+		step.size = Vector3(9.0-level*0.4,0.16,3.5-level*0.45)
+		_mesh(step,Vector3(0,0.08+level*0.16,-6.0-level*0.22),step_mat)
+	# Narrow backlights establish depth and separate the armor from the cathedral.
+	for side: float in [-1.0,1.0]:
+		var plinth: CylinderMesh = CylinderMesh.new()
+		plinth.top_radius = 0.14
+		plinth.bottom_radius = 0.24
+		plinth.height = 1.45
+		plinth.radial_segments = 12
+		_mesh(plinth,Vector3(side*3.0,0.72,-4.2),bronze)
+		var bowl: CylinderMesh = CylinderMesh.new()
+		bowl.top_radius = 0.30
+		bowl.bottom_radius = 0.12
+		bowl.height = 0.18
+		bowl.radial_segments = 20
+		_mesh(bowl,Vector3(side*3.0,1.48,-4.2),bronze)
+		var ember: SphereMesh = SphereMesh.new()
+		ember.radius = 0.14
+		ember.height = 0.10
+		ember.radial_segments = 16
+		ember.rings = 6
+		var hot: StandardMaterial3D = _material(Color("d89042"))
+		hot.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_mesh(ember,Vector3(side*3.0,1.57,-4.2),hot)
+		_light(Vector3(side*3.0,1.8,-4.1),Color("d78b46"),1.3,3.5)
 	# Existing authored cathedral plate supplies distant architecture only.
 	var backdrop := QuadMesh.new()
 	backdrop.size = Vector2(48, 24)
@@ -212,7 +238,7 @@ func attack(from_player: bool) -> void:
 
 func impact(on_player: bool, blocked: bool) -> void:
 	(player if on_player else enemy).hit(blocked)
-	var target: Vector3 = (player if on_player else enemy).position + Vector3(0, 1.25, 0.2)
+	var target: Vector3 = contact_point(on_player)
 	_impact_light.position = target
 	_impact_light.light_color = Color("8ceaff") if blocked else Color("ffd296")
 	_impact_light.light_energy = 2.8 if blocked else 4.0
@@ -269,8 +295,7 @@ func finish_delay() -> float:
 	return 1.45
 
 func impact_position(on_player: bool) -> Vector2:
-	var actor: Node3D = player if on_player else enemy
-	var point := _camera.unproject_position(actor.global_position + Vector3(0,1.4,0))
+	var point := _camera.unproject_position(contact_point(on_player))
 	return global_position + point * size / Vector2(_view.size)
 
 func _add_contact_shadow(actor: Node3D) -> void:
@@ -307,3 +332,26 @@ func guard_pulse(on_player: bool) -> void:
 		pulse.tween_property(effect, "scale", Vector3.ONE * 1.25, 0.40).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	pulse.tween_property(material, "albedo_color:a", 0.0, 0.40)
 	pulse.chain().tween_callback(effect.queue_free)
+
+func _batch(shape: Mesh, transforms: Array[Transform3D], material: Material) -> void:
+	var multimesh: MultiMesh = MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = shape
+	multimesh.instance_count = transforms.size()
+	for i: int in transforms.size(): multimesh.set_instance_transform(i,transforms[i])
+	var instance: MultiMeshInstance3D = MultiMeshInstance3D.new()
+	instance.multimesh = multimesh
+	instance.material_override = material
+	_world.add_child(instance)
+
+func contact_point(on_player: bool) -> Vector3:
+	var target: Node3D = player if on_player else enemy
+	var attacker: Node3D = enemy if on_player else player
+	var facing: Vector3 = (attacker.global_position-target.global_position).normalized()
+	return target.global_position + Vector3.UP*1.45 + facing*0.12
+
+func await_contact(from_player: bool) -> void:
+	var actor: RiggedCombatant = player if from_player else enemy
+	while is_instance_valid(actor) and not _finished and not actor._dead and not actor.at_contact():
+		await get_tree().process_frame
+	if is_instance_valid(actor) and not _finished: actor.prepare_contact()

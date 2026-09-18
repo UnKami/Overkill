@@ -16,6 +16,7 @@ var _cloth: ShaderMaterial
 var _trail: MeshInstance3D
 var _trail_points: Array[Dictionary] = []
 var _trail_material: StandardMaterial3D
+var _metal_cache: Dictionary = {}
 
 func _ready() -> void:
 	_model = preload("res://assets/characters/rigged/executioner.glb").instantiate()
@@ -47,7 +48,10 @@ func _find_nodes(node: Node) -> void:
 	for child in node.get_children(): _find_nodes(child)
 
 func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
+	var key: String = color.to_html() + str(metalness)
+	if _metal_cache.has(key): return _metal_cache[key]
 	var mat := ShaderMaterial.new()
+	_metal_cache[key] = mat
 	mat.shader = preload("res://assets/shaders/forged_metal.gdshader")
 	mat.set_shader_parameter("steel_color",color)
 	mat.set_shader_parameter("metalness",metalness)
@@ -56,6 +60,8 @@ func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
 
 func _style(node: Node) -> void:
 	if node is MeshInstance3D:
+		if hostile and node.name in ["Knight_Shoulder-Plate", "Knight_BreastPlate"]:
+			node.hide()
 		for i in range(node.mesh.get_surface_count()):
 			var source: Material = node.mesh.surface_get_material(i)
 			var name_text := source.resource_name if source else ""
@@ -120,13 +126,12 @@ func _build_equipment() -> void:
 		for mark: int in 3:
 			_box(_weapon, Vector3(-0.14 + mark * 0.14,0.193,0.82), Vector3(0.025,0.004,0.10), _glow)
 	else:
-		var blade := PrismMesh.new()
-		blade.size = Vector3(0.16,1.0,0.035)
-		var blade_piece := _mesh(_weapon, blade, Vector3(0,0.05,0.66), steel)
-		blade_piece.rotation.x = PI / 2
-		_box(_weapon, Vector3(-0.072,0.05,0.59), Vector3(0.008,0.038,0.85), _glow)
-		for n in range(6):
-			_box(_weapon, Vector3(0,0.073,0.27+n*0.10), Vector3(0.05,0.005,0.012), _gold)
+		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("9babad"),0.72))
+		for n: int in 4:
+			_box(_weapon, Vector3(0,0.071,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
+	if hostile:
+		ForgedArmor.sentinel(_skeleton,_metal(Color("272c30"),0.74),_gold)
+
 	# Helm ornament and clock aureole are authored in rest-space then bone-attached.
 	var head := _attach("head")
 	var head_space := Node3D.new()
@@ -182,18 +187,21 @@ func _play(fragment: String, blend: float = 0.08) -> void:
 	if clip_name != &"":
 		if _animation.assigned_animation == clip_name: _animation.stop(true)
 		_animation.play(clip_name, blend)
+		_animation.advance(0.0)
 
 func _process(delta: float) -> void:
 	_time += delta
 	if _animation:
 		_animation.speed_scale = AudioManager.animation_speed_scale()
 	if _cloth: _cloth.set_shader_parameter("motion",0.0 if AudioManager.reduced_motion else 1.0)
+	_apply_attack_weight()
 	_align_weapon()
 	_update_trail(delta)
 
 func _align_weapon() -> void:
 	if not is_instance_valid(opponent) or not _weapon: return
-	var toward := (opponent.global_position + Vector3(0,1.45,0) - _weapon.global_position).normalized()
+	var surface: Vector3 = opponent.global_position + Vector3(0,1.45,0) + (global_position-opponent.global_position).normalized()*0.12
+	var toward: Vector3 = (surface - _weapon.global_position).normalized()
 	var idle := (Vector3.UP + toward*0.15).normalized()
 	var direction := idle
 	if _dead:
@@ -203,9 +211,10 @@ func _align_weapon() -> void:
 		var back := (-toward + Vector3.UP*0.4).normalized()
 		var down := (toward + Vector3.DOWN*0.6).normalized()
 		if t < 0.20: direction = idle.slerp(back,smoothstep(0.0,0.20,t))
-		elif t < 0.32: direction = back.slerp(toward,smoothstep(0.20,0.32,t))
-		elif t < 0.43: direction = toward.slerp(down,smoothstep(0.32,0.43,t))
-		else: direction = down.slerp(idle,smoothstep(0.43,0.76,t))
+		elif t < 0.30: direction = back.slerp(toward,smoothstep(0.20,0.30,t))
+		elif t < 0.40: direction = toward
+		elif t < 0.51: direction = toward.slerp(down,smoothstep(0.40,0.51,t))
+		else: direction = down.slerp(idle,smoothstep(0.51,0.76,t))
 	var up := Vector3.FORWARD if absf(direction.dot(Vector3.UP)) > 0.98 else Vector3.UP
 	_weapon.global_basis = Basis.looking_at(-direction,up).scaled(Vector3.ONE*global_basis.get_scale().x)
 	# Center the handle inside the palm rather than at the wrist joint.
@@ -281,3 +290,27 @@ func _beveled_box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Ma
 			surface.add_vertex(point)
 	surface.generate_normals()
 	return _mesh(parent, surface.commit(), at, material)
+
+func _apply_attack_weight() -> void:
+	# Keep the root/feet stable; a small authored-direction shift weights the cut.
+	var offset: float = 0.0
+	if not _dead and _animation.current_animation == _clip("execution_cut") and not AudioManager.reduced_motion:
+		var t: float = _animation.current_animation_position
+		if t < 0.20: offset = lerpf(0.0,-0.035,smoothstep(0.0,0.20,t))
+		elif t < 0.32: offset = lerpf(-0.035,0.065,smoothstep(0.20,0.32,t))
+		else: offset = lerpf(0.065,0.0,smoothstep(0.32,0.76,t))
+	_model.position.z = offset
+
+func at_contact() -> bool:
+	return _animation.current_animation != _clip("execution_cut") or _animation.current_animation_position >= 0.30
+
+func prepare_contact() -> void:
+	if _dead: return
+	_trail_points.clear()
+	_trail.mesh = null
+	if _animation.current_animation != _clip("execution_cut"):
+		_animation.play(_clip("execution_cut"),0.0)
+	_animation.seek(0.32,true)
+	_skeleton.force_update_all_bone_transforms()
+	_apply_attack_weight()
+	_align_weapon()

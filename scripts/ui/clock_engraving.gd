@@ -1,22 +1,45 @@
 extends Control
 ## Lightweight live engravings above the physical dial and below its sockets.
-var accent := Color("7bd6de")
-var active_hour: int = 0
-var quadrant: int = 0
+var accent: Color = Color("7bd6de"):
+	set(value):
+		accent = value
+		queue_redraw()
+		if is_instance_valid(_static): _static.queue_redraw()
+var active_hour: int = 0:
+	set(value):
+		active_hour = value
+		queue_redraw()
+var quadrant: int = 0:
+	set(value):
+		quadrant = value
+		queue_redraw()
 var elapsed: float = 0.0
+var _static: Control
+var _was_reduced: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_static = Control.new()
+	_static.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_static)
+	_static.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_static.draw.connect(_draw_static)
+	resized.connect(func() -> void: _static.queue_redraw())
 
 func _process(delta: float) -> void:
-	if not AudioManager.reduced_motion: elapsed += delta
-	queue_redraw()
+	var reduced: bool = AudioManager.reduced_motion
+	if not reduced:
+		elapsed += delta
+		queue_redraw()
+	elif not _was_reduced:
+		queue_redraw()
+	_was_reduced = reduced
 
-func _draw() -> void:
+func _draw_static() -> void:
 	var center := size * 0.5
 	var radius := size.x * 0.5
 	for ring in [0.97, 0.92, 0.61, 0.57]:
-		draw_arc(center, radius * ring, 0, TAU, 128, Color(accent, 0.22), 1.0, true)
+		_static.draw_arc(center, radius * ring, 0, TAU, 128, Color(accent, 0.22), 1.0, true)
 	var minor_lines := PackedVector2Array()
 	var major_lines := PackedVector2Array()
 	for tick in range(90):
@@ -28,8 +51,12 @@ func _draw() -> void:
 		lines.append(center + ray * radius * (0.87 if major else 0.895))
 		if major: major_lines = lines
 		else: minor_lines = lines
-	draw_multiline(minor_lines,Color(accent,0.28),1.0,true)
-	draw_multiline(major_lines,Color(accent,0.7),2.0,true)
+	_static.draw_multiline(minor_lines,Color(accent,0.28),1.0,true)
+	_static.draw_multiline(major_lines,Color(accent,0.7),2.0,true)
+
+func _draw() -> void:
+	var center: Vector2 = size * 0.5
+	var radius: float = size.x * 0.5
 	if quadrant > 0:
 		var start := deg_to_rad(float((quadrant - 1) * 120) - 70.0)
 		draw_arc(center, radius * 0.84, start, start + TAU / 3.0, 40, Color(accent, 0.45), 3.0, true)

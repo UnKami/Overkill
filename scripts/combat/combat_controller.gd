@@ -594,7 +594,8 @@ func _resolve_tick(hour: int) -> void:
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	_stage.attack(true)
 	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, Color("7bd6de"))
-	await get_tree().create_timer((_stage.impact_delay() if _stage.has_method("impact_delay") else 0.16) / AudioManager.animation_speed_scale()).timeout
+	if _stage is DirectedArena: await _stage.await_contact(true)
+	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(false, enemy_block >= amount)
 	var nexus_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
@@ -648,7 +649,8 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	_stage.attack(false)
 	if not _stage is DirectedArena: Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
-	await get_tree().create_timer((_stage.impact_delay() if _stage.has_method("impact_delay") else 0.16) / AudioManager.animation_speed_scale()).timeout
+	if _stage is DirectedArena: await _stage.await_contact(false)
+	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(true, player_block >= amount)
 	var p_pos: Vector2 = _stage.impact_position(true) if _stage is DirectedArena else _player_portrait.global_position + _player_portrait.size * 0.5

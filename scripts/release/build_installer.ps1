@@ -18,7 +18,7 @@ try {
     # Ship the same official runtime already used for local gameplay verification.
     Copy-Item -LiteralPath $runtime -Destination "$buildDir/Overkill.exe"
     Copy-Item -LiteralPath "$projectRoot/installer/GODOT-LICENSE.txt" -Destination "$buildDir/GODOT-LICENSE.txt"
-    $delivery = Get-Content -Raw "$projectRoot/docs/cinematic-015.md"
+    $delivery = Get-Content -Raw "$projectRoot/docs/cinematic-016.md"
     Set-Content -LiteralPath "$buildDir/DELIVERY.md" -Value $delivery -Encoding utf8
     @'
 @echo off
