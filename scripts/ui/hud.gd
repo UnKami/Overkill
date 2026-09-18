@@ -22,13 +22,13 @@ var _prev_energy: int = -1
 
 func _ready() -> void:
 	OKRunState.ok_gained.connect(_on_ok_gained)
-	_ok_label.text = str(OKRunState.current_ok)
+	_ok_label.text = "%d Overkill" % OKRunState.current_ok
 	_load_icon_if_present(_hp_icon, "icon_hp")
 	_load_icon_if_present(_block_icon, "icon_block")
 	_load_icon_if_present(_energy_icon, "icon_energy")
 	_load_icon_if_present(_ok_icon, "icon_overkill")
 	_hp_icon.tooltip_text = "HP - lose it all and the run ends."
-	_block_icon.tooltip_text = "Block - absorbs incoming damage this turn, then resets to 0."
+	_block_icon.tooltip_text = "Block - persists until absorbed by damage or the battle ends."
 	_energy_icon.tooltip_text = "Energy - spend it to play cards. Refills at the start of your turn."
 	_ok_icon.tooltip_text = "Overkill (OK) - excess damage beyond a kill, banked as currency between fights."
 	for icon in [_hp_icon, _block_icon, _energy_icon, _ok_icon]:
@@ -65,7 +65,10 @@ func bind_run_state() -> void:
 
 
 func bind_clock_state(current: int, maximum: int) -> void:
-	_ok_label.text = str(OKRunState.current_ok)
+	_hp_icon.hide()
+	_hp_bar.hide()
+	_hp_label.hide()
+	_ok_label.text = "%d Overkill" % OKRunState.current_ok
 	_block_icon.hide()
 	_block_label.hide()
 	_energy_icon.hide()
@@ -75,7 +78,7 @@ func bind_clock_state(current: int, maximum: int) -> void:
 
 
 func _on_ok_gained(_amount: int, _source: String) -> void:
-	_ok_label.text = str(OKRunState.current_ok)
+	_ok_label.text = "%d Overkill" % OKRunState.current_ok
 
 
 func _on_hp_changed(current: int, max_hp: int) -> void:

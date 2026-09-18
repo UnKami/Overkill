@@ -25,22 +25,24 @@ func install(battle: CombatController) -> void:
 	add_child(choices)
 	var header: HBoxContainer = HBoxContainer.new()
 	choices.add_child(header)
-	header.hide()
-	_heading = ScreenDesign.label(header, "BIND A RELIC", 26, ScreenDesign.GOLD, true)
+	header.show()
+	_heading = ScreenDesign.label(header, "BIND A RELIC", 24, ScreenDesign.GOLD, true)
 	_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_inspect = Button.new()
 	_inspect.text = "INSPECT BATTLEFIELD  [I]"
-	_inspect.add_theme_font_size_override("font_size", 16)
+	_inspect.add_theme_font_size_override("font_size", 22)
 	header.add_child(_inspect)
 	_inspect.pressed.connect(toggle_inspection)
 	battle._phase_label.reparent(choices)
-	battle._phase_label.custom_minimum_size = Vector2(0, 30)
+	battle._phase_label.custom_minimum_size = Vector2(1180, 110)
 	battle._phase_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	battle._phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	battle._phase_label.add_theme_font_size_override("font_size", 18)
-	battle._phase_label.add_theme_color_override("font_color", ScreenDesign.MUTED)
-	battle._phase_label.clip_text = true
-	battle._phase_label.hide()
+	battle._phase_label.add_theme_font_size_override("font_size", 24)
+	battle._phase_label.add_theme_color_override("font_color", Color("e4e8e9"))
+	battle._phase_label.add_theme_color_override("font_outline_color",Color("080d12"))
+	battle._phase_label.add_theme_constant_override("outline_size",6)
+	battle._phase_label.clip_text = false
+	battle._phase_label.show()
 	_body = HBoxContainer.new()
 	_body.add_theme_constant_override("separation", 20)
 	choices.add_child(_body)
@@ -49,10 +51,12 @@ func install(battle: CombatController) -> void:
 	replacements = HBoxContainer.new()
 	replacements.add_theme_constant_override("separation", 12)
 	_body.add_child(replacements)
+	choices.move_child(battle._phase_label, choices.get_child_count() - 1)
 	_footer = HBoxContainer.new()
-	_footer.alignment = BoxContainer.ALIGNMENT_END
+	_footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	choices.add_child(_footer)
-	battle._skip_button.reparent(battle)
+	battle._skip_button.reparent(header)
+	header.move_child(battle._skip_button,1)
 	battle._skip_button.z_index = 31
 	battle._skip_button.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	battle._skip_button.offset_left = -180
@@ -60,9 +64,12 @@ func install(battle: CombatController) -> void:
 	battle._skip_button.offset_top = -76
 	battle._skip_button.offset_bottom = -28
 	battle._skip_button.custom_minimum_size = Vector2(285, 48)
-	battle._skip_button.add_theme_font_size_override("font_size", 18)
+	battle._skip_button.add_theme_font_size_override("font_size", 24)
 	battle.get_node("BottomDock").hide()
 	battle.get_node("CombatArena").offset_bottom = -24
+	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
+		dial.anchor_top = 0.66
+		dial.anchor_bottom = 0.66
 	_resume = Button.new()
 	_resume.text = "RETURN TO RELIC CHOICE  [I]"
 	_resume.z_index = 31
@@ -94,35 +101,37 @@ func present(battle: CombatController) -> void:
 			var socket: ClockSocketView = battle._player_chrono.get_socket_view(hour)
 			var relic: ClockRelicData = socket.data.slotted_relic
 			var button: Button = Button.new()
-			button.custom_minimum_size = Vector2(190, 112)
+			button.custom_minimum_size = Vector2(250, 232)
 			button.disabled = socket.data.is_locked or battle.current_drawn_relic == null
-			button.tooltip_text = "Replace this relic and resolve the three-hour sweep."
+			button.tooltip_text = "%s\n%s\nReplace this relic and resolve the three-hour sweep." % [relic.name if relic else "Empty slot",ClockInventory.describe(relic) if relic else ""]
 			replacements.add_child(button)
 			var column: VBoxContainer = VBoxContainer.new()
 			button.add_child(column)
 			column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			column.offset_left = 10
 			column.offset_right = -10
-			column.offset_top = 4
-			column.offset_bottom = -4
+			column.offset_top = 10
+			column.offset_bottom = -10
 			column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			column.add_theme_constant_override("separation", 2)
-			ScreenDesign.label(column, "%02d O'CLOCK" % hour, 18, ScreenDesign.GOLD, true)
-			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 16)
-			title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			var effect: Label = ScreenDesign.label(column, ClockInventory.describe(relic) if relic != null else "No relic bound.", 14, ScreenDesign.MUTED)
+			ScreenDesign.label(column, ("LOCKED · %02d" if socket.data.is_locked else ("HOUR %02d" if battle.current_drawn_relic == null else "REPLACE · %02d")) % hour, 24, ScreenDesign.GOLD, true)
+			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 24)
+			title.autowrap_mode = TextServer.AUTOWRAP_OFF
+			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			title.clip_text = true
+			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 24, ScreenDesign.MUTED)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			effect.clip_text = true
+			effect.clip_text = false
 			effect.custom_minimum_size.y = 36
 			effect.text = effect.text.replace("Lasts until absorbed or battle ends.", "")
-			ScreenDesign.label(column, "LOCKED" if socket.data.is_locked else ("NO RESERVE" if battle.current_drawn_relic == null else "REPLACE"), 13, ScreenDesign.CYAN)
 			for label: Node in column.get_children(): label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			button.pressed.connect(battle._on_player_socket_pressed.bind(hour, socket))
 			button.mouse_entered.connect(battle._preview_swap.bind(socket))
 			button.focus_entered.connect(battle._preview_swap.bind(socket))
 			button.mouse_exited.connect(battle._refresh_guidance)
 			button.focus_exited.connect(battle._refresh_guidance)
+	ScreenDesign.apply_text_size(self)
 	show()
 	_place()
 	call_deferred("_place")
@@ -134,7 +143,7 @@ func present(battle: CombatController) -> void:
 func _place() -> void:
 	if not is_instance_valid(_battle): return
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	size = Vector2(940, 0)
+	size = Vector2(1180, 0)
 	reset_size()
 	position = Vector2((_battle.size.x - size.x) * 0.5, 70)
 

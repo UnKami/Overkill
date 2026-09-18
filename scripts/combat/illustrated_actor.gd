@@ -8,6 +8,7 @@ var _back: TextureRect
 var _motion: Tween
 var _idle_time: float = 0.0
 var _busy: bool = false
+var _contact_ready: bool = false
 var _origin := Vector2.ZERO
 var _frame_bottoms: Array[float] = []
 var _pose_origin := Vector2.ZERO
@@ -76,14 +77,16 @@ func _begin() -> void:
 	_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
 
 func attack() -> void:
+	_contact_ready = false
 	_begin()
 	set_pose(1)
-	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * 12.0, 0.12).set_trans(Tween.TRANS_CUBIC)
+	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * 14.0, 0.19).set_trans(Tween.TRANS_CUBIC)
 	_motion.tween_callback(func() -> void: set_pose(2))
-	_motion.tween_property(_front, "position:x", _pose_origin.x + facing * 42.0, 0.055).set_trans(Tween.TRANS_EXPO)
-	_motion.tween_interval(0.10)
+	_motion.tween_property(_front, "position:x", _pose_origin.x + facing * 42.0, 0.07).set_trans(Tween.TRANS_EXPO)
+	_motion.tween_callback(func() -> void: _contact_ready = true)
+	_motion.tween_interval(0.085)
 	_motion.tween_callback(func() -> void: set_pose(3))
-	_motion.tween_property(_front, "position:x", _pose_origin.x, 0.21).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_motion.tween_property(_front, "position:x", _pose_origin.x, 0.27).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_motion.tween_callback(_rest)
 
 func hit(blocked: bool) -> void:

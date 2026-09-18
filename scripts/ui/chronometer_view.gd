@@ -32,6 +32,8 @@ func _ready() -> void:
 	mask.shader = preload("res://assets/ui/combat/circular_art.gdshader")
 	_dial_texture.material = mask
 	_style_chassis()
+	_dial_texture.modulate = Color(0.46, 0.46, 0.46)
+	_engraving.modulate.a = 0.4
 
 
 func initialize(is_enemy: bool = false, title: String = "") -> void:

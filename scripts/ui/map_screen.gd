@@ -74,6 +74,8 @@ var _reachable: Array[String] = []
 var _buttons: Dictionary = {}         # node_id -> Button
 var _line_layer: Control = null
 var _path_time: float = 0.0
+var _hovered_node: String = ""
+var _route_hint: Label
 
 
 ## Drives the traveling energy-pulse along bright connector lines. Redraw is
@@ -98,11 +100,15 @@ func _ready() -> void:
 	var column := ScreenDesign.column(self,0.23,0.34)
 	ScreenDesign.label(column,"ACT  %02d" % RunManager.act_number,18,ScreenDesign.CYAN)
 	var chapter: String = {1:"The Crypt\nBastion",2:"The\nRefinery",3:"The\nAbyss"}.get(RunManager.act_number,"The Final\nDescent")
-	ScreenDesign.label(column,chapter,56,ScreenDesign.GOLD,true)
+	ScreenDesign.label(column,chapter,44,ScreenDesign.GOLD,true)
 	ScreenDesign.spacer(column,18)
 	ScreenDesign.rule(column)
-	var instructions := ScreenDesign.label(column,"Choose an illuminated destination.\nEvery path leads deeper into the forge.",22,ScreenDesign.MUTED)
+	var instructions := ScreenDesign.label(column,"Choose an illuminated destination.\nYour route climbs toward the boss.",22,ScreenDesign.MUTED)
 	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ScreenDesign.label(column,"Gold: available · ✓: completed",24,ScreenDesign.GOLD)
+	_route_hint = ScreenDesign.label(column,"Hover or focus a destination\nto inspect your next encounter.",24,ScreenDesign.MUTED)
+	_route_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_route_hint.custom_minimum_size.y = 84
 	ScreenDesign.spacer(column,20)
 	ScreenDesign.button(column,"VIEW YOUR RELICS",func() -> void: GameFlow.open_deck_view(GameFlow.DeckViewMode.REFERENCE))
 	ScreenDesign.button(column,"PAUSE JOURNEY",func() -> void: GameFlow.open_pause_menu())
@@ -161,7 +167,8 @@ func _rebuild_map() -> void:
 	for node_id in nodes:
 		var node: MapGenerator.MapNode = nodes[node_id]
 		for next_id in node.connections:
-			var bright: bool = RunManager.visited_nodes.has(node_id) and (RunManager.current_node_id == node_id or _reachable.has(next_id))
+			var bright: bool = RunManager.current_node_id == node_id and _reachable.has(next_id)
+			var hovered: bool = _hovered_node == next_id or _hovered_node == node_id
 			if not bright or path_texture == null:
 				continue
 			var live_line := Line2D.new()
@@ -200,6 +207,16 @@ func _rebuild_map() -> void:
 		var button := _build_node_button(node, is_current, is_reachable)
 		_canvas.add_child(button)
 		_buttons[node_id] = button
+		var caption: Label = Label.new()
+		caption.text = ("YOU ARE HERE · " if is_current else ("✓ " if RunManager.visited_nodes.has(node_id) else "")) + TYPE_LABELS.get(node.type, "")
+		caption.position = _positions[node.id] + Vector2(-95,43)
+		caption.size = Vector2(190,32)
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.add_theme_font_size_override("font_size",24)
+		caption.add_theme_constant_override("outline_size",6)
+		caption.modulate = ScreenDesign.GOLD if is_reachable or is_current else Color("b1bcc5")
+		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_canvas.add_child(caption)
 
 		# Affordance motion: the node you're standing on breathes gently,
 		# every node you could move to next breathes a little faster - an
@@ -223,16 +240,16 @@ func _draw_connectors(line_layer: Control) -> void:
 
 		for next_id in node.connections:
 			var to_pos: Vector2 = _positions[next_id]
-			var bright: bool = RunManager.visited_nodes.has(node_id) and (RunManager.current_node_id == node_id or _reachable.has(next_id))
+			var bright: bool = RunManager.current_node_id == node_id and _reachable.has(next_id)
+			var hovered: bool = _hovered_node == next_id or _hovered_node == node_id
 			if bright:
 				# Already drawn as a textured Line2D in _rebuild_map() when
 				# art is available - only fall back to a flat bright line
 				# here if that art is missing, so there's never a gap.
-				if not have_texture:
-					line_layer.draw_line(from_pos, to_pos, PATH_COLOR_BRIGHT, 3.0)
+				line_layer.draw_line(from_pos, to_pos, PATH_COLOR_BRIGHT, 5.0)
 				_draw_traveling_pulse(line_layer, from_pos, to_pos)
 			else:
-				line_layer.draw_line(from_pos, to_pos, PATH_COLOR_DIM, 2.0)
+				line_layer.draw_line(from_pos, to_pos, Color(0.8,0.75,0.55,0.7) if hovered else Color(0.6,0.7,0.75,0.20), 3.0 if hovered else 2.0)
 
 
 	# Draw all node bases after all routes so no route crosses a node icon.
@@ -311,7 +328,19 @@ func _build_node_button(node: MapGenerator.MapNode, is_current: bool, is_reachab
 		button.modulate = Color(1, 1, 1, 0.6)
 		button.disabled = true
 
+	button.mouse_entered.connect(_inspect_node.bind(node))
+	button.focus_entered.connect(_inspect_node.bind(node))
+	button.mouse_exited.connect(func() -> void: _hovered_node = "")
+	button.focus_exited.connect(func() -> void: _hovered_node = "")
 	return button
+
+func _inspect_node(node: MapGenerator.MapNode) -> void:
+	_hovered_node = node.id
+	var descriptions: Dictionary = {MapGenerator.NodeType.COMBAT:"Battle · win a relic reward.",MapGenerator.NodeType.ELITE:"Elite · a more dangerous battle.",MapGenerator.NodeType.REST:"Rest · recover or improve a relic.",MapGenerator.NodeType.SHOP:"Shop · spend your Overkill.",MapGenerator.NodeType.EVENT:"Event · make a story choice.",MapGenerator.NodeType.TREASURE:"Treasure · collect a reward.",MapGenerator.NodeType.BOSS:"Boss · win to finish this act."}
+	_route_hint.text = descriptions.get(node.type,"Explore this destination.")
+	if not node.enemy_id.is_empty():
+		var enemy: EnemyData = ContentDatabase.get_enemy(node.enemy_id)
+		if enemy != null: _route_hint.text += "\n" + enemy.display_name
 
 
 ## Soft radial glow marker behind the icon (replaces the old pill border) -

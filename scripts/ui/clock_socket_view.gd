@@ -28,9 +28,13 @@ func _ready() -> void:
 	var metal := ShaderMaterial.new()
 	metal.shader = preload("res://assets/ui/combat/socket_metal.gdshader")
 	_socket_base.material = metal
+	_icon_rect.modulate = Color(0.65, 0.65, 0.65)
+	_hour_label.position.y = -22
+	_hour_label.add_theme_constant_override("outline_size", 8)
+	_value_label.add_theme_constant_override("outline_size", 8)
 	focus_mode = Control.FOCUS_ALL
-	_hour_label.add_theme_font_size_override("font_size",20)
-	_value_label.add_theme_font_size_override("font_size",19)
+	_hour_label.add_theme_font_size_override("font_size",25)
+	_value_label.add_theme_font_size_override("font_size",26)
 	focus_entered.connect(_on_mouse_entered)
 	focus_exited.connect(_on_mouse_exited)
 

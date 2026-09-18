@@ -65,6 +65,10 @@ var _battle_info: Label
 var _stage: Control
 var _feedback_serial: int = 0
 var _choice_overlay: PanelContainer
+var _resolution_hour: int = 1
+var _combat_history: Array[String] = []
+var _history_button: Button
+var _intent_readout: Label
 var _guidance: BattleGuidance
 
 
@@ -80,6 +84,16 @@ func _ready() -> void:
 	_choice_overlay = preload("res://scripts/ui/relic_choice_overlay.gd").new()
 	add_child(_choice_overlay)
 	_choice_overlay.install(self)
+	_intent_readout = Label.new()
+	_enemy_chrono.add_child(_intent_readout)
+	_intent_readout.position = Vector2(85,130)
+	_intent_readout.size = Vector2(250,150)
+	_intent_readout.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_intent_readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_intent_readout.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_intent_readout.add_theme_font_size_override("font_size",24)
+	_intent_readout.add_theme_constant_override("outline_size",8)
+	_intent_readout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_guidance = BattleGuidance.new()
 	add_child(_guidance)
 	_guidance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -111,6 +125,24 @@ func _ready() -> void:
 	_skip_button.focus_entered.connect(_preview_sweep)
 	_skip_button.mouse_exited.connect(_refresh_guidance)
 	_skip_button.focus_exited.connect(_refresh_guidance)
+	_history_button = Button.new()
+	_history_button.text = "COMBAT LOG"
+	_history_button.add_theme_font_size_override("font_size",22)
+	add_child(_history_button)
+	_history_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_history_button.offset_left = -440
+	_history_button.offset_right = -240
+	_history_button.offset_top = 10
+	_history_button.offset_bottom = 54
+	_history_button.pressed.connect(func() -> void:
+		var history: AcceptDialog = AcceptDialog.new()
+		history.title = "Recent combat · newest first"
+		history.dialog_text = "No actions resolved yet." if _combat_history.is_empty() else "\n".join(_combat_history)
+		history.theme = ScreenDesign.build_theme()
+		add_child(history)
+		history.confirmed.connect(history.queue_free)
+		history.canceled.connect(history.queue_free)
+		history.popup_centered(Vector2i(850,650)))
 	var help := Button.new()
 	help.text = "HOW TO PLAY"
 	help.add_theme_font_size_override("font_size", 16)
@@ -123,12 +155,18 @@ func _ready() -> void:
 	help.pressed.connect(func() -> void:
 		var guide := AcceptDialog.new()
 		guide.title = "Your clock, one decision at a time"
-		guide.dialog_text = "1. BUILD YOUR CLOCK\nChoose one of three relics. The first goes to 1 o'clock, then 2, up to 9.\nAfter each placement, your relic and the enemy's matching tick resolve.\nHover a relic to see its destination before committing.\n\n2. SWEEP YOUR CLOCK\nEach turn covers three hours: 1–3, 4–6, then 7–9.\nHover a glowing socket to preview replacing it with the offered reserve.\nClick the socket to replace AND resolve the three-hour sweep.\nKEEP & SWEEP discards the offered reserve and activates your current relics.\n\nThe enemy may rotate backward or use a second hand. Read its lit intents."
+		guide.dialog_text = "1. BUILD YOUR CLOCK\nChoose one of three relics. The first goes to 1 o'clock, then 2, up to 9.\nAfter each placement, your relic and the enemy's matching tick resolve.\nHover a relic to see its destination before committing.\n\n2. SWEEP YOUR CLOCK\nEach turn covers three hours: 1–3, 4–6, then 7–9.\nHover a glowing socket to preview replacing it with the offered reserve.\nClick the socket to replace AND resolve the three-hour sweep.\nKEEP & SWEEP discards the offered reserve and activates your current relics.\n\nThe enemy may rotate backward or use a second hand. Read its lit intents.\n\nKEYWORDS\nBlock persists until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: return damage when attacked.\nBleed: lose HP at tick start. Weak: deal 25% less attack damage.\nVulnerable: take 50% more attack damage.\nLifesteal heals actual HP damage dealt, up to missing HP.\nOverdrive empowers your next attacking relic, including every hit."
+		var help_text: RichTextLabel = RichTextLabel.new()
+		help_text.text = guide.dialog_text
+		guide.dialog_text = ""
+		help_text.custom_minimum_size = Vector2(900,450)
+		help_text.add_theme_font_size_override("normal_font_size",24)
+		guide.add_child(help_text)
 		guide.theme = ScreenDesign.build_theme()
 		add_child(guide)
 		guide.confirmed.connect(guide.queue_free)
 		guide.canceled.connect(guide.queue_free)
-		guide.popup_centered(Vector2i(1100,600)))
+		guide.popup_centered(Vector2i(1000,580)))
 	_player_chrono.socket_pressed.connect(_on_player_socket_pressed)
 	if not _is_started and not _pending_enemies.is_empty():
 		_begin_combat()
@@ -468,6 +506,7 @@ func _execute_quadrant_sweep(quadrant: int) -> void:
 # TICK CLASH RESOLUTION PIPELINE
 # -------------------------------------------------------------
 func _resolve_tick(hour: int) -> void:
+	_resolution_hour = hour
 	var starting_enemy := _enemy_index
 	var enemy_hour := EnemyClockPattern.hour_for(hour, _active_enemy())
 	_reveal_enemy_hour(enemy_hour)
@@ -594,7 +633,7 @@ func _resolve_tick(hour: int) -> void:
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	_stage.attack(true)
 	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, Color("7bd6de"))
-	if _stage is DirectedArena: await _stage.await_contact(true)
+	if _stage.has_method("await_contact"): await _stage.await_contact(true)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(false, enemy_block >= amount)
@@ -649,7 +688,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	_stage.attack(false)
 	if not _stage is DirectedArena: Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
-	if _stage is DirectedArena: await _stage.await_contact(false)
+	if _stage.has_method("await_contact"): await _stage.await_contact(false)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(true, player_block >= amount)
@@ -780,7 +819,7 @@ func _update_stats_display() -> void:
 
 func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable: int) -> String:
 	var parts: PackedStringArray = []
-	for pair in [[strength, "STR"], [bleed, "BLEED"], [thorns, "THORNS"], [weak, "WEAK"], [vulnerable, "VULN"]]:
+	for pair in [[strength, "STRENGTH"], [bleed, "BLEED"], [thorns, "THORNS"], [weak, "WEAK"], [vulnerable, "VULNERABLE"]]:
 		if pair[0] > 0:
 			parts.append("%d %s" % [pair[0], pair[1]])
 	return " · ".join(parts)
@@ -788,6 +827,8 @@ func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable:
 
 func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, kind: String = "HP") -> void:
 	if val <= 0: return
+	_combat_history.push_front("Hour %d · %s · %s %d" % [_resolution_hour,"You" if target == _player_portrait or is_ok else "Enemy","Overkill gained" if is_ok else kind,val])
+	if _combat_history.size() > 16: _combat_history.pop_back()
 	var num: DamageNumber = damage_number_scene.instantiate()
 	add_child(num)
 	num.position = target.global_position + target.size * 0.5 + Vector2(randf_range(-20, 20), -20)
@@ -803,6 +844,7 @@ func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, ki
 		num.setup_generic(val, col, prefix, kind)
 
 func _refresh_guidance() -> void:
+	_refresh_intent_readout()
 	if _resolving or _combat_over: return
 	if phase == Phase.ASSEMBLY:
 		_phase_label.text = "Choose one relic for hour %d. Unchosen relics return to the draw pile." % turn_number
@@ -813,9 +855,19 @@ func _refresh_guidance() -> void:
 		if current_drawn_relic == null: _phase_label.text = "No reserve relic available. Sweep hours %d → %d → %d with your equipped relics." % hours
 		_guidance.point_to(_player_chrono,null,hours,"NEXT SWEEP\n%d → %d → %d" % hours)
 
+func _refresh_intent_readout() -> void:
+	if enemy_sockets.is_empty(): return
+	var hours: Array = [turn_number] if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
+	var lines: Array[String] = []
+	for hour: int in hours:
+		var index: int = EnemyClockPattern.hour_for(hour,_active_enemy())
+		lines.append("%d: %s" % [index,DecisionPreview.intent(enemy_sockets[index-1])])
+	_intent_readout.text = "ENEMY NEXT\n" + "\n".join(lines)
+
 func _preview_allocation(view: RelicPedestalView) -> void:
 	if _resolving or _combat_over or phase != Phase.ASSEMBLY: return
 	_phase_label.text = "%s → hour %d. Resolve your hour %d against enemy hour %d." % [view.relic.name,turn_number,turn_number,EnemyClockPattern.hour_for(turn_number,_active_enemy())]
+	_phase_label.text += "\n" + DecisionPreview.forecast(self,[turn_number],turn_number,view.relic)
 	_guidance.point_to(_player_chrono,_player_chrono.get_socket_view(turn_number),[turn_number],"BIND HERE\n%d O'CLOCK" % turn_number,view._art_rect,view._art_rect.texture)
 
 func _preview_swap(socket: ClockSocketView) -> void:
@@ -823,6 +875,7 @@ func _preview_swap(socket: ClockSocketView) -> void:
 	var previous := socket.data.slotted_relic.name if socket.data.slotted_relic else "empty slot"
 	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
 	_phase_label.text = "Hour %d: %s → %s. Old relic is discarded; sweep %d → %d → %d." % [socket.data.hour_index,previous,current_drawn_relic.name,hours[0],hours[1],hours[2]]
+	_phase_label.text += "\n" + DecisionPreview.forecast(self,hours,socket.data.hour_index,current_drawn_relic)
 	var ped: RelicPedestalView = _pedestal_row.get_child(0)
 	_guidance.point_to(_player_chrono,socket,hours,"REPLACE\n%d O'CLOCK" % socket.data.hour_index,ped._art_rect,ped._art_rect.texture)
 
@@ -830,6 +883,7 @@ func _preview_sweep() -> void:
 	if _resolving or _combat_over or phase != Phase.QUADRANT: return
 	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
 	_phase_label.text = "KEEP YOUR CLOCK · Discard the drawn relic and activate %d → %d → %d." % hours
+	_phase_label.text += "\n" + DecisionPreview.forecast(self,hours)
 	_guidance.point_to(_player_chrono,null,hours,"KEEP & SWEEP\n%d → %d → %d" % hours)
 
 func _animate_placement(relic: ClockRelicData, hour: int) -> void:

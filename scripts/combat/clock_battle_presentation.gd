@@ -168,10 +168,13 @@ static func directed_layout(battle: Control) -> void:
 		var portrait: Control = nexus.get_node(pair[1])
 		var stats: Label = portrait.get_node(pair[2])
 		stats.reparent(dial)
-		stats.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-		stats.offset_top = 26
-		stats.offset_bottom = 94
-		stats.add_theme_font_size_override("font_size", 21)
+		stats.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		stats.grow_vertical = Control.GROW_DIRECTION_END
+		stats.position = Vector2(0,450)
+		stats.size = Vector2(420,100)
+		stats.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		stats.add_theme_font_size_override("font_size", 26)
 		stats.add_theme_color_override("font_color", Color("e5e4df"))
 		stats.add_theme_constant_override("outline_size", 4)
 		stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -181,7 +184,7 @@ static func directed_layout(battle: Control) -> void:
 		health.offset_left = 40
 		health.offset_right = -40
 		health.offset_top = 14
-		health.offset_bottom = 20
+		health.offset_bottom = 24
 		stats.tooltip_text = "Block persists until absorbed or the battle ends."
 
 static func relay(battle: Control, source: Control, target: Control, accent: Color) -> void:

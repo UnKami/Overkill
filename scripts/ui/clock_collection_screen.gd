@@ -80,10 +80,11 @@ func _rebuild() -> void:
 			var price := RunManager.price_for("clock_relic", 15)
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
-			view.bind_relic(relic, "ACQUIRE  /  %d OK" % price)
+			view.bind_relic(relic, "Buy · %d Overkill" % price)
 			view._slot_button.disabled = OKRunState.current_ok < price
 			if view._slot_button.disabled:
-				view._slot_button.text = "NEED %d MORE OK" % (price - OKRunState.current_ok)
+				view._slot_button.text = "Need %d more Overkill" % (price - OKRunState.current_ok)
+			view._desc_label.text += "\nPrice: %d Overkill" % price
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
 		return
 	for entry in RunManager.clock_inventory:
@@ -105,7 +106,7 @@ func _rebuild() -> void:
 		if mode == "removal" and RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE:
 			view._slot_button.text = "MINIMUM DECK SIZE"
 		elif mode == "removal" and OKRunState.current_ok < 25:
-			view._slot_button.text = "NEED %d MORE OK" % (25 - OKRunState.current_ok)
+			view._slot_button.text = "Need %d more Overkill" % (25 - OKRunState.current_ok)
 		view.selected.connect(func(_r: ClockRelicData) -> void: _choose(int(entry.uid)))
 
 func _buy(relic: ClockRelicData, price: int) -> void:

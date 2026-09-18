@@ -21,13 +21,13 @@ var _pulse_time: float = 0.0
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(300, 370)
-	_role_badge.add_theme_font_size_override("font_size", 15)
-	_name_label.add_theme_font_size_override("font_size", 23)
+	_role_badge.add_theme_font_size_override("font_size", 19)
+	_name_label.add_theme_font_size_override("font_size", 26)
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_art_rect.custom_minimum_size.y = 140
-	_desc_label.add_theme_font_size_override("normal_font_size", 19)
-	_slot_button.add_theme_font_size_override("font_size", 17)
+	_desc_label.add_theme_font_size_override("normal_font_size", 24)
+	_slot_button.add_theme_font_size_override("font_size", 22)
 	_slot_button.custom_minimum_size.y = 48
 	for display: Control in [_role_badge, _name_label, _art_rect, _desc_label]:
 		display.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -53,6 +53,7 @@ func _ready() -> void:
 		button_style.content_margin_bottom = 7
 		_slot_button.add_theme_stylebox_override(state, button_style)
 	_slot_button.add_theme_color_override("font_color", Color("efd9ad"))
+	_slot_button.add_theme_color_override("font_disabled_color", Color("b8c3cc"))
 	_card_panel.get_node("Margin").minimum_size_changed.connect(_fit_content)
 	_slot_button.mouse_exited.connect(func() -> void: preview_ended.emit())
 	_slot_button.focus_entered.connect(_on_mouse_entered)
@@ -60,7 +61,8 @@ func _ready() -> void:
 
 func _fit_content() -> void:
 	if _battle_layout:
-		_slot_button.size = Vector2(284, 28)
+		_desc_label.size = Vector2(280,120)
+		_slot_button.size = Vector2(364, 48)
 	else:
 		custom_minimum_size.y = maxf(370, _card_panel.get_node("Margin").get_combined_minimum_size().y)
 
@@ -72,32 +74,32 @@ func _gui_input(event: InputEvent) -> void:
 
 func use_battle_layout() -> void:
 	_battle_layout = true
-	custom_minimum_size = Vector2(300,112)
-	pivot_offset = Vector2(150,56)
+	custom_minimum_size = Vector2(380,232)
+	pivot_offset = Vector2(190,97)
 	_card_panel.pivot_offset = pivot_offset
 	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
 		child.reparent(_card_panel)
 		child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_card_panel.get_node("Margin").hide()
 	_role_badge.hide()
-	_role_badge.position = Vector2(70,4)
+	_role_badge.position = Vector2(86,10)
 	_role_badge.size = Vector2(220,20)
 	_role_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_name_label.position = Vector2(70,4)
-	_name_label.size = Vector2(220,24)
+	_name_label.position = Vector2(86,10)
+	_name_label.size = Vector2(280,36)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_art_rect.custom_minimum_size = Vector2.ZERO
-	_art_rect.position = Vector2(8,16)
-	_art_rect.size = Vector2(54,60)
-	_desc_label.position = Vector2(70,30)
-	_desc_label.size = Vector2(222,48)
+	_art_rect.position = Vector2(10,48)
+	_art_rect.size = Vector2(66,78)
+	_desc_label.position = Vector2(86,48)
 	_desc_label.fit_content = false
-	_slot_button.position = Vector2(8,80)
-	_slot_button.size = Vector2(284,28)
-	_slot_button.custom_minimum_size.y = 28
-	_name_label.add_theme_font_size_override("font_size",18)
-	_desc_label.add_theme_font_size_override("normal_font_size",16)
-	_slot_button.add_theme_font_size_override("font_size",16)
+	_desc_label.size = Vector2(280,120)
+	_slot_button.position = Vector2(8,176)
+	_slot_button.size = Vector2(364,48)
+	_slot_button.custom_minimum_size.y = 48
+	_name_label.add_theme_font_size_override("font_size",25)
+	_desc_label.add_theme_font_size_override("normal_font_size",24)
+	_slot_button.add_theme_font_size_override("font_size",24)
 	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var style: StyleBoxFlat = _slot_button.get_theme_stylebox(state).duplicate()
 		style.content_margin_top = 2
@@ -114,7 +116,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_role_badge.text = "[ %s ]" % ClockRelicData.role_to_name(relic.role).to_upper()
 	_desc_label.text = ClockInventory.describe(relic)
 	if _battle_layout:
-		_desc_label.text = _desc_label.text.replace("Lasts until absorbed or battle ends.", "Persists in battle.")
+		_desc_label.text = summary(relic)
 	_slot_button.text = action_label
 
 	var role_col := ClockRelicData.role_to_color(relic.role)
@@ -132,7 +134,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_choice_style = panel_style
 
 	_load_art(relic.art_id)
-	tooltip_text = "%s\n%s" % [relic.name, relic.description]
+	tooltip_text = "%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, ClockInventory.describe(relic)]
 	ScreenDesign.apply_text_size(self)
 	call_deferred("_fit_content")
 
@@ -196,3 +198,16 @@ func _process(delta: float) -> void:
 	_choice_style.border_color = color.lerp(Color("fff0c4"), 0.15 + pulse * 0.35)
 	_choice_style.shadow_color = Color(color, 0.12 + pulse * 0.2)
 	_choice_style.shadow_size = 8 + int(pulse * 5)
+
+static func summary(r: ClockRelicData) -> String:
+	var lines: Array[String] = []
+	if r.base_damage > 0: lines.append("%d damage%s" % [r.base_damage," × %d" % r.hits if r.hits > 1 else ""])
+	if r.lifesteal: lines.append("Heal HP dealt")
+	if r.base_block > 0: lines.append("%d persistent Block" % r.base_block)
+	if r.next_attack_multiplier > 1: lines.append("Next attack: ×%d" % r.next_attack_multiplier)
+	if r.bonus_damage_next_hit > 0: lines.append("Next attack: +%d" % r.bonus_damage_next_hit)
+	for pair: Array in [[r.apply_strength,"Strength"],[r.apply_thorns,"Thorns"],[r.apply_bleed,"Bleed"],[r.apply_weak,"Weak"],[r.apply_vulnerable,"Vulnerable"]]:
+		if int(pair[0]) > 0: lines.append(("Enemy: " if str(pair[1]) in ["Bleed","Weak","Vulnerable"] else "Gain ") + "%d %s" % pair)
+	if r.conditional_damage > 0: lines.append("%d at enemy HP ≤%d%%" % [r.conditional_damage,int(r.conditional_hp_threshold_pct*100)])
+	if r.recoil_block_on_overkill: lines.append("Overkill → Block")
+	return "\n".join(lines)

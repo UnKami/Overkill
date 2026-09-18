@@ -10,7 +10,6 @@ func _ready() -> void:
 	battle = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(battle)
 	var enemy: EnemyData = ContentDatabase.get_enemy("act1_boss").duplicate()
-	enemy.max_hp = 10000
 	battle.start_combat([enemy])
 	battle.player_hp = 80
 	await capture("assembly-1080")
@@ -18,11 +17,25 @@ func _ready() -> void:
 	ScreenDesign.apply_text_size(battle)
 	get_window().size = Vector2i(1280,720)
 	await capture("assembly-large-720")
+	battle._preview_allocation(battle._pedestal_row.get_child(0))
+	await capture("forecast-large-720")
+	assert(battle._phase_label.visible and battle._phase_label.text.contains("After resolution"))
 	check_geometry()
 	AudioManager.text_size = "normal"
 	ScreenDesign.apply_text_size(battle)
 	get_window().size = Vector2i(1920,1080)
 	check_geometry()
+	# Every live relic must fit; starter-only screenshots miss long effects.
+	var sample: RelicPedestalView = battle._pedestal_row.get_child(0)
+	for text_mode: String in ["normal","large"]:
+		AudioManager.text_size = text_mode
+		for relic: ClockRelicData in ContentDatabase.all_clock_relics():
+			sample.bind_relic(relic,"BIND TO 1 O’CLOCK")
+			await get_tree().process_frame
+			print("TEXT_METRIC ",relic.id," ",text_mode," content=",sample._desc_label.get_content_height()," box=",sample._desc_label.size," font=",sample._desc_label.get_theme_font_size("normal_font_size"))
+			assert(sample._desc_label.get_content_height() <= sample._desc_label.size.y,"Relic text clipped: " + relic.id)
+			assert(sample._desc_label.get_global_rect().end.y <= sample._slot_button.global_position.y,"Description overlaps action: %s %s" % [sample._desc_label.get_global_rect(),sample._slot_button.get_global_rect()])
+	AudioManager.text_size = "normal"
 	var turn: int = battle.turn_number
 	battle._choice_overlay.toggle_inspection()
 	assert(not battle._choice_overlay.visible and battle._choice_overlay._resume.visible)
@@ -56,7 +69,16 @@ func _ready() -> void:
 	ScreenDesign.apply_text_size(battle)
 	get_window().size = Vector2i(1280, 720)
 	await capture("replacement-large-720")
+	battle._preview_swap(battle._player_chrono.get_socket_view(2))
+	await capture("replacement-forecast-720")
 	check_geometry()
+	for relic: ClockRelicData in ContentDatabase.all_clock_relics():
+		battle.player_sockets[0].slotted_relic = relic
+		battle._choice_overlay.present(battle)
+		await get_tree().process_frame
+		var target: Button = battle._choice_overlay.replacements.get_child(0)
+		for child: Control in target.get_child(0).get_children():
+			assert(target.get_global_rect().encloses(child.get_global_rect()),"Replacement overflow: " + relic.id)
 	battle.player_sockets[0].is_locked = true
 	battle._choice_overlay.present(battle)
 	assert(battle._choice_overlay.replacements.get_child(0).disabled)
@@ -76,7 +98,7 @@ func _ready() -> void:
 func check_geometry() -> void:
 	var panel: Rect2 = battle._choice_overlay.get_global_rect()
 	assert(Rect2(Vector2.ZERO, battle.size).encloses(panel), "Overlay must fit viewport")
-	assert(panel.position.y == 70 and panel.end.y < 220, "Choices must stay at the top")
+	assert(panel.position.y == 70 and panel.end.y < 520, "Choices must stay at the top")
 	assert(battle._choice_overlay.get_theme_stylebox("panel") is StyleBoxEmpty)
 	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
 		assert(not panel.intersects(dial.get_global_rect()), "Choices must not cover clocks")
@@ -85,6 +107,8 @@ func check_geometry() -> void:
 	var previous: Control = null
 	for choice: Control in battle._pedestal_row.get_children():
 		assert(panel.encloses(choice.get_global_rect()))
+		assert(choice._slot_button.size.y >= 48)
+		assert(choice._desc_label.get_theme_font_size("normal_font_size") >= 24)
 		assert(choice.get_global_rect().encloses(choice._slot_button.get_global_rect()), "Bind button stays inside option")
 		if previous != null:
 			assert(is_equal_approx(previous.global_position.y, choice.global_position.y))

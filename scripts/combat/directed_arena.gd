@@ -18,7 +18,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_view = SubViewport.new()
 	_view.size = Vector2i(1920, 776)
-	_view.msaa_3d = Viewport.MSAA_4X
+	_view.msaa_3d = Viewport.MSAA_2X
 	_view.own_world_3d = true
 	_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(_view)
@@ -46,8 +46,8 @@ func _ready() -> void:
 	env.sky = sky
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("a2b4c8")
-	env.ambient_light_energy = 0.18
+	env.ambient_light_color = Color("8296ab")
+	env.ambient_light_energy = 0.12
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color("263341")
@@ -57,17 +57,18 @@ func _ready() -> void:
 	_camera = Camera3D.new()
 	_world.add_child(_camera)
 	_camera.position = _home
-	_camera.fov = 32
+	_camera.fov = 39
+	_camera.v_offset = 0.65
 	_camera.look_at(_look)
 	var key := DirectionalLight3D.new()
 	key.rotation_degrees = Vector3(-48, -30, 0)
 	key.light_color = Color("c4dfef")
-	key.light_energy = 1.1
+	key.light_energy = 0.85
 	key.shadow_enabled = true
 	key.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	key.directional_shadow_max_distance = 14
 	_world.add_child(key)
-	_light(Vector3(-3, 3.5, 1.5), Color("a1ccdf"), 1.8, 7)
+	_light(Vector3(-3, 3.5, 1.5), Color("a1ccdf"), 1.35, 7)
 	_light(Vector3(3, 3.8, -1.5), Color("ffbd77"), 2.8, 8)
 	_impact_light = _light(Vector3(0, 1.2, 0.6), Color("ffcc83"), 0, 3)
 	_build_environment()
@@ -223,7 +224,7 @@ func _replace_enemy() -> void:
 
 func _resize_view() -> void:
 	if _view and size.x > 0 and size.y > 0:
-		var render_width := mini(1920,roundi(size.x))
+		var render_width := mini(1600,mini(get_window().size.x,roundi(size.x)))
 		_view.size = Vector2i(render_width,roundi(render_width * size.y / size.x))
 
 func attack(from_player: bool) -> void:
@@ -233,7 +234,7 @@ func attack(from_player: bool) -> void:
 	if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
 	_camera_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
 	_camera_motion.set_parallel(true)
-	_camera_motion.tween_property(_camera, "fov", 30.8, 0.3).set_trans(Tween.TRANS_SINE)
+	_camera_motion.tween_property(_camera, "fov", 38.2, 0.3).set_trans(Tween.TRANS_SINE)
 	_camera_motion.tween_property(_camera, "h_offset", -0.06 if from_player else 0.06, 0.3)
 
 func impact(on_player: bool, blocked: bool) -> void:
@@ -251,7 +252,7 @@ func impact(on_player: bool, blocked: bool) -> void:
 	_camera_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
 	_camera_motion.set_parallel(true)
 	_camera_motion.tween_property(_camera, "h_offset", 0.0, 0.36).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_camera_motion.tween_property(_camera, "fov", 32.0, 0.48).set_trans(Tween.TRANS_SINE)
+	_camera_motion.tween_property(_camera, "fov", 39.0, 0.48).set_trans(Tween.TRANS_SINE)
 
 func _emit_sparks(at: Vector3, blocked: bool) -> void:
 	var mat := _material(Color("81deff") if blocked else Color("ffd08a"))
@@ -283,7 +284,7 @@ func finish(won: bool) -> void:
 	if not AudioManager.reduced_motion:
 		if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
 		_camera_motion = create_tween()
-		_camera_motion.tween_property(_camera, "fov", 29.8, 0.75).set_trans(Tween.TRANS_SINE)
+		_camera_motion.tween_property(_camera, "fov", 37.5, 0.75).set_trans(Tween.TRANS_SINE)
 
 func impact_delay() -> float:
 	return 0.32

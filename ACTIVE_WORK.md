@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-readable-cinematic` | Readability, decision previews, route clarity and cinematic presentation | `scripts/ui/relic_choice_overlay.gd`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/map_screen.gd`, `scripts/ui/clock_socket_view.gd`, `scripts/ui/chronometer_view.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/decision_preview.gd`, `scripts/ui/decision_readout.gd`, `scripts/ui/shop_screen.gd`, `scripts/ui/combat_hud.gd`, `scripts/ui/ux_017_test.gd`, `docs/ux-017.md`, `CHANGELOG_AI.md`, `VERSION`, `UPDATE_LOG.md`, `README.md`, `installer/README.md`, `install/README.md`, `scripts/release/build_installer.ps1` | 2026-09-19 |
+| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
 
 ---
 
