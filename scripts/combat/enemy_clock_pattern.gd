@@ -6,10 +6,10 @@ static func profile(enemy: EnemyData) -> String:
 	return {"boneghoul": "stalker", "act1_elite": "chainbinder", "act1_boss": "sentinel", "act2_trash": "corrosion", "act2_elite": "bulwark", "act2_boss": "reverse", "act3_trash": "shards", "act3_elite": "siphon", "act3_boss": "twin", "final_boss": "eclipse"}.get(enemy.id, "stalker")
 
 static func description(enemy: EnemyData) -> String:
-	return {"stalker": "STALKER  /  Claw · brace · rend", "chainbinder": "CHAINBINDER  /  Weakening chains before the heavy lash", "sentinel": "SENTINEL  /  Armors up before crushing blows", "corrosion": "CORROSION  /  Bleed persists between ticks", "bulwark": "BULWARK  /  Guard and strength fuel the counterstrike", "reverse": "REVERSE CLOCK  /  Enemy hand runs counterclockwise", "shards": "SHARD SWARM  /  Multiple small strikes", "siphon": "SIPHON  /  Unblocked strikes drain banked Overkill", "twin": "TWIN HANDS  /  Opposite hour also attacks at each wedge end", "eclipse": "ECLIPSE  /  Reverse clock with an opposing second hand"}.get(profile(enemy), "")
+	return {"stalker": "STALKER  /  Claw · brace · rend", "chainbinder": "CHAINBINDER  /  Weakening chains before the heavy lash", "sentinel": "SENTINEL  /  Armors up before crushing blows", "corrosion": "CORROSION  /  Bleed persists between ticks", "bulwark": "BULWARK  /  Guard and strength fuel the counterstrike", "reverse": "REVERSE CLOCK  /  Enemy hand runs counterclockwise", "shards": "SHARD SWARM  /  Multiple small strikes", "siphon": "SIPHON  /  Unblocked strikes drain banked Overkill", "twin": "TWIN HANDS  /  Second hand four slots ahead attacks at each wedge end", "eclipse": "ECLIPSE  /  Reverse clock with a second hand four slots ahead"}.get(profile(enemy), "")
 
 static func hour_for(player_hour: int, enemy: EnemyData) -> int:
-	return 13 - player_hour if profile(enemy) in ["reverse", "eclipse"] else player_hour
+	return 10 - player_hour if profile(enemy) in ["reverse", "eclipse"] else player_hour
 
 static func has_twin(enemy: EnemyData) -> bool:
 	return profile(enemy) in ["twin", "eclipse"]
@@ -17,7 +17,7 @@ static func has_twin(enemy: EnemyData) -> bool:
 static func create(enemy: EnemyData) -> Array[ClockSocketData]:
 	var result: Array[ClockSocketData] = []
 	var kind := profile(enemy)
-	for hour in range(1, 13):
+	for hour in range(1, 10):
 		var s := ClockSocketData.new()
 		s.hour_index = hour
 		var beat := (hour - 1) % 3

@@ -27,15 +27,17 @@ func _ready() -> void:
 	await get_tree().create_timer(2.0).timeout
 	assert(battle.turn_number == 2, "Double-click must resolve only one hour")
 	assert(battle.player_sockets[0].slotted_relic == chosen)
-	# High health fixtures exercise the complete 12-hour assembly and wrap.
+	# High health fixtures exercise the complete 9-hour assembly and wrap.
 	battle.player_hp = 10000
-	for hour in range(2, 13):
+	for hour in range(2, 10):
+		for i: int in 9:
+			assert(battle.enemy_sockets[i].intent_revealed == (i < hour), "Reveal before placement; retain previous actions")
 		await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
 	await get_tree().create_timer(0.8).timeout
 	assert(battle.phase == CombatController.Phase.QUADRANT)
-	assert(battle.turn_number == 13)
+	assert(battle.turn_number == 10)
 	assert(battle.current_drawn_relic != null, "The real run inventory must leave reserves")
-	assert(battle.player_deck.size() + battle.player_discard.size() == 3)
+	assert(battle.player_deck.size() + battle.player_discard.size() == 2)
 	battle.player_hp = 66
 	battle._update_stats_display()
 	await capture("quadrant")
@@ -49,7 +51,6 @@ func _ready() -> void:
 	assert(battle.active_quadrant == 3)
 	assert(battle.player_sockets[3].slotted_relic == reserve)
 	# Exercise forward wrap.
-	await battle._on_skip_button_pressed()
 	await battle._on_skip_button_pressed()
 	assert(battle.active_quadrant == 1)
 	var previous_rotation := battle._player_chrono._center_hand_pivot.rotation
@@ -67,7 +68,7 @@ func _ready() -> void:
 	assert(battle._check_combat_end())
 	await get_tree().create_timer(1.6 if battle._stage is DirectedArena else 1.0).timeout
 	assert(wins.size() == 1, "Victory must be emitted once")
-	print("CLOCK_SMOKE_OK: 12 assembly hours, double input, 4 quadrants, hot swap, forward wrap, single victory signal, muted audio")
+	print("CLOCK_SMOKE_OK: 9 assembly hours, double input, 3 sectors, hot swap, forward wrap, single victory signal, muted audio")
 	get_tree().quit()
 
 func capture(label: String) -> void:

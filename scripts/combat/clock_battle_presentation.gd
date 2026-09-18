@@ -102,6 +102,7 @@ static func install(battle: Control) -> void:
 	subtitle.add_theme_color_override("font_color", Color("91a5ac"))
 	subtitle.add_theme_font_size_override("font_size", 14)
 	battle.add_child(subtitle)
+	subtitle.hide()
 	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
 	subtitle.offset_left = -380
 	subtitle.offset_right = -28
@@ -158,6 +159,30 @@ static func directed_layout(battle: Control) -> void:
 	skip.add_theme_font_size_override("font_size",22)
 	for path in ["PlayerPortrait/PlayerStatsLabel","EnemyPortrait/EnemyStatsLabel"]:
 		nexus.get_node(path).add_theme_font_size_override("font_size",24)
+
+	# Keep the clocks and telemetry above the temporary decision panel.
+	for pair: Array in [["PlayerChronometer", "PlayerPortrait", "PlayerStatsLabel"], ["EnemyChronometer", "EnemyPortrait", "EnemyStatsLabel"]]:
+		var dial: Control = arena.get_node(pair[0])
+		dial.anchor_top = 0.30
+		dial.anchor_bottom = 0.30
+		var portrait: Control = nexus.get_node(pair[1])
+		var stats: Label = portrait.get_node(pair[2])
+		stats.reparent(dial)
+		stats.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		stats.offset_top = 26
+		stats.offset_bottom = 94
+		stats.add_theme_font_size_override("font_size", 21)
+		stats.add_theme_color_override("font_color", Color("e5e4df"))
+		stats.add_theme_constant_override("outline_size", 4)
+		stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var health: ProgressBar = portrait.get_node("Vitality")
+		health.reparent(dial)
+		health.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		health.offset_left = 40
+		health.offset_right = -40
+		health.offset_top = 14
+		health.offset_bottom = 20
+		stats.tooltip_text = "Block persists until absorbed or the battle ends."
 
 static func relay(battle: Control, source: Control, target: Control, accent: Color) -> void:
 	var line := Line2D.new()

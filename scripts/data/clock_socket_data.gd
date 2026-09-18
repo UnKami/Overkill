@@ -1,5 +1,5 @@
 class_name ClockSocketData extends Resource
-## ClockSocketData - Model representing one of the 12 hours in a Chronometer.
+## ClockSocketData - Model representing one of the 9 hours in a Chronometer.
 
 @export var hour_index: int = 1 # 1 to 12
 @export var slotted_relic: ClockRelicData = null
@@ -17,6 +17,7 @@ class_name ClockSocketData extends Resource
 @export var intent_weak: int = 0
 @export var intent_bleed: int = 0
 @export var intent_label: String = ""
+@export var intent_revealed: bool = false
 
 
 func has_relic() -> bool:
@@ -43,4 +44,5 @@ func clone() -> ClockSocketData:
 	copy.intent_weak = intent_weak
 	copy.intent_bleed = intent_bleed
 	copy.intent_label = intent_label
+	copy.intent_revealed = intent_revealed
 	return copy

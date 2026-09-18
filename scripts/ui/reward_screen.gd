@@ -28,6 +28,7 @@ func set_reward_context(context: Dictionary) -> void:
 
 
 func _ready() -> void:
+	theme = ScreenDesign.build_theme()
 	$TitleLabel.text = "SALVAGE A RELIC"
 	$TitleLabel.add_theme_font_size_override("font_size", 38)
 	$TitleLabel.add_theme_color_override("font_color", Color("e8c994"))
@@ -42,6 +43,18 @@ func _ready() -> void:
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_skip_button.pressed.connect(_on_skip_pressed)
 	_offer_cards()
+	var subtitle: Label = ScreenDesign.label(self, "Choose one relic to add to your deck. The others are left behind.", 22, ScreenDesign.MUTED)
+	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	subtitle.offset_top = 106
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_skip_button.text = "LEAVE RELICS"
+	_skip_button.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_skip_button.offset_left = -150
+	_skip_button.offset_right = 150
+	_skip_button.offset_top = -124
+	_skip_button.offset_bottom = -64
+	ScreenDesign.polish(self)
 
 
 func _offer_cards() -> void:

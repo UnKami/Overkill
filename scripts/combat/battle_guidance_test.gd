@@ -28,7 +28,7 @@ func _ready() -> void:
 	battle.player_hp = 10000
 	battle.enemy_hp = 10000
 	AudioManager.fast_mode = true
-	for hour in range(2,13): await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
+	for hour in range(2,10): await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
 	await get_tree().create_timer(0.6).timeout
 	AudioManager.fast_mode = false
 	assert(battle.phase == CombatController.Phase.QUADRANT)

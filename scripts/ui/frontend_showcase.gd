@@ -17,7 +17,7 @@ func _ready() -> void:
 	get_window().size = Vector2i(1920,1080)
 	get_tree().current_scene._start_button.pressed.emit()
 	await capture("map")
-	assert(RunManager.clock_inventory.size() == 18)
+	assert(RunManager.clock_inventory.size() == 12)
 	assert(RunManager.current_hp == 75)
 	GameFlow.open_settings()
 	await capture("settings")
@@ -55,7 +55,7 @@ func _ready() -> void:
 	var battle: CombatController = get_tree().current_scene
 	await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
 	assert(battle.turn_number == 2)
-	print("FRONTEND_FLOW_OK: title, character, 18 relics, 75 HP, settings, rest, shop, continue, replacement confirmation")
+	print("FRONTEND_FLOW_OK: title, character, 12 relics, 75 HP, settings, rest, shop, continue, replacement confirmation")
 	get_tree().quit()
 
 func capture(label: String) -> void:

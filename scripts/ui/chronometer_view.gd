@@ -1,5 +1,5 @@
 class_name ChronometerView extends Control
-## ChronometerView - Renders the 12-hour circular battle mechanism.
+## ChronometerView - Renders the 9-hour circular battle mechanism.
 ## Manages circular layout, quadrant lighting, socket dispatch, and sweeping hands.
 
 signal socket_pressed(hour_index: int, socket_view: ClockSocketView)
@@ -16,7 +16,7 @@ const RADIUS := 177.5
 @onready var _center_hub: Panel = %CenterHub
 @onready var _title_label: Label = %TitleLabel
 
-var _socket_views: Dictionary = {} # hour_index (1..12) -> ClockSocketView
+var _socket_views: Dictionary = {} # hour_index (1..9) -> ClockSocketView
 var _is_enemy: bool = false
 var _hand_tween: Tween = null
 var _engraving: Control
@@ -87,9 +87,9 @@ func _create_clock_sockets() -> void:
 	_socket_views.clear()
 
 	var center := size * 0.5
-	for hour in range(1, 13):
-		# Angle: 12 is top (-90 deg), 3 is right (0 deg), 6 is bottom (90 deg)
-		var deg := (hour * 30.0) - 90.0
+	for hour in range(1, 10):
+		# Nine equally spaced sockets; hour 9 is at the top.
+		var deg := (hour * 40.0) - 90.0
 		var rad := deg_to_rad(deg)
 		var pos := center + Vector2(cos(rad), sin(rad)) * size.x * 0.355
 
@@ -114,7 +114,7 @@ func get_socket_view(hour: int) -> ClockSocketView:
 
 ## Smoothly rotates the pointer hand to aim directly at an hour.
 func snap_hand_to_hour(hour: int, duration: float = 0.32) -> Signal:
-	var target_deg := (hour * 30.0) - 90.0
+	var target_deg := (hour * 40.0) - 90.0
 	var target_rad := deg_to_rad(target_deg)
 	if rotation_direction > 0:
 		while target_rad < _center_hand_pivot.rotation - 0.001: target_rad += TAU
@@ -135,12 +135,13 @@ func set_twin_hand(enabled: bool) -> void:
 		var echo := Polygon2D.new()
 		echo.name = "TwinHand"
 		echo.polygon = PackedVector2Array([Vector2(-146, 0), Vector2(-95, -4), Vector2(0, -2), Vector2(0, 2), Vector2(-95, 4)])
+		echo.rotation = deg_to_rad(-20.0)
 		echo.color = Color("c98ad8")
 		_center_hand_pivot.add_child(echo)
 	_center_hand_pivot.get_node("TwinHand").visible = enabled
 
 
-## Highlights the 3 sockets in quadrant q (1: 1-3, 2: 4-6, 3: 7-9, 4: 10-12)
+## Highlights the 3 sockets in quadrant q (1: 1-3, 2: 4-6, 3: 7-9)
 func highlight_quadrant(quadrant_index: int, highlight_color: Color = Color("#EF9F27")) -> void:
 	clear_quadrant_highlights()
 	_engraving.quadrant = quadrant_index
@@ -178,7 +179,6 @@ static func get_quadrant_hours(q: int) -> Array[int]:
 		1: return [1, 2, 3]
 		2: return [4, 5, 6]
 		3: return [7, 8, 9]
-		4: return [10, 11, 12]
 		_: return [1, 2, 3]
 
 

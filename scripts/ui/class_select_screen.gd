@@ -23,7 +23,7 @@ func _ready() -> void:
 	var stats := HBoxContainer.new()
 	stats.add_theme_constant_override("separation",38)
 	column.add_child(stats)
-	for entry in [["75","VITALITY"],["12","CLOCK SLOTS"],["6","RESERVES"]]:
+	for entry in [["75","VITALITY"],["9","CLOCK SLOTS"],["3","RESERVES"]]:
 		var stat := VBoxContainer.new()
 		stats.add_child(stat)
 		ScreenDesign.label(stat,entry[0],36,ScreenDesign.GOLD,true)

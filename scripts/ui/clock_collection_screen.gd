@@ -37,10 +37,11 @@ func _ready() -> void:
 	column.add_child(title)
 	_summary = Label.new()
 	_summary.add_theme_font_size_override("font_size", 20)
+	_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_summary)
 	if mode == "shop":
 		var space := Control.new()
-		space.custom_minimum_size.y = 120
+		space.custom_minimum_size.y = 40
 		column.add_child(space)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -52,6 +53,7 @@ func _ready() -> void:
 	_grid.add_theme_constant_override("h_separation", 22)
 	_grid.add_theme_constant_override("v_separation", 28)
 	scroll.add_child(_grid)
+	scroll.resized.connect(func() -> void: _grid.columns = maxi(1, mini(5, int((scroll.size.x + 22) / 322))))
 	var back := Button.new()
 	back.text = "RETURN"
 	back.custom_minimum_size = Vector2(220, 52)
@@ -62,6 +64,7 @@ func _ready() -> void:
 	_offers.shuffle()
 	_offers = _offers.slice(0, 5)
 	_rebuild()
+	ScreenDesign.apply_text_size(self)
 	modulate.a = 0
 	create_tween().tween_property(self, "modulate:a", 1.0, 0.25)
 
@@ -69,9 +72,9 @@ func _rebuild() -> void:
 	for child in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
-	_summary.text = "%d relics  /  12 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 12), OKRunState.current_ok]
+	_summary.text = "%d relics  /  9 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
 	if mode == "upgrade": _summary.text += "     •     One free upgrade this visit."
-	if mode == "removal": _summary.text += "     •     Keep at least 15 relics."
+	if mode == "removal": _summary.text += "     •     Keep at least 10 relics."
 	if mode == "shop":
 		for relic: ClockRelicData in _offers:
 			var price := RunManager.price_for("clock_relic", 15)
@@ -79,6 +82,8 @@ func _rebuild() -> void:
 			_grid.add_child(view)
 			view.bind_relic(relic, "ACQUIRE  /  %d OK" % price)
 			view._slot_button.disabled = OKRunState.current_ok < price
+			if view._slot_button.disabled:
+				view._slot_button.text = "NEED %d MORE OK" % (price - OKRunState.current_ok)
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
 		return
 	for entry in RunManager.clock_inventory:
@@ -96,6 +101,11 @@ func _rebuild() -> void:
 		elif mode == "removal": action = "DISMANTLE  /  25 OK"
 		view.bind_relic(relic, action)
 		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < 25))
+		if mode == "collection": view._slot_button.text = "TEMPERED" if int(entry.level) > 0 else "IN YOUR COLLECTION"
+		if mode == "removal" and RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE:
+			view._slot_button.text = "MINIMUM DECK SIZE"
+		elif mode == "removal" and OKRunState.current_ok < 25:
+			view._slot_button.text = "NEED %d MORE OK" % (25 - OKRunState.current_ok)
 		view.selected.connect(func(_r: ClockRelicData) -> void: _choose(int(entry.uid)))
 
 func _buy(relic: ClockRelicData, price: int) -> void:

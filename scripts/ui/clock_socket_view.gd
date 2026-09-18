@@ -1,5 +1,5 @@
 class_name ClockSocketView extends Control
-## ClockSocketView - Renders an individual 1-to-12 hour socket on a Chronometer.
+## ClockSocketView - Renders an individual 1-to-9 hour socket on a Chronometer.
 
 signal pressed(socket_view: ClockSocketView)
 signal previewed(socket_view: ClockSocketView)
@@ -81,6 +81,11 @@ func _style_socket(is_enemy: bool) -> void:
 			_value_label.add_theme_color_override("font_color", Color("#E58CFF"))
 
 		tooltip_text = "[%s] %s\n%s" % [ClockRelicData.role_to_name(relic.role), relic.name, relic.description]
+	elif is_enemy and not data.intent_revealed:
+		_icon_rect.texture = null
+		val_text = "?"
+		_value_label.add_theme_color_override("font_color", Color("83929e"))
+		tooltip_text = "Hour %d · Unrevealed enemy relic" % data.hour_index
 	elif is_enemy:
 		if data.intent_damage > 0:
 			border_col = Color("#E74C3C")
@@ -118,7 +123,9 @@ func _style_socket(is_enemy: bool) -> void:
 	_value_label.text = val_text
 
 	# Modifiers
-	if data.is_locked:
+	if is_enemy and not data.intent_revealed:
+		_modifier_badge.hide()
+	elif data.is_locked:
 		_modifier_badge.text = "L"
 		_modifier_badge.show()
 	elif data.is_hazard:

@@ -1,3 +1,5 @@
+> **0.14 playtest rules (2026-09-19) supersede the historical 12-hour baseline below:** nine sockets, three sectors of three hours, twelve starter relics (5 × 6-damage attacks, 5 × 5-Block guards, one 3-damage lifesteal, one 4-damage next-attack ×2 relic). Enemy actions reveal before placement and stay visible. See [current rules and edge cases](docs/presentation-014.md). Historical design sections remain for reference, not current runtime behavior.
+
 # TECHNICAL DESIGN & ARCHITECTURAL SPECIFICATION: OVERKILL
 **Document Version:** 1.0.0-PROD  
 **System Architecture:** Dual-Chronometer Relic Engine & Overkill Run Economy  

@@ -220,9 +220,7 @@ func _draw_connectors(line_layer: Control) -> void:
 	for node_id in nodes:
 		var node: MapGenerator.MapNode = nodes[node_id]
 		var from_pos: Vector2 = _positions[node_id]
-		var available := _reachable.has(node_id)
-		line_layer.draw_circle(from_pos,42,Color("111c28"))
-		line_layer.draw_arc(from_pos,42,0,TAU,48,ScreenDesign.GOLD if available else Color("53606b"),2,true)
+
 		for next_id in node.connections:
 			var to_pos: Vector2 = _positions[next_id]
 			var bright: bool = RunManager.visited_nodes.has(node_id) and (RunManager.current_node_id == node_id or _reachable.has(next_id))
@@ -236,6 +234,13 @@ func _draw_connectors(line_layer: Control) -> void:
 			else:
 				line_layer.draw_line(from_pos, to_pos, PATH_COLOR_DIM, 2.0)
 
+
+	# Draw all node bases after all routes so no route crosses a node icon.
+	for node_id: String in nodes:
+		var at: Vector2 = _positions[node_id]
+		var available: bool = _reachable.has(node_id)
+		line_layer.draw_circle(at, 42, Color("111c28"))
+		line_layer.draw_arc(at, 42, 0, TAU, 48, ScreenDesign.GOLD if available else Color("53606b"), 2, true)
 
 ## A small bright dot sliding from the current node toward what's next -
 ## the one piece of motion on this screen that reads as "action," not idle

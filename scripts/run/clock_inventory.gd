@@ -1,7 +1,7 @@
 class_name ClockInventory extends RefCounted
 ## Each entry is a physical copy. Resource copies are isolated for combat/upgrades.
-const STARTER_COUNTS: Dictionary = {"REL-01": 6, "REL-04": 6, "REL-02": 2, "REL-06": 2}
-const MINIMUM_SIZE := 15
+const STARTER_COUNTS: Dictionary = {"REL-01": 5, "REL-04": 5, "REL-13": 1, "REL-14": 1}
+const MINIMUM_SIZE := 10
 
 static func starter() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -33,6 +33,8 @@ static func describe(relic: ClockRelicData) -> String:
 	var parts: PackedStringArray = []
 	if relic.base_damage > 0:
 		parts.append("Deal %d damage%s." % [relic.base_damage, " × %d" % relic.hits if relic.hits > 1 else ""])
+	if relic.lifesteal: parts.append("Heal HP damage dealt.")
+	if relic.next_attack_multiplier > 1: parts.append("Next attack ×%d damage." % relic.next_attack_multiplier)
 	if relic.base_block > 0: parts.append("Gain %d Block. Lasts until absorbed or battle ends." % relic.base_block)
 	for pair in [[relic.apply_strength, "strength"], [relic.apply_thorns, "thorns"], [relic.apply_bleed, "bleed"], [relic.apply_weak, "weak"], [relic.apply_vulnerable, "vulnerable"]]:
 		if pair[0] > 0: parts.append("Apply %d %s." % pair)

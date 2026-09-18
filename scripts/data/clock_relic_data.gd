@@ -1,6 +1,6 @@
 class_name ClockRelicData extends Resource
 ## ClockRelicData - The fundamental active instruction in the Dual-Chronometer Engine.
-## Replaces cards: relics are physical components slotted into the 12-hour circular array.
+## Replaces cards: relics are physical components slotted into the 9-hour circular array.
 
 enum Tier { STARTER, COMMON, RARE, ZENITH }
 enum Role { IMPACT, BULWARK, TEMPO, BREAKER }
@@ -26,6 +26,8 @@ enum Role { IMPACT, BULWARK, TEMPO, BREAKER }
 @export var conditional_damage: int = 0
 @export var conditional_hp_threshold_pct: float = 0.0 # e.g. 0.5 for Execution Wedge
 @export var recoil_block_on_overkill: bool = false # e.g. Recoil Piston
+@export var lifesteal: bool = false
+@export var next_attack_multiplier: int = 1
 @export var bonus_damage_next_hit: int = 0 # e.g. Kinetic Battery
 
 

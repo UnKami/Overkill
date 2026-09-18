@@ -126,7 +126,7 @@ static func frame(parent: Control, breadcrumb: String) -> void:
 	top.position = Vector2(64,38)
 	var footer := label(parent,"BIND THE HOURS. BREAK THE CYCLE.",15,MUTED)
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	footer.position += Vector2(64,-52)
+	footer.position += Vector2(64,-96)
 
 static func reveal(control: Control) -> void:
 	control.modulate.a = 0
@@ -152,6 +152,10 @@ static func apply_text_size(root: Node) -> void:
 	_scale_labels(root,multiplier)
 
 static func _scale_labels(root: Node, multiplier: float) -> void:
+	if root is RichTextLabel and root.has_theme_font_size_override("normal_font_size"):
+		if not root.has_meta("base_body_size"):
+			root.set_meta("base_body_size", root.get_theme_font_size("normal_font_size"))
+		root.add_theme_font_size_override("normal_font_size", roundi(int(root.get_meta("base_body_size")) * multiplier))
 	if root is Control and root.has_theme_font_size_override("font_size"):
 		if not root.has_meta("base_text_size"):
 			root.set_meta("base_text_size",root.get_theme_font_size("font_size"))

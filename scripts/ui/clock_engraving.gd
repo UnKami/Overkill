@@ -9,7 +9,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _process(delta: float) -> void:
-	elapsed += delta
+	if not AudioManager.reduced_motion: elapsed += delta
 	queue_redraw()
 
 func _draw() -> void:
@@ -19,8 +19,8 @@ func _draw() -> void:
 		draw_arc(center, radius * ring, 0, TAU, 128, Color(accent, 0.22), 1.0, true)
 	var minor_lines := PackedVector2Array()
 	var major_lines := PackedVector2Array()
-	for tick in range(120):
-		var angle := float(tick) * TAU / 120.0 - PI * 0.5
+	for tick in range(90):
+		var angle := float(tick) * TAU / 90.0 - PI * 0.5
 		var ray := Vector2.from_angle(angle)
 		var major := tick % 10 == 0
 		var lines: PackedVector2Array = major_lines if major else minor_lines
@@ -31,10 +31,10 @@ func _draw() -> void:
 	draw_multiline(minor_lines,Color(accent,0.28),1.0,true)
 	draw_multiline(major_lines,Color(accent,0.7),2.0,true)
 	if quadrant > 0:
-		var start := deg_to_rad(float((quadrant - 1) * 90) - 75.0)
-		draw_arc(center, radius * 0.84, start, start + PI * 0.5, 40, Color(accent, 0.45), 3.0, true)
+		var start := deg_to_rad(float((quadrant - 1) * 120) - 70.0)
+		draw_arc(center, radius * 0.84, start, start + TAU / 3.0, 40, Color(accent, 0.45), 3.0, true)
 	if active_hour > 0:
-		var angle := deg_to_rad(float(active_hour) * 30.0 - 90.0)
+		var angle := deg_to_rad(float(active_hour) * 40.0 - 90.0)
 		var point := center + Vector2.from_angle(angle) * radius * 0.71
 		var pulse := 0.5 + sin(elapsed * 3.0) * 0.15
 		draw_arc(point, 36.0, 0, TAU, 48, Color(accent, pulse), 2.0, true)
