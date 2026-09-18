@@ -1,0 +1,4 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/combat/cinematic_finish_test.gd" id="1"]
+[node name="CinematicFinishTest" type="Node"]
+script = ExtResource("1")

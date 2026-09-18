@@ -63,6 +63,7 @@ var _banner_tween: Tween
 var _enemy_index: int = 0
 var _battle_info: Label
 var _stage: Control
+var _feedback_serial: int = 0
 var _choice_overlay: PanelContainer
 var _guidance: BattleGuidance
 
@@ -475,6 +476,8 @@ func _resolve_tick(hour: int) -> void:
 	_phase_label.text = "RESOLVING  /  YOUR HOUR %d  •  ENEMY HOUR %d\nRelics activate, then the clocks advance." % [hour,enemy_hour]
 	var p_socket: ClockSocketData = player_sockets[hour - 1]
 	var e_socket: ClockSocketData = enemy_sockets[enemy_hour - 1]
+	if p_socket.slotted_relic != null:
+		_show_turn_banner("%s  ·  HOUR %d" % [p_socket.slotted_relic.name.to_upper(), hour])
 
 	# Flash resolving hour sockets
 	var p_view := _player_chrono.get_socket_view(hour)
@@ -490,10 +493,10 @@ func _resolve_tick(hour: int) -> void:
 	# 1. Resolve Bleed (true unblockable damage at start of tick)
 	if player_bleed > 0:
 		player_hp -= player_bleed
-		_spawn_damage_number(_player_portrait, player_bleed, false, Color("#E58CFF"))
+		_spawn_damage_number(_player_portrait, player_bleed, false, Color("#E58CFF"), "BLEED")
 	if enemy_bleed > 0:
 		enemy_hp -= enemy_bleed
-		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, Color("#E58CFF"))
+		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, Color("#E58CFF"), "BLEED")
 	_update_stats_display()
 	if _check_combat_end() or starting_enemy != _enemy_index: return
 
@@ -502,7 +505,9 @@ func _resolve_tick(hour: int) -> void:
 		var relic := p_socket.slotted_relic
 		if relic.base_block > 0:
 			player_block += relic.base_block
-			CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
+			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK")
+			if _stage is DirectedArena: _stage.guard_pulse(true)
+			else: CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
 		if relic.apply_strength > 0:
 			player_strength += relic.apply_strength
 		if relic.apply_thorns > 0:
@@ -518,6 +523,8 @@ func _resolve_tick(hour: int) -> void:
 
 	if e_socket.intent_block > 0:
 		enemy_block += e_socket.intent_block
+		_spawn_damage_number(_enemy_portrait, e_socket.intent_block, false, Color("7bd6de"), "BLOCK")
+		if _stage is DirectedArena: _stage.guard_pulse(false)
 	if e_socket.intent_strength > 0:
 		enemy_strength += e_socket.intent_strength
 	player_bleed += e_socket.intent_bleed
@@ -591,30 +598,32 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(false, enemy_block >= amount)
 	var nexus_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
-	CombatVFX.play_slash(self, nexus_pos, randf_range(-40, 40), Color(0.8, 1.4, 1.8))
-	CombatVFX.play_hit_sparks(self, nexus_pos, Color(1.0, 0.9, 0.5), 6)
+	if not _stage is DirectedArena:
+		CombatVFX.play_slash(self, nexus_pos, randf_range(-40, 40), Color(0.8, 1.4, 1.8))
+		CombatVFX.play_hit_sparks(self, nexus_pos, Color(1.0, 0.9, 0.5), 6)
 	AmbientMotion.flash(_enemy_portrait, Color(2.0, 0.8, 0.8), 0.15)
 
 	# Hazard modifier check (recoil)
 	if p_socket.is_hazard:
 		var recoil := int(floor(amount * 0.5))
 		player_hp -= recoil
-		_spawn_damage_number(_player_portrait, recoil, false, Color("#E24B4A"))
+		_spawn_damage_number(_player_portrait, recoil, false, Color("#E24B4A"), "RECOIL")
 
 	var hp_damage: int = mini(maxi(enemy_hp, 0), maxi(amount - enemy_block, 0))
 	if enemy_block >= amount:
 		enemy_block -= amount
-		_spawn_damage_number(_enemy_portrait, amount, false, Color("#5DADE2"))
+		_spawn_damage_number(_enemy_portrait, amount, false, Color("#5DADE2"), "BLOCKED")
 	else:
 		var unblocked := amount - enemy_block
 		var blocked_part := enemy_block
 		enemy_block = 0
 		if blocked_part > 0:
-			_spawn_damage_number(_enemy_portrait, blocked_part, false, Color("#5DADE2"))
+			_spawn_damage_number(_enemy_portrait, blocked_part, false, Color("#5DADE2"), "BLOCKED")
 
 		if enemy_hp <= unblocked:
 			# OVERKILL!
 			var overkill := unblocked - enemy_hp
+			_spawn_damage_number(_enemy_portrait, hp_damage, false, Color("#E24B4A"))
 			enemy_hp = 0
 			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
 				player_block += overkill
@@ -626,11 +635,11 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.lifesteal and player_hp > 0:
 		var healed: int = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
 		player_hp += healed
-		if healed > 0: _spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"))
+		if healed > 0: _spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
 	# Thorns check
 	if enemy_thorns > 0:
 		player_hp -= enemy_thorns
-		_spawn_damage_number(_player_portrait, enemy_thorns, false, Color("#F39C12"))
+		_spawn_damage_number(_player_portrait, enemy_thorns, false, Color("#F39C12"), "THORNS")
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
@@ -643,20 +652,21 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	AudioManager.play_clock_sound("impact")
 	_stage.impact(true, player_block >= amount)
 	var p_pos: Vector2 = _stage.impact_position(true) if _stage is DirectedArena else _player_portrait.global_position + _player_portrait.size * 0.5
-	CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
-	CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
+	if not _stage is DirectedArena:
+		CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
+		CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
 	AmbientMotion.flash(_player_portrait, Color(1.8, 0.5, 0.5), 0.15)
 	if not _stage is DirectedArena: AmbientMotion.shake(self, 6.0, 0.2)
 
 	if player_block >= amount:
 		player_block -= amount
-		_spawn_damage_number(_player_portrait, amount, false, Color("#5DADE2"))
+		_spawn_damage_number(_player_portrait, amount, false, Color("#5DADE2"), "BLOCKED")
 	else:
 		var unblocked := amount - player_block
 		var blocked_part := player_block
 		player_block = 0
 		if blocked_part > 0:
-			_spawn_damage_number(_player_portrait, blocked_part, false, Color("#5DADE2"))
+			_spawn_damage_number(_player_portrait, blocked_part, false, Color("#5DADE2"), "BLOCKED")
 
 		player_hp -= unblocked
 		_spawn_damage_number(_player_portrait, unblocked, false, Color("#E24B4A"))
@@ -669,7 +679,7 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	# Thorns check
 	if player_thorns > 0:
 		enemy_hp -= player_thorns
-		_spawn_damage_number(_enemy_portrait, player_thorns, false, Color("#F39C12"))
+		_spawn_damage_number(_enemy_portrait, player_thorns, false, Color("#F39C12"), "THORNS")
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
@@ -687,14 +697,14 @@ func _handle_overkill(overkill: int) -> void:
 				OKRunState.gain_ok(effect.value, passive.id)
 	TutorialCallout.trigger("first_ok")
 
-	var enemy_pos := _enemy_portrait.global_position + _enemy_portrait.size * 0.5
+	var enemy_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
 	CombatVFX.play_overkill_burst(self, enemy_pos, overkill)
 
 	var hud_ok_pos := Vector2(size.x * 0.5, 45.0)
 	CombatVFX.play_ok_essence_trail(self, enemy_pos, hud_ok_pos, clampi(int(overkill * 0.5), 3, 8))
 
-	if overkill >= 5:
-		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 20.0), 0.35)
+	if overkill >= 5 and not _stage is DirectedArena:
+		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 12.0), 0.25)
 
 
 func _check_combat_end() -> bool:
@@ -774,16 +784,21 @@ func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable:
 	return " · ".join(parts)
 
 
-func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color) -> void:
+func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, kind: String = "HP") -> void:
 	if val <= 0: return
 	var num: DamageNumber = damage_number_scene.instantiate()
 	add_child(num)
 	num.position = target.global_position + target.size * 0.5 + Vector2(randf_range(-20, 20), -20)
 	if _stage is DirectedArena:
 		num.position = _stage.impact_position(target == _player_portrait) - global_position + Vector2(randf_range(-15,15),-20)
+	num.position += Vector2(-70, -float(_feedback_serial % 3) * 30.0)
+	_feedback_serial += 1
+	num.set_meta("feedback_kind", kind)
 	num.z_index = 55
 	if is_ok: num.setup(val,true)
-	else: num.setup_generic(val,col)
+	else:
+		var prefix: String = "+" if kind in ["BLOCK", "HEAL"] else ("" if kind == "BLOCKED" else "−")
+		num.setup_generic(val, col, prefix, kind)
 
 func _refresh_guidance() -> void:
 	if _resolving or _combat_over: return

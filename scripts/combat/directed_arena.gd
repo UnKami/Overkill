@@ -24,6 +24,9 @@ func _ready() -> void:
 	add_child(_view)
 	var screen := TextureRect.new()
 	screen.texture = _view.get_texture()
+	var grade: ShaderMaterial = ShaderMaterial.new()
+	grade.shader = preload("res://assets/shaders/cinematic_grade.gdshader")
+	screen.material = grade
 	screen.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(screen)
@@ -44,7 +47,7 @@ func _ready() -> void:
 	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("a2b4c8")
-	env.ambient_light_energy = 0.22
+	env.ambient_light_energy = 0.18
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.fog_enabled = true
 	env.fog_light_color = Color("263341")
@@ -72,6 +75,7 @@ func _ready() -> void:
 	player.position = Vector3(-0.9, 0, 0.2)
 	player.rotation.y = 1.4
 	_replace_enemy()
+	_add_contact_shadow(player)
 
 func _light(at: Vector3, color: Color, energy: float, radius: float) -> OmniLight3D:
 	var light := OmniLight3D.new()
@@ -102,11 +106,11 @@ func _build_environment() -> void:
 	floor_mesh.size = Vector2(60, 60)
 	var floor_mat := StandardMaterial3D.new()
 	floor_mat.albedo_texture = load("res://assets/environments/materials/stone_tiles_diff_2k.jpg")
-	floor_mat.albedo_color = Color(0.24,0.29,0.33)
+	floor_mat.albedo_color = Color(0.16,0.19,0.22)
 	floor_mat.normal_enabled = true
 	floor_mat.normal_texture = load("res://assets/environments/materials/stone_tiles_nor_gl_2k.jpg")
 	floor_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	floor_mat.normal_scale = 0.35
+	floor_mat.normal_scale = 0.22
 	floor_mat.roughness_texture = load("res://assets/environments/materials/stone_tiles_rough_2k.jpg")
 	floor_mat.roughness = 1.0
 	floor_mat.uv1_scale = Vector3(18,18,18)
@@ -189,6 +193,7 @@ func _replace_enemy() -> void:
 	if _kind in ["sentinel", "bulwark", "twin", "eclipse"]: enemy.scale *= 1.14
 	player.opponent = enemy
 	enemy.opponent = player
+	_add_contact_shadow(enemy)
 
 func _resize_view() -> void:
 	if _view and size.x > 0 and size.y > 0:
@@ -213,6 +218,7 @@ func impact(on_player: bool, blocked: bool) -> void:
 	_impact_light.light_energy = 2.8 if blocked else 4.0
 	create_tween().tween_property(_impact_light, "light_energy", 0.0, 0.2)
 	_emit_sparks(target, blocked)
+	if blocked: guard_pulse(on_player)
 	if AudioManager.reduced_motion: return
 	if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
 	_camera.h_offset += -0.025 if on_player else 0.025
@@ -266,3 +272,38 @@ func impact_position(on_player: bool) -> Vector2:
 	var actor: Node3D = player if on_player else enemy
 	var point := _camera.unproject_position(actor.global_position + Vector3(0,1.4,0))
 	return global_position + point * size / Vector2(_view.size)
+
+func _add_contact_shadow(actor: Node3D) -> void:
+	var shadow: MeshInstance3D = MeshInstance3D.new()
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(1.5, 1.15)
+	shadow.mesh = plane
+	shadow.position.y = 0.006
+	shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var shader: Shader = Shader.new()
+	shader.code = "shader_type spatial; render_mode unshaded, blend_mix, depth_draw_never, cull_disabled; void fragment(){ float d=length((UV-vec2(0.5))*2.0); ALBEDO=vec3(0.008,0.01,0.015); ALPHA=(1.0-smoothstep(0.08,1.0,d))*0.56; }"
+	var material: ShaderMaterial = ShaderMaterial.new()
+	material.shader = shader
+	shadow.material_override = material
+	actor.add_child(shadow)
+
+func guard_pulse(on_player: bool) -> void:
+	var actor: Node3D = player if on_player else enemy
+	var ring: TorusMesh = TorusMesh.new()
+	ring.inner_radius = 0.40
+	ring.outer_radius = 0.42
+	ring.rings = 40
+	ring.ring_segments = 6
+	var material: StandardMaterial3D = _material(Color("72dce9"))
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.7
+	var effect: MeshInstance3D = _mesh(ring, actor.position + Vector3(0, 1.10, 0.32), material)
+	effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	effect.rotation.x = PI * 0.5
+	var pulse: Tween = create_tween().set_parallel(true)
+	if not AudioManager.reduced_motion:
+		effect.scale = Vector3.ONE * 0.75
+		pulse.tween_property(effect, "scale", Vector3.ONE * 1.25, 0.40).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	pulse.tween_property(material, "albedo_color:a", 0.0, 0.40)
+	pulse.chain().tween_callback(effect.queue_free)

@@ -51,6 +51,7 @@ func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
 	mat.shader = preload("res://assets/shaders/forged_metal.gdshader")
 	mat.set_shader_parameter("steel_color",color)
 	mat.set_shader_parameter("metalness",metalness)
+	mat.set_shader_parameter("surface_detail", preload("res://assets/characters/rigged/worn_metal_015.png"))
 	return mat
 
 func _style(node: Node) -> void:
@@ -59,9 +60,9 @@ func _style(node: Node) -> void:
 			var source: Material = node.mesh.surface_get_material(i)
 			var name_text := source.resource_name if source else ""
 			if "Gold" in name_text:
-				node.set_surface_override_material(i, _metal(Color("8d6535")))
+				node.set_surface_override_material(i, _metal(Color("806441"), 0.76))
 			elif "White" in name_text:
-				node.set_surface_override_material(i, _metal(Color("4f3430") if hostile else Color("344c5d")))
+				node.set_surface_override_material(i, _metal(Color("443a38") if hostile else Color("344650")))
 			else:
 				var dark := StandardMaterial3D.new()
 				dark.albedo_color = Color("1a1219") if hostile else Color("101923")
@@ -89,7 +90,7 @@ func _box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Material) 
 	return _mesh(parent, shape, at, material)
 
 func _build_equipment() -> void:
-	_gold = _metal(Color("ac8047"))
+	_gold = _metal(Color("967549"), 0.78)
 	_glow = StandardMaterial3D.new()
 	_glow.albedo_color = Color("f0a061") if hostile else Color("79d8e4")
 	_glow.emission_enabled = true
@@ -112,8 +113,12 @@ func _build_equipment() -> void:
 	_box(_weapon, Vector3(0,0.05,0.14), Vector3(0.30,0.045,0.045), _gold)
 	if hostile and archetype in ["sentinel", "bulwark", "twin", "eclipse"]:
 		_box(_weapon, Vector3(0,0.05,0.48), Vector3(0.045,0.045,0.68), steel)
-		_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.50,0.25,0.24), steel)
-		_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.07,0.27,0.27), _gold)
+		_beveled_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.52,0.27,0.27), steel)
+		_beveled_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.075,0.29,0.29), _gold)
+		for side: float in [-1.0, 1.0]:
+			_beveled_box(_weapon, Vector3(side * 0.265,0.05,0.82), Vector3(0.04,0.23,0.23), _gold)
+		for mark: int in 3:
+			_box(_weapon, Vector3(-0.14 + mark * 0.14,0.193,0.82), Vector3(0.025,0.004,0.10), _glow)
 	else:
 		var blade := PrismMesh.new()
 		blade.size = Vector3(0.16,1.0,0.035)
@@ -249,3 +254,30 @@ func fall() -> void:
 
 func _animation_finished(_name: StringName) -> void:
 	if not _dead: _play("combat_idle",0.12)
+
+func _beveled_box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Material) -> MeshInstance3D:
+	var half: Vector3 = dimensions * 0.5
+	var bevel: float = minf(0.025, minf(half.x, minf(half.y, half.z)) * 0.35)
+	var rings: Array[PackedVector3Array] = []
+	for layer: int in 4:
+		var inset: float = bevel if layer == 0 or layer == 3 else 0.0
+		var x: float = half.x - inset
+		var z: float = half.z - inset
+		var y: float = [half.y, half.y - bevel, -half.y + bevel, -half.y][layer]
+		var ring: PackedVector3Array = PackedVector3Array()
+		for point: Vector2 in [Vector2(-x + bevel,-z),Vector2(x - bevel,-z),Vector2(x,-z + bevel),Vector2(x,z - bevel),Vector2(x - bevel,z),Vector2(-x + bevel,z),Vector2(-x,z - bevel),Vector2(-x,-z + bevel)]:
+			ring.append(Vector3(point.x,y,point.y))
+		rings.append(ring)
+	var surface: SurfaceTool = SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for layer: int in 3:
+		for i: int in 8:
+			var next: int = (i + 1) % 8
+			for point: Vector3 in [rings[layer][i],rings[layer + 1][i],rings[layer][next],rings[layer][next],rings[layer + 1][i],rings[layer + 1][next]]:
+				surface.add_vertex(point)
+	for i: int in 8:
+		var next: int = (i + 1) % 8
+		for point: Vector3 in [Vector3(0,half.y,0),rings[0][i],rings[0][next],Vector3(0,-half.y,0),rings[3][next],rings[3][i]]:
+			surface.add_vertex(point)
+	surface.generate_normals()
+	return _mesh(parent, surface.commit(), at, material)

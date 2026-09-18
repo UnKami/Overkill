@@ -23,7 +23,7 @@ func setup(value: int, is_overkill: bool) -> void:
 		_animate_overkill(value)
 	else:
 		add_theme_color_override("font_color", COLOR_BASE)
-		add_theme_font_size_override("font_size", 44)
+		add_theme_font_size_override("font_size", 32)
 		_animate_base()
 
 
@@ -31,10 +31,10 @@ func setup(value: int, is_overkill: bool) -> void:
 ## system (player damage taken, block gained, HP healed) - same base motion,
 ## different color/sign so each stat change reads as what it is at a glance,
 ## never just a bare number that could mean anything.
-func setup_generic(value: int, color: Color, prefix: String = "") -> void:
-	text = "%s%d" % [prefix, value]
+func setup_generic(value: int, color: Color, prefix: String = "", kind: String = "") -> void:
+	text = "%s%d%s" % [prefix, value, " " + kind if not kind.is_empty() else ""]
 	add_theme_color_override("font_color", color)
-	add_theme_font_size_override("font_size", 44)
+	add_theme_font_size_override("font_size", 32)
 	_animate_base()
 
 
