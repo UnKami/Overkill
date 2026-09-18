@@ -13,7 +13,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Labeled map destinations, route/encounter inspection and clearer shop prices/keyword explanations. Shared relic text is larger throughout rewards and collection screens.
 - Larger grounded illustrated fighters and animation-synchronized contact; less glossy worn armor, restrained lighting and reframed Sentinel arena. Reduced 3D rendering resolution follows smaller windows without reducing UI resolution.
 - **Compatibility:** Existing 0.14–0.16 saves remain compatible. No deck, balance or save-format changes.
-- **Verification:** 30 preview comparisons against live resolution, starter/combat-flow checks, exported rendered layouts at 1080p/720p large text/ultrawide, all-relic text bounds and normal/fast/reduced-motion contact checks. Illustrated and rigged battles visually inspected. Portable files match the exported payload.
+- **Verification:** 30 preview comparisons against live resolution, starter/combat-flow checks, exported rendered layouts at 1080p/720p large text/ultrawide, all-relic text bounds and normal/fast/reduced-motion contact checks. Illustrated and rigged battles visually inspected. Portable files match the exported payload. All three GitHub assets returned HTTP 200 and matched local SHA-256 hashes.
 - **Known limits:** This is not finished AAA production. Character/animation variety, consistent art production, broad hardware performance and human boss-balance testing remain. Long replacement names may ellipsize; full names/effects remain in tooltips. Installer wizard untested; existing certificate-store and headless shutdown warnings remain.
 - **Source:** `v0.17.0-test`, branch `feat/yonatan-readable-cinematic`; gameplay awaits review.
 
