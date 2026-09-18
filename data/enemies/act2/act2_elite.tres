@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/data/enemy_move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("3_effect")
+effect_type = 0
+value = 16
+status_id = ""
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="2"]
+script = ExtResource("2_move")
+move_id = "custodial_smash"
+intent_type = 0
+intent_value = 16
+effects = Array[Resource]([SubResource("1")])
+hit_count = 1
+
+[resource]
+script = ExtResource("1_enemy")
+id = "act2_elite"
+display_name = "Hollow Custodian"
+tier = 1
+max_hp = 75
+hp_variance = Vector2i(65, 85)
+move_pool = Array[Resource]([SubResource("2")])
+move_pattern = 0
+tempered = false
+overkill_death_threshold = 60
+art_id = "act2_elite_idle"

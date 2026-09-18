@@ -1,0 +1,115 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/upgrade_preview_dialog.gd" id="1_script"]
+
+[node name="UpgradePreviewDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="BackgroundButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 0
+flat = true
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+self_modulate = Color(0, 0, 0, 0.65)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="CenterContainer"]
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 22
+text = "Upgrade this card?"
+
+[node name="CardsRow" type="HBoxContainer" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 28
+
+[node name="CurrentColumn" type="VBoxContainer" parent="CenterContainer/Panel/Margin/VBox/CardsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CurrentLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CardsRow/CurrentColumn"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Current"
+
+[node name="CurrentSlot" type="Control" parent="CenterContainer/Panel/Margin/VBox/CardsRow/CurrentColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 360)
+layout_mode = 2
+
+[node name="ArrowLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CardsRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.364706, 0.678431, 0.886275, 1)
+text = "→"
+
+[node name="UpgradedColumn" type="VBoxContainer" parent="CenterContainer/Panel/Margin/VBox/CardsRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UpgradedLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/CardsRow/UpgradedColumn"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.364706, 0.678431, 0.886275, 1)
+text = "Upgraded"
+
+[node name="UpgradedSlot" type="Control" parent="CenterContainer/Panel/Margin/VBox/CardsRow/UpgradedColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 360)
+layout_mode = 2
+
+[node name="NoChangeLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+theme_override_colors/font_color = Color(0.886275, 0.294118, 0.290196, 1)
+text = "This card has no upgrade defined yet."
+
+[node name="ButtonRow" type="HBoxContainer" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="CancelButton" type="Button" parent="CenterContainer/Panel/Margin/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Cancel"
+
+[node name="ConfirmButton" type="Button" parent="CenterContainer/Panel/Margin/VBox/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Upgrade"

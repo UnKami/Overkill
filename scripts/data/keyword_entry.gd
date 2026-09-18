@@ -8,12 +8,17 @@ class_name KeywordEntry extends RefCounted
 var icon_id: String
 var icon_subdir: String  # "status" or "ui"
 var label: String
+var definition: String  ## plain-language explanation, shown as a hover tooltip
+                         ## wherever this keyword appears on a card - nothing
+                         ## that isn't self-evident from its name+icon alone
+                         ## should ship without one.
 
 
-func _init(p_icon_id: String, p_icon_subdir: String, p_label: String) -> void:
+func _init(p_icon_id: String, p_icon_subdir: String, p_label: String, p_definition: String = "") -> void:
 	icon_id = p_icon_id
 	icon_subdir = p_icon_subdir
 	label = p_label
+	definition = p_definition
 
 
 func icon_path() -> String:

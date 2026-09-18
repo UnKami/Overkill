@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-04"
+name = "Guard Plate"
+tier = 0
+role = 1
+description = "Gain 6 Block."
+art_id = "rel_04_guard_plate"
+base_block = 6

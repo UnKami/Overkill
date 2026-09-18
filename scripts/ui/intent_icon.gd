@@ -38,6 +38,18 @@ const INTENT_ICON_IDS := {
 @onready var _value_label: Label = %ValueLabel
 @onready var _multiplier_tag: Label = %MultiplierTag
 
+var _active_tween: Tween = null
+
+
+const INTENT_NAMES := {
+	EnemyMoveData.IntentType.ATTACK: "Attack",
+	EnemyMoveData.IntentType.DEFEND: "Defend",
+	EnemyMoveData.IntentType.BUFF: "Buff",
+	EnemyMoveData.IntentType.DEBUFF: "Debuff",
+	EnemyMoveData.IntentType.ATTACK_DEFEND: "Attack + Defend",
+	EnemyMoveData.IntentType.UNKNOWN: "Unknown",
+}
+
 
 func set_move(move: EnemyMoveData) -> void:
 	var color := Color(INTENT_COLORS.get(move.intent_type, "#8A8A8A"))
@@ -58,8 +70,31 @@ func set_move(move: EnemyMoveData) -> void:
 	_value_label.text = str(move.intent_value)
 	_multiplier_tag.visible = move.hit_count > 1
 	_multiplier_tag.text = "x%d" % move.hit_count
+	tooltip_text = _build_tooltip(move)
 
 	show_revealed()
+
+
+## Hover explanation (always available, per the "everything has a tooltip"
+## rule) - spells out exactly what this move does in plain language, not
+## just icon+number, since the icon/color/number combo is a lot to parse at
+## a glance for a first-time player.
+func _build_tooltip(move: EnemyMoveData) -> String:
+	var intent_name: String = INTENT_NAMES.get(move.intent_type, "Unknown")
+	var hits_suffix: String = " (x%d hits)" % move.hit_count if move.hit_count > 1 else ""
+	match move.intent_type:
+		EnemyMoveData.IntentType.ATTACK:
+			return "%s: will deal %d damage%s next turn." % [intent_name, move.intent_value, hits_suffix]
+		EnemyMoveData.IntentType.DEFEND:
+			return "%s: will gain %d Block next turn." % [intent_name, move.intent_value]
+		EnemyMoveData.IntentType.ATTACK_DEFEND:
+			return "%s: will deal %d damage%s and gain Block next turn." % [intent_name, move.intent_value, hits_suffix]
+		EnemyMoveData.IntentType.BUFF:
+			return "%s: will strengthen itself next turn." % intent_name
+		EnemyMoveData.IntentType.DEBUFF:
+			return "%s: will weaken you next turn." % intent_name
+		_:
+			return "%s: this enemy's next move can't be read." % intent_name
 
 
 func _resolve_icon_path(intent_type: EnemyMoveData.IntentType) -> String:
@@ -67,8 +102,12 @@ func _resolve_icon_path(intent_type: EnemyMoveData.IntentType) -> String:
 
 
 ## Revealed state (icon doc 3.2): full icon + value, static, shown before the
-## player acts.
+## player acts. Kills any in-flight fade/pulse tween first - without this, a
+## still-running play_resolved() fade-to-0 tween would win the next frame and
+## silently override this reset, leaving intent invisible from round 2 on
+## (confirmed real bug: the async tween outlived the synchronous reset).
 func show_revealed() -> void:
+	_kill_active_tween()
 	modulate.a = 1.0
 	scale = Vector2.ONE
 
@@ -76,13 +115,23 @@ func show_revealed() -> void:
 ## About-to-resolve state: brief pulse (150-250ms) drawing the eye to which
 ## enemy is acting now.
 func play_about_to_resolve() -> void:
-	var tween := create_tween()
-	tween.tween_property(self, "scale", Vector2(1.15, 1.15), 0.1)
-	tween.tween_property(self, "scale", Vector2.ONE, 0.1)
+	_kill_active_tween()
+	modulate.a = 1.0
+	scale = Vector2.ONE
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "scale", Vector2(1.15, 1.15), 0.1)
+	_active_tween.tween_property(self, "scale", Vector2.ONE, 0.1)
 
 
 ## Resolved state: fades out after the move executes. Next turn's intent must
 ## be re-rolled before it appears again - never show a stale intent.
 func play_resolved() -> void:
-	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.25)
+	_kill_active_tween()
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "modulate:a", 0.0, 0.25)
+
+
+func _kill_active_tween() -> void:
+	if _active_tween != null and _active_tween.is_valid():
+		_active_tween.kill()
+	_active_tween = null

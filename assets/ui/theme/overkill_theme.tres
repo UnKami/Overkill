@@ -1,0 +1,192 @@
+[gd_resource type="Theme" load_steps=27 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_primary_normal.png" id="1_primary_n"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_primary_hover.png" id="2_primary_h"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_primary_pressed.png" id="3_primary_p"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_primary_disabled.png" id="4_primary_d"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_normal.png" id="5_secondary_n"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_hover.png" id="6_secondary_h"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_pressed.png" id="7_secondary_p"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_secondary_disabled.png" id="8_secondary_d"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_danger_normal.png" id="9_danger_n"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_danger_hover.png" id="10_danger_h"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_danger_pressed.png" id="11_danger_p"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/btn_danger_disabled.png" id="12_danger_d"]
+[ext_resource type="Texture2D" path="res://assets/ui/panels/panel_dialog.png" id="13_panel"]
+[ext_resource type="Texture2D" path="res://assets/ui/controls/checkbox_unchecked.png" id="14_cb_u"]
+[ext_resource type="Texture2D" path="res://assets/ui/controls/checkbox_checked.png" id="15_cb_c"]
+[ext_resource type="Texture2D" path="res://assets/ui/controls/slider_track.png" id="16_slider_track"]
+[ext_resource type="Texture2D" path="res://assets/ui/controls/slider_thumb.png" id="17_slider_thumb"]
+[ext_resource type="Texture2D" path="res://assets/ui/controls/dropdown_bg.png" id="18_dropdown"]
+[ext_resource type="Texture2D" path="res://assets/ui/panels/panel_tooltip.png" id="19_tooltip"]
+
+[sub_resource type="StyleBoxTexture" id="SB_primary_n"]
+texture = ExtResource("1_primary_n")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_primary_h"]
+texture = ExtResource("2_primary_h")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_primary_p"]
+texture = ExtResource("3_primary_p")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_primary_d"]
+texture = ExtResource("4_primary_d")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_secondary_n"]
+texture = ExtResource("5_secondary_n")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_secondary_h"]
+texture = ExtResource("6_secondary_h")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_secondary_p"]
+texture = ExtResource("7_secondary_p")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_secondary_d"]
+texture = ExtResource("8_secondary_d")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_danger_n"]
+texture = ExtResource("9_danger_n")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_danger_h"]
+texture = ExtResource("10_danger_h")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_danger_p"]
+texture = ExtResource("11_danger_p")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_danger_d"]
+texture = ExtResource("12_danger_d")
+texture_margin_left = 60.0
+texture_margin_top = 34.0
+texture_margin_right = 60.0
+texture_margin_bottom = 22.0
+
+[sub_resource type="StyleBoxTexture" id="SB_panel"]
+texture = ExtResource("13_panel")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="SB_slider_groove"]
+texture = ExtResource("16_slider_track")
+texture_margin_left = 6.0
+texture_margin_top = 4.0
+texture_margin_right = 6.0
+texture_margin_bottom = 4.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="SB_dropdown"]
+texture = ExtResource("18_dropdown")
+texture_margin_left = 20.0
+texture_margin_top = 8.0
+texture_margin_right = 20.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="SB_tooltip"]
+texture = ExtResource("19_tooltip")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+
+[resource]
+default_font_size = 15
+
+Button/styles/normal = SubResource("SB_primary_n")
+Button/styles/hover = SubResource("SB_primary_h")
+Button/styles/pressed = SubResource("SB_primary_p")
+Button/styles/disabled = SubResource("SB_primary_d")
+Button/styles/focus = SubResource("SB_primary_h")
+Button/colors/font_color = Color(0.95, 0.92, 0.85, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.55, 0.52, 0.48, 1)
+
+SecondaryButton/base_type = &"Button"
+SecondaryButton/styles/normal = SubResource("SB_secondary_n")
+SecondaryButton/styles/hover = SubResource("SB_secondary_h")
+SecondaryButton/styles/pressed = SubResource("SB_secondary_p")
+SecondaryButton/styles/disabled = SubResource("SB_secondary_d")
+SecondaryButton/styles/focus = SubResource("SB_secondary_h")
+SecondaryButton/colors/font_color = Color(0.85, 0.9, 0.95, 1)
+SecondaryButton/colors/font_hover_color = Color(1, 1, 1, 1)
+
+DangerButton/base_type = &"Button"
+DangerButton/styles/normal = SubResource("SB_danger_n")
+DangerButton/styles/hover = SubResource("SB_danger_h")
+DangerButton/styles/pressed = SubResource("SB_danger_p")
+DangerButton/styles/disabled = SubResource("SB_danger_d")
+DangerButton/styles/focus = SubResource("SB_danger_h")
+DangerButton/colors/font_color = Color(1, 0.9, 0.9, 1)
+DangerButton/colors/font_hover_color = Color(1, 1, 1, 1)
+
+Panel/styles/panel = SubResource("SB_panel")
+
+CheckBox/icons/checked = ExtResource("15_cb_c")
+CheckBox/icons/unchecked = ExtResource("14_cb_u")
+CheckBox/icons/checked_disabled = ExtResource("15_cb_c")
+CheckBox/icons/unchecked_disabled = ExtResource("14_cb_u")
+
+HSlider/styles/slider = SubResource("SB_slider_groove")
+HSlider/styles/grabber_area = SubResource("SB_slider_groove")
+HSlider/styles/grabber_area_highlight = SubResource("SB_slider_groove")
+HSlider/icons/grabber = ExtResource("17_slider_thumb")
+HSlider/icons/grabber_highlight = ExtResource("17_slider_thumb")
+
+OptionButton/styles/normal = SubResource("SB_dropdown")
+OptionButton/styles/hover = SubResource("SB_dropdown")
+OptionButton/styles/pressed = SubResource("SB_dropdown")
+OptionButton/styles/disabled = SubResource("SB_dropdown")
+OptionButton/colors/font_color = Color(0.9, 0.9, 0.92, 1)
+
+TooltipPanel/styles/panel = SubResource("SB_tooltip")
+TooltipLabel/colors/font_color = Color(0.92, 0.9, 0.85, 1)
+TooltipLabel/font_sizes/font_size = 13

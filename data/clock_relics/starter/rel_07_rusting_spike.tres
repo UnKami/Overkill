@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-07"
+name = "Rusting Spike"
+tier = 0
+role = 2
+description = "Deal 3 Damage; apply 2 Vulnerable."
+art_id = "rel_07_rusting_spike"
+base_damage = 3
+apply_vulnerable = 2

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-02"
+name = "Twin Blades"
+tier = 0
+role = 0
+description = "Deal 3 Physical Damage twice (2 hits)."
+art_id = "rel_02_twin_blades"
+base_damage = 3
+hits = 2

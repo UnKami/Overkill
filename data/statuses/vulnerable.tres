@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="StatusEffectData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/status_effect_data.gd" id="1_status"]
+
+[resource]
+script = ExtResource("1_status")
+id = "vulnerable"
+display_name = "Vulnerable"
+stack_behavior = 1
+icon_id = "status_vulnerable"
+description_template = "Takes 50% more damage from attacks. Fades by 1 stack at the end of the afflicted creature's turn."

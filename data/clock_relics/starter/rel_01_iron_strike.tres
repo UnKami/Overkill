@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-01"
+name = "Iron Strike"
+tier = 0
+role = 0
+description = "Deal 6 Physical Damage."
+art_id = "rel_01_iron_strike"
+base_damage = 6
+hits = 1

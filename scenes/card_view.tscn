@@ -3,10 +3,32 @@
 [ext_resource type="Script" path="res://scripts/ui/card_view.gd" id="1_script"]
 
 [node name="CardView" type="Control"]
-custom_minimum_size = Vector2(200, 300)
+custom_minimum_size = Vector2(240, 360)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_script")
+
+[node name="HoverGlow" type="TextureRect" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -22.0
+offset_top = -22.0
+offset_right = 22.0
+offset_bottom = 22.0
+mouse_filter = 2
+stretch_mode = 1
+
+[node name="CardBackground" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="Panel" type="Panel" parent="."]
 unique_name_in_owner = true
@@ -20,21 +42,29 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="HeaderRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
 layout_mode = 2
 
-[node name="CostLabel" type="Label" parent="Panel/Margin/VBox/HeaderRow"]
+[node name="CostSpacer" type="Control" parent="Panel/Margin/VBox/HeaderRow"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+
+[node name="TypeBadge" type="TextureRect" parent="Panel/Margin/VBox/HeaderRow"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "1"
+custom_minimum_size = Vector2(24, 24)
+tooltip_text = "Card type"
+expand_mode = 1
+stretch_mode = 5
 
 [node name="NameLabel" type="Label" parent="Panel/Margin/VBox/HeaderRow"]
 unique_name_in_owner = true
@@ -42,17 +72,59 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Card Name"
 horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+
+[node name="RarityGem" type="TextureRect" parent="Panel/Margin/VBox/HeaderRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(22, 22)
+tooltip_text = "Rarity"
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ArtRect" type="TextureRect" parent="Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 190)
 expand_mode = 1
 stretch_mode = 5
 
 [node name="RulesText" type="RichTextLabel" parent="Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+theme_override_font_sizes/normal_font_size = 15
+
+[node name="FrameOverlay" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CostBadge" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 48.0
+offset_bottom = 48.0
+tooltip_text = "Energy cost to play this card"
+
+[node name="CostLabel" type="Label" parent="CostBadge"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 24
+text = "1"

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/data/enemy_move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("3_effect")
+effect_type = 0
+value = 13
+status_id = ""
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="2"]
+script = ExtResource("2_move")
+move_id = "shard_slash"
+intent_type = 0
+intent_value = 13
+effects = Array[Resource]([SubResource("1")])
+hit_count = 1
+
+[resource]
+script = ExtResource("1_enemy")
+id = "act3_trash"
+display_name = "Shattered Husk"
+tier = 0
+max_hp = 45
+hp_variance = Vector2i(35, 55)
+move_pool = Array[Resource]([SubResource("2")])
+move_pattern = 0
+tempered = false
+overkill_death_threshold = 36
+art_id = "act3_trash_idle"

@@ -14,3 +14,24 @@ data_*/
 # System/OS
 .DS_Store
 Thumbs.db
+desktop.ini
+*.tmp
+*.TMP
+
+# Credentials — never commit
+/secret/
+*.env
+.env.*
+firebase-debug.log
+.firebase/
+
+# Build artifacts — rebuilt by scripts/release/build_and_deploy.sh, not tracked
+/build/
+/installer/OverkillSetup-*.exe
+/installer/*.exe
+/public/downloads/*.exe
+*.log
+
+.tools/
+artifacts/
+

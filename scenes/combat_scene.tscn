@@ -1,108 +1,325 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/combat/combat_controller.gd" id="1_controller"]
 [ext_resource type="Script" path="res://scripts/combat/feedback_queue.gd" id="2_feedback"]
-[ext_resource type="PackedScene" path="res://scenes/intent_icon.tscn" id="3_intent"]
-[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="4_hud"]
-[ext_resource type="PackedScene" path="res://scenes/tutorial_callout_view.tscn" id="5_tutorial"]
-[ext_resource type="Resource" path="res://data/enemies/act1/boneghoul.tres" id="6_enemy"]
-[ext_resource type="Resource" path="res://data/cards/strike.tres" id="7_strike"]
-[ext_resource type="Resource" path="res://data/cards/defend.tres" id="8_defend"]
-[ext_resource type="Resource" path="res://data/cards/executioner/split_strike.tres" id="9_split"]
-[ext_resource type="Resource" path="res://data/relics/relic_greed_battery.tres" id="10_relic"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/chronometer_view.tscn" id="4_chrono"]
+[ext_resource type="PackedScene" path="res://scenes/relic_pedestal_view.tscn" id="5_pedestal"]
+[ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="6_damage"]
+[ext_resource type="PackedScene" path="res://scenes/tutorial_callout_view.tscn" id="7_tutorial"]
+[ext_resource type="Texture2D" path="res://assets/ui/combat/nexus_sigil.jpg" id="8_sigil"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_controller")
-enemy_data = ExtResource("6_enemy")
-starting_deck = Array[Resource]([ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("7_strike"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("8_defend"), ExtResource("9_split")])
-relics = Array[Resource]([ExtResource("10_relic")])
+pedestal_scene = ExtResource("5_pedestal")
+damage_number_scene = ExtResource("6_damage")
 
 [node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="EnemySprite" type="TextureRect" parent="."]
+[node name="HUD" parent="." instance=ExtResource("3_hud")]
+unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.35
-anchor_right = 0.5
-anchor_bottom = 0.35
-offset_left = -96.0
-offset_top = -96.0
-offset_right = 96.0
-offset_bottom = 96.0
-expand_mode = 1
-stretch_mode = 5
-
-[node name="IntentIcon" parent="EnemySprite" instance=ExtResource("3_intent")]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.0
-anchor_right = 0.5
-anchor_bottom = 0.0
-offset_left = -24.0
-offset_top = -56.0
-offset_right = 24.0
-offset_bottom = -8.0
-
-[node name="HPLabel" type="Label" parent="EnemySprite"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = 4.0
-offset_bottom = 24.0
-horizontal_alignment = 1
-text = "0/0"
 
 [node name="RelicBar" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
 layout_mode = 1
-anchors_preset = 0
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 300.0
 offset_bottom = 60.0
 
-[node name="HUD" parent="." instance=ExtResource("4_hud")]
+[node name="CombatArena" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 50.0
+offset_bottom = -285.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="HandContainer" type="HBoxContainer" parent="."]
+[node name="PlayerChronometer" parent="CombatArena" instance=ExtResource("4_chrono")]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.2
+anchor_top = 0.5
+anchor_right = 0.2
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = 200.0
+
+[node name="EnemyChronometer" parent="CombatArena" instance=ExtResource("4_chrono")]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.8
+anchor_top = 0.5
+anchor_right = 0.8
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 200.0
+offset_bottom = 200.0
+
+[node name="ClashNexus" type="Control" parent="CombatArena"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NexusSigil" type="TextureRect" parent="CombatArena/ClashNexus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = -75.0
+offset_right = 75.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_sigil")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NexusGlow" type="Panel" parent="CombatArena/ClashNexus"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -80.0
+offset_right = 80.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PlayerPortrait" type="TextureRect" parent="CombatArena/ClashNexus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -215.0
+offset_top = -65.0
+offset_right = -85.0
+offset_bottom = 65.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(65, 65)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlayerStatsLabel" type="Label" parent="CombatArena/ClashNexus/PlayerPortrait"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -70.0
+offset_top = 4.0
+offset_right = 70.0
+offset_bottom = 28.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 14
+text = "HP: 80/80  [🛡️0]"
+horizontal_alignment = 1
+
+[node name="EnemyPortrait" type="TextureRect" parent="CombatArena/ClashNexus"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 85.0
+offset_top = -65.0
+offset_right = 215.0
+offset_bottom = 65.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(65, 65)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnemyStatsLabel" type="Label" parent="CombatArena/ClashNexus/EnemyPortrait"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -70.0
+offset_top = 4.0
+offset_right = 70.0
+offset_bottom = 28.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 14
+text = "HP: 50/50  [🛡️0]"
+horizontal_alignment = 1
+
+[node name="NexusTitle" type="Label" parent="CombatArena/ClashNexus"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = -105.0
+offset_right = 100.0
+offset_bottom = -80.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.95, 0.75, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 15
+text = "CLASH NEXUS"
+horizontal_alignment = 1
+
+[node name="BottomDock" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -280.0
-offset_bottom = -60.0
+offset_top = -285.0
+offset_bottom = -5.0
 grow_horizontal = 2
 grow_vertical = 0
-alignment = 1
 
-[node name="EndTurnButton" type="Button" parent="."]
+[node name="DockBackdrop" type="Panel" parent="BottomDock"]
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -140.0
-offset_top = -220.0
-offset_right = -20.0
-offset_bottom = -180.0
-text = "End Turn"
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PhaseLabel" type="Label" parent="BottomDock"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -350.0
+offset_top = 6.0
+offset_right = 350.0
+offset_bottom = 32.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "PHASE 1: ASSEMBLY CYCLE — Hour 1 of 12"
+horizontal_alignment = 1
+
+[node name="PedestalRow" type="HBoxContainer" parent="BottomDock"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -105.0
+offset_right = 360.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="SkipButton" type="Button" parent="BottomDock"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(170, 48)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -24.0
+offset_right = -60.0
+offset_bottom = 24.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_font_sizes/font_size = 15
+text = "SKIP & SWEEP"
+
+[node name="TurnBanner" type="Label" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.12
+anchor_right = 0.5
+anchor_bottom = 0.12
+offset_left = -250.0
+offset_right = 250.0
+offset_bottom = 44.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 30
+text = "ASSEMBLY CYCLE"
+horizontal_alignment = 1
 
 [node name="FeedbackQueue" type="Node" parent="."]
 script = ExtResource("2_feedback")
 
-[node name="TutorialCalloutView" parent="." instance=ExtResource("5_tutorial")]
+[node name="TutorialCalloutView" parent="." instance=ExtResource("7_tutorial")]
 layout_mode = 1

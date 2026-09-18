@@ -1,0 +1,251 @@
+class_name RiggedCombatant extends Node3D
+## Skinned, continuously animated GLB with attached equipment and faction materials.
+var hostile := false
+var archetype := "executioner"
+var opponent: Node3D
+var _model: Node3D
+var _skeleton: Skeleton3D
+var _animation: AnimationPlayer
+var _motion: Tween
+var _dead := false
+var _weapon: Node3D
+var _gold: Material
+var _glow: StandardMaterial3D
+var _time := 0.0
+var _cloth: ShaderMaterial
+var _trail: MeshInstance3D
+var _trail_points: Array[Dictionary] = []
+var _trail_material: StandardMaterial3D
+
+func _ready() -> void:
+	_model = preload("res://assets/characters/rigged/executioner.glb").instantiate()
+	add_child(_model)
+	_model.rotation.y = PI
+	_find_nodes(_model)
+	assert(_skeleton != null and _animation != null, "Combat asset requires a skeleton and animation player")
+	_style(_model)
+	_build_equipment()
+	_trail = MeshInstance3D.new()
+	add_child(_trail)
+	_trail.top_level = true
+	_trail_material = StandardMaterial3D.new()
+	_trail_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_trail_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_trail_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_trail_material.vertex_color_use_as_albedo = true
+	_trail.material_override = _trail_material
+	_trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for clip_name in _animation.get_animation_list():
+		if "combat_idle" in clip_name:
+			_animation.get_animation(clip_name).loop_mode = Animation.LOOP_LINEAR
+	_animation.animation_finished.connect(_animation_finished)
+	_play("combat_idle", 0)
+
+func _find_nodes(node: Node) -> void:
+	if node is Skeleton3D: _skeleton = node
+	if node is AnimationPlayer: _animation = node
+	for child in node.get_children(): _find_nodes(child)
+
+func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://assets/shaders/forged_metal.gdshader")
+	mat.set_shader_parameter("steel_color",color)
+	mat.set_shader_parameter("metalness",metalness)
+	return mat
+
+func _style(node: Node) -> void:
+	if node is MeshInstance3D:
+		for i in range(node.mesh.get_surface_count()):
+			var source: Material = node.mesh.surface_get_material(i)
+			var name_text := source.resource_name if source else ""
+			if "Gold" in name_text:
+				node.set_surface_override_material(i, _metal(Color("8d6535")))
+			elif "White" in name_text:
+				node.set_surface_override_material(i, _metal(Color("4f3430") if hostile else Color("344c5d")))
+			else:
+				var dark := StandardMaterial3D.new()
+				dark.albedo_color = Color("1a1219") if hostile else Color("101923")
+				dark.roughness = 0.88
+				node.set_surface_override_material(i, dark)
+	for child in node.get_children(): _style(child)
+
+func _attach(bone: String) -> BoneAttachment3D:
+	var result := BoneAttachment3D.new()
+	_skeleton.add_child(result)
+	result.bone_name = bone
+	return result
+
+func _mesh(parent: Node3D, shape: Mesh, at: Vector3, material: Material) -> MeshInstance3D:
+	var piece := MeshInstance3D.new()
+	piece.mesh = shape
+	piece.position = at
+	piece.material_override = material
+	parent.add_child(piece)
+	return piece
+
+func _box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Material) -> MeshInstance3D:
+	var shape := BoxMesh.new()
+	shape.size = dimensions
+	return _mesh(parent, shape, at, material)
+
+func _build_equipment() -> void:
+	_gold = _metal(Color("ac8047"))
+	_glow = StandardMaterial3D.new()
+	_glow.albedo_color = Color("f0a061") if hostile else Color("79d8e4")
+	_glow.emission_enabled = true
+	_glow.emission = _glow.albedo_color
+	_glow.emission_energy_multiplier = 1.6
+	var steel := _metal(Color("646a70"))
+	var leather := StandardMaterial3D.new()
+	leather.albedo_color = Color("211c1b")
+	leather.roughness = 0.8
+	var wrist := _attach("hand.R")
+	_weapon = Node3D.new()
+	wrist.add_child(_weapon)
+	# Equipment moves with the wrist, not with the root of the character.
+	var grip := CylinderMesh.new()
+	grip.top_radius = 0.027
+	grip.bottom_radius = 0.027
+	grip.height = 0.25
+	var grip_piece := _mesh(_weapon, grip, Vector3(0,0.05,0), leather)
+	grip_piece.rotation.x = PI / 2
+	_box(_weapon, Vector3(0,0.05,0.14), Vector3(0.30,0.045,0.045), _gold)
+	if hostile and archetype in ["sentinel", "bulwark", "twin", "eclipse"]:
+		_box(_weapon, Vector3(0,0.05,0.48), Vector3(0.045,0.045,0.68), steel)
+		_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.50,0.25,0.24), steel)
+		_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.07,0.27,0.27), _gold)
+	else:
+		var blade := PrismMesh.new()
+		blade.size = Vector3(0.16,1.0,0.035)
+		var blade_piece := _mesh(_weapon, blade, Vector3(0,0.05,0.66), steel)
+		blade_piece.rotation.x = PI / 2
+		_box(_weapon, Vector3(-0.072,0.05,0.59), Vector3(0.008,0.038,0.85), _glow)
+		for n in range(6):
+			_box(_weapon, Vector3(0,0.073,0.27+n*0.10), Vector3(0.05,0.005,0.012), _gold)
+	# Helm ornament and clock aureole are authored in rest-space then bone-attached.
+	var head := _attach("head")
+	var head_space := Node3D.new()
+	head.add_child(head_space)
+	var bone_index := _skeleton.find_bone("head")
+	head_space.transform = _skeleton.get_bone_global_rest(bone_index).affine_inverse()
+	var halo := TorusMesh.new()
+	halo.inner_radius = 0.28 if hostile else 0.24
+	halo.outer_radius = halo.inner_radius + 0.018
+	halo.rings = 48
+	halo.ring_segments = 8
+	var halo_piece := _mesh(head_space, halo, Vector3(0,1.87,0.15), _gold)
+	halo_piece.rotation.x = PI / 2
+	for side in [-1.0,1.0]:
+		_box(head_space,Vector3(side*0.049,1.965,-0.15),Vector3(0.059,0.010,0.009),_glow)
+		if hostile:
+			var horn := CylinderMesh.new()
+			horn.top_radius = 0.005
+			horn.bottom_radius = 0.045
+			horn.height = 0.30
+			var spike := _mesh(head_space,horn,Vector3(side*0.14,2.10,0),_gold)
+			spike.rotation.z = side * -0.4
+	_build_cloak()
+
+func _build_cloak() -> void:
+	var chest := _attach("chest")
+	var rest_space := Node3D.new()
+	chest.add_child(rest_space)
+	rest_space.transform = _skeleton.get_bone_global_rest(_skeleton.find_bone("chest")).affine_inverse()
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for y in range(22):
+		for x in range(16):
+			for corner in [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,0),Vector2i(1,1),Vector2i(0,1)]:
+				var uv := Vector2(float(x+corner.x)/16.0,float(y+corner.y)/22.0)
+				var width := lerpf(0.26,0.44,uv.y)
+				var z := 0.16 + uv.y*0.20 + sin(uv.x*PI*8)*0.027*uv.y
+				surface.set_uv(uv)
+				surface.add_vertex(Vector3((uv.x-0.5)*2*width,1.67-uv.y*1.29,z))
+	surface.generate_normals()
+	_cloth = ShaderMaterial.new()
+	_cloth.shader = preload("res://assets/shaders/battle_cloth.gdshader")
+	_cloth.set_shader_parameter("cloth_color",Color("381822") if hostile else Color("132938"))
+	_mesh(rest_space,surface.commit(),Vector3.ZERO,_cloth)
+
+func _clip(fragment: String) -> StringName:
+	for clip_name in _animation.get_animation_list():
+		if fragment in clip_name: return clip_name
+	return &""
+
+func _play(fragment: String, blend: float = 0.08) -> void:
+	var clip_name := _clip(fragment)
+	if clip_name != &"":
+		if _animation.assigned_animation == clip_name: _animation.stop(true)
+		_animation.play(clip_name, blend)
+
+func _process(delta: float) -> void:
+	_time += delta
+	if _animation:
+		_animation.speed_scale = AudioManager.animation_speed_scale()
+	if _cloth: _cloth.set_shader_parameter("motion",0.0 if AudioManager.reduced_motion else 1.0)
+	_align_weapon()
+	_update_trail(delta)
+
+func _align_weapon() -> void:
+	if not is_instance_valid(opponent) or not _weapon: return
+	var toward := (opponent.global_position + Vector3(0,1.45,0) - _weapon.global_position).normalized()
+	var idle := (Vector3.UP + toward*0.15).normalized()
+	var direction := idle
+	if _dead:
+		direction = (toward*0.5 + Vector3.DOWN*0.8).normalized()
+	elif _animation.current_animation == _clip("execution_cut"):
+		var t := _animation.current_animation_position
+		var back := (-toward + Vector3.UP*0.4).normalized()
+		var down := (toward + Vector3.DOWN*0.6).normalized()
+		if t < 0.20: direction = idle.slerp(back,smoothstep(0.0,0.20,t))
+		elif t < 0.32: direction = back.slerp(toward,smoothstep(0.20,0.32,t))
+		elif t < 0.43: direction = toward.slerp(down,smoothstep(0.32,0.43,t))
+		else: direction = down.slerp(idle,smoothstep(0.43,0.76,t))
+	var up := Vector3.FORWARD if absf(direction.dot(Vector3.UP)) > 0.98 else Vector3.UP
+	_weapon.global_basis = Basis.looking_at(-direction,up).scaled(Vector3.ONE*global_basis.get_scale().x)
+	# Center the handle inside the palm rather than at the wrist joint.
+	var wrist := _skeleton.get_bone_global_pose(_skeleton.find_bone("hand.R")).origin
+	var knuckle := _skeleton.get_bone_global_pose(_skeleton.find_bone("f_middle.01.R")).origin
+	var palm := _skeleton.to_global(wrist.lerp(knuckle,0.7))
+	_weapon.global_position = palm - _weapon.global_basis * Vector3(0,0.05,0)
+
+func _update_trail(delta: float) -> void:
+	for point in _trail_points: point.age += delta
+	while not _trail_points.is_empty() and _trail_points[0].age > 0.11: _trail_points.pop_front()
+	if not _dead and _animation.current_animation == _clip("execution_cut"):
+		var t := _animation.current_animation_position
+		if t > 0.23 and t < 0.41:
+			_trail_points.append({"root":_weapon.to_global(Vector3(0,0.05,0.22)),"tip":_weapon.to_global(Vector3(0,0.05,1.1)),"age":0.0})
+	if _trail_points.size() < 2:
+		_trail.mesh = null
+		return
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in range(1,_trail_points.size()):
+		var previous: Dictionary = _trail_points[i-1]
+		var next: Dictionary = _trail_points[i]
+		for vertex in [[previous,"root"],[previous,"tip"],[next,"tip"],[previous,"root"],[next,"tip"],[next,"root"]]:
+			var color := Color("ebb27c") if hostile else Color("8ad5e1")
+			color.a = (1.0-vertex[0].age/0.11)*0.25
+			surface.set_color(color)
+			surface.add_vertex(vertex[0][vertex[1]])
+	_trail.mesh = surface.commit()
+
+func attack() -> void:
+	if _dead: return
+	_play("execution_cut",0.06)
+	if _motion and _motion.is_valid(): _motion.kill()
+	_model.position = Vector3.ZERO
+
+func hit(blocked: bool) -> void:
+	if _dead: return
+	_play("guard" if blocked else "hit",0.025)
+
+func fall() -> void:
+	if _dead: return
+	_dead = true
+	if _motion and _motion.is_valid(): _motion.kill()
+	_play("death",0.08)
+
+func _animation_finished(_name: StringName) -> void:
+	if not _dead: _play("combat_idle",0.12)

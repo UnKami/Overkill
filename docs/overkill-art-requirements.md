@@ -11,25 +11,55 @@ Every prompt in this document should be built by combining the **Style Lock** be
 ### Style Lock (paste into every prompt)
 
 ```
-Hand-drawn digital illustration, ink-lined character/object work with flat cel
-shading, no painterly blending, no airbrush gradients. Bold clean linework,
-slightly exaggerated proportions (readable silhouettes over realism). Moderate
-color saturation — punchy but not neon. Dark fantasy tone with a playful,
-slightly irreverent edge — think grim dungeon crawl that doesn't take itself
-too seriously. Full-body or full-object framing, isolated on a transparent or
-flat neutral background, no drop shadows baked into the art, no background
-scenery unless the asset is a background/environment piece. Consistent light
-source from upper-left at 45 degrees. Game-asset composition, not concept art
-— clean edges suitable for sprite extraction. Resolution: 2048x2048 source,
-downscaled to spec per asset type.
+Moody 3D-rendered digital illustration — photoreal PBR materials (worn metal,
+glass, crystal, weathered cloth), not flat/cel-shaded, not hand-drawn linework.
+Dramatic single-source rim/key lighting from above, deep near-black void
+background with soft falloff. Glow and bloom on energy elements ARE the
+signature look here (crystal conduits, cracked light-emitting shards, molten
+internal glow) — this is the one place "no baked glow" does NOT apply, glow
+is load-bearing. Silhouettes read as ancient-relic magitech: scavenged/layered
+armor plating fused with crystal and circuitry, hooded or masked faces, a
+lived-in "found and repurposed" feel rather than pristine sci-fi. A recurring
+motif: geometric shard/debris fragments breaking away from the subject as if
+excess energy is physically overflowing its container — this ties directly
+into the Overkill/Spillage mechanic (Section 2 of the design doc) and should
+be leaned into deliberately, not treated as generic VFX clutter. Full-body or
+full-object framing, isolated against the dark void (need real alpha
+transparency for sprite extraction — see Part 4 file delivery specs; the void
+background is not itself transparent by default and must be cut out).
+Resolution: generate at the highest resolution the model supports (2048px+
+on the long edge) and DELIVER at that resolution — do not pre-downscale to
+the per-asset canvas sizes in Part 2. Those sizes are minimum display/layout
+targets, not save targets. Slay the Spire's own card art holds up under the
+in-game zoom/inspect view (per the deck-view screen doc's card tooltip/zoom)
+specifically because the source art wasn't thrown away to fit the smallest
+context it's shown in — same rule here. Godot's texture import (mipmaps)
+handles efficient runtime scaling down to small display sizes from a
+high-res source; it cannot invent detail back into an already-downscaled
+file. The one exception is the small-scale icon exception directly below —
+even those should still be saved at a high-res source, just composed simply
+enough that the small display size is legible.
 ```
+
+**Small-scale exception (icons, relics, status effects — Section E):** the
+full painterly/glow treatment above does not survive downscaling to 32-48px.
+For anything in the shared UI/icon set, simplify: flatten the glow into a
+single bright core color, drop fine material detail (no individual chrome
+reflections, no complex crystal faceting), and push for a bold, high-contrast
+silhouette first — same material/color language as the hero style, but
+legibility at tiny size overrides fidelity. Generate these against the
+character/enemy anchor for color consistency, but treat them as their own
+simplified sub-style, not a straight downscale.
 
 ### Palette anchors (reference across all prompts)
 
-- **Overkill / Excess theme color**: amber-orange (#EF9F27 range) — reserved exclusively for anything tied to the Overkill mechanic (icon, excess-tier card frames, VFX). Never use this color family decoratively elsewhere.
+The concept art's natural cyan-vs-amber energy contrast lines up with the
+existing mechanic palette almost exactly — kept as-is:
+
+- **Overkill / Excess theme color**: amber-orange glow (#EF9F27 range) — reserved exclusively for anything tied to the Overkill mechanic (icon, excess-tier card frames, VFX, the shattering-shard motif). Never use this color family decoratively elsewhere.
 - **HP / danger**: deep red (#E24B4A range)
-- **Block / defense**: cool blue (#378ADD range)
-- **Neutral / structural UI**: warm gray, near-black linework
+- **Block / defense**: cool cyan-blue glow (#378ADD range) — matches the wanderer's circuitry-vein cyan
+- **Neutral / structural materials**: worn gunmetal, dark bronze, weathered cloth — no near-black linework (there is no linework in this style)
 - **Environment palette shifts per Act** (see Part 1, Section E) to signal descent through the world.
 
 ### Game description (paste into every prompt for context)
@@ -275,6 +305,11 @@ Style and content prompts alone aren't enough to get usable production assets ba
 ### File delivery specs
 
 ```
+- Resolution: deliver at generation-native resolution (2048px+ on the long
+  edge), never pre-downscaled to an asset's Part 2 canvas spec — see Part 1's
+  Style Lock note. The generation API's own minimum-pixel floor may force a
+  larger-than-spec canvas for small assets (e.g. icons); keep that full
+  resolution rather than shrinking back down after generation.
 - Format: PNG-32 with real alpha transparency (no white or checkerboard
   background baked into the file)
 - Color profile: sRGB
@@ -289,11 +324,11 @@ Style and content prompts alone aren't enough to get usable production assets ba
 ### Standing negative prompt (attach to every generation)
 
 ```
-No text, no watermark, no signature, no logo, photorealistic rendering,
-3D render, blurry, low detail, extra limbs, malformed hands, cropped
-composition, background scenery (unless generating an environment asset),
-drop shadow, glow/bloom effect baked into image, copyrighted characters,
-existing franchise likenesses, trademarked designs, real public figures.
+No text, no watermark, no signature, no logo, flat cel-shaded illustration,
+hand-drawn linework, anime/cartoon style, blurry, low detail, extra limbs,
+malformed hands, cropped composition, background scenery (unless generating
+an environment asset), drop shadow, copyrighted characters, existing
+franchise likenesses, trademarked designs, real public figures.
 ```
 
 ### Consistency mechanism — the biggest real risk

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Script" path="res://scripts/data/enemy_move_data.gd" id="2_move"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("3_effect")
+effect_type = 0
+value = 10
+status_id = ""
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="2"]
+script = ExtResource("2_move")
+move_id = "rusted_bite"
+intent_type = 0
+intent_value = 10
+effects = Array[Resource]([SubResource("1")])
+hit_count = 1
+
+[resource]
+script = ExtResource("1_enemy")
+id = "act2_trash"
+display_name = "Rustlurker"
+tier = 0
+max_hp = 30
+hp_variance = Vector2i(20, 40)
+move_pool = Array[Resource]([SubResource("2")])
+move_pattern = 0
+tempered = false
+overkill_death_threshold = 24
+art_id = "act2_trash_idle"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-05"
+name = "Spiked Buckler"
+tier = 0
+role = 1
+description = "Gain 4 Block. Deal 4 Thorns on enemy attack."
+art_id = "rel_05_spiked_buckler"
+base_block = 4
+apply_thorns = 4

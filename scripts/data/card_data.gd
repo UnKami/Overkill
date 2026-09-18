@@ -23,3 +23,6 @@ enum ExcessGateType { NONE, SINGLE_HIT_OK, TURN_TOTAL_OK, CARD_SOURCED_OK }
 @export_multiline var rules_text_override: String = ""  ## escape hatch only - see KeywordRegistry first
 
 @export var art_id: String = ""                 ## matches art requirements doc naming convention
+
+@export var exhaust: bool = false               ## true = card leaves play permanently after use this combat
+@export var retain: bool = false                ## true = card is not discarded at end of turn if unplayed

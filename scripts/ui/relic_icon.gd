@@ -11,10 +11,27 @@ class_name RelicIcon extends TextureRect
 			_apply_relic()
 
 
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP
+
+
 func _apply_relic() -> void:
 	var path := "res://assets/relics/%s.png" % relic.art_id
 	texture = ResourceLoader.load(path) if ResourceLoader.exists(path) else null
 	tooltip_text = _render_tooltip(relic)
+
+
+## Click shows the same info as the hover tooltip, but as a dismissable
+## panel - a deliberate click is a stronger "tell me now" signal than a
+## hover, and not everyone waits out/notices a tooltip. Parented to the
+## current scene (a full-screen Control), never to this icon itself - the
+## dialog anchors full-rect to whatever it's parented under, so parenting it
+## here would squeeze it into this icon's own small rect.
+func _gui_input(event: InputEvent) -> void:
+	if relic == null:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		ModalConfirmDialog.show_dialog(get_tree().current_scene, _render_tooltip(relic), "OK", func() -> void: pass)
 
 
 func _render_tooltip(r: RelicData) -> String:

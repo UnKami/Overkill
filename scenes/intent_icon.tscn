@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/intent_icon.gd" id="1_script"]
 
 [node name="IntentIcon" type="Control"]
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(68, 68)
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_script")
@@ -34,10 +34,10 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 4.0
-offset_bottom = 4.0
+offset_left = -28.0
+offset_top = -28.0
+offset_right = 6.0
+offset_bottom = 6.0
 
 [node name="BadgeBackground" type="Panel" parent="ValueBadge"]
 unique_name_in_owner = true

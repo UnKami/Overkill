@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/hud_bar_bg.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/bar_track.png" id="3_track"]
+[ext_resource type="Texture2D" path="res://assets/ui/hud/bar_fill_hp.png" id="4_fill_hp"]
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -8,10 +11,21 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -48.0
+offset_top = -70.0
 grow_horizontal = 2
 grow_vertical = 0
 script = ExtResource("1_script")
+
+[node name="BarBackground" type="NinePatchRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2_bg")
+patch_margin_left = 20
+patch_margin_right = 20
+patch_margin_top = 4
+patch_margin_bottom = 4
 
 [node name="Row" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -23,21 +37,33 @@ anchor_bottom = 0.5
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+theme_override_constants/separation = 6
 
 [node name="HPIcon" type="TextureRect" parent="Row"]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 texture = null
 expand_mode = 1
 stretch_mode = 5
 
+[node name="HPBar" type="TextureProgressBar" parent="Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 18)
+layout_mode = 2
+size_flags_vertical = 4
+step = 1.0
+value = 75.0
+texture_under = ExtResource("3_track")
+texture_progress = ExtResource("4_fill_hp")
+
 [node name="HPLabel" type="Label" parent="Row"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "75/75"
 
 [node name="BlockIcon" type="TextureRect" parent="Row"]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 texture = null
 expand_mode = 1
@@ -46,10 +72,11 @@ stretch_mode = 5
 [node name="BlockLabel" type="Label" parent="Row"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "0"
 
 [node name="EnergyIcon" type="TextureRect" parent="Row"]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 texture = null
 expand_mode = 1
@@ -58,10 +85,11 @@ stretch_mode = 5
 [node name="EnergyLabel" type="Label" parent="Row"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "3/3"
 
 [node name="OKIcon" type="TextureRect" parent="Row"]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 texture = null
 expand_mode = 1
@@ -70,4 +98,5 @@ stretch_mode = 5
 [node name="OKLabel" type="Label" parent="Row"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 20
 text = "0"

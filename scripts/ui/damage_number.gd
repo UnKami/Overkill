@@ -8,24 +8,41 @@ class_name DamageNumber extends Label
 const COLOR_BASE := Color("#D8D8D8")
 const COLOR_OVERKILL := Color("#EF9F27")
 
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_theme_color_override("font_outline_color",Color("080e17"))
+	add_theme_constant_override("outline_size",8)
+
 
 func setup(value: int, is_overkill: bool) -> void:
 	text = str(value)
 	if is_overkill:
 		add_theme_color_override("font_color", COLOR_OVERKILL)
-		add_theme_font_size_override("font_size", 36)
+		text = "+%d OVERKILL" % value
+		add_theme_font_size_override("font_size", 54)
 		_animate_overkill(value)
 	else:
 		add_theme_color_override("font_color", COLOR_BASE)
-		add_theme_font_size_override("font_size", 26)
+		add_theme_font_size_override("font_size", 44)
 		_animate_base()
+
+
+## Generic colored/prefixed pop for anything outside the enemy-damage-split
+## system (player damage taken, block gained, HP healed) - same base motion,
+## different color/sign so each stat change reads as what it is at a glance,
+## never just a bare number that could mean anything.
+func setup_generic(value: int, color: Color, prefix: String = "") -> void:
+	text = "%s%d" % [prefix, value]
+	add_theme_color_override("font_color", color)
+	add_theme_font_size_override("font_size", 44)
+	_animate_base()
 
 
 func _animate_base() -> void:
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(self, "position:y", position.y - 30.0, 0.5).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(self, "modulate:a", 0.0, 0.5).set_delay(0.15)
+	tween.tween_property(self, "position:y", position.y - (12.0 if AudioManager.reduced_motion else 55.0), 0.9).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(self, "modulate:a", 0.0, 0.5).set_delay(0.4)
 	tween.chain().tween_callback(queue_free)
 
 

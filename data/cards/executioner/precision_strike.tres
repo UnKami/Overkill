@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/card_data.gd" id="1_card"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("2_effect")
+effect_type = 0
+value = 8
+status_id = ""
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="2"]
+script = ExtResource("2_effect")
+effect_type = 4
+value = 3
+status_id = "vulnerable"
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="3"]
+script = ExtResource("2_effect")
+effect_type = 0
+value = 11
+status_id = ""
+keyword_icon_override = ""
+
+[sub_resource type="Resource" id="4"]
+script = ExtResource("2_effect")
+effect_type = 4
+value = 4
+status_id = "vulnerable"
+keyword_icon_override = ""
+
+[resource]
+script = ExtResource("1_card")
+id = "precision_strike"
+display_name = "Precision Strike"
+card_type = 0
+rarity = 2
+energy_cost = 1
+target_type = 1
+base_effects = Array[Resource]([SubResource("1"), SubResource("2")])
+upgraded_effects = Array[Resource]([SubResource("3"), SubResource("4")])
+upgrade_level = 0
+excess_gate_threshold = 0
+excess_gate_type = 0
+flavor_text = "Not the deepest cut. The one that matters."
+rules_text_override = ""
+art_id = "precision_strike"

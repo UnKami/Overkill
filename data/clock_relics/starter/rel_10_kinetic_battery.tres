@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-10"
+name = "Kinetic Battery"
+tier = 0
+role = 3
+description = "Gain 4 Block. Next attack deals +4 Damage."
+art_id = "rel_10_kinetic_battery"
+base_block = 4
+bonus_damage_next_hit = 4

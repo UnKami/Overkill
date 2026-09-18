@@ -20,14 +20,14 @@ const CATALOG := {
 	"first_ok": {
 		"text": "Excess damage becomes Overkill (OK) — spend it between fights.",
 		"accent_color": "#EF9F27",
-		"icon_id": "overkill_icon",
+		"icon_id": "icon_overkill",
 		"dismiss_seconds": 4.0,
 		"dismiss_on": "input",
 	},
 	"first_intent": {
 		"text": "Enemy intent is locked. Red = incoming damage next turn.",
 		"accent_color": "#E24B4A",
-		"icon_id": "attack_intent_icon",
+		"icon_id": "intent_attack",
 		"dismiss_seconds": 5.0,
 		"dismiss_on": "input",
 	},

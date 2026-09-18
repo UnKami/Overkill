@@ -19,9 +19,26 @@ var block: int = 0
 var max_energy: int = MAX_ENERGY
 var energy: int = MAX_ENERGY
 
+## Damage-modifier state (data schema doc 1.6) - Strength never decays this
+## combat, Weak/Vulnerable are duration stacks ticked down at end of the
+## turn in which their owner acted. See CombatMath.resolve_damage().
+var strength: int = 0
+var weak_stacks: int = 0
+var vulnerable_stacks: int = 0
+
 var draw_pile: Array[CardData] = []
 var hand: Array[CardData] = []
 var discard_pile: Array[CardData] = []
+
+
+## Called once from combat_controller._ready(), right after construction, to
+## seed this fight's HP from RunManager's run-persistent value. hp/max_hp then
+## live independently for the fight's duration - RunManager.sync_hp_from_combat()
+## is the only thing that writes the ending value back, at combat end.
+func setup_hp(current: int, p_max_hp: int) -> void:
+	max_hp = p_max_hp
+	hp = current
+	hp_changed.emit(hp, max_hp)
 
 
 func setup_deck(deck: Array[CardData]) -> void:
@@ -40,8 +57,15 @@ func start_turn() -> void:
 
 
 func end_turn() -> void:
-	discard_pile.append_array(hand)
-	hand.clear()
+	var kept: Array[CardData] = []
+	for card in hand:
+		if card.retain:
+			kept.append(card)
+		else:
+			discard_pile.append(card)
+	hand = kept
+	weak_stacks = max(0, weak_stacks - 1)
+	vulnerable_stacks = max(0, vulnerable_stacks - 1)
 	hand_changed.emit(hand)
 
 
@@ -54,9 +78,26 @@ func spend_energy(amount: int) -> void:
 	energy_changed.emit(energy, max_energy)
 
 
+## Spends this card's cost and returns the amount actually spent - for a
+## normal card that's card.energy_cost; for an X-cost card (energy_cost < 0)
+## it's however much energy the player had, spent in full (may be 0).
+func spend_energy_for(card: CardData) -> int:
+	var cost: int = energy if card.energy_cost < 0 else card.energy_cost
+	spend_energy(cost)
+	return cost
+
+
+## Direct energy grant (e.g. Overcharge) - goes through the same signal path
+## as spend_energy so the HUD never silently drifts from the real value.
+func gain_energy(amount: int) -> void:
+	energy += amount
+	energy_changed.emit(energy, max_energy)
+
+
 func play_card(card: CardData) -> void:
 	hand.erase(card)
-	discard_pile.append(card)
+	if not card.exhaust:
+		discard_pile.append(card)
 	hand_changed.emit(hand)
 
 
@@ -78,6 +119,13 @@ func take_damage(amount: int) -> int:
 
 func is_dead() -> bool:
 	return hp <= 0
+
+
+## Self-inflicted HP loss from a card's own cost (LOSE_HP effect), not an
+## enemy attack - bypasses Block entirely, unlike take_damage().
+func lose_hp(amount: int) -> void:
+	hp = max(0, hp - amount)
+	hp_changed.emit(hp, max_hp)
 
 
 func _draw_to_hand_size() -> void:

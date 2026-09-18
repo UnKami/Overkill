@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OVERKILL — a roguelike deckbuilder</title>
+<meta name="description" content="OVERKILL is a roguelike deckbuilder where dealing damage beyond what's needed to kill an enemy generates Overkill — the currency that fuels your run. Free download for Windows." />
+<link rel="icon" type="image/png" href="/assets/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #07070a;
+    --bg-soft: #0d0d13;
+    --panel: #131319;
+    --border: rgba(255,255,255,0.08);
+    --text: #eae6df;
+    --text-dim: #a3a0ab;
+    --amber: #ef9f27;
+    --amber-bright: #ffc25c;
+    --cyan: #378add;
+    --cyan-bright: #5fd0e8;
+    --red: #e24b4a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  .glow-field{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 900px 600px at 78% 15%, rgba(239,159,39,0.16), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 10% 85%, rgba(55,138,221,0.14), transparent 60%);
+  }
+  .wrap{ position:relative; z-index:1; max-width:1160px; margin:0 auto; padding:0 24px; }
+
+  header{ display:flex; align-items:center; justify-content:space-between; padding:28px 0; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Cinzel',serif; font-weight:800; letter-spacing:0.08em; font-size:1.1rem; }
+  .brand img{ width:26px; height:26px; filter: drop-shadow(0 0 6px rgba(239,159,39,0.6)); }
+  nav a{ color: var(--text-dim); text-decoration:none; font-size:0.92rem; margin-left:28px; transition:color .15s; }
+  nav a:hover{ color: var(--amber-bright); }
+
+  .hero{
+    display:grid; grid-template-columns: 1.05fr 0.95fr; align-items:center; gap:40px;
+    padding: 40px 0 80px;
+  }
+  @media (max-width: 860px){ .hero{ grid-template-columns:1fr; padding-top:8px; } .hero-art{ order:-1; } }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    color: var(--amber-bright); font-size:0.8rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase;
+    background: rgba(239,159,39,0.08); border:1px solid rgba(239,159,39,0.25);
+    padding:6px 12px; border-radius:999px; margin-bottom:22px;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--amber-bright); box-shadow:0 0 8px var(--amber-bright); }
+
+  h1{
+    font-family:'Cinzel', serif; font-weight:800; letter-spacing:0.03em;
+    font-size: clamp(2.6rem, 6vw, 4.4rem); line-height:1.02; margin:0 0 20px;
+    background: linear-gradient(135deg, #fff 10%, var(--amber-bright) 55%, var(--amber) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub{ font-size:1.15rem; color:var(--text-dim); max-width:520px; margin:0 0 34px; }
+  .sub strong{ color:var(--text); font-weight:600; }
+  .sub .ok{ color:var(--amber-bright); font-weight:600; }
+
+  .cta-row{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .btn-download{
+    display:inline-flex; align-items:center; gap:12px;
+    background: linear-gradient(135deg, var(--amber-bright), var(--amber));
+    color:#1a1206; font-weight:700; font-size:1.05rem;
+    padding:16px 26px; border-radius:12px; text-decoration:none;
+    box-shadow: 0 8px 30px rgba(239,159,39,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-download:hover{ transform: translateY(-2px); box-shadow: 0 12px 36px rgba(239,159,39,0.45), inset 0 1px 0 rgba(255,255,255,0.4); }
+  .btn-download svg{ width:20px; height:20px; }
+  .dl-meta{ display:flex; flex-direction:column; gap:2px; }
+  .dl-meta .platform{ font-size:0.78rem; color: rgba(20,14,4,0.75); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+  .dl-meta .label{ font-size:1.02rem; }
+
+  .version-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    color: var(--text-dim); font-size:0.88rem;
+    border:1px solid var(--border); padding:9px 14px; border-radius:999px;
+    background: rgba(255,255,255,0.02);
+  }
+  .version-pill b{ color: var(--cyan-bright); font-family: 'Inter'; font-weight:600; }
+
+  .hero-art{ position:relative; display:flex; justify-content:center; }
+  .hero-art img{
+    width:100%; max-width:440px;
+    filter: drop-shadow(0 20px 60px rgba(239,159,39,0.25)) drop-shadow(0 0 40px rgba(55,138,221,0.12));
+  }
+
+  .stat-strip{
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:1px;
+    background: var(--border); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+    margin-bottom: 90px;
+  }
+  .stat{ background: var(--panel); padding:26px 22px; }
+  .stat .k{ font-family:'Cinzel',serif; font-weight:700; font-size:1.5rem; color:var(--amber-bright); }
+  .stat .d{ color:var(--text-dim); font-size:0.9rem; margin-top:6px; }
+  @media (max-width:700px){ .stat-strip{ grid-template-columns:1fr; } }
+
+  section.pitch{ padding-bottom:90px; }
+  section.pitch h2{ font-family:'Cinzel',serif; font-size:1.9rem; margin-bottom:14px; }
+  .pitch-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:22px; margin-top:36px; }
+  @media (max-width:860px){ .pitch-grid{ grid-template-columns:1fr; } }
+  .card{
+    background: var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px;
+  }
+  .card .icon{
+    width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background: rgba(239,159,39,0.1); border:1px solid rgba(239,159,39,0.25); margin-bottom:16px;
+    font-size:1.3rem;
+  }
+  .card h3{ margin:0 0 8px; font-size:1.05rem; }
+  .card p{ margin:0; color:var(--text-dim); font-size:0.94rem; }
+
+  footer{
+    border-top:1px solid var(--border); padding: 30px 0 50px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    color: var(--text-dim); font-size:0.85rem;
+  }
+  footer a{ color: var(--text-dim); }
+  #req-note{ font-size:0.8rem; color: var(--text-dim); margin-top:14px; }
+</style>
+</head>
+<body>
+  <div class="glow-field"></div>
+  <div class="wrap">
+    <header>
+      <div class="brand"><img src="/assets/icon_overkill.png" alt="" /> OVERKILL</div>
+      <nav>
+        <a href="#pitch">The Game</a>
+        <a href="#download">Download</a>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="dot"></span> Free · Windows · v<span id="ver-badge">0.1.0</span></div>
+        <h1>Deal too much<br/>damage on purpose.</h1>
+        <p class="sub">
+          <strong>OVERKILL</strong> is a roguelike deckbuilder. Every kill that goes past
+          what was needed to finish the job banks <span class="ok">Overkill</span> — the run's
+          only currency, earned by playing recklessly well.
+        </p>
+        <div class="cta-row">
+          <a class="btn-download" id="download-btn" href="/downloads/OverkillSetup-0.1.0.exe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
+            <span class="dl-meta"><span class="platform">Windows · installer</span><span class="label">Download OVERKILL</span></span>
+          </a>
+          <span class="version-pill">Current version <b>v<span id="ver-pill">0.1.0</span></b></span>
+        </div>
+        <p id="req-note">Windows 10/11, 64-bit. Run the installer and launch from the Start Menu.</p>
+      </div>
+      <div class="hero-art"><img src="/assets/hero_wanderer.png" alt="The Wanderer, OVERKILL's playable character" /></div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="stat"><div class="k">1 currency</div><div class="d">Overkill is the only resource in the game — no separate gold, no bookkeeping.</div></div>
+      <div class="stat"><div class="k">Bank or spill</div><div class="d">Cash excess damage in as currency, or let it carry into the next enemy for tempo.</div></div>
+      <div class="stat"><div class="k">Prove it, don't buy it</div><div class="d">"Excess" tier cards unlock by landing a real overkill hit, not by grinding currency.</div></div>
+    </div>
+
+    <section class="pitch" id="pitch">
+      <h2>Built around one idea</h2>
+      <p class="sub" style="max-width:640px">
+        Most deckbuilders waste excess damage. Here it's the point. Every fight is a
+        question of how hard you can afford to swing — and what you're willing to give up
+        to swing harder.
+      </p>
+      <div class="pitch-grid">
+        <div class="card">
+          <div class="icon">⚔</div>
+          <h3>Deckbuilding roguelike</h3>
+          <p>Build a run-long deck of attacks, skills, and powers across a procedurally arranged map of fights, elites, and bosses.</p>
+        </div>
+        <div class="card">
+          <div class="icon">◆</div>
+          <h3>Overkill economy</h3>
+          <p>Damage beyond lethal banks as Overkill — spent on upgrades, shop buys, and unlocking the rare Excess-tier card pool.</p>
+        </div>
+        <div class="card">
+          <div class="icon">▲</div>
+          <h3>Four archetypes</h3>
+          <p>Burst, Volume, Amplifier, and Conversion decks generate Overkill in very different ways — same currency, different games.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="download">
+      <div class="stat" style="border-radius:16px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; margin-bottom:80px;">
+        <div>
+          <h3 style="margin:0 0 6px; font-family:'Cinzel',serif;">Ready to overkill something?</h3>
+          <p style="margin:0; color:var(--text-dim);">Free download, current version <b style="color:var(--cyan-bright)">v<span id="ver-inline">0.1.0</span></b>.</p>
+        </div>
+        <a class="btn-download" id="download-btn-2" href="/downloads/OverkillSetup-0.1.0.exe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="m6 11 6 6 6-6"/><path d="M5 21h14"/></svg>
+          <span class="dl-meta"><span class="platform">Windows · installer</span><span class="label">Download OVERKILL</span></span>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <span>OVERKILL — built with Godot.</span>
+      <span id="release-date"></span>
+    </footer>
+  </div>
+
+<script>
+  fetch('/version.json', { cache: 'no-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data) return;
+      document.querySelectorAll('#ver-badge, #ver-pill, #ver-inline').forEach(el => el.textContent = data.version);
+      document.querySelectorAll('#download-btn, #download-btn-2').forEach(el => el.href = data.url);
+      if (data.releasedAt) {
+        document.getElementById('release-date').textContent = 'Last released ' + data.releasedAt;
+      }
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>

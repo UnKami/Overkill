@@ -13,6 +13,13 @@ var block: int = 0
 var current_move: EnemyMoveData
 var _move_index: int = 0
 
+## Damage-modifier state (data schema doc 1.6) - same fields/rules as
+## PlayerState. Strength never decays; Weak/Vulnerable tick down at the end
+## of this enemy's own turn.
+var strength: int = 0
+var weak_stacks: int = 0
+var vulnerable_stacks: int = 0
+
 
 func _init(enemy_data: EnemyData = null) -> void:
 	if enemy_data:
@@ -64,3 +71,10 @@ func apply_damage(raw_damage: int) -> Dictionary:
 
 func gain_block(amount: int) -> void:
 	block += amount
+
+
+## Called once at the end of this enemy's own turn (data schema doc 1.6) -
+## Strength doesn't decay, only the two duration-stacking debuffs do.
+func tick_status_down() -> void:
+	weak_stacks = max(0, weak_stacks - 1)
+	vulnerable_stacks = max(0, vulnerable_stacks - 1)

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-12"
+name = "Recoil Piston"
+tier = 0
+role = 3
+description = "Deal 5 Damage. Gain Block equal to Overkill dealt."
+art_id = "rel_12_recoil_piston"
+base_damage = 5
+recoil_block_on_overkill = true

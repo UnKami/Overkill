@@ -11,16 +11,34 @@ config_version=5
 [application]
 
 config/name="Overkill"
-run/main_scene="res://scenes/combat_scene.tscn"
-config/features=PackedStringArray("4.3", "GL Compatibility")
+run/main_scene="res://scenes/title_screen.tscn"
+config/features=PackedStringArray("4.5", "Mobile")
 
 [autoload]
 
 OKRunState="*res://scripts/autoload/ok_run_state.gd"
 KeywordRegistry="*res://scripts/autoload/keyword_registry.gd"
 TutorialCallout="*res://scripts/autoload/tutorial_callout.gd"
+ContentDatabase="*res://scripts/autoload/content_database.gd"
+RunManager="*res://scripts/autoload/run_manager.gd"
+SaveManager="*res://scripts/autoload/save_manager.gd"
+AudioManager="*res://scripts/autoload/audio_manager.gd"
+GameFlow="*res://scripts/autoload/game_flow.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://assets/ui/theme/overkill_theme.tres"
+timers/tooltip_delay_sec=0.15
 
 [rendering]
 
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
