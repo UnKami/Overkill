@@ -12,7 +12,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Available choices pulse gently; reduced-motion mode uses a steady highlight.
 - Replacement choices follow the same compact layout. Clocks, health and central battle stay visible.
 - **Compatibility:** No combat or save-format changes from 0.14.0.
-- **Verification:** Rendered 1080p, large-text 720p and ultrawide layout checks; packaged verification recorded in the handoff.
+- **Verification:** Rendered 1080p, large-text 720p and ultrawide layout checks; exported presentation and interaction tests passed. All GitHub assets returned HTTP 200 and matched local SHA-256 digests.
 - **Known limits:** Boss balance still needs playtesting. Unsigned installer; installation wizard not tested. Existing nonfatal certificate-store/headless shutdown warnings remain.
 - **Source:** `v0.14.1-test`, branch `feat/yonatan-top-relic-choices`; gameplay awaits review.
 

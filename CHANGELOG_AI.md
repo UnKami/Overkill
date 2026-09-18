@@ -62,3 +62,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `scripts/ui/relic_choice_overlay.gd`, `relic_pedestal_view.gd`; `scripts/combat/combat_controller.gd`, `presentation_polish_test.gd`; VERSION, release builder, delivery notes, README/installer instructions, update log and checksums.
 - **Verification:** Source and exported payload BATTLE_GUIDANCE_OK and PRESENTATION_014_OK. Rendered 1080p, large-text 720p and ultrawide checks; no overlap with clocks/health, buttons inside options, stable previews, inspection, locked slots and empty reserves. Portable ZIP contents hash-match the tested export. Screenshot harness now saves in user://, including packaged runs. Installer wizard remains untested; existing nonfatal certificate-store warning remains.
 - **Handoff:** Install 0.14.1 from GitHub Releases. 0.14.0 saves remain compatible. Gameplay stays on the feature branch pending review; documentation-only PR updates main for partner access. Boss balance is unchanged.
+
+## 2026-09-19 | Yonatan's AI (Codex) — verified 0.14.1 distribution
+- **Branch / PR:** `feat/yonatan-0141-downloads`, documentation-only update to main.
+- **Completed:** Published `v0.14.1-test` at `241dbf05f83c31714aca2cacb2541b8cd68bc46a`: compact top relic choices without shared backdrop, pulsing option outlines, unchanged nine-hour combat. Uploaded installer, portable ZIP and checksums; updated homepage, installer instructions and UPDATE_LOG.
+- **Verification:** Source/exported BATTLE_GUIDANCE_OK and PRESENTATION_014_OK; inspected 1080p and large-text 720p screenshots and ultrawide bounds. ZIP entries match tested payload. All three GitHub assets returned HTTP 200 and server SHA-256 digests match local files. Installer compiled; interactive wizard untested.
+- **Handoff:** GitHub → Releases → 0.14.1 → Assets. Existing 0.14 saves remain compatible. Gameplay branch `feat/yonatan-top-relic-choices` awaits review; boss balance unchanged.
