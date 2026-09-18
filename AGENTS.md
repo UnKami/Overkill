@@ -87,3 +87,17 @@ When you complete a task or conclude a coding session:
    - **Verification**: How the change was tested (headless Godot run, scene smoke test, manual test).
    - **Next Steps / Handoff**: Notes for the other partner's AI on what is ready to be integrated or built next.
 2. Release your file locks in [`ACTIVE_WORK.md`](ACTIVE_WORK.md).
+
+### Rule 5: Deliver every gameplay update through GitHub
+
+The partners require an easy installer and update log on GitHub for every delivered gameplay feature or update. A local build or source push alone is not a completed delivery.
+
+1. Bump `VERSION` for a new playable build and build a Windows installer. Keep large binaries in GitHub Release assets, not Git history. A portable ZIP is useful as an additional option.
+2. Test the exported payload, not only source scenes. Record exactly what passed and any untested areas or known balance issues.
+3. Publish a versioned GitHub Release tied to the exact source commit. Mark unreviewed test builds as prereleases; do not merge experimental gameplay into main merely to publish a download.
+4. Add an entry to `UPDATE_LOG.md`: date, version, changes, installer/release links, source commit/tag/branch, save compatibility, verification, and known issues. Keep `CHANGELOG_AI.md` for the detailed technical handoff.
+5. Update the prominent links in root `README.md` and `installer/README.md`. Ensure these documentation links reach the default branch through a reviewed documentation PR, even when gameplay remains on a feature branch. Clearly distinguish the downloadable build from main's source state.
+6. Verify published download URLs and remote asset sizes/hashes before calling the update delivered. Preserve previous releases for rollback and comparison.
+7. Documentation-only changes reference the existing installer and receive a log entry; they do not require rebuilding unchanged gameplay. If publication is blocked, state the blocker and delivery status explicitly.
+
+This is the standing repository workflow requested by Yonatan. It does not authorize unrelated communications, purchases, or unreviewed gameplay merges.

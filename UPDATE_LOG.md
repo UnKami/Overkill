@@ -1,0 +1,19 @@
+# Update log
+
+Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
+
+## 0.13.0 playtest — 2026-09-18
+
+**[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.13.0-test/OverkillSetup-0.13.0.exe)** · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.13.0-test/Overkill-0.13.0-Windows.zip) · [Release and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.13.0-test)
+
+- Starter deck: 6 attacks (6 damage), 6 blocks (6 Block), 2 Twin Blades (4 damage twice), 2 Reinforced Walls (8 Block).
+- Unused Block persists until absorbed or battle ends.
+- Floating selection/replacement overlays replace the bottom bar. Pulsing numbered clock destinations and placement animation clarify each choice.
+- **Save compatibility:** Start a new run for the new deck. Existing saved inventories are preserved.
+- **Verification:** Packaged starter, combat smoke and inventory integration tests passed. Exported game launched using Intel OpenGL. GitHub downloads returned HTTP 200 and asset hashes matched the local builds. Installer compiled; installer wizard itself was not tested.
+- **Known issues:** Scripted basic policy loses the first boss and can stall in later boss fixtures without varied reward relics. Balance needs playtesting. Windows certificate-store and headless shutdown warnings remain.
+- **Source:** [`07e1ce9`](https://github.com/UnKami/Overkill/commit/07e1ce9512ba8de0fa0c5e9e42e3ab3e8a06a8b7), tag `v0.13.0-test`, branch `feat/yonatan-starter-relic-overlays`; gameplay changes not merged into main.
+
+## Distribution documentation — 2026-09-18
+
+Added prominent downloads on the repository homepage and inside `installer/`, this shared update log, and mandatory release handoff instructions for future assistants. Same 0.13.0 game binaries; no gameplay change.
