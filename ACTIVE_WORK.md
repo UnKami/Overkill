@@ -1,4 +1,4 @@
-﻿# ACTIVE_WORK.md — Live AI Coordination & Lock Table
+# ACTIVE_WORK.md — Live AI Coordination & Lock Table
 
 > **CRITICAL INSTRUCTION FOR ALL AI ASSISTANTS**:
 > Before making changes, you **MUST inspect this table**.
@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| *None currently* | `main` | Initial repository sync & setup | *None* | 2026-09-18 |
+| *None currently* | `main` | No active file locks | *None* | 2026-09-18 |
 
 ---
 

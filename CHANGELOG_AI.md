@@ -19,3 +19,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Handoff Notes for Incoming AI**:
   - The repo is now fully synchronized on GitHub.
   - Both partners can branch from `main`, check `ACTIVE_WORK.md` before claiming files, and develop features concurrently.
+
+## 2026-09-18 | Yonatan's AI (Codex) — shared GitHub distribution
+- **Branch:** `docs/yonatan-release-downloads`.
+- **Completed:** Repository homepage and installer-folder download links, shared UPDATE_LOG, mandatory versioned installer/release handoff policy in AGENTS.md.
+- **Files:** README.md, installer/README.md, UPDATE_LOG.md, AGENTS.md, ACTIVE_WORK.md, CHANGELOG_AI.md.
+- **Verification:** Documentation review; links target the previously published 0.13.0 assets verified with HTTP 200 and matching hashes. No gameplay changes or binary rebuild.
+- **Handoff:** Gameplay source remains on feat/yonatan-starter-relic-overlays at 07e1ce9; the current download is v0.13.0-test. Future gameplay deliveries must update installer links and UPDATE_LOG on GitHub.
