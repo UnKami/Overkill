@@ -1,4 +1,4 @@
-﻿# CHANGELOG_AI.md — Multi-AI Handoff & Session Log
+# CHANGELOG_AI.md — Multi-AI Handoff & Session Log
 
 This file provides asynchronous context sharing between developers and their AI assistants. When finishing a session or merging a PR, add an entry at the top of this log.
 
@@ -34,3 +34,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `VERSION`, `scripts/release/build_installer.ps1`, `docs/starter-relic-release.md`, `install/README.md`, `installer/OverkillSetup-0.13.0.sha256`; prior starter deck/UI changes included.
 - **Verification:** Exported executable launched from build/windows without source-project arguments using Intel OpenGL. Packaged STARTER_RELIC_OK, CLOCK_SMOKE_OK and POLISH_INTEGRATION_OK passed. Installer compiler completed successfully. The installer wizard itself was not run; packaged payload was tested directly. Known Windows certificate-store and headless ObjectDB exit warnings persist. Boss-balance limitations documented in release notes.
 - **Handoff:** Download installer or extract the full portable folder. Start a new run to get the revised inventory. Release binaries belong in GitHub assets, not Git history.
+## 2026-09-18 | Yonatan's AI (Codex) — shared GitHub distribution
+- **Branch:** `docs/yonatan-release-downloads`.
+- **Completed:** Repository homepage and installer-folder download links, shared UPDATE_LOG, mandatory versioned installer/release handoff policy in AGENTS.md.
+- **Files:** README.md, installer/README.md, UPDATE_LOG.md, AGENTS.md, ACTIVE_WORK.md, CHANGELOG_AI.md.
+- **Verification:** Documentation review; links target the previously published 0.13.0 assets verified with HTTP 200 and matching hashes. No gameplay changes or binary rebuild.
+- **Handoff:** Gameplay source remains on feat/yonatan-starter-relic-overlays at 07e1ce9; the current download is v0.13.0-test. Future gameplay deliveries must update installer links and UPDATE_LOG on GitHub.
