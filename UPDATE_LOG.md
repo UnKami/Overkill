@@ -2,6 +2,21 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.14.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.14.0 → Assets → `OverkillSetup-0.14.0.exe`.
+
+[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.14.0-test/OverkillSetup-0.14.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.14.0-test/Overkill-0.14.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.14.0-test)
+
+- Nine-hour clocks; three repeating three-hour sectors after assembly.
+- Starter deck: 5 attacks (6 damage), 5 guards (5 persistent Block), 1 lifesteal (3 damage), 1 Overdrive (4 damage, next attack ×2). Three reserves remain.
+- Enemy actions reveal before placement and stay visible; reverse and twin-hand rules adapted to nine hours.
+- Horizontal floating choices, explicit commit buttons, pulsing destinations, battlefield inspection, larger readable cards, and cleaner reward/shop/map screens.
+- **Save compatibility:** Start a new run for the deck. Existing inventories remain; battles use nine hours.
+- **Verification:** Combat/inventory and frontend integration checks; rendered 1080p, large-text 720p and ultrawide layout checks. Packaged starter, combat smoke and inventory tests passed; exported game launched with Intel OpenGL. All three GitHub assets returned HTTP 200 and server SHA-256 digests matched local files.
+- **Known limits:** Basic scripted policy wins the normal and elite Act I fixtures but loses bosses. Human balance testing remains. Unsigned installer; interactive wizard not tested. Certificate-store and headless shutdown warnings remain. This is a playtest, not final AAA production.
+- **Source:** `v0.14.0-test`, branch `feat/yonatan-014-presentation-polish`; gameplay awaits merge review.
+
 ## 0.13.0 playtest — 2026-09-18
 
 **[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.13.0-test/OverkillSetup-0.13.0.exe)** · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.13.0-test/Overkill-0.13.0-Windows.zip) · [Release and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.13.0-test)
