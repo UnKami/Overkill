@@ -2,6 +2,20 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.14.1 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.14.1 → Assets → `OverkillSetup-0.14.1.exe`.
+
+[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.14.1-test/OverkillSetup-0.14.1.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.14.1-test/Overkill-0.14.1-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.14.1-test)
+
+- Compact relic choices at the top; removed the shared background and instruction/header strip.
+- Available choices pulse gently; reduced-motion mode uses a steady highlight.
+- Replacement choices follow the same compact layout. Clocks, health and central battle stay visible.
+- **Compatibility:** No combat or save-format changes from 0.14.0.
+- **Verification:** Rendered 1080p, large-text 720p and ultrawide layout checks; packaged verification recorded in the handoff.
+- **Known limits:** Boss balance still needs playtesting. Unsigned installer; installation wizard not tested. Existing nonfatal certificate-store/headless shutdown warnings remain.
+- **Source:** `v0.14.1-test`, branch `feat/yonatan-top-relic-choices`; gameplay awaits review.
+
 ## 0.14.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.14.0 → Assets → `OverkillSetup-0.14.0.exe`.

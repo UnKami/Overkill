@@ -15,6 +15,8 @@ signal preview_ended
 var relic: ClockRelicData
 var _hover_tween: Tween = null
 var _battle_layout: bool = false
+var _choice_style: StyleBoxFlat
+var _pulse_time: float = 0.0
 
 
 func _ready() -> void:
@@ -57,7 +59,9 @@ func _ready() -> void:
 	_slot_button.focus_exited.connect(_on_mouse_exited)
 
 func _fit_content() -> void:
-	if not _battle_layout:
+	if _battle_layout:
+		_slot_button.size = Vector2(284, 28)
+	else:
 		custom_minimum_size.y = maxf(370, _card_panel.get_node("Margin").get_combined_minimum_size().y)
 
 
@@ -68,31 +72,37 @@ func _gui_input(event: InputEvent) -> void:
 
 func use_battle_layout() -> void:
 	_battle_layout = true
-	custom_minimum_size = Vector2(368,220)
-	pivot_offset = Vector2(184,110)
+	custom_minimum_size = Vector2(300,112)
+	pivot_offset = Vector2(150,56)
 	_card_panel.pivot_offset = pivot_offset
 	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
 		child.reparent(_card_panel)
 		child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	_card_panel.get_node("Margin").hide()
-	_role_badge.position = Vector2(132,16)
+	_role_badge.hide()
+	_role_badge.position = Vector2(70,4)
 	_role_badge.size = Vector2(220,20)
 	_role_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_name_label.position = Vector2(132,42)
-	_name_label.size = Vector2(220,32)
+	_name_label.position = Vector2(70,4)
+	_name_label.size = Vector2(220,24)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_art_rect.custom_minimum_size = Vector2.ZERO
-	_art_rect.position = Vector2(16,34)
-	_art_rect.size = Vector2(104,120)
-	_desc_label.position = Vector2(132,80)
-	_desc_label.size = Vector2(220,84)
+	_art_rect.position = Vector2(8,16)
+	_art_rect.size = Vector2(54,60)
+	_desc_label.position = Vector2(70,30)
+	_desc_label.size = Vector2(222,48)
 	_desc_label.fit_content = false
-	_slot_button.position = Vector2(16,170)
-	_slot_button.size = Vector2(336,38)
-	_slot_button.custom_minimum_size.y = 38
-	_name_label.add_theme_font_size_override("font_size",20)
-	_desc_label.add_theme_font_size_override("normal_font_size",18)
-	_slot_button.add_theme_font_size_override("font_size",18)
+	_slot_button.position = Vector2(8,80)
+	_slot_button.size = Vector2(284,28)
+	_slot_button.custom_minimum_size.y = 28
+	_name_label.add_theme_font_size_override("font_size",18)
+	_desc_label.add_theme_font_size_override("normal_font_size",16)
+	_slot_button.add_theme_font_size_override("font_size",16)
+	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var style: StyleBoxFlat = _slot_button.get_theme_stylebox(state).duplicate()
+		style.content_margin_top = 2
+		style.content_margin_bottom = 2
+		_slot_button.add_theme_stylebox_override(state, style)
 
 
 func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> void:
@@ -103,6 +113,8 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_name_label.text = relic.name
 	_role_badge.text = "[ %s ]" % ClockRelicData.role_to_name(relic.role).to_upper()
 	_desc_label.text = ClockInventory.describe(relic)
+	if _battle_layout:
+		_desc_label.text = _desc_label.text.replace("Lasts until absorbed or battle ends.", "Persists in battle.")
 	_slot_button.text = action_label
 
 	var role_col := ClockRelicData.role_to_color(relic.role)
@@ -117,6 +129,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	panel_style.shadow_color = Color(0, 0, 0, 0.65)
 	panel_style.shadow_size = 16
 	_card_panel.add_theme_stylebox_override("panel", panel_style)
+	_choice_style = panel_style
 
 	_load_art(relic.art_id)
 	tooltip_text = "%s\n%s" % [relic.name, relic.description]
@@ -151,7 +164,7 @@ func _on_button_pressed() -> void:
 
 func _on_mouse_entered() -> void:
 	previewed.emit(self)
-	if AudioManager.reduced_motion: return
+	if AudioManager.reduced_motion or _battle_layout: return
 	if _hover_tween and _hover_tween.is_valid():
 		_hover_tween.kill()
 	_hover_tween = create_tween()
@@ -171,3 +184,15 @@ func _on_mouse_exited() -> void:
 	_hover_tween.set_parallel(true)
 	_hover_tween.tween_property(self, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_SINE)
 	_hover_tween.tween_property(_art_rect, "modulate", Color.WHITE, 0.16)
+
+func _process(delta: float) -> void:
+	if not _battle_layout or _choice_style == null or relic == null: return
+	var color: Color = ClockRelicData.role_to_color(relic.role)
+	if not is_visible_in_tree() or _slot_button.disabled:
+		_choice_style.border_color = color.darkened(0.42)
+		return
+	if not AudioManager.reduced_motion: _pulse_time += delta
+	var pulse: float = 0.45 if AudioManager.reduced_motion else (sin(_pulse_time * 3.0) + 1.0) * 0.5
+	_choice_style.border_color = color.lerp(Color("fff0c4"), 0.15 + pulse * 0.35)
+	_choice_style.shadow_color = Color(color, 0.12 + pulse * 0.2)
+	_choice_style.shadow_size = 8 + int(pulse * 5)

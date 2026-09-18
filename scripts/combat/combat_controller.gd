@@ -93,12 +93,18 @@ func _ready() -> void:
 	_clash_nexus.get_node("NexusTitle").hide()
 	_battle_info = Label.new()
 	add_child(_battle_info)
-	_battle_info.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_battle_info.offset_top = 76
+	_battle_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_battle_info.offset_top = -28
+	_battle_info.offset_bottom = 0
 	_battle_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_battle_info.add_theme_font_size_override("font_size", 18)
 	_battle_info.add_theme_color_override("font_color", Color("c4b899"))
 	_battle_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_turn_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_turn_banner.offset_left = -600
+	_turn_banner.offset_right = 600
+	_turn_banner.offset_top = -140
+	_turn_banner.offset_bottom = -100
 	_skip_button.pressed.connect(_on_skip_button_pressed)
 	_skip_button.mouse_entered.connect(_preview_sweep)
 	_skip_button.focus_entered.connect(_preview_sweep)

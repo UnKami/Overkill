@@ -14,6 +14,14 @@ func _ready() -> void:
 	battle.start_combat([enemy])
 	battle.player_hp = 80
 	await capture("assembly-1080")
+	AudioManager.text_size = "large"
+	ScreenDesign.apply_text_size(battle)
+	get_window().size = Vector2i(1280,720)
+	await capture("assembly-large-720")
+	check_geometry()
+	AudioManager.text_size = "normal"
+	ScreenDesign.apply_text_size(battle)
+	get_window().size = Vector2i(1920,1080)
 	check_geometry()
 	var turn: int = battle.turn_number
 	battle._choice_overlay.toggle_inspection()
@@ -68,11 +76,16 @@ func _ready() -> void:
 func check_geometry() -> void:
 	var panel: Rect2 = battle._choice_overlay.get_global_rect()
 	assert(Rect2(Vector2.ZERO, battle.size).encloses(panel), "Overlay must fit viewport")
+	assert(panel.position.y == 70 and panel.end.y < 220, "Choices must stay at the top")
+	assert(battle._choice_overlay.get_theme_stylebox("panel") is StyleBoxEmpty)
+	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
+		assert(not panel.intersects(dial.get_global_rect()), "Choices must not cover clocks")
 	for stats: Label in [battle._player_stats_label, battle._enemy_stats_label]:
 		assert(not panel.intersects(stats.get_global_rect()), "Health and Block must stay visible")
 	var previous: Control = null
 	for choice: Control in battle._pedestal_row.get_children():
 		assert(panel.encloses(choice.get_global_rect()))
+		assert(choice.get_global_rect().encloses(choice._slot_button.get_global_rect()), "Bind button stays inside option")
 		if previous != null:
 			assert(is_equal_approx(previous.global_position.y, choice.global_position.y))
 			assert(previous.get_global_rect().end.x <= choice.global_position.x)
@@ -84,5 +97,6 @@ func capture(label: String) -> void:
 	await get_tree().create_timer(0.7).timeout
 	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
-	DirAccess.make_dir_recursive_absolute("res://artifacts/presentation-014")
-	get_viewport().get_texture().get_image().save_png("res://artifacts/presentation-014/" + label + ".png")
+	var folder: String = "user://presentation-0141"
+	DirAccess.make_dir_recursive_absolute(folder)
+	get_viewport().get_texture().get_image().save_png(folder + "/" + label + ".png")

@@ -10,22 +10,22 @@ var _footer: HBoxContainer
 var _inspect: Button
 var _resume: Button
 var _inspecting: bool = false
+var _pulse_time: float = 0.0
 
 func install(battle: CombatController) -> void:
 	_battle = battle
 	name = "RelicChoiceOverlay"
 	z_index = 30
 	theme = ScreenDesign.build_theme()
-	var style: StyleBoxFlat = ScreenDesign.box(Color("0b141ef5"), Color("8d7654"))
-	style.set_corner_radius_all(8)
-	style.shadow_size = 24
-	style.shadow_color = Color(0, 0, 0, 0.6)
+	var style: StyleBoxEmpty = StyleBoxEmpty.new()
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_theme_stylebox_override("panel", style)
 	choices = VBoxContainer.new()
 	choices.add_theme_constant_override("separation", 12)
 	add_child(choices)
 	var header: HBoxContainer = HBoxContainer.new()
 	choices.add_child(header)
+	header.hide()
 	_heading = ScreenDesign.label(header, "BIND A RELIC", 26, ScreenDesign.GOLD, true)
 	_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_inspect = Button.new()
@@ -40,6 +40,7 @@ func install(battle: CombatController) -> void:
 	battle._phase_label.add_theme_font_size_override("font_size", 18)
 	battle._phase_label.add_theme_color_override("font_color", ScreenDesign.MUTED)
 	battle._phase_label.clip_text = true
+	battle._phase_label.hide()
 	_body = HBoxContainer.new()
 	_body.add_theme_constant_override("separation", 20)
 	choices.add_child(_body)
@@ -51,7 +52,13 @@ func install(battle: CombatController) -> void:
 	_footer = HBoxContainer.new()
 	_footer.alignment = BoxContainer.ALIGNMENT_END
 	choices.add_child(_footer)
-	battle._skip_button.reparent(header)
+	battle._skip_button.reparent(battle)
+	battle._skip_button.z_index = 31
+	battle._skip_button.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	battle._skip_button.offset_left = -180
+	battle._skip_button.offset_right = 180
+	battle._skip_button.offset_top = -76
+	battle._skip_button.offset_bottom = -28
 	battle._skip_button.custom_minimum_size = Vector2(285, 48)
 	battle._skip_button.add_theme_font_size_override("font_size", 18)
 	battle.get_node("BottomDock").hide()
@@ -87,25 +94,29 @@ func present(battle: CombatController) -> void:
 			var socket: ClockSocketView = battle._player_chrono.get_socket_view(hour)
 			var relic: ClockRelicData = socket.data.slotted_relic
 			var button: Button = Button.new()
-			button.custom_minimum_size = Vector2(250, 220)
+			button.custom_minimum_size = Vector2(190, 112)
 			button.disabled = socket.data.is_locked or battle.current_drawn_relic == null
 			button.tooltip_text = "Replace this relic and resolve the three-hour sweep."
 			replacements.add_child(button)
 			var column: VBoxContainer = VBoxContainer.new()
 			button.add_child(column)
 			column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			column.offset_left = 16
-			column.offset_right = -16
-			column.offset_top = 14
-			column.offset_bottom = -14
+			column.offset_left = 10
+			column.offset_right = -10
+			column.offset_top = 4
+			column.offset_bottom = -4
 			column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			ScreenDesign.label(column, "%02d O'CLOCK" % hour, 24, ScreenDesign.GOLD, true)
-			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 20)
+			column.add_theme_constant_override("separation", 2)
+			ScreenDesign.label(column, "%02d O'CLOCK" % hour, 18, ScreenDesign.GOLD, true)
+			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 16)
 			title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			var effect: Label = ScreenDesign.label(column, ClockInventory.describe(relic) if relic != null else "No relic bound.", 17, ScreenDesign.MUTED)
+			var effect: Label = ScreenDesign.label(column, ClockInventory.describe(relic) if relic != null else "No relic bound.", 14, ScreenDesign.MUTED)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			ScreenDesign.label(column, "LOCKED" if socket.data.is_locked else ("NO RESERVE" if battle.current_drawn_relic == null else "REPLACE THIS RELIC"), 15, ScreenDesign.CYAN)
+			effect.clip_text = true
+			effect.custom_minimum_size.y = 36
+			effect.text = effect.text.replace("Lasts until absorbed or battle ends.", "")
+			ScreenDesign.label(column, "LOCKED" if socket.data.is_locked else ("NO RESERVE" if battle.current_drawn_relic == null else "REPLACE"), 13, ScreenDesign.CYAN)
 			for label: Node in column.get_children(): label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			button.pressed.connect(battle._on_player_socket_pressed.bind(hour, socket))
 			button.mouse_entered.connect(battle._preview_swap.bind(socket))
@@ -123,9 +134,9 @@ func present(battle: CombatController) -> void:
 func _place() -> void:
 	if not is_instance_valid(_battle): return
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	size = Vector2(1210, 0)
+	size = Vector2(940, 0)
 	reset_size()
-	position = Vector2((_battle.size.x - size.x) * 0.5, _battle.size.y - size.y - 28)
+	position = Vector2((_battle.size.x - size.x) * 0.5, 70)
 
 func toggle_inspection() -> void:
 	if _battle._resolving or _battle._combat_over: return
@@ -143,7 +154,11 @@ func _input(event: InputEvent) -> void:
 			toggle_inspection()
 			get_viewport().set_input_as_handled()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if visible and not _battle._resolving:
+		if not AudioManager.reduced_motion: _pulse_time += delta
+		for button: Button in replacements.get_children():
+			button.modulate = Color.WHITE if button.disabled or AudioManager.reduced_motion else Color(1, 1, 1, 0.86 + 0.14 * sin(_pulse_time * 3.0))
 	if _inspecting and (_battle._resolving or _battle._combat_over):
 		_inspecting = false
 		_resume.hide()
