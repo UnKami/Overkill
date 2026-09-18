@@ -12,7 +12,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Cinematic damage waits for the strike pose, fixing early hits caused by a fixed timer. Contact effects use the same target point as the weapon.
 - Batched architecture, fewer shadow passes, cheaper metal shading and cached static clock engraving. Measured draw calls fell from about 680 to 455; frame-time consistency still needs work.
 - **Compatibility:** Existing 0.14/0.15 saves remain compatible. No balance or deck changes.
-- **Verification:** Exported attachment/motion, cinematic combat, starter, clock-combat and presentation checks passed. Contact checks cover normal/fast and reduced-motion combinations.
+- **Verification:** Exported attachment/motion, cinematic combat, starter, clock-combat and presentation checks passed. Contact checks cover normal/fast and reduced-motion combinations. Portable files match the tested export; all GitHub assets returned HTTP 200 and matched local SHA-256 hashes.
 - **Known limits:** Visual production remains in progress; illustrated encounters are unchanged. Boss balance, animation variety and frame-time consistency remain open. Installer wizard untested; existing certificate-store/shutdown warnings remain.
 - **Source:** `v0.16.0-test`, branch `feat/yonatan-sentinel-silhouette`; gameplay awaits review.
 
