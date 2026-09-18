@@ -1,8 +1,8 @@
 # Windows installers
 
-**[Download OverkillSetup-0.16.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.16.0-test/OverkillSetup-0.16.0.exe)**
+**[Download OverkillSetup-0.17.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.17.0-test/OverkillSetup-0.17.0.exe)**
 
-[Portable game folder ZIP](https://github.com/UnKami/Overkill/releases/download/v0.16.0-test/Overkill-0.16.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.16.0-test) · [Update log](../UPDATE_LOG.md)
+[Portable game folder ZIP](https://github.com/UnKami/Overkill/releases/download/v0.17.0-test/Overkill-0.17.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.17.0-test) · [Update log](../UPDATE_LOG.md)
 
 Install, then start a new run. For the portable version, extract the entire ZIP and run Overkill.exe with Overkill.pck beside it. No Godot installation is required.
 

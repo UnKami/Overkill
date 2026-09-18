@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-017-downloads` | Publish verified 0.17 partner download instructions | `README.md`, `installer/README.md`, `install/README.md`, `installer/OverkillSetup-0.17.0.sha256`, `UPDATE_LOG.md`, `CHANGELOG_AI.md` | 2026-09-19 |
+| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
 
 ---
 
