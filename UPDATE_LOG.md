@@ -2,6 +2,19 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.15.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.15.0 → Assets → `OverkillSetup-0.15.0.exe`.
+
+[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.15.0-test/OverkillSetup-0.15.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.15.0-test/Overkill-0.15.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.15.0-test)
+
+- Darker lighting, worn metal, softer ground contact and a detailed beveled hammer in the rigged Sentinel encounter. Use **Play Sentinel** for direct access.
+- Explicit HP, Block, blocked damage and healing labels throughout combat; named relic activation notices and less overlapping effects in the 3D encounter.
+- **Compatibility:** No save-format, starter deck or balance changes from 0.14.1.
+- **Verification:** Exported starter, clock-combat smoke, cinematic feedback and rendered presentation checks passed; inspected 1080p imagery, with 720p and ultrawide layout checks. ZIP entries match the tested payload. All three published GitHub assets returned HTTP 200 and matched local SHA-256 hashes.
+- **Known limits:** Visual development playtest, not completed AAA production. Other encounters retain illustrated art. Boss balance and frame-time consistency need further work. Unsigned installer; interactive wizard not tested. Existing certificate-store/headless shutdown warnings remain.
+- **Source:** `v0.15.0-test`, branch `feat/yonatan-cinematic-combat-finish`; gameplay awaits review.
+
 ## 0.14.1 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.14.1 → Assets → `OverkillSetup-0.14.1.exe`.
