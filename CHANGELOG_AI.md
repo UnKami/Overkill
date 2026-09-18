@@ -52,3 +52,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Completed:** Published `v0.16.0-test` at `b2b0f76d85b6d1656af339e28522fc5d7d995b67`: distinct Sentinel armor, execution blade, arena depth, synchronized strike damage and reduced draw calls. Uploaded installer (230801163 bytes), portable ZIP (259439718 bytes), checksums; updated README, installer/README, install/README and UPDATE_LOG.
 - **Verification:** Exported SILHOUETTE_OK, CINEMATIC_FINISH_OK, RIG_MOTION_OK, STARTER_RELIC_OK, CLOCK_SMOKE_OK and PRESENTATION_014_OK. Final exported combat passed four speed/reduced-motion combinations. Rendered poses/layout inspected. ZIP entries match tested export. All three published GitHub assets returned HTTP 200 and server SHA-256 digests match local files. Installer wizard untested.
 - **Handoff:** Repository → Releases → 0.16.0 → Assets; use Play Sentinel for direct testing. Existing 0.14/0.15 saves remain compatible. Gameplay stays on `feat/yonatan-sentinel-silhouette` pending review. Performance improved in draw submission count, not a verified 60 fps result; visual production remains in progress.
+
+
+## 2026-09-19 | Yonatan's AI — Publish verified 0.17.0 distribution
+- **Branch / PR:** `feat/yonatan-017-downloads`; documentation-only PR, gameplay remains on `feat/yonatan-readable-cinematic`.
+- **Completed:** Published `v0.17.0-test` from `0d1182cf9d64609d9facc82ab384c5444b5447f7`; updated homepage, installer/install folder instructions, checksum and update log.
+- **Verification:** Installer 230817337 bytes and portable ZIP 258162235 bytes; both plus checksum are public HTTP 200 downloads with GitHub SHA-256 digests matching local artifacts. Exported gameplay/preview/typography/contact checks are recorded in the release notes. No gameplay merged to main.
+- **Files:** `README.md`, `installer/README.md`, `install/README.md`, `installer/OverkillSetup-0.17.0.sha256`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`.
+- **Handoff:** Partner navigation is repository → Releases → 0.17.0 → Assets → installer; folders contain direct links. Downloadable gameplay differs from main's runtime source; use the exact release tag or feature branch.

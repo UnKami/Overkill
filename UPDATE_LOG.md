@@ -2,6 +2,21 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.17.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.17.0 → Assets → `OverkillSetup-0.17.0.exe`.
+
+[Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.17.0-test/OverkillSetup-0.17.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.17.0-test/Overkill-0.17.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.17.0-test)
+
+- Larger top choices, readable effects, grouped replacement/keep controls, visible inspection and discard instructions. All 14 relics checked in normal/large text, including replacement panels.
+- Read-only HP/Block outcome previews, plain-language revealed enemy actions, clearer socket hours, recent combat log and corrected persistent-Block guidance. Hidden actions stay hidden; previews stop at an enemy defeat or unknown action.
+- Labeled map destinations, route/encounter inspection and clearer shop prices/keyword explanations. Shared relic text is larger throughout rewards and collection screens.
+- Larger grounded illustrated fighters and animation-synchronized contact; less glossy worn armor, restrained lighting and reframed Sentinel arena. Reduced 3D rendering resolution follows smaller windows without reducing UI resolution.
+- **Compatibility:** Existing 0.14–0.16 saves remain compatible. No deck, balance or save-format changes.
+- **Verification:** 30 preview comparisons against live resolution, starter/combat-flow checks, exported rendered layouts at 1080p/720p large text/ultrawide, all-relic text bounds and normal/fast/reduced-motion contact checks. Illustrated and rigged battles visually inspected. Portable files match the exported payload. All three GitHub assets returned HTTP 200 and matched local SHA-256 hashes.
+- **Known limits:** This is not finished AAA production. Character/animation variety, consistent art production, broad hardware performance and human boss-balance testing remain. Long replacement names may ellipsize; full names/effects remain in tooltips. Installer wizard untested; existing certificate-store and headless shutdown warnings remain.
+- **Source:** `v0.17.0-test`, branch `feat/yonatan-readable-cinematic`; gameplay awaits review.
+
 ## 0.16.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.16.0 → Assets → `OverkillSetup-0.16.0.exe`.
