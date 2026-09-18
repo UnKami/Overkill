@@ -141,18 +141,20 @@ Resolution occurs on a per-tick basis. When the chronometer hand enters a target
 
 ---
 
-## 5. STARTER RELIC POOL (12-RELIC BASE DECK)
+## 5. STARTER DECK AND EXPANSION POOL
 
-Every player begins a run with 12 balanced standard-tier relics:
+New runs begin with 16 physical relic copies: 6 Iron Strikes (6 damage), 6 Guard Plates (6 Block), 2 Twin Blades (4 damage twice), and 2 Reinforced Walls (8 Block). Unused Block persists across ticks and quadrants until absorbed; it resets when a new battle starts. Each copy can be upgraded independently. The remaining catalog introduces more varied effects through rewards and shops. Existing saved inventories are retained.
+
+Catalog (only the four types above are in the starting inventory):
 
 | ID | Relic Name | Role | Base Effect | Synergistic Optimal Slot |
 | :--- | :--- | :--- | :--- | :--- |
 | `REL-01` | **Iron Strike** | Impact | Deal 6 Physical Damage. | Sockets 1, 4, 7 |
-| `REL-02` | **Twin Blades** | Impact | Deal 3 Physical Damage twice (2 hits). | Sockets 2, 5, 8 (Post-Strength) |
+| `REL-02` | **Twin Blades** | Impact | Deal 4 Physical Damage twice (8 total). | Sockets 2, 5, 8 (Post-Strength) |
 | `REL-03` | **Heavy Hammer** | Impact | Deal 14 Physical Damage. | Sockets 3, 6, 9, 12 (Finishers) |
 | `REL-04` | **Guard Plate** | Bulwark | Gain 6 Block. | Sockets 1, 2, 4 |
 | `REL-05` | **Spiked Buckler** | Bulwark | Gain 4 Block. Deal 4 Thorns on enemy attack. | Sockets facing enemy multi-attacks |
-| `REL-06` | **Reinforced Wall** | Bulwark | Gain 10 Block. | Sockets facing boss heavy cleaves |
+| `REL-06` | **Reinforced Wall** | Bulwark | Gain 8 Block. | Sockets facing boss heavy cleaves |
 | `REL-07` | **Rusting Spike** | Tempo | Deal 3 Damage; apply 2 Vulnerable. | Sockets 1, 4, 7, 10 (Quadrant Leads) |
 | `REL-08` | **Momentum Spring** | Tempo | Gain +2 Strength for the remainder of this sweep. | Sockets 1, 4, 7, 10 |
 | `REL-09` | **Corrosive Oil** | Tempo | Apply 3 Bleed (Deals true damage per action). | Sockets 1, 2, 3 |
@@ -252,6 +254,8 @@ Zenith relics possess game-warping abilities purchasable only with high Overkill
 │        Phase 2: [ DRAWN RELIC ]  ──►  [ SKIP & CONVERT ]      DECK: [24]   DISCARD: [6]    │
 └────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+The current battle UI replaces the dock above with a floating choice overlay. Assembly shows three relics and the numbered destination; quadrant turns show the drawn relic and three replacement destinations plus Keep & Sweep. The relevant clock slots pulse before selection. The overlay disappears during binding and resolution, and the arena retains its full height.
 
 ### 8.1 Animation & Cadence Blueprint
 * **Input Lock-In:** Dragging or clicking a relic to a socket triggers an iron latch sound effect and cog-locking animation ($< 0.05	ext{s}$).

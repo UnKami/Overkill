@@ -20,7 +20,7 @@ const Presentation := preload("res://scripts/combat/clock_battle_presentation.gd
 @onready var _player_stats_label: Label = %PlayerStatsLabel
 @onready var _enemy_stats_label: Label = %EnemyStatsLabel
 @onready var _phase_label: Label = %PhaseLabel
-@onready var _pedestal_row: HBoxContainer = %PedestalRow
+@onready var _pedestal_row: VBoxContainer = %PedestalRow
 @onready var _skip_button: Button = %SkipButton
 @onready var _turn_banner: Label = %TurnBanner
 @onready var _clash_nexus: Control = %ClashNexus
@@ -62,6 +62,7 @@ var _banner_tween: Tween
 var _enemy_index: int = 0
 var _battle_info: Label
 var _stage: Control
+var _choice_overlay: PanelContainer
 var _guidance: BattleGuidance
 
 
@@ -73,6 +74,9 @@ var _is_started: bool = false
 func _ready() -> void:
 	Presentation.install(self)
 	Presentation.directed_layout(self)
+	_choice_overlay = preload("res://scripts/ui/relic_choice_overlay.gd").new()
+	add_child(_choice_overlay)
+	_choice_overlay.install(self)
 	_guidance = BattleGuidance.new()
 	add_child(_guidance)
 	_guidance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -135,8 +139,7 @@ func _install_directed_stage() -> void:
 	move_child(_stage, 1)
 	_stage.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_stage.offset_top = 64
-	_stage.offset_bottom = 840
-	Presentation.directed_layout(self)
+	_stage.offset_bottom = 1040
 
 
 func _begin_combat() -> void:
@@ -291,6 +294,7 @@ func _prompt_phase_one_draft() -> void:
 		ped.previewed.connect(_preview_allocation)
 		ped.preview_ended.connect(_refresh_guidance)
 		ped.selected.connect(_on_phase_one_relic_chosen)
+	_choice_overlay.present(self)
 
 
 func _on_phase_one_relic_chosen(chosen: ClockRelicData) -> void:
@@ -366,13 +370,15 @@ func _prompt_phase_two_turn() -> void:
 		var ped: RelicPedestalView = pedestal_scene.instantiate()
 		_pedestal_row.add_child(ped)
 		ped.use_battle_layout()
-		ped.bind_relic(current_drawn_relic, "RESERVE — CHOOSE A CLOCK SLOT")
+		ped.bind_relic(current_drawn_relic, "DRAWN RELIC")
+		_choice_overlay._style_button(ped._slot_button)
 		ped._slot_button.disabled = true
 	else:
 		_phase_label.text = "QUADRANT %d  /  HOURS %02d–%02d     ·     All relics are bound. Sweep to activate this wedge." % [active_quadrant, hours[0], hours[2]]
 
 	_skip_button.show()
 	_skip_button.text = "KEEP & SWEEP  %d → %d → %d" % hours
+	_choice_overlay.present(self)
 	_refresh_guidance()
 
 
@@ -446,6 +452,7 @@ func _resolve_tick(hour: int) -> void:
 	var starting_enemy := _enemy_index
 	var enemy_hour := EnemyClockPattern.hour_for(hour, _active_enemy())
 	AudioManager.play_clock_sound("tick")
+	_show_turn_banner("YOUR HOUR %d  ·  ENEMY HOUR %d" % [hour, enemy_hour])
 	_phase_label.text = "RESOLVING  /  YOUR HOUR %d  •  ENEMY HOUR %d\nRelics activate, then the clocks advance." % [hour,enemy_hour]
 	var p_socket: ClockSocketData = player_sockets[hour - 1]
 	var e_socket: ClockSocketData = enemy_sockets[enemy_hour - 1]
@@ -753,11 +760,11 @@ func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color) ->
 func _refresh_guidance() -> void:
 	if _resolving or _combat_over: return
 	if phase == Phase.ASSEMBLY:
-		_phase_label.text = "1  /  BUILD YOUR CLOCK   •   NEXT: %d O'CLOCK\nChoose one relic below. It fills the glowing slot, then both clocks resolve this hour." % turn_number
+		_phase_label.text = "CHOOSE FOR %d O'CLOCK\nChoose a relic for the pulsing slot. Both clocks then resolve this hour." % turn_number
 		_guidance.point_to(_player_chrono,_player_chrono.get_socket_view(turn_number),[turn_number],"NEXT SLOT\n%d O'CLOCK" % turn_number)
 	else:
 		var hours := ChronometerView.get_quadrant_hours(active_quadrant)
-		_phase_label.text = "2  /  SWEEP YOUR CLOCK   •   HOURS %d → %d → %d\nClick a glowing slot to replace it with the reserve, then sweep. Or keep your relics and sweep." % hours
+		_phase_label.text = "HOURS %d → %d → %d\nReplace one of the three pulsing slots, or keep your clock and sweep." % hours
 		_guidance.point_to(_player_chrono,null,hours,"NEXT SWEEP\n%d → %d → %d" % hours)
 
 func _preview_allocation(view: RelicPedestalView) -> void:
@@ -793,6 +800,7 @@ func _animate_placement(relic: ClockRelicData, hour: int) -> void:
 	add_child(flight)
 	flight.size = Vector2(82,82)
 	flight.position = origin.global_position + origin.size*0.5 - global_position - flight.size*0.5
+	_choice_overlay.hide()
 	var socket := _player_chrono.get_socket_view(hour)
 	var finish := socket.global_position + socket.size*0.5 - global_position - Vector2(28,28)
 	_phase_label.text = "BINDING  /  %s → %d O'CLOCK\nThe relic will activate after it reaches the clock." % [relic.name,hour]
@@ -840,6 +848,7 @@ func _draw_relics(count: int) -> Array[ClockRelicData]:
 	return result
 
 func _clear_pedestals() -> void:
+	_choice_overlay.hide()
 	for c in _pedestal_row.get_children():
 		_pedestal_row.remove_child(c)
 		c.queue_free()

@@ -261,7 +261,7 @@ theme_override_font_sizes/font_size = 16
 text = "PHASE 1: ASSEMBLY CYCLE — Hour 1 of 12"
 horizontal_alignment = 1
 
-[node name="PedestalRow" type="HBoxContainer" parent="BottomDock"]
+[node name="PedestalRow" type="VBoxContainer" parent="BottomDock"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8

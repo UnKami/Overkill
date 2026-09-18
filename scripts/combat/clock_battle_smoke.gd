@@ -9,6 +9,7 @@ func _ready() -> void:
 	AudioManager.set_master_volume(0.0)
 	AudioManager.play_clock_sound("tick")
 	assert(AudioManager._clock_sounds.is_empty(), "Muted audio must not allocate a voice")
+	RunManager.start_new_run([], [], 80, 42)
 	RunManager.current_hp = 80
 	RunManager.max_hp = 80
 	battle = load("res://scenes/combat_scene.tscn").instantiate()
@@ -34,7 +35,7 @@ func _ready() -> void:
 	assert(battle.phase == CombatController.Phase.QUADRANT)
 	assert(battle.turn_number == 13)
 	assert(battle.current_drawn_relic != null, "The real run inventory must leave reserves")
-	assert(battle.player_deck.size() + battle.player_discard.size() == 5)
+	assert(battle.player_deck.size() + battle.player_discard.size() == 3)
 	battle.player_hp = 66
 	battle._update_stats_display()
 	await capture("quadrant")

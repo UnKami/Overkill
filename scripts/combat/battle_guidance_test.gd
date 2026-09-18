@@ -42,7 +42,11 @@ func _ready() -> void:
 	battle._skip_button.mouse_entered.emit()
 	assert(battle._phase_label.text.contains("KEEP YOUR CLOCK"))
 	await capture("keep-preview")
-	await battle._on_player_socket_pressed(2,battle._player_chrono.get_socket_view(2))
+	assert(battle._choice_overlay.visible)
+	assert(battle._choice_overlay.replacements.get_child_count() == 3)
+	battle._choice_overlay.replacements.get_child(1).pressed.emit()
+	assert(not battle._choice_overlay.visible)
+	while battle._resolving: await get_tree().process_frame
 	assert(battle.player_sockets[1].slotted_relic == reserve)
 	assert(battle.active_quadrant == 2)
 	get_window().size = Vector2i(1280,720)

@@ -1,14 +1,13 @@
 class_name ClockInventory extends RefCounted
 ## Each entry is a physical copy. Resource copies are isolated for combat/upgrades.
-const RESERVE_IDS := ["REL-01", "REL-03", "REL-04", "REL-06", "REL-09", "REL-10"]
+const STARTER_COUNTS: Dictionary = {"REL-01": 6, "REL-04": 6, "REL-02": 2, "REL-06": 2}
 const MINIMUM_SIZE := 15
 
 static func starter() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for i in range(1, 13):
-		result.append({"uid": result.size(), "id": "REL-%02d" % i, "level": 0})
-	for id in RESERVE_IDS:
-		result.append({"uid": result.size(), "id": id, "level": 0})
+	for id: String in STARTER_COUNTS:
+		for copy_index: int in int(STARTER_COUNTS[id]):
+			result.append({"uid": result.size(), "id": id, "level": 0})
 	return result
 
 static func resolve(entry: Dictionary) -> ClockRelicData:
@@ -34,7 +33,7 @@ static func describe(relic: ClockRelicData) -> String:
 	var parts: PackedStringArray = []
 	if relic.base_damage > 0:
 		parts.append("Deal %d damage%s." % [relic.base_damage, " × %d" % relic.hits if relic.hits > 1 else ""])
-	if relic.base_block > 0: parts.append("Gain %d guard." % relic.base_block)
+	if relic.base_block > 0: parts.append("Gain %d Block. Lasts until absorbed or battle ends." % relic.base_block)
 	for pair in [[relic.apply_strength, "strength"], [relic.apply_thorns, "thorns"], [relic.apply_bleed, "bleed"], [relic.apply_weak, "weak"], [relic.apply_vulnerable, "vulnerable"]]:
 		if pair[0] > 0: parts.append("Apply %d %s." % pair)
 	if relic.bonus_damage_next_hit > 0: parts.append("Next attack +%d damage." % relic.bonus_damage_next_hit)

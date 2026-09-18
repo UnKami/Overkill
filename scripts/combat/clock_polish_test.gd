@@ -5,7 +5,7 @@ var battle: CombatController
 func _ready() -> void:
 	AudioManager.set_master_volume(0.0)
 	RunManager.start_new_run([], [], 80, 1729)
-	assert(RunManager.clock_inventory.size() == 18)
+	assert(RunManager.clock_inventory.size() == 16)
 	var original := ClockInventory.resolve(RunManager.clock_inventory[0])
 	assert(RunManager.upgrade_clock_relic(0))
 	assert(not RunManager.upgrade_clock_relic(0))
@@ -14,12 +14,12 @@ func _ready() -> void:
 	SaveManager.save_run()
 	RunManager.clock_inventory.clear()
 	RunManager.load_from_save(SaveManager.load_run())
-	assert(RunManager.clock_inventory.size() == 18)
+	assert(RunManager.clock_inventory.size() == 16)
 	assert(int(RunManager.clock_inventory[0].level) == 1)
 	RunManager.load_from_save({"current_hp": 70, "max_hp": 80, "deck": []})
-	assert(RunManager.clock_inventory.size() == 18, "Legacy save gets usable inventory")
-	for i in range(3): assert(RunManager.remove_clock_relic(i))
-	assert(not RunManager.remove_clock_relic(3), "Cannot remove the minimum reserve")
+	assert(RunManager.clock_inventory.size() == 16, "Legacy save gets usable inventory")
+	assert(RunManager.remove_clock_relic(0))
+	assert(not RunManager.remove_clock_relic(1), "Cannot remove the minimum reserve")
 	RunManager.start_new_run([], [], 80, 1729)
 	var shop := preload("res://scripts/ui/clock_collection_screen.gd").new()
 	shop.mode = "shop"
@@ -27,11 +27,11 @@ func _ready() -> void:
 	var offered: ClockRelicData = shop._offers[0]
 	OKRunState.current_ok = 14
 	shop._buy(offered, 15)
-	assert(RunManager.clock_inventory.size() == 18)
+	assert(RunManager.clock_inventory.size() == 16)
 	OKRunState.current_ok = 30
 	shop._buy(offered, 15)
 	shop._buy(offered, 15)
-	assert(RunManager.clock_inventory.size() == 19)
+	assert(RunManager.clock_inventory.size() == 17)
 	assert(OKRunState.current_ok == 15, "A sold offer cannot be bought twice")
 	shop.queue_free()
 	var patterns: Dictionary = {}
