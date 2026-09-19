@@ -571,3 +571,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; source Blend/GLB; scripts/combat/custodian_materials.gd and UID; scripts/art/custodian_study_view.gd and UID; scenes/custodian_study.tscn; docs/custodian-production.md.
 - Verification: final 077 build/import/render checks passed; actual imported color-array ranges, exactly two metal overrides and playing idle verified. Final scene image reviewed. Geometry unchanged at 55,263 vertices.
 - Handoff: run scenes/custodian_study.tscn with F6 in Godot. Study only; no encounter or installer change. Forms, wear, attachments and bespoke animation remain unfinished; performance and AAA acceptance open. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Custodian authored idle
+- Branch: feat/yonatan-sentinel-production.
+- Completed: original four-second idle with lowered arms, relaxed claws, subtle chest/head/arm motion and fixed lower-body transforms. Removed inherited knight NLA tracks; study scene loops custodian_idle explicitly.
+- Fixed: extra leading export frame by beginning authored keys/NLA at frame zero.
+- Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
+- Verification: final 078 build/import/render checks pass. Exact 4-second duration; all-bone loop endpoint continuity; fixed foot transforms across seven samples; 8.88 mm sampled hand travel. Final pose inspected. Separate non-isolated headless diagnostic crashed; isolated rendered checks passed.
+- Handoff: no combat animations or encounter wiring yet. Costume clearance, torso connections, richer forms/material detail and controlled performance remain. Published 0.23 unchanged. Locks released; AAA goal active.

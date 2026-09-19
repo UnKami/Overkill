@@ -1,10 +1,10 @@
 """Hollow Custodian full-body study. Original geometry; shared skeleton only.
 Blender --background executioner-production.blend --python this script.
-Not connected to gameplay. Retains only the reference idle animation.
+Not connected to gameplay. Exports only the authored Custodian idle animation.
 """
 import bpy,bmesh,math
 from pathlib import Path
-from mathutils import Vector
+from mathutils import Vector, Matrix, Quaternion
 rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
 for o in list(bpy.data.objects):
@@ -309,10 +309,43 @@ bpy.context.view_layer.objects.active=parts[0];bpy.ops.object.join();body=bpy.co
 mod=body.modifiers.new('Custodian skin','ARMATURE');mod.object=rig;body.parent=rig
 rig.data.pose_position='POSE'
 rig.animation_data.action=None
-for track in list(rig.animation_data.nla_tracks):
- if 'idle' not in track.name:rig.animation_data.nla_tracks.remove(track)
- else:track.mute=False
-bpy.context.scene.frame_set(1);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
+for track in list(rig.animation_data.nla_tracks):rig.animation_data.nla_tracks.remove(track)
+
+def aim(name,direction):
+ p=rig.pose.bones[name];rest=p.bone;basis=rest.matrix_local.to_3x3()
+ rotation=basis.col[1].normalized().rotation_difference(Vector(direction).normalized())
+ matrix=(rotation.to_matrix() @ basis).to_4x4()
+ matrix.translation=p.parent.matrix @ (p.parent.bone.matrix_local.inverted() @ rest.head_local) if p.parent else rest.head_local
+ p.matrix=matrix;bpy.context.view_layer.update()
+
+# Original four-second idle: planted lower body, slight clockwork sway,
+# lowered arms and relaxed claws instead of the source knight's weapon grip.
+idle=bpy.data.actions.new('custodian_idle')
+bpy.context.scene.render.fps=30
+for frame in range(0,121,15):
+ rig.animation_data.action=None
+ for p in rig.pose.bones:
+  p.rotation_mode='QUATERNION';p.matrix_basis=Matrix.Identity(4)
+ bpy.context.view_layer.update()
+ pulse=math.cos(frame*math.tau/120)
+ aim('chest',(.007*pulse,.012,1))
+ aim('neck',(0,.012,1));aim('head',(.005*pulse,-.012,1))
+ for side,sign in [('L',-1),('R',1)]:
+  aim('upper_arm.'+side,(sign*(.25+.009*pulse),.015,-1))
+  aim('forearm.'+side,(sign*.22,.15+.009*pulse,-1))
+  aim('hand.'+side,(sign*.16,.20,-1))
+  for index,finger in enumerate(['f_index','f_middle','f_ring','f_pinky']):
+   for segment,angle in [(1,10),(2,18),(3,12)]:
+    p=rig.pose.bones[f'{finger}.{segment:02d}.{side}']
+    p.rotation_quaternion=Quaternion((1,0,0),math.radians(angle+index*2+pulse*.6))
+  for segment,angle in [(1,8),(2,12),(3,10)]:
+   rig.pose.bones[f'thumb.{segment:02d}.{side}'].rotation_quaternion=Quaternion((1,0,0),math.radians(angle))
+ rig.animation_data.action=idle
+ for p in rig.pose.bones:
+  p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+rig.animation_data.action=None
+track=rig.animation_data.nla_tracks.new();track.name='custodian_idle';track.strips.new('custodian_idle',0,idle)
+bpy.context.scene.frame_set(0);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/custodian-study.blend').resolve()))
 bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)
 print('CUSTODIAN_BUILD_OK',len(body.data.vertices),len(body.data.materials))

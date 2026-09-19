@@ -9,6 +9,7 @@ func _ready() -> void:
 		var player: AnimationPlayer = players[0] as AnimationPlayer
 		for clip: StringName in player.get_animation_list():
 			if "idle" in str(clip):
+				player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
 				player.play(clip)
 				break
 	$Camera3D.look_at(Vector3(0, 1.07, 0))
