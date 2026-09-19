@@ -6,7 +6,7 @@
 
 [Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.23.0-test/Overkill-0.23.0-Windows.zip) · [All releases](https://github.com/UnKami/Overkill/releases) · **[Update log](UPDATE_LOG.md)**
 
-Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update refines Sentinel armor and hand gestures, cape shapes and movement, stone surfaces and relic thumbnail clarity. Art and frame pacing remain in development. Use Play Boneghoul preview from the Start menu or Play Boneghoul.cmd in the portable folder; Play Sentinel remains available. The installer is unsigned. This is a playtest build; boss balance is still under review.
+Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update refines Sentinel armor and hand gestures, cape shapes and movement, stone surfaces and relic thumbnail clarity. Art and frame pacing remain in development. Use Play Sentinel encounter from the Start menu or Play Sentinel.cmd in the portable folder to inspect this update; the Boneghoul preview remains available. The installer is unsigned. This is a playtest build; boss balance is still under review.
 
 ## Partner sync
 
