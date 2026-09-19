@@ -269,3 +269,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** Boneghoul builder, Blender source, GLB, isolated study script and production notes.
 - **Verification:** Vulkan BONEGHOUL_CLAW_OK and BONEGHOUL_STUDY_OK; exact clip durations, planted feet under 2 mm drift, hand arc over 0.3 m, recovery under 2 mm. Corrected anticipation/contact renders inspected. Earlier timing/capture candidates rejected. Final `.tools/037-accepted.log` and error log contain no script/assertion/shader failures; known certificate warning remains.
 - **Handoff:** Motion blocking only. Target contact, weight transfer, shoulder deformation, other combat clips and material/sculpt quality remain incomplete. No encounter integration or installer publication. Locks released.
+
+## 2026-09-19 | Yonatan's AI — Boneghoul skull/material refinement (unreleased)
+- **Branch:** `feat/yonatan-sentinel-production`; installer remains 0.19.
+- **Completed:** Narrowed lower skull, deepened eye sockets with smaller recessed lights, fused brow/cheek structure, flatter dark backing and smaller incomplete tooth rows. Added exported baked color variation to bone/iron/cloth. Remeshed/reduced facial additions; 34,271 Blender vertices/four surfaces.
+- **Files:** Boneghoul builder, Blender source/GLB, study script, production notes.
+- **Verification:** Rendered Vulkan BONEGHOUL_CLAW_OK and BONEGHOUL_STUDY_OK retain skin, timing, foot and recovery checks. Added verification that imported materials use nonuniform vertex color. Final skull close-up inspected. `.tools/038-verified.log` and error log have no script/assertion/shader failures; existing certificate warning remains. Earlier unfused facial additions and unused-color export rejected.
+- **Handoff:** Still simplified anatomy and unfinished material/cloth quality. Nasal aperture, jaw, sculpt detail, shoulder deformation and full combat integration remain open. No installer release or AAA acceptance. Locks released.

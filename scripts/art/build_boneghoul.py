@@ -13,21 +13,43 @@ rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
 for o in list(bpy.data.objects):
     if o!=rig:bpy.data.objects.remove(o,do_unlink=True)
-parts=[];mats={}
+parts=[];mats={};palette={}
 for name,color,metal,rough in [
     ('Bone',(.17,.145,.105,1),.05,.9),('Iron',(.065,.075,.077,1),.75,.65),
     ('Cloth',(.022,.026,.032,1),0,.96),('Core',(.012,.18,.23,1),.25,.48)]:
     mat=bpy.data.materials.new('Boneghoul_'+name);mat.use_nodes=True
     bs=mat.node_tree.nodes.get('Principled BSDF')
     bs.inputs['Base Color'].default_value=color;bs.inputs['Metallic'].default_value=metal;bs.inputs['Roughness'].default_value=rough
+    vertex_color=mat.node_tree.nodes.new('ShaderNodeVertexColor');vertex_color.layer_name='Color'
+    mat.node_tree.links.new(vertex_color.outputs['Color'],bs.inputs['Base Color'])
     if name=='Core':bs.inputs['Emission Color'].default_value=color;bs.inputs['Emission Strength'].default_value=.9
     mats[name]=mat
+    palette[name]=color
 
 def bind(o,bone,material):
     bpy.context.view_layer.objects.active=o;o.select_set(True)
     bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
     bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
     o.data.materials.clear();o.data.materials.append(mats[material])
+    # Baked, deterministic broad staining survives glTF without an extra shader
+    # or texture lookup. Keep contrast low enough to read as material, not noise.
+    colors=o.data.color_attributes.new(name='Color',type='FLOAT_COLOR',domain='POINT')
+    for vertex in o.data.vertices:
+        point=o.matrix_world @ vertex.co
+        grain=(math.sin(point.x*31+point.z*17)*math.sin(point.y*27-point.z*9)+1)*.5
+        fine=(math.sin(point.x*103+point.y*79+point.z*67)+1)*.5
+        if material=='Bone':
+            shade=.57+.28*grain+.08*fine
+            colors.data[vertex.index].color=(shade,shade*.94,shade*.82,1)
+        elif material=='Iron':
+            shade=.66+.24*grain
+            colors.data[vertex.index].color=(shade,shade*.97,shade*.92,1)
+        elif material=='Cloth':
+            shade=.58+.30*grain
+            colors.data[vertex.index].color=(shade*.92,shade*.95,shade,1)
+        else:colors.data[vertex.index].color=(1,1,1,1)
+        tint=colors.data[vertex.index].color
+        colors.data[vertex.index].color=tuple(tint[i]*palette[material][i] for i in range(3))+(1,)
     for p in o.data.polygons:p.use_smooth=True
     o.vertex_groups.new(name=bone).add(list(range(len(o.data.vertices))),1,'REPLACE')
     parts.append(o);o.select_set(False)
@@ -129,24 +151,52 @@ for side,sign in [('L',-1),('R',1)]:
 bpy.ops.mesh.primitive_uv_sphere_add(segments=32,ring_count=20,location=(0,.005,1.965))
 skull=bpy.context.object;skull.name='Hollow-eyed skull';skull.scale=(.116,.108,.145)
 bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
+# Narrow the lower face and temple, leaving the cranial vault broad. This avoids
+# a spherical mask with button eyes and creates cheek/muzzle separation.
+for vertex in skull.data.vertices:
+    height=vertex.co.z
+    if height<-.025:
+        vertex.co.x*=.66+.34*max(0,min(1,(height+.14)/.115))
+    if -.055<height<.025 and vertex.co.y>.02:
+        vertex.co.y-=.018*math.sin((height+.055)/.08*math.pi)
 for side in [-1,1]:
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=20,ring_count=12,location=(side*.052,.095,1.985))
-    cutter=bpy.context.object;cutter.scale=(.04,.056,.04)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=24,ring_count=16,location=(side*.051,.096,1.986))
+    cutter=bpy.context.object;cutter.scale=(.044,.073,.035);cutter.rotation_euler.y=side*-.18
     bpy.context.view_layer.objects.active=skull
     boolean=skull.modifiers.new('Carved eye socket','BOOLEAN');boolean.operation='DIFFERENCE';boolean.object=cutter
     bpy.ops.object.modifier_apply(modifier=boolean.name);bpy.data.objects.remove(cutter,do_unlink=True)
 bind(skull,'head','Bone')
+facial_bones=[skull]
 for side in [-1,1]:
-    sphere('Socket darkness',(side*.052,.078,1.985),(.032,.024,.032),'head','Cloth')
-    sphere('Soul eye',(side*.052,.101,1.985),(.009,.007,.009),'head','Core')
+    socket=[(side*.051,.027,1.986)]+[(side*.051+math.cos(i*math.tau/24)*.034,.027,1.986+math.sin(i*math.tau/24)*.028) for i in range(24)]
+    sheet('Socket darkness',socket,[(0,i+1,(i+1)%24+1) for i in range(24)],'head','Cloth',.001)
+    sphere('Soul eye',(side*.051,.047,1.986),(.005,.004,.006),'head','Core')
+    facial_bones.append(tube('Supraorbital ridge',[(side*.010,.092,2.014),(side*.045,.099,2.017),(side*.084,.062,2.016)],[.009,.013,.007],'head'))
+    facial_bones.append(tube('Zygomatic arch',[(side*.091,.031,1.98),(side*.085,.064,1.954),(side*.052,.080,1.932)],[.011,.014,.009],'head'))
     tube('Jawbone',[(side*.095,.025,1.93),(side*.082,.077,1.83),(side*.035,.108,1.815),(0,.111,1.815)],[.018,.019,.017,.016],'head')
 for row in [0,1]:
-    for index in range(7):
-        x=(index-3)*.019
+    for index in range(9):
+        if (row==0 and index==1) or (row==1 and index==7):continue
+        x=(index-4)*.013
         h=1.886 if row==0 else 1.829
-        end=h-.023-(index%2)*.004 if row==0 else h+.018
-        tube('Tooth',[(x,.103-abs(x)*.15,h),(x,.112-abs(x)*.15,end)],[.009,.006],'head',sides=6)
+        end=h-.014-(index%3)*.003 if row==0 else h+.013
+        tube('Tooth',[(x,.103-abs(x)*.15,h),(x,.112-abs(x)*.15,end)],[.006,.0045],'head',sides=6)
 sheet('Nasal recess',[(-.018,.113,1.943),(.018,.113,1.943),(0,.12,1.916)],[(0,1,2)],'head','Cloth')
+# Fuse cheek/brow additions into the cranium so they read as bone, not glued rods.
+bpy.ops.object.select_all(action='DESELECT')
+for piece in facial_bones:
+    piece.select_set(True);parts.remove(piece)
+bpy.context.view_layer.objects.active=skull
+bpy.ops.object.join()
+remesh=skull.modifiers.new('Continuous facial bone','REMESH');remesh.mode='VOXEL';remesh.voxel_size=.0025
+bpy.ops.object.modifier_apply(modifier=remesh.name)
+smooth=skull.modifiers.new('Soften fused transitions','SMOOTH');smooth.factor=.7;smooth.iterations=4
+bpy.ops.object.modifier_apply(modifier=smooth.name)
+decimate=skull.modifiers.new('Facial game mesh','DECIMATE');decimate.ratio=.30
+bpy.ops.object.modifier_apply(modifier=decimate.name)
+skull.vertex_groups.clear()
+for attribute in list(skull.data.color_attributes):skull.data.color_attributes.remove(attribute)
+bind(skull,'head','Bone')
 
 # Folded hood: open around the face, tapering into a sewn closed crown.
 levels=[(1.72,.21,.16,.28),(1.82,.18,.16,.85),(1.99,.175,.17,.78),(2.10,.155,.15,.52),(2.17,.08,.085,.12)]

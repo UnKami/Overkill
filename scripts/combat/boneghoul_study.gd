@@ -45,6 +45,18 @@ func _ready() -> void:
 	assert(bodies.size() == 1, "Study must export one skinned body")
 	var body: MeshInstance3D = bodies[0]
 	assert(body.skin != null and body.mesh.get_surface_count() == 4)
+	for surface: int in range(body.mesh.get_surface_count()):
+		var colors: PackedColorArray = body.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
+		assert(not colors.is_empty(), "Baked material variation must survive export")
+		var material: StandardMaterial3D = body.mesh.surface_get_material(surface)
+		assert(material.vertex_color_use_as_albedo, "Imported material must use baked color")
+		if not "Core" in material.resource_name:
+			var low: float = 1.0
+			var high: float = 0.0
+			for color: Color in colors:
+				low = minf(low,color.r)
+				high = maxf(high,color.r)
+			assert(high-low > 0.003, "Material variation must contain nonuniform color")
 	var skeleton: Skeleton3D = _model.find_children("*","Skeleton3D",true,false)[0]
 	assert(skeleton.find_bone("f_middle.03.R") >= 0, "Claw rig must retain articulated finger tips")
 	var animation: AnimationPlayer = _model.find_children("*","AnimationPlayer",true,false)[0]
@@ -81,6 +93,11 @@ func _ready() -> void:
 		_camera.look_at(Vector3(0,1.1,0))
 		await get_tree().create_timer(0.45).timeout
 		await capture(angle)
+	_camera.position = Vector3(.45,2.0,-1.2)
+	_camera.look_at(Vector3(0,1.92,0))
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await capture("skull")
 	_camera.position = Vector3(2.7,1.8,-4.0)
 	_camera.look_at(Vector3(0,1.1,0))
 	animation.play(claw)

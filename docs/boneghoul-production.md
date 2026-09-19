@@ -8,7 +8,7 @@ The production direction remains dark cinematic fantasy in 3D. `assets/enemies/a
 
 Run Blender 4.5.9 in background mode with `art_source/characters/executioner-production.blend` and `--python scripts/art/build_boneghoul.py`. The script retains the shared skeleton, removes knight geometry and builds an original body. It saves `art_source/characters/boneghoul-production.blend` and exports `assets/characters/rigged/boneghoul.glb`.
 
-The body has 20,926 Blender vertices and four material surfaces: aged bone, iron, dark cloth and a muted core. Geometry includes ribs, vertebrae, clavicles, pelvis, paired limb bones, articulated claw segments, connected palms, clawed feet, recessed skull sockets, a separate jaw, hood, mantle and torn cloth strips. Evaluated foot geometry rests 0.006 m above the model ground plane.
+The body has 34,271 Blender vertices and four material surfaces: aged bone, iron, dark cloth and a muted core. Geometry includes ribs, vertebrae, clavicles, pelvis, paired limb bones, articulated claw segments, connected palms, clawed feet, recessed skull sockets, a separate jaw, hood, mantle and torn cloth strips. Evaluated foot geometry rests 0.006 m above the model ground plane.
 
 The original idle and an authored claw-rake study are exported. Shared combat actions are retained as reference actions in the Blender source, excluded from the GLB because their sword performance is inappropriate for this enemy.
 
@@ -34,3 +34,11 @@ The rake uses a raised open wind-up, brief hold, faster diagonal reach, crossing
 Rendered Vulkan BONEGHOUL_CLAW_OK verifies clip duration, foot drift below 2 mm, hand travel over 0.3 m and recovery within 2 mm. Anticipation and contact captures were inspected after fixing source-action evaluation during key authoring and the timebase. Evidence: `.tools/037-accepted.log`, `.tools/037-accepted-errors.log`, `.tools/037-accepted/Godot/app_userdata/Overkill/boneghoul-036/`. Earlier 037 captures are rejected. Final logs contain only the existing certificate-store warning.
 
 This is motion blocking, not finished animation. A strong wind-up is visible, but weight transfer, shoulder deformation, follow-through, target contact and encounter timing still need work. Guard, hit and death remain unauthored. The isolated model still lacks the intended material and sculpt quality. No production encounter or installer changes are included.
+
+## Skull and material refinement
+
+Narrowed the lower cranium, deepened sockets and reduced/recessed cyan eye lights. Added brow and cheek structure, fused it into the cranium with voxel remeshing, then reduced the facial mesh for export. Replaced rounded dark socket inserts with flat recessed backing, reduced teeth and introduced missing teeth. Baked low-contrast material staining into vertex colors, explicitly connected to material albedo for glTF export. Four material surfaces remain; current complete body has 34,271 Blender vertices.
+
+Vulkan study, clip duration, foot/recovery checks and material-color import checks pass. Each non-core surface must contain nonuniform color and use it as albedo. Final skull close-up inspected in `.tools/038-verified/Godot/app_userdata/Overkill/boneghoul-036/skull.png`; build/import/runtime evidence is `.tools/038-build-verified.log`, `.tools/038-import-verified.log`, `.tools/038-verified.log` and `.tools/038-verified-errors.log`. No final script/assertion/shader errors; existing certificate warning remains. First separate facial rods and unused-color export candidates were rejected.
+
+The face still reads as simplified stylized anatomy. Jaw shape, nasal aperture, hood thickness/folds, sculpted damage, material microdetail and shoulder deformation remain below the target. Vertex staining is broad material variation, not a substitute for finished texture work. No performance or AAA acceptance is implied, and this study is not in the published installer.
