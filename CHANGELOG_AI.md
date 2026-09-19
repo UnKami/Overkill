@@ -471,3 +471,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_sentinel.py; assets/characters/rigged/sentinel.glb; art_source/characters/sentinel-production.blend; docs/sentinel-production.md.
 - Verification: final Blender/import, close-up/gameplay visual inspection, two full Sentinel production regressions. Investigated unusually slow timing with old/new/old mesh swaps; revised geometry no slower in this noisy sample, no performance acceptance. Details and limitations in production notes.
 - Handoff: source checkpoint only; published 0.22 unchanged. Requires next packaged release along with prior unreleased changes. Broader AAA target unfinished. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — GPU contention diagnosis
+- Branch: feat/yonatan-sentinel-production.
+- Completed: isolated 3D rendering vs UI, investigated shadow cost, identified competing game GPU workloads through Windows counters and process IDs after test exit.
+- Files: docs/sentinel-production.md; CHANGELOG_AI.md. No production rendering change retained.
+- Verification: three sequential diagnostic fixtures; final logs no script/shader/assertion errors. GPU counters showed SlayTheSpire2 ~69%, separate Overkill ~19%, ChatGPT ~8%; user processes left running.
+- Handoff: do not optimize from noisy comparisons or claim a model regression; request user close competing games before fresh profiling. Previous art checks remain visual/functional evidence, not performance acceptance. Locks released; goal remains active.
+- User follow-up: Overkill closed, Slay the Spire 2 remains in use; continue art work and defer controlled profiling.
