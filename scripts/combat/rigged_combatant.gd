@@ -307,8 +307,17 @@ func _align_weapon() -> void:
 		elif t < 0.40: direction = toward
 		elif t < 0.51: direction = toward.slerp(down,smoothstep(0.40,0.51,t))
 		else: direction = down.slerp(idle,smoothstep(0.51,0.76,t))
-	var up := Vector3.FORWARD if absf(direction.dot(Vector3.UP)) > 0.98 else Vector3.UP
-	_weapon.global_basis = Basis.looking_at(-direction,up).scaled(Vector3.ONE*global_basis.get_scale().x)
+	# Keep blade roll stable through vertical windup/recovery. Switching between
+	# world-up and world-forward caused a visible quarter-turn at the threshold.
+	# The swing occupies the actor's forward/up plane, so its lateral axis remains
+	# a stable transverse reference even when the weapon points straight upward.
+	var lateral: Vector3 = global_basis.x.normalized()
+	var right: Vector3 = lateral - direction * lateral.dot(direction)
+	if right.length_squared() < 0.001:
+		right = direction.cross(global_basis.y.normalized())
+	right = right.normalized()
+	var up: Vector3 = direction.cross(right).normalized()
+	_weapon.global_basis = Basis(right,up,direction).scaled(Vector3.ONE*global_basis.get_scale().x)
 	# Center the handle inside the palm rather than at the wrist joint.
 	_weapon.global_position = palm - _weapon.global_basis * Vector3(0,0.05,0)
 

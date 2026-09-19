@@ -18,6 +18,7 @@ func _ready() -> void:
 	for actor: RiggedCombatant in [stage.player, stage.enemy]:
 		actor.set_process(false)
 		actor._animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+		audit_swing(actor)
 		for moment: float in [0.0,0.20,0.32,0.48,0.76]:
 			actor.attack()
 			actor._animation.seek(actor._retimed_attack_time(moment),true)
@@ -47,6 +48,27 @@ func _ready() -> void:
 
 func point(actor: RiggedCombatant, bone: String) -> Vector3:
 	return actor._skeleton.to_global(actor._skeleton.get_bone_global_pose(actor._skeleton.find_bone(bone)).origin)
+
+func audit_swing(actor: RiggedCombatant) -> void:
+	var previous: Quaternion = Quaternion.IDENTITY
+	var largest_step: float = 0.0
+	var largest_time: float = 0.0
+	actor._play("execution_cut", 0.0)
+	for sample: int in 93:
+		var moment: float = minf(sample / 120.0, 0.76)
+		actor._animation.seek(actor._retimed_attack_time(moment), true)
+		actor._skeleton.force_update_all_bone_transforms()
+		actor._apply_attack_weight()
+		actor._align_weapon()
+		var orientation: Quaternion = actor._weapon.global_basis.orthonormalized().get_rotation_quaternion()
+		if sample > 0:
+			var step: float = rad_to_deg(previous.angle_to(orientation))
+			if step > largest_step:
+				largest_step = step
+				largest_time = moment
+		previous = orientation
+	print("SWING_CONTINUITY hostile=",actor.hostile," max_step_degrees=",largest_step," time=",largest_time)
+	assert(largest_step < 30.0, "Weapon must not snap its roll at the vertical-pose reference boundary")
 
 func capture(label: String) -> void:
 	if DisplayServer.get_name() == "headless": return

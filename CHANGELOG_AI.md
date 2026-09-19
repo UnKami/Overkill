@@ -394,3 +394,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_executioner.py; art_source/characters/{executioner,sentinel}-production.blend; assets/characters/rigged/{executioner,sentinel}.glb; scripts/combat/weapon_grip_test.gd (+uid); docs/sentinel-production.md.
 - Verification: both Blender build sentinels; Godot import; rendered five-pose grip, Boneghoul contact/guard/interruption, Sentinel production suites. Final `.tools/053-*` logs clean of script/assertion/shader/Python failures, known certificate warning remains. Player/Sentinel impact wrist bends approximately 17 degrees. Reviewed close-up captures.
 - Handoff: finger/thumb wrapping, hand/weapon orientation through the whole swing, richer body motion and broader visual quality remain unfinished. Source checkpoint only; published 0.21 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Continuous weapon roll through overhead poses
+- Branch: feat/yonatan-sentinel-production.
+- Completed: replaced vertical-pose world-reference switch with actor-relative transverse basis; added 93-sample per actor swing continuity regression.
+- Files: scripts/combat/rigged_combatant.gd; scripts/combat/weapon_grip_test.gd; docs/sentinel-production.md.
+- Verification: baseline 124.81/132.00-degree adjacent orientation snaps reduced to 21.02/20.28 degrees during the strike. Rendered grip, Boneghoul contact/guard/interruption and Sentinel production checks pass; close-up reviewed. Evidence `.tools/054-*`; no final script/assertion/shader failures, known certificate warning remains.
+- Handoff: continuous roll does not solve all finger/weapon alignment, choreography, art or performance needs. Not AAA acceptance. Published installer remains 0.21. Locks released.
