@@ -528,3 +528,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb and import; docs/custodian-production.md.
 - Verification: final Blender/import, Vulkan front/quarter image review; one skin/four materials/idle-only export checks. 071 final logs clean except certificate warning.
 - Handoff: isolated incomplete study, no encounter wiring or combat acceptance. Next body/armor and authored motion. Published 0.23 unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Hollow Custodian torso study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: exposed torso rails/spine, three spoked wheels, split breastplate, collar, shoulder shards and pelvic arch. Replaced thick flat plate extrusions with thinner crowned shells; corrected suspension-pin intersections.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: Blender build 24,834 vertices/four surfaces; Godot import and rendered isolated study passed skin/material/idle checks. Front/quarter/rear visual review; final front review after pin correction. 072 final logs clean except known certificate warning.
+- Handoff: unfinished bust only, no gameplay integration or new installer. Limbs, attachments, wear and motion still needed. Performance measurements deferred while user plays Slay the Spire 2. Published 0.23 unchanged. Locks released; AAA objective active.
