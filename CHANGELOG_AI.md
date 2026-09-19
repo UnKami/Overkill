@@ -262,3 +262,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `scripts/art/build_boneghoul.py`, Boneghoul Blender source/GLB/import, isolated `boneghoul_study.gd`/UID and scene, `docs/boneghoul-production.md`.
 - **Verification:** 20,926 Blender vertices/four surfaces; Vulkan study captures reviewed after geometry correction. Final rebuild/import/headless BONEGHOUL_STUDY_OK verifies skin, finger rig, idle and absence of combat clips. Both evaluated soles approximately 0.00600004 m above ground. No final script/assertion/parse/shader failures; existing certificate warning remains. Evidence `.tools/036-grounded.log` and `.tools/036-*-clean.log` / `.tools/036-clean.log`.
 - **Handoff:** Early model study, not production combat integration or AAA acceptance. Skull/anatomy, cloth and material finish need substantial refinement, followed by claw attacks, guard/recoil/death and contact/foot/interruption tests. No new installer for this checkpoint. Locks released.
+
+## 2026-09-19 | Yonatan's AI — Boneghoul claw motion blocking (unreleased)
+- **Branch:** `feat/yonatan-sentinel-production`; installer remains 0.19.
+- **Completed:** Authored raised anticipation/hold, diagonal claw rake, follow-through and idle recovery. Explicit 30 fps corrects inherited timing; excluded reference sword clips remain excluded. Source action detached during pose authoring to prevent pose reevaluation.
+- **Files:** Boneghoul builder, Blender source, GLB, isolated study script and production notes.
+- **Verification:** Vulkan BONEGHOUL_CLAW_OK and BONEGHOUL_STUDY_OK; exact clip durations, planted feet under 2 mm drift, hand arc over 0.3 m, recovery under 2 mm. Corrected anticipation/contact renders inspected. Earlier timing/capture candidates rejected. Final `.tools/037-accepted.log` and error log contain no script/assertion/shader failures; known certificate warning remains.
+- **Handoff:** Motion blocking only. Target contact, weight transfer, shoulder deformation, other combat clips and material/sculpt quality remain incomplete. No encounter integration or installer publication. Locks released.

@@ -49,10 +49,15 @@ func _ready() -> void:
 	assert(skeleton.find_bone("f_middle.03.R") >= 0, "Claw rig must retain articulated finger tips")
 	var animation: AnimationPlayer = _model.find_children("*","AnimationPlayer",true,false)[0]
 	var idle: StringName = &""
+	var claw: StringName = &""
 	for clip: StringName in animation.get_animation_list():
-		assert("combat_idle" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
+		assert("combat_idle" in str(clip) or "claw_rake" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
 		if "combat_idle" in str(clip): idle = clip
+		if "claw_rake" in str(clip): claw = clip
 	assert(idle != &"")
+	assert(claw != &"")
+	assert(absf(animation.get_animation(claw).length - 40.0/30.0) < 0.02, "Claw authoring timebase must be 30 fps")
+	assert(absf(animation.get_animation(idle).length - 121.0/30.0) < 0.02, "Idle authoring timebase must be 30 fps")
 	animation.get_animation(idle).loop_mode = Animation.LOOP_LINEAR
 	animation.play(idle)
 	_camera = Camera3D.new()
@@ -67,7 +72,7 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size",26)
 	caption.add_child(title)
 	var note: Label = Label.new()
-	note.text = "Skinned geometry and idle / Combat integration pending"
+	note.text = "Skinned model and claw study / Combat integration pending"
 	note.position = Vector2(28,1030)
 	note.add_theme_font_size_override("font_size",20)
 	caption.add_child(note)
@@ -76,6 +81,30 @@ func _ready() -> void:
 		_camera.look_at(Vector3(0,1.1,0))
 		await get_tree().create_timer(0.45).timeout
 		await capture(angle)
+	_camera.position = Vector3(2.7,1.8,-4.0)
+	_camera.look_at(Vector3(0,1.1,0))
+	animation.play(claw)
+	animation.pause()
+	animation.seek(0,true)
+	var right_foot: int = skeleton.find_bone("foot.R")
+	var left_foot: int = skeleton.find_bone("foot.L")
+	var palm: int = skeleton.find_bone("hand.R")
+	var feet: Array[Vector3] = [skeleton.get_bone_global_pose(right_foot).origin,skeleton.get_bone_global_pose(left_foot).origin]
+	var initial_hand: Vector3 = skeleton.get_bone_global_pose(palm).origin
+	var windup: Vector3
+	for sample: Array in [["anticipation",14.0/30.0],["contact",19.0/30.0],["followthrough",23.0/30.0],["recovery",40.0/30.0]]:
+		animation.seek(sample[1],true)
+		skeleton.force_update_all_bone_transforms()
+		assert(skeleton.get_bone_global_pose(right_foot).origin.distance_to(feet[0]) < 0.002, "Right foot slides")
+		assert(skeleton.get_bone_global_pose(left_foot).origin.distance_to(feet[1]) < 0.002, "Left foot slides")
+		var hand_position: Vector3 = skeleton.get_bone_global_pose(palm).origin
+		if sample[0] == "anticipation": windup = hand_position
+		if sample[0] == "contact": assert(hand_position.distance_to(windup) > 0.3, "Claw needs a readable strike arc")
+		if sample[0] == "recovery": assert(hand_position.distance_to(initial_hand) < 0.002, "Claw must return to idle")
+		await get_tree().process_frame
+		await get_tree().process_frame
+		await capture(sample[0])
+	print("BONEGHOUL_CLAW_OK: authored anticipation, rake and recovery; planted feet; encounter contact pending")
 	print("BONEGHOUL_STUDY_OK: original skinned body, four surfaces, finger rig and authored idle; combat integration pending")
 	get_tree().quit()
 

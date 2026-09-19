@@ -6,6 +6,9 @@ import bpy, bmesh, math
 from pathlib import Path
 from mathutils import Vector, Quaternion
 
+# Authoring frames below use 30 fps; do not inherit the source rig's 60 fps.
+bpy.context.scene.render.fps=30
+
 rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
 for o in list(bpy.data.objects):
@@ -252,6 +255,43 @@ for track in list(rig.animation_data.nla_tracks):
         strip.action.use_fake_user=True
         strip.action.name='Reference_'+track.name
     rig.animation_data.nla_tracks.remove(track)
+# A planted, diagonal right-claw rake. The wind-up opens the silhouette before
+# the faster strike, then follows through across the chest and returns to idle.
+idle_action=action
+rig.animation_data.action=idle_action
+bpy.context.scene.frame_set(1);bpy.context.view_layer.update()
+idle_basis={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+strike=bpy.data.actions.new('claw_rake');rig.animation_data.action=strike
+poses=[
+    (1,None),
+    (10,((.60,-.45,.25),(.35,-.25,.70),(.05,.8,.1),-.10,.08)),
+    (14,((.60,-.48,.28),(.35,-.25,.70),(.05,.8,.1),-.11,.08)),
+    (19,((.22,.92,-.12),(-.1,1,-.2),(-.1,1,-.25),.36,.28)),
+    (23,((-.50,.75,-.5),(-.50,.6,-.5),(-.35,.5,-.7),.28,.24)),
+    (31,((.28,.2,-.85),(.0,.75,-.55),(0,.6,-.7),.12,.18)),
+    (40,None)]
+for frame,pose in poses:
+    rig.animation_data.action=None
+    for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+    bpy.context.view_layer.update()
+    if pose:
+        upper,lower,hand,turn,lean=pose
+        aim('spine',(turn*.25,.18,1));aim('chest',(turn,.24+lean,1))
+        aim('neck',(-turn*.25,.22,1));aim('head',(0,-.06,1))
+        aim('upper_arm.R',upper);aim('forearm.R',lower);aim('hand.R',hand)
+        aim('upper_arm.L',(-.4,.15,-.85));aim('forearm.L',(.30,.6,-.35))
+        for finger in ['f_index','f_middle','f_ring','f_pinky']:
+            for segment in range(1,4):
+                p=rig.pose.bones[f'{finger}.{segment:02d}.R']
+                p.rotation_quaternion=Quaternion((1,0,0),math.radians(8+segment*5))
+    rig.animation_data.action=strike
+    for p in rig.pose.bones:
+        p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+track=rig.animation_data.nla_tracks.new();track.name='claw_rake'
+track.strips.new('claw_rake',1,strike);track.mute=True
+rig.animation_data.action=None
+for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+bpy.context.scene.frame_set(1);bpy.context.view_layer.update()
 rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/boneghoul-production.blend').resolve()))
 bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/boneghoul.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=False,export_yup=True)
