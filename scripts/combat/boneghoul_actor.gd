@@ -1,0 +1,89 @@
+class_name BoneghoulActor extends Node3D
+## Clawed actor under encounter validation; intentionally not routed into runs yet.
+signal contact_reached
+
+enum State { IDLE, ATTACK, GUARD, RECOIL, DEAD }
+const CONTACT_TIME: float = 19.0 / 30.0
+const ATTACK_LENGTH: float = 40.0 / 30.0
+var state: State = State.IDLE
+var model: Node3D
+var skeleton: Skeleton3D
+var animation: AnimationPlayer
+var _clips: Dictionary = {}
+var _contact_sent: bool = false
+
+func _ready() -> void:
+	model = preload("res://assets/characters/rigged/boneghoul.glb").instantiate()
+	add_child(model)
+	model.rotation.y = PI
+	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
+	animation = model.find_children("*", "AnimationPlayer", true, false)[0]
+	# Manual advancement keeps contact crossing and interruption in the same clock.
+	animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+	for clip: StringName in animation.get_animation_list():
+		for key: String in ["combat_idle", "claw_rake", "claw_guard", "claw_recoil", "claw_collapse"]:
+			if key in str(clip): _clips[key] = clip
+	assert(_clips.size() == 5)
+	_play("combat_idle", 0.0)
+
+func _process(delta: float) -> void:
+	advance_motion(delta * AudioManager.animation_speed_scale())
+
+func advance_motion(seconds: float) -> void:
+	var before: float = animation.current_animation_position
+	if state == State.ATTACK and not _contact_sent and before + seconds >= CONTACT_TIME:
+		var until_contact: float = maxf(0.0, CONTACT_TIME - before)
+		animation.advance(until_contact)
+		skeleton.force_update_all_bone_transforms()
+		_contact_sent = true
+		contact_reached.emit()
+		# A contact listener may kill or interrupt this actor synchronously.
+		# Remaining time belongs to the new state, never the cancelled attack.
+		advance_motion(maxf(0.0, seconds - until_contact))
+		return
+	var length: float = animation.current_animation_length
+	animation.advance(seconds)
+	skeleton.force_update_all_bone_transforms()
+	if before + seconds < length: return
+	if state == State.DEAD:
+		animation.seek(length, true)
+	elif state == State.IDLE:
+		_play("combat_idle", 0.0)
+	else:
+		state = State.IDLE
+		_play("combat_idle", 0.08)
+
+func _play(key: String, blend: float) -> void:
+	animation.stop(true)
+	animation.play(_clips[key], blend)
+	animation.advance(0.0)
+
+func attack() -> void:
+	if state == State.DEAD: return
+	state = State.ATTACK
+	_contact_sent = false
+	_play("claw_rake", 0.06)
+
+func hit(blocked: bool) -> void:
+	if state == State.DEAD: return
+	state = State.GUARD if blocked else State.RECOIL
+	_play("claw_guard" if blocked else "claw_recoil", 0.025)
+
+func fall() -> void:
+	if state == State.DEAD: return
+	state = State.DEAD
+	_play("claw_collapse", 0.08)
+
+func contact_time() -> float:
+	return CONTACT_TIME
+
+func recovery_time() -> float:
+	return ATTACK_LENGTH - CONTACT_TIME
+
+func bone_point(bone: String) -> Vector3:
+	return skeleton.to_global(skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin)
+
+func claw_tip() -> Vector3:
+	var index: int = skeleton.find_bone("f_middle.03.R")
+	var pose: Transform3D = skeleton.get_bone_global_pose(index)
+	return skeleton.to_global(pose * Vector3(0.0, 0.045, 0.0))

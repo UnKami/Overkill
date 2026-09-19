@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Boneghoul opponent contact and interruption study | scripts/combat/boneghoul_actor.gd; scripts/combat/boneghoul_actor.gd.uid; scripts/combat/boneghoul_contact_test.gd; scripts/combat/boneghoul_contact_test.gd.uid; scenes/boneghoul_contact_test.tscn; docs/boneghoul-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

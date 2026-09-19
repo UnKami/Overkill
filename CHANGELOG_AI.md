@@ -324,3 +324,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** Boneghoul builder, Blender source/GLB, model-study script and production notes.
 - **Verification:** Vulkan/headless BONEGHOUL_COLLAPSE_OK plus prior attack/reaction/model checks. Both feet under 2 mm drift across 48 samples; body drop over 0.5 m, held endpoint and hand clearance. Final evaluated mesh minimum 0.00600004 m above ground. Final collapse render inspected. Final `.tools/044-*` logs have no script/assertion/shader failures; known certificate/headless exit warnings remain.
 - **Handoff:** Motion study only; actual combat contact, interruptions, terminal routing and better art/deformation remain. No ragdoll or full collision acceptance. No installer update or AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Boneghoul opponent contact study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: dedicated claw actor with contact-time splitting, interruption cancellation and terminal protection; opponent fixture exposed existing-spacing miss and calibrated a planted close stance.
+- Files: scripts/combat/boneghoul_actor.gd (+uid), scripts/combat/boneghoul_contact_test.gd (+uid), scenes/boneghoul_contact_test.tscn, docs/boneghoul-production.md.
+- Verification: headless `.tools/045-verified.log`; Vulkan `.tools/045-render.log` and errors log; both contact captures inspected. 0.7679 m original center miss; calibrated surface gap 0.0371 m. Tests include synchronous contact-to-death callback and long-frame contact position. Known certificate/headless-exit warnings remain.
+- Handoff: isolated study only, not normal encounter routing or an installer update. Reciprocal weapon clearance, moving targets, full-fight scheduling and art refinement remain. Published 0.20 unchanged; no AAA acceptance. Locks released.
