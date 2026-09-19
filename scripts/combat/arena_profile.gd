@@ -12,7 +12,7 @@ func _process(delta: float) -> void:
 	if not exercise_actions: return
 	action_elapsed += delta * AudioManager.animation_speed_scale()
 	var from_player: bool = action_cycle % 2 == 0
-	var actor: RiggedCombatant = stage.player if from_player else stage.enemy
+	var actor: Node3D = stage.player if from_player else stage.enemy
 	if not contact_sent and action_elapsed >= actor.contact_time():
 		stage.impact(not from_player,action_cycle % 3 == 0)
 		contact_sent = true
@@ -30,13 +30,23 @@ func _ready() -> void:
 	RunManager.start_new_run([],[],80,1729)
 	battle = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(battle)
-	battle.start_combat([ContentDatabase.get_enemy("act1_boss")])
+	var bone_study: bool = OS.get_cmdline_user_args().has("--arena-profile-bone")
+	battle.start_combat([ContentDatabase.get_enemy("boneghoul" if bone_study else "act1_boss")])
 	stage = battle._stage
 	await get_tree().create_timer(4.0).timeout
 	RenderingServer.viewport_set_measure_render_time(stage._view.get_viewport_rid(),true)
 	for child: Node in battle.get_children():
 		if child is CanvasItem and child != stage and child.visible: hidden_ui.append(child)
 	await sample("full_start")
+	if bone_study:
+		assert(stage.enemy is BoneghoulActor, "Bone material profile requires --boneghoul-3d")
+		stage.enemy.set_surface_detail(false)
+		await sample("bone_base")
+		stage.enemy.set_surface_detail(true)
+		await sample("bone_detail_restored")
+		print("ARENA_PROFILE_DONE bone_material_comparison")
+		get_tree().quit()
+		return
 	if "--arena-profile-actions" in OS.get_cmdline_user_args():
 		battle._choice_overlay.hide()
 		stage.set_decision_view(false)

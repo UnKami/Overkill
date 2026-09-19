@@ -366,3 +366,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Main distribution PR: https://github.com/UnKami/Overkill/pull/10, merged as 62cab6900306f3c8331eab9fb007a9ca96460729. Homepage, installer README and update log read back from main with 0.21.0. The first post-merge verification helper retained the old 0.20 regex; corrected read-only verification passed without repeating the merge.
 - Partner path: repository → Releases → 0.21.0 → Assets → OverkillSetup-0.21.0.exe; Start menu → Play Boneghoul preview. Portable folder → Play Boneghoul.cmd.
 - Handoff: release and distribution docs are live. Gameplay remains on feature branch. Model/material refinement, richer animation, performance profiling and full-game quality work continue. Interactive installer wizard remains untested. No AAA acceptance. Publication locks released.
+
+## 2026-09-19 | Yonatan / Codex — Aged-bone surface and integrated cost comparison
+- Branch: feat/yonatan-sentinel-production.
+- Completed: restrained bone-only wear/roughness/normal detail with subpixel fade; reversible A/B material study; optional Boneghoul material mode in arena profiler. Existing model remains four surfaces.
+- Files: assets/shaders/aged_bone.gdshader (+uid), scripts/combat/boneghoul_actor.gd, scripts/combat/boneghoul_material_test.gd (+uid), scenes/boneghoul_material_test.tscn, scripts/combat/arena_profile.gd, docs/boneghoul-production.md.
+- Verification: Vulkan/GL close and wide renders; override/restoration structure; contact/interruption regression; sequential integrated idle comparison. Final `.tools/050-final*`, `050-gl*`, `050-structural.log`, `050-contact.log`, `050-arena*`. No final script/assertion/shader errors; known warnings remain. Draws unchanged at 308; approximately 14-15 ms medians / 20 ms p95, variable and not performance acceptance.
+- Handoff: anatomy remains simplified; shader is an incremental surface treatment, not AAA finish. GL isolated lighting is darker even at baseline. Published 0.21 unchanged. Locks released.

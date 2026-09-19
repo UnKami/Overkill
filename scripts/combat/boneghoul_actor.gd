@@ -1,5 +1,5 @@
 class_name BoneghoulActor extends Node3D
-## Clawed actor under encounter validation; intentionally not routed into runs yet.
+## Clawed actor used by the opt-in Boneghoul encounter.
 signal contact_reached
 
 enum State { IDLE, ATTACK, GUARD, RECOIL, DEAD }
@@ -13,11 +13,13 @@ var _clips: Dictionary = {}
 var _contact_sent: bool = false
 var _guard_held: bool = false
 var _dead: bool = false
+var _bone_material: ShaderMaterial
 const GUARD_HOLD_TIME: float = 7.0 / 30.0
 
 func _ready() -> void:
 	model = preload("res://assets/characters/rigged/boneghoul.glb").instantiate()
 	add_child(model)
+	set_surface_detail(true)
 	model.rotation.y = PI
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	animation = model.find_children("*", "AnimationPlayer", true, false)[0]
@@ -28,6 +30,17 @@ func _ready() -> void:
 			if key in str(clip): _clips[key] = clip
 	assert(_clips.size() == 5)
 	_play("combat_idle", 0.0)
+
+func set_surface_detail(enabled: bool) -> void:
+	if _bone_material == null:
+		_bone_material = ShaderMaterial.new()
+		_bone_material.shader = preload("res://assets/shaders/aged_bone.gdshader")
+	for node: Node in model.find_children("*", "MeshInstance3D", true, false):
+		var body: MeshInstance3D = node
+		for surface: int in body.mesh.get_surface_count():
+			var source: Material = body.mesh.surface_get_material(surface)
+			if source.resource_name == "Boneghoul_Bone":
+				body.set_surface_override_material(surface, _bone_material if enabled else null)
 
 func _process(delta: float) -> void:
 	advance_motion(delta * AudioManager.animation_speed_scale())

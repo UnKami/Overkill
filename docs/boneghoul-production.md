@@ -104,3 +104,15 @@ The dedicated encounter fixture runs real controller attacks against the 16-HP B
 Additional evidence: `.tools/048-regression.log` existing cinematic/controller contact modes; `.tools/048-clock.log` nine-hour assembly/sectors/swap/single victory; `.tools/048-playthrough.log` deterministic actual-relic playthrough with the opt-in route (Boneghoul win in four choices, 69 HP remaining). The simple policy loses later bosses; this is not a balance acceptance claim. No performance profile or broader AAA acceptance is implied.
 
 Next: package a clearly labeled preview with partner-accessible installer/release notes, profile the integrated encounter, refine sculpt/materials and grip poses, and validate broader play sessions. This art is still substantially below the intended production finish. Published 0.20 installer remains unchanged.
+
+## Restrained aged-bone material (unreleased after 0.21)
+
+Added a bone-only shader retaining authored vertex staining, with low-contrast mineral variation, nonmetallic roughness and shallow pore/grain normal relief. Detail uses rest-space coordinates so it follows the skinned mesh, and fades as its frequency becomes smaller than screen pixels. Cloth, iron and core surfaces remain untouched. No new mesh surfaces or texture assets; one private shader material per actor. The first stronger relief pass read as pitted stone and was reduced from 0.55 mm to 0.14 mm amplitude.
+
+Same-camera close/wide comparisons inspected on Vulkan Mobile and GL Compatibility. The isolated GL setup is substantially darker than Vulkan in both base and detailed views; this is not accepted cross-backend lighting parity. The restrained final material adds subtle surface variation but cannot compensate for simplified skull, jaw, teeth and limb anatomy. These remain higher-priority art gaps.
+
+Validation: `.tools/050-final*` and `.tools/050-gl*` rendered comparisons with animated sampling; `.tools/050-structural.log` verifies exactly one bone surface override and complete restoration across repeated toggles; `.tools/050-contact.log` retains contact, brace, interruption and terminal-state checks. No final script/assertion/shader errors; certificate-store and occasional headless exit warnings remain. Initial `.tools/050-material*` images are rejected as too pitted.
+
+Integrated idle battle profile `.tools/050-arena.log`: Intel Vulkan, 1920x1080 UI / 1600x813 stage, VSync off, warmed 8-second samples, detailed → base → detailed. Medians 15.290 / 14.690 / 14.363 ms; p95 20.876 / 20.019 / 20.079 ms; stage GPU medians 9.829 / 9.520 / 9.625 ms. Draws stayed 308. Variation prevents a reliable frame-time gain/loss claim; this is not full-fight or broad-hardware acceptance, and slow frames remain above the 60 Hz budget. Isolated model timings are not gameplay performance evidence.
+
+Published installer remains 0.21. No release binary was replaced. Next: more convincing anatomy and hand/weapon grips, integrated action profiling and broader environmental/material finish.
