@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-sentinel-production` | Renderer validation and saved 3D quality controls | `scripts/autoload/audio_manager.gd`, `scripts/autoload/save_manager.gd`, `scripts/ui/settings_panel.gd`, `scripts/combat/directed_arena.gd`, `scripts/combat/sentinel_production_test.gd`, `scripts/combat/graphics_settings_test.gd`, `scripts/combat/graphics_settings_test.gd.uid`, `scenes/graphics_settings_test.tscn`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
