@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-sentinel-production` | Forged braziers and restrained fire | `scripts/combat/arena_brazier.gd`, `scripts/combat/arena_brazier.gd.uid`, `assets/shaders/brazier_flame.gdshader`, `assets/shaders/brazier_flame.gdshader.uid`, `scripts/combat/directed_arena.gd`, `scripts/combat/sentinel_production_test.gd`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
