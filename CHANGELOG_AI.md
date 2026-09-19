@@ -450,3 +450,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_sentinel.py; art_source/characters/sentinel-production.blend; assets/characters/rigged/sentinel.glb; docs/sentinel-production.md.
 - Verification: final Blender build/import; Vulkan close-ups; grip, full-swing continuity and Sentinel production regressions. `.tools/061-*-final*` / `061-final-*` logs checked. Rejected initial palm gap caused by using hand-bone tail instead of knuckle positions. Known certificate warning only in final runtime logs.
 - Handoff: thumb/grip animation and broader art remain unfinished; no performance or AAA acceptance. Published 0.22 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Sentinel reaction hand gestures
+- Branch: feat/yonatan-sentinel-production.
+- Completed: distinct left-hand finger curls for guarding and recoil; recoil finger splay; authored recovery using existing reaction timing. Weapon-hand pose preserved.
+- Files: scripts/art/build_sentinel.py; art_source/characters/sentinel-production.blend; assets/characters/rigged/sentinel.glb; docs/sentinel-production.md.
+- Verification: Blender build/import, rendered hand close-ups and full-stage recoil inspected; measured gesture separation and return to idle; Sentinel production regression passes normal/fast interruption, contact, reduced motion and framing. Final `.tools/062-*.log` scans clean except known certificate warning.
+- Handoff: source-only checkpoint; published 0.22 unchanged. Thumb opposition and broader anatomy, animation, art and performance remain unfinished. No AAA acceptance. Locks released.

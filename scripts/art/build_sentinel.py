@@ -4,7 +4,7 @@ No source knight geometry is retained. Skeleton/animation provenance remains in 
 """
 import bpy, bmesh, math, json
 from pathlib import Path
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 from mathutils.bvhtree import BVHTree
 rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
@@ -363,6 +363,18 @@ def author_reaction(name):
         aim_bone('forearm.R',(.05,.5,-.5))
         aim_bone('hand.R',(0,.65,-.45))
         keys=[(1,0.0),(4,.8),(7,1.0),(11,.82),(20,.24),(31,0.0)]
+    # A braced fist and an involuntary opening hand distinguish block from pain.
+    # Keep the right-hand grip unchanged while the off-hand carries the gesture.
+    for finger_index,finger in enumerate(['f_index','f_middle','f_ring','f_pinky']):
+        angles=[62,80,55] if name=='guard' else [20,30,18]
+        for segment,angle in enumerate(angles,1):
+            p=rig.pose.bones[f'{finger}.{segment:02d}.L']
+            p.rotation_quaternion=Quaternion((1,0,0),math.radians(angle))
+            if name=='hit' and segment==1:
+                p.rotation_quaternion=Quaternion((0,0,1),math.radians([-7,-2,3,8][finger_index])) @ p.rotation_quaternion
+    for segment,angle in enumerate([50,48,35] if name=='guard' else [20,25,12],1):
+        rig.pose.bones[f'thumb.{segment:02d}.L'].rotation_quaternion=Quaternion((1,0,0),math.radians(angle))
+    bpy.context.view_layer.update()
     brace={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
     rig.animation_data.action=None
     rig.animation_data.nla_tracks.remove(track)
