@@ -154,30 +154,12 @@ func _build_environment() -> void:
 		var step: BoxMesh = BoxMesh.new()
 		step.size = Vector3(9.0-level*0.4,0.16,3.5-level*0.45)
 		_mesh(step,Vector3(0,0.08+level*0.16,-6.0-level*0.22),step_mat)
-	var iron: StandardMaterial3D = _material(Color("2c2924"),0.65,0.72)
-	# Narrow backlights establish depth and separate the armor from the cathedral.
+	# Forged baskets retain the two existing local warm lights.
 	for side: float in [-1.0,1.0]:
-		var plinth: CylinderMesh = CylinderMesh.new()
-		plinth.top_radius = 0.14
-		plinth.bottom_radius = 0.24
-		plinth.height = 1.45
-		plinth.radial_segments = 12
-		_mesh(plinth,Vector3(side*3.0,0.72,-4.2),iron)
-		var bowl: CylinderMesh = CylinderMesh.new()
-		bowl.top_radius = 0.30
-		bowl.bottom_radius = 0.12
-		bowl.height = 0.18
-		bowl.radial_segments = 20
-		_mesh(bowl,Vector3(side*3.0,1.48,-4.2),bronze)
-		var ember: SphereMesh = SphereMesh.new()
-		ember.radius = 0.14
-		ember.height = 0.10
-		ember.radial_segments = 16
-		ember.rings = 6
-		var hot: StandardMaterial3D = _material(Color("d89042"))
-		hot.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		_mesh(ember,Vector3(side*3.0,1.57,-4.2),hot)
-		_light(Vector3(side*3.0,1.8,-4.1),Color("d78b46"),1.3,3.5)
+		var brazier: ArenaBrazier = ArenaBrazier.new()
+		brazier.name = "BrazierLeft" if side < 0 else "BrazierRight"
+		brazier.position = Vector3(side*3.0,0,-4.2)
+		_world.add_child(brazier)
 	# Existing authored cathedral plate supplies distant architecture only.
 	var backdrop := QuadMesh.new()
 	backdrop.size = Vector2(48, 24)

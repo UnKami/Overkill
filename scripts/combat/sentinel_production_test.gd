@@ -32,6 +32,10 @@ func _ready() -> void:
 	var side_vertex: int = 6 * 48
 	assert(normals[side_vertex].dot(Vector3(positions[side_vertex].x,0,positions[side_vertex].z)) > 0)
 	print("CATHEDRAL_STAGE_OK: nine floor hours, two architectural batches, outward pier normals")
+	for prop_name: String in ["BrazierLeft","BrazierRight"]:
+		var brazier: ArenaBrazier = stage._world.get_node(prop_name)
+		assert(brazier.get_node("ForgedFrame").get_child_count() == 2, "Brazier metal must remain batched by its two finishes")
+		assert(not brazier._light.shadow_enabled, "Local fire must not add expensive shadow passes")
 	await capture("idle")
 	check_choice_clearance(stage)
 	if DisplayServer.get_name() != "headless":
@@ -141,8 +145,11 @@ func _ready() -> void:
 	AudioManager.fast_mode = false
 	print("SENTINEL_RECOIL_OK: opposite guard/hit directions, planted foot, normal/fast interruption recovery")
 	AudioManager.reduced_motion = true
-	stage._on_settings_changed({})
+	AudioManager.save_settings()
 	var reduced_camera: Vector3 = stage._camera.position
+	var reduced_brazier: ArenaBrazier = stage._world.get_node("BrazierLeft")
+	assert(is_zero_approx(float(reduced_brazier._flame.get_shader_parameter("motion"))))
+	var reduced_fire_energy: float = reduced_brazier._light.light_energy
 	stage.attack(true)
 	await get_tree().create_timer(0.2).timeout
 	assert(is_zero_approx(stage.player._model.position.z))
@@ -150,7 +157,10 @@ func _ready() -> void:
 	await get_tree().create_timer(0.6).timeout
 	assert(stage._sparks.is_empty())
 	assert(stage._camera.position == reduced_camera, "Reduced motion must suppress composition travel")
+	assert(is_equal_approx(reduced_brazier._light.light_energy,reduced_fire_energy), "Reduced motion must suppress fire-light flicker")
+	print("BRAZIER_PRESENTATION_OK: batched metal, shadow-free local light, reduced-motion flame and light stability")
 	AudioManager.reduced_motion = false
+	AudioManager.save_settings()
 	get_window().size = Vector2i(1280,720)
 	battle._choice_overlay.present(battle)
 	await get_tree().create_timer(0.5).timeout
