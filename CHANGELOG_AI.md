@@ -607,3 +607,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; source Blend/GLB and GLB import settings; docs/custodian-production.md.
 - Verification: 082 source/export diagnosis, 844 exported pose samples at 120 Hz, maximum endpoint error 0.450 mm below 1 mm threshold. Attack side render reviewed; all four animation regressions pass. 55,847 vertices/four surfaces.
 - Handoff: preserve tracked import settings. Rails now follow their mounts in current clips; collapse/contact/encounter and final visual finish still incomplete. No controlled performance or AAA acceptance. Published 0.23 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Custodian defeated-state study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: 1.6-second lowered-pelvis mechanical slump with fixed-ankle knee solving; held terminal pose; D preview/R reset; per-instance visor fade and restoration.
+- Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
+- Verification: final 083 checks pass: held/reset pose and visor, six deformed-mesh ground samples (minimum 15.97 mm), 0.205 mm sampled foot drift, 0.314 m head drop. Rail audit 1,037 poses/0.450 mm max error. Existing four animation regressions pass. Primary/side renders reviewed.
+- Handoff: side view reveals coat/knee deformation still needs refinement. Shutdown is not a ragdoll/floor-impact death. Encounter/contact integration and production art/performance remain open. Published 0.23 unchanged. Locks released; AAA objective active.

@@ -438,10 +438,51 @@ for frame,phase,amount in [(0,'windup',0),(6,'windup',1),(10,'windup',1),(14,'st
  for p in rig.pose.bones:
   p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
 rig.animation_data.action=None
+for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+bpy.context.view_layer.update()
+idle_world={p.name:p.matrix.copy() for p in rig.pose.bones}
+collapse=bpy.data.actions.new('custodian_collapse')
+settle=[(0,0),(5,0),(10,.12),(20,.65),(30,1),(42,.98),(48,1)]
+for frame in range(49):
+ rig.animation_data.action=None
+ for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+ bpy.context.view_layer.update()
+ for index in range(len(settle)-1):
+  begin,a=settle[index];end,b=settle[index+1]
+  if begin<=frame<=end:
+   t=(frame-begin)/(end-begin);amount=a+(b-a)*t*t*(3-2*t);break
+ if amount>0:
+  pelvis=idle_world['hips'].copy();pelvis.translation.z-=.27*amount
+  rig.pose.bones['hips'].matrix=pelvis;bpy.context.view_layer.update()
+  # Solve each knee from the fixed ankle and lowered hip; do not slide the feet.
+  for side in ['L','R']:
+   thigh=rig.pose.bones['thigh.'+side];shin=rig.pose.bones['shin.'+side]
+   hip=thigh.head.copy();ankle=idle_world['foot.'+side].translation.copy()
+   axis=(ankle-hip).normalized();distance=(ankle-hip).length
+   a=thigh.bone.length;b=shin.bone.length
+   along=(a*a-b*b+distance*distance)/(2*distance)
+   height=math.sqrt(max(0,a*a-along*along))
+   front=Vector((0,1,0));bend=(front-axis*front.dot(axis)).normalized()
+   knee=hip+axis*along+bend*height
+   aim(thigh.name,knee-hip);aim(shin.name,ankle-knee)
+   rig.pose.bones['foot.'+side].matrix=idle_world['foot.'+side].copy()
+   bpy.context.view_layer.update()
+  for name,direction in [('spine',(0,.20,1)),('chest',(.04,.45,.89)),('neck',(0,.50,.85)),('head',(0,.72,.70))]:
+   start=idle_world[name].to_3x3().col[1].normalized()
+   aim(name,start.lerp(Vector(direction).normalized(),amount))
+  for side,sign in [('L',-1),('R',1)]:
+   for name,direction in [('upper_arm',(sign*.15,.25,-1)),('forearm',(sign*.10,.25,-1)),('hand',(sign*.05,.20,-1))]:
+    full=name+'.'+side;start=idle_world[full].to_3x3().col[1].normalized()
+    aim(full,start.lerp(Vector(direction).normalized(),amount))
+ rig.animation_data.action=collapse
+ for p in rig.pose.bones:
+  p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+rig.animation_data.action=None
 track=rig.animation_data.nla_tracks.new();track.name='custodian_idle';track.strips.new('custodian_idle',0,idle)
 track=rig.animation_data.nla_tracks.new();track.name='custodian_guard';track.strips.new('custodian_guard',0,guard);track.mute=True
 track=rig.animation_data.nla_tracks.new();track.name='custodian_hit';track.strips.new('custodian_hit',0,hit);track.mute=True
 track=rig.animation_data.nla_tracks.new();track.name='custodian_attack';track.strips.new('custodian_attack',0,attack);track.mute=True
+track=rig.animation_data.nla_tracks.new();track.name='custodian_collapse';track.strips.new('custodian_collapse',0,collapse);track.mute=True
 bpy.context.scene.frame_set(0);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/custodian-study.blend').resolve()))
 bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)
