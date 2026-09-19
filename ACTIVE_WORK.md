@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-sentinel-production` | Original Boneghoul model study | `scripts/art/build_boneghoul.py`, `art_source/characters/boneghoul-production.blend`, `assets/characters/rigged/boneghoul.glb`, `assets/characters/rigged/boneghoul.glb.import`, `scripts/combat/boneghoul_study.gd`, `scripts/combat/boneghoul_study.gd.uid`, `scenes/boneghoul_study.tscn`, `docs/boneghoul-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
