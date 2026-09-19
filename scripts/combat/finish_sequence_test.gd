@@ -22,6 +22,8 @@ func check_finish(won: bool, fast: bool, reduced: bool) -> void:
 	var stage: DirectedArena = battle._stage
 	var fallen: RiggedCombatant = stage.enemy if won else stage.player
 	var survivor: RiggedCombatant = stage.player if won else stage.enemy
+	var supporting_foot: Vector3 = bone_position(fallen,"foot.L")
+	var starting_head: Vector3 = bone_position(fallen,"head")
 	var observed: Dictionary = {"won":0,"lost":0}
 	battle.combat_won.connect(func(_enemies: Array) -> void: observed.won += 1)
 	battle.combat_lost.connect(func() -> void: observed.lost += 1)
@@ -63,12 +65,26 @@ func check_finish(won: bool, fast: bool, reduced: bool) -> void:
 	assert(observed.won == (1 if won else 0) and observed.lost == (0 if won else 1))
 	assert(fallen._dead)
 	assert(fallen._animation.current_animation != fallen._clip("combat_idle"), "Defeated actor must never return to idle")
+	if won:
+		var right_knee: Vector3 = bone_position(fallen,"shin.R")
+		var left_knee: Vector3 = bone_position(fallen,"shin.L")
+		print("COLLAPSE_POSE right_knee=",right_knee," left_knee=",left_knee," foot_shift=",bone_position(fallen,"foot.L").distance_to(supporting_foot))
+		assert(bone_position(fallen,"foot.L").distance_to(supporting_foot) < 0.03, "Collapse must preserve the supporting foot")
+		assert(right_knee.y > 0.04 and right_knee.y < 0.23, "Armored knee must settle near the floor without sinking through it")
+		assert(left_knee.y-right_knee.y > 0.15, "Sentinel collapse must have a distinct asymmetric kneel")
+		assert(starting_head.y-bone_position(fallen,"head").y > 0.4, "Collapse must visibly lower the heavy body")
+		if not fast and not reduced: await capture("sentinel-final-stage",stage._view)
 	print("FINISH_MODE_OK won=",won," fast=",fast," reduced=",reduced)
 	battle.queue_free()
 	await get_tree().process_frame
 
-func capture(label: String) -> void:
+func bone_position(actor: RiggedCombatant, bone: String) -> Vector3:
+	actor._skeleton.force_update_all_bone_transforms()
+	return actor._skeleton.get_bone_global_pose(actor._skeleton.find_bone(bone)).origin
+
+func capture(label: String, source: Viewport = null) -> void:
 	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
 	DirAccess.make_dir_recursive_absolute("user://finish-027")
-	get_viewport().get_texture().get_image().save_png("user://finish-027/"+label+".png")
+	var viewport: Viewport = source if source != null else get_viewport()
+	viewport.get_texture().get_image().save_png("user://finish-027/"+label+".png")

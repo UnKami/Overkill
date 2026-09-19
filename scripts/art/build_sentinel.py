@@ -339,6 +339,70 @@ def author_reaction(name):
     print('SENTINEL_REACTION_AUTHORED',action.name)
 author_reaction('guard')
 author_reaction('hit')
+
+def author_collapse():
+    """A stagger, asymmetric knee drop and heavy settling beat, held at the end."""
+    track=next(t for t in rig.animation_data.nla_tracks if t.name=='death')
+    source=track.strips[0].action
+    rig.animation_data.action=source
+    bpy.context.scene.frame_set(1);bpy.context.view_layer.update()
+    idle={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+    rig.animation_data.action=None
+    rig.animation_data.nla_tracks.remove(track)
+    source.name='SourceDeathReference'
+    def aim(name,direction):
+        p=rig.pose.bones[name];rest=p.bone;basis=rest.matrix_local.to_3x3()
+        rotation=basis.col[1].normalized().rotation_difference(Vector(direction).normalized())
+        matrix=(rotation.to_matrix() @ basis).to_4x4()
+        matrix.translation=p.parent.matrix @ (p.parent.bone.matrix_local.inverted() @ rest.head_local) if p.parent else rest.head_local
+        p.matrix=matrix;bpy.context.view_layer.update()
+    def pose(drop,lean,nod):
+        for p in rig.pose.bones:p.matrix_basis=idle[p.name]
+        bpy.context.view_layer.update()
+        hip=rig.pose.bones['hips'];matrix=hip.matrix.copy()
+        matrix.translation+=Vector((-.035*drop,-.14*drop,-.49*drop))
+        hip.matrix=matrix;bpy.context.view_layer.update()
+        aim('spine',(-.06*drop,lean,1))
+        aim('chest',(.10*drop,lean+.08*drop,1))
+        aim('neck',(0,.14*drop,1));aim('head',(-.08*drop,nod,1))
+        for side,sign in [('L',-1),('R',1)]:
+            hip_at=rig.pose.bones['thigh.'+side].head.copy()
+            ankle=rig.data.bones['foot.'+side].head_local.copy()
+            ankle.x+=sign*.025
+            ankle.y+=(.07 if side=='L' else -.07-.54*drop)
+            upper=rig.data.bones['thigh.'+side].length
+            lower=rig.data.bones['shin.'+side].length
+            axis=(ankle-hip_at).normalized();distance=min((ankle-hip_at).length,upper+lower-.001)
+            along=(upper*upper-lower*lower+distance*distance)/(2*distance)
+            height=math.sqrt(max(0,upper*upper-along*along))
+            pole=Vector((0,1,0));pole=(pole-axis*pole.dot(axis)).normalized()
+            knee=hip_at+axis*along+pole*height
+            aim('thigh.'+side,knee-hip_at);aim('shin.'+side,ankle-knee)
+            aim('foot.'+side,(0,1,-.1-.22*drop if side=='R' else -.1))
+        # Off-hand reaches toward the supporting knee; weapon arm folds inward.
+        aim('upper_arm.L',(-.25,.45,-1));aim('forearm.L',(.2,.75,-.8));aim('hand.L',(0,.8,-.5))
+        aim('upper_arm.R',(.3,.15,-1));aim('forearm.R',(-.25,.35,.7));aim('hand.R',(0,.4,.8))
+        return {p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+    stagger=pose(0,-.22,-.13)
+    impact=pose(1,.38,.7)
+    settle=pose(.96,.24,.46)
+    final=pose(1,.31,.62)
+    action=bpy.data.actions.new('death');rig.animation_data.action=action
+    # 60 fps: recoil, brief failing hold, knee impact, rebound, final dead weight.
+    for frame,state in [(1,idle),(9,stagger),(17,stagger),(37,impact),(44,settle),(57,final),(67,final)]:
+        for p in rig.pose.bones:
+            p.matrix_basis=state[p.name]
+            p.keyframe_insert('location',frame=frame)
+            p.keyframe_insert('rotation_quaternion',frame=frame)
+            p.keyframe_insert('scale',frame=frame)
+    new_track=rig.animation_data.nla_tracks.new();new_track.name='death'
+    new_track.strips.new('death',1,action);new_track.mute=True
+    rig.animation_data.action=None
+    for p in rig.pose.bones:p.matrix_basis=idle[p.name]
+    bpy.context.scene.frame_set(1)
+    print('SENTINEL_COLLAPSE_AUTHORED',action.name)
+
+author_collapse()
 rig.select_set(True)
 bpy.context.view_layer.objects.active=rig
 out=Path('assets/characters/rigged/sentinel.glb')
