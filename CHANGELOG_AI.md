@@ -98,3 +98,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - Verified all three uploaded asset SHA-256 digests against local files and HTTP 200 downloads. Installer 233683579 bytes; portable ZIP 260864789 bytes. Stronger ZIP compression preserves all six payload hashes. Slow transfer required a longer upload timeout; publication succeeded without recreating the draft.
 - Partner navigation: repository -> Releases -> 0.22.0 -> Assets -> OverkillSetup-0.22.0.exe; Start menu -> Play Boneghoul preview or Play Sentinel encounter.
 - Main changes only distribution docs/checksums. Gameplay remains on the source feature branch. Published 0.22 does not include the later thumbnail filtering experiment. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — 0.23 distribution documentation
+- Branch: feat/yonatan-023-downloads; distribution-only update prepared for main.
+- Completed: homepage, installer/install folder instructions, update log, release notes and checksums for published v0.23.0-test. Gameplay source remains on feat/yonatan-sentinel-production at a6fce5560dea25580ee01d03ff63eb3108832451.
+- Verification: installer, ZIP and checksum assets independently matched against local SHA256 and public HTTP 200. Packaged starter rules, Sentinel, graphics settings, Boneghoul terminal modes and preview/retry pass. All six ZIP files match build payload.
+- Handoff: repository -> Releases -> 0.23.0 -> Assets -> OverkillSetup-0.23.0.exe; Start menu -> Play Sentinel encounter / Play Boneghoul preview. Source art and performance remain unfinished. Documentation lock released for reviewed integration.
