@@ -17,7 +17,7 @@ The goal remains a cinematic, readable, polished 3D game in the approved dark fa
 
 ## Current candidate
 
-- `scripts/art/build_sentinel.py` authors a new clockwork body with recessed chest mechanism, curved bell helm, armor lames, exposed joints, articulated fingers and boots. It retains the existing licensed skeleton and five authored clips, but no source knight mesh geometry.
+- `scripts/art/build_sentinel.py` authors a new clockwork body with recessed chest mechanism, grille helm, curved layered pauldrons, covered joints, articulated fingers, split tabard and overlapping sabatons. It retains the existing licensed skeleton and five authored clips, but no source knight mesh geometry.
 - Four material surfaces in one skinned body; equipment and cloak remain separate. The model is reproducible from the checked-in Executioner production skeleton.
 - Guard staging turns the chest toward the camera; the body turns into the hammer attack and returns during recovery. Contact must be checked for both actors, both speeds and reduced motion.
 - `sentinel_production_test` checks the new body/skin, material surfaces, weapon contact, recovery, particle cleanup and rendered framing. The older silhouette test now explicitly exercises the modular Bulwark assembly.
@@ -63,3 +63,13 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Rendered tests check a visible off-hand displacement, planted supporting foot and recovery after consecutive blocked hits. Normal/fast/reduced-motion damage regressions remain covered. Capture: `.tools/022-render/Godot/app_userdata/Overkill/sentinel-019/sentinel-guard.png`.
 - A new generated modeling reference is stored at `art_source/concepts/sentinel-target-v1.png`; its exact built-in imagegen prompt and critique are in the sibling Markdown file. It establishes a materially stronger target than the current blockout. It is not a 3D game render or proof of achieved quality.
 - Next modeling work should adopt curved layered armor, a recessed helm/gorget, covered joints and articulated lower-leg armor while preserving the real model's nine clock marks. The generated clock-face marks are not mechanically authoritative. Avoid expanding the current blocky robot construction across the roster before closing this larger visual gap.
+
+## Curved armor construction checkpoint
+
+- Replaced rectangular shoulder stacks with curved overlapping shells, rolled bronze lips and restrained fasteners. Forearm and shin housings now have tapered oval sections and shallow longitudinal fluting.
+- Darkened exposed joint coverings; added pointed knee plates and four overlapping arched courses per boot, replacing rectangular feet.
+- Replaced the broad brow/horns with a central forged crest and vertical grille; narrowed the light behind it. A folded split tabard is skinned between hips and thighs without covering the chest clock. This is skinned cloth geometry, not cloth simulation.
+- Source remains reproducible and the exported body retains four material surfaces. Geometry increased from 17,062 to 30,322 Blender vertices; this is a real cost even though battle draw count remains unchanged. Optimization/LOD and longer frame-pacing review remain necessary.
+- Visual acceptance remains open: the character still has broad simple forms, generic surface detail and limited motion variety. The hammer and arena architecture remain noticeably less refined than the modeling target. The generated reference has not been matched.
+
+- Final validation: rendered SENTINEL_GUARD_OK / SENTINEL_PRODUCTION_OK and headless CINEMATIC_FINISH_OK, with no script/assertion errors. Reviewed cool-light close-up, guard and compact framing; fixed the visible open boot ends before final export. Local evidence `.tools/023-final-*` and `.tools/023-damage.log`.

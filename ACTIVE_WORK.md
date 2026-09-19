@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-sentinel-production` | Curved Sentinel armor construction | `scripts/art/build_sentinel.py`, `art_source/characters/sentinel-production.blend`, `assets/characters/rigged/sentinel.glb`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 

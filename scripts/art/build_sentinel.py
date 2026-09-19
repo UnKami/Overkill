@@ -64,6 +64,67 @@ def panel(name,outline,front,back,bone,mat='Iron',bevel=.012):
     mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update()
     o=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(o)
     return bind(o,bone,mat,bevel)
+def fluted_housing(name,a,b,rstart,rend,bone):
+    axis=(b-a).normalized()
+    cross=axis.cross(Vector((0,1,0))).normalized()
+    depth=axis.cross(cross).normalized()
+    segments=24;rows=8;verts=[]
+    for row in range(rows+1):
+        t=row/rows;center=a.lerp(b,t)
+        radius=(rstart*(1-t)+rend*t)*(1+.05*math.sin(math.pi*t))
+        for i in range(segments):
+            angle=i*math.tau/segments
+            # Shallow longitudinal flutes catch narrow highlights in the forged shell.
+            flute=1+.055*math.cos(angle*6)*math.sin(math.pi*t)
+            verts.append(center+(cross*(math.cos(angle)*1.08)+depth*(math.sin(angle)*.90))*radius*flute)
+    faces=[]
+    for row in range(rows):
+        for i in range(segments):
+            aindex=row*segments+i;bindex=row*segments+(i+1)%segments
+            faces.append((aindex,bindex,bindex+segments,aindex+segments))
+    faces.extend([tuple(reversed(range(segments))),tuple(range(rows*segments,(rows+1)*segments))])
+    data=bpy.data.meshes.new(name);data.from_pydata(verts,[],faces);data.update()
+    o=bpy.data.objects.new(name,data);bpy.context.collection.objects.link(o)
+    return bind(o,bone,'Iron',.005)
+
+def mantle(side,layer):
+    sign=-1 if side=='L' else 1
+    center=Vector((sign*(.31+layer*.022),1.65-layer*.065,.01))
+    width=.245-layer*.023;depth=.205-layer*.018;height=.12-layer*.015
+    segments=32;rows=8
+    def point(phi,t,expand=0):
+        theta=t*(1.62+.075*math.cos(3*phi))
+        return center+Vector((math.cos(phi)*math.sin(theta)*(width+expand),math.cos(theta)*height,math.sin(phi)*math.sin(theta)*(depth+expand)))
+    verts=[xyz(center.x,center.y+height,center.z)]
+    for row in range(1,rows+1):
+        for segment in range(segments):verts.append(xyz(*point(segment*math.tau/segments,row/rows)))
+    faces=[(0,1+i,1+(i+1)%segments) for i in range(segments)]
+    for row in range(rows-1):
+        for i in range(segments):
+            a=1+row*segments+i;b=1+row*segments+(i+1)%segments
+            faces.append((a,b,b+segments,a+segments))
+    data=bpy.data.meshes.new('Forged mantle');data.from_pydata(verts,[],faces);data.update()
+    o=bpy.data.objects.new('Curved pauldron '+side,data);bpy.context.collection.objects.link(o)
+    bpy.context.view_layer.objects.active=o;o.select_set(True)
+    solid=o.modifiers.new('Plate thickness','SOLIDIFY');solid.thickness=.014
+    bpy.ops.object.modifier_apply(modifier=solid.name)
+    bind(o,'shoulder.'+side,'Iron',.004)
+    # Rolled lower lip follows the manufactured plate instead of a rectangular band.
+    verts=[]
+    for row in [0.965,1.0]:
+        for segment in range(segments):verts.append(xyz(*point(segment*math.tau/segments,row,.002)))
+    faces=[(i,(i+1)%segments,(i+1)%segments+segments,i+segments) for i in range(segments)]
+    data=bpy.data.meshes.new('Mantle lip');data.from_pydata(verts,[],faces);data.update()
+    o=bpy.data.objects.new('Rolled mantle lip',data);bpy.context.collection.objects.link(o)
+    bpy.context.view_layer.objects.active=o;o.select_set(True)
+    solid=o.modifiers.new('Lip thickness','SOLIDIFY');solid.thickness=.003
+    bpy.ops.object.modifier_apply(modifier=solid.name)
+    bind(o,'shoulder.'+side,'Bronze',.001)
+    if layer==0:
+        for phi in [-2.5,-.65,.65,2.5]:
+            p=point(phi,.85,.003);n=(p-center).normalized()
+            rod('Mantle rivet',xyz(*p),xyz(*(p+n*.008)),.008,.008,'shoulder.'+side,'Bronze',8)
+
 # Trunk: deep, dark clock housing between chamfered breastplate wings.
 box('Clock housing',(0,1.44,.015),(.49,.47,.29),'chest','Recess',.04)
 for side in [-1,1]:
@@ -107,25 +168,56 @@ bell_shell()
 box('Neck block',(0,1.74,0),(.18,.14,.16),'neck','Recess',.025)
 ring('Gorget',(0,1.738,0),.16,.018,'chest',front=False)
 panel('Blind visor',[(-.115,2.035),(.115,2.035),(.14,1.82),(.085,1.765),(-.085,1.765),(-.14,1.82)],-.154,.055,'head','Recess',.025)
+# A central forged crest and recessed vertical grille replace the toy-like brow/horns.
+profile=[(-.15,2.00),(-.07,2.15),(.04,2.19),(.17,2.08),(.14,1.99)]
+verts=[xyz(x,h,d) for x in [-.014,.014] for d,h in profile];n=len(profile)
+faces=[tuple(reversed(range(n))),tuple(range(n,2*n))]+[(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
+data=bpy.data.meshes.new('Helmet crest');data.from_pydata(verts,[],faces);data.update()
+o=bpy.data.objects.new('Forged helmet crest',data);bpy.context.collection.objects.link(o);bind(o,'head','Iron',.005)
+for x in [-.09,-.045,0,.045,.09]:
+    top=2.015-abs(x)*.25
+    rod('Visor grille',xyz(x,1.82,-.183),xyz(x,top,-.183),.008,.006,'head','Bronze',8)
+box('Recessed visor light',(0,1.932,-.163),(.10,.018,.008),'head','Ember',.003)
+# Folded split tabard bridges the cuirass and legs without covering the clock core.
 for side in [-1,1]:
-    panel('Crown blade',[(side*.115,2.025),(side*.155,2.18),(side*.18,2.13),(side*.145,1.96)],-.01,.045,'head','Bronze',.008)
-box('Brow beam',(0,1.995,-.183),(.26,.042,.028),'head','Bronze',.009)
-for side in [-1,1]:box('Visor slit',(side*.055,1.966,-.167),(.07,.008,.01),'head','Ember',.002)
-panel('Visor keel',[(-.024,1.98),(.024,1.98),(.035,1.82),(0,1.785),(-.035,1.82)],-.182,-.12,'head','Iron',.005)
+    verts=[];cols=8;rows=12
+    for row in range(rows+1):
+        t=row/rows
+        for col in range(cols+1):
+            u=col/cols
+            x=side*(.027+u*(.16-.025*t))
+            h=1.10-.65*t+(math.sin(u*math.pi*5)*.012 if row==rows else 0)
+            d=-.168-.055*t+math.sin(u*math.pi*4)*.012*(.3+.7*t)
+            verts.append(xyz(x,h,d))
+    faces=[]
+    for row in range(rows):
+        for col in range(cols):
+            a=row*(cols+1)+col;faces.append((a,a+1,a+cols+2,a+cols+1))
+    data=bpy.data.meshes.new('Folded tabard');data.from_pydata(verts,[],faces);data.update()
+    o=bpy.data.objects.new('Split tabard',data);bpy.context.collection.objects.link(o)
+    bpy.context.view_layer.objects.active=o;o.select_set(True)
+    solid=o.modifiers.new('Cloth thickness','SOLIDIFY');solid.thickness=.004
+    bpy.ops.object.modifier_apply(modifier=solid.name)
+    bind(o,'hips','Recess')
+    thigh=o.vertex_groups.new(name='thigh.L' if side<0 else 'thigh.R')
+    for vertex in o.data.vertices:
+        weight=max(0,min(.65,(1.05-vertex.co.z)*1.0))
+        o.vertex_groups['hips'].add([vertex.index],1-weight,'REPLACE')
+        thigh.add([vertex.index],weight,'REPLACE')
 # Limb housings follow rest bones exactly. Open joints expose the mechanism.
 for side in ['L','R']:
     sign=-1 if side=='L' else 1
     for stem,r1,r2 in [('upper_arm',.085,.115),('forearm',.09,.135),('thigh',.10,.145),('shin',.085,.12)]:
         bone=rig.data.bones[stem+'.'+side];a=bone.head_local.copy();b=bone.tail_local.copy();axis=b-a
-        sphere('Joint '+stem,a,(r2*.72,)*3,stem+'.'+side,'Bronze')
-        rod('Armored '+stem,a+axis*.13,b-axis*.12,r2,r1,stem+'.'+side)
+        sphere('Covered joint '+stem,a,(r2*.72,)*3,stem+'.'+side,'Recess')
+        if stem in ['forearm','shin']:
+            fluted_housing('Fluted '+stem,a+axis*.13,b-axis*.12,r2,r1,stem+'.'+side)
+        else:
+            rod('Armored '+stem,a+axis*.13,b-axis*.12,r2,r1,stem+'.'+side)
         rod('End collar '+stem,b-axis*.21,b-axis*.14,r1*1.16,r1*1.16,stem+'.'+side,'Bronze')
     b=rig.data.bones['upper_arm.'+side];center=b.head_local.copy();center.x+=sign*.02;center.z+=.015
     sphere('Shoulder pivot',center,(.12,.13,.12),'upper_arm.'+side,'Recess')
-    for layer in range(3):
-        # Angular flared mantles replace the previous spherical shoulder caps.
-        x=sign*(.3+layer*.025);h=1.73-layer*.06
-        panel('Pauldron '+side,[(x-sign*.13,h+.03),(x+sign*.12,h-.015),(x+sign*.17,h-.085),(x-sign*.09,h-.09)],-.15,.14,'shoulder.'+side,'Iron',.016)
+    for layer in range(3):mantle(side,layer)
     hand=rig.data.bones['hand.'+side]
     rod('Gauntlet palm',hand.head_local,hand.tail_local,.065,.057,'hand.'+side)
     for finger in ['f_index','f_middle','f_ring','f_pinky','thumb']:
@@ -133,8 +225,31 @@ for side in ['L','R']:
             name=f'{finger}.{segment:02d}.{side}';b=rig.data.bones[name]
             rod('Finger',b.head_local,b.tail_local,.014,.012,name,'Iron',8)
     foot=rig.data.bones['foot.'+side].head_local
-    box('Armored boot',(foot.x,.09,-.045),(.20,.17,.38),'foot.'+side,'Iron',.025)
-    box('Boot rim',(foot.x,.035,-.045),(.21,.035,.39),'foot.'+side,'Bronze',.008)
+    # Overlapping arched sabatons taper to the toe instead of a rectangular boot.
+    for course in range(4):
+        rear=.09-course*.072;front=rear-.094
+        width=.095-course*.007;peak=.19-course*.032
+        verts=[];steps=12
+        for d in [rear,front]:
+            for i in range(steps+1):
+                angle=math.pi*i/steps
+                verts.append(xyz(foot.x+math.cos(angle)*width,.035+math.sin(angle)*peak,d))
+        faces=[(i,i+1,i+steps+2,i+steps+1) for i in range(steps)]
+        # Close the toe/end courses; an open arch reads as an empty boot in game.
+        faces.extend([tuple(reversed(range(steps+1))),tuple(range(steps+1,2*(steps+1)))])
+        data=bpy.data.meshes.new('Sabaton course');data.from_pydata(verts,[],faces);data.update()
+        o=bpy.data.objects.new('Articulated sabaton',data);bpy.context.collection.objects.link(o)
+        bpy.context.view_layer.objects.active=o;o.select_set(True)
+        solid=o.modifiers.new('Boot plate thickness','SOLIDIFY');solid.thickness=.012
+        bpy.ops.object.modifier_apply(modifier=solid.name)
+        bind(o,'foot.'+side,'Iron',.004)
+    box('Boot sole',(foot.x,.024,-.067),(.18,.035,.33),'foot.'+side,'Recess',.018)
+    # Pointed knee plate covers the spherical pivot and overlaps the greave.
+    knee=rig.data.bones['shin.'+side].head_local
+    panel('Knee poleyn',[(knee.x-.085,knee.z+.015),(knee.x,knee.z+.095),
+        (knee.x+.085,knee.z+.015),(knee.x+.065,knee.z-.055),
+        (knee.x,knee.z-.105),(knee.x-.065,knee.z-.055)],
+        -knee.y-.092,-knee.y-.045,'shin.'+side,'Iron',.012)
 # Single skinned mesh; four PBR surface groups, rather than dozens of rigid draws.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
