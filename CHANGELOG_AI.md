@@ -579,3 +579,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
 - Verification: final 078 build/import/render checks pass. Exact 4-second duration; all-bone loop endpoint continuity; fixed foot transforms across seven samples; 8.88 mm sampled hand travel. Final pose inspected. Separate non-isolated headless diagnostic crashed; isolated rendered checks passed.
 - Handoff: no combat animations or encounter wiring yet. Costume clearance, torso connections, richer forms/material detail and controlled performance remain. Published 0.23 unchanged. Locks released; AAA goal active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian guard animation
+- Branch: feat/yonatan-sentinel-production.
+- Completed: original one-second guard lift/hold/recovery; revised unclear initial raised-hand pose to inward forearms, stronger finger curl and separated hand depths. Study G/R controls and automatic idle return added.
+- Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
+- Verification: final 079 build/import/render checks pass; exact duration, idle-matched all-bone endpoints, fixed feet, automatic return and 0.417 m sampled wrist rise. Revised front/intermediate/side views inspected. Prior idle regression passes.
+- Handoff: study only, no gameplay integration or installer update. Attack/hit/collapse/contact and exhaustive clearance remain. Larger art/performance/AAA objective remains active. Locks released.
