@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Sentinel plate finish | assets/shaders/sentinel_metal.gdshader; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

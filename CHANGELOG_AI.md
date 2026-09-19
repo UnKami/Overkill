@@ -457,3 +457,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_sentinel.py; art_source/characters/sentinel-production.blend; assets/characters/rigged/sentinel.glb; docs/sentinel-production.md.
 - Verification: Blender build/import, rendered hand close-ups and full-stage recoil inspected; measured gesture separation and return to idle; Sentinel production regression passes normal/fast interruption, contact, reduced motion and framing. Final `.tools/062-*.log` scans clean except known certificate warning.
 - Handoff: source-only checkpoint; published 0.22 unchanged. Thumb opposition and broader anatomy, animation, art and performance remain unfinished. No AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Rejected Sentinel finish study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: evaluated two material candidates against explicit baseline at gameplay and torso close-up distance; rejected both and restored original shader.
+- Files retained: docs/sentinel-production.md; CHANGELOG_AI.md; ACTIVE_WORK.md lock release. No runtime changes retained.
+- Verification: rendered Vulkan material swaps, two materials/two views, no shader/script errors; known certificate warning. Visual rejection overrides passing compilation. Baseline restoration checked by hash and git diff.
+- Handoff: prioritize shaped plate forms and authored surface detail; broad oxidation/sheens did not provide sufficient quality gain. Goal unfinished; published 0.22 unchanged. Locks released.
