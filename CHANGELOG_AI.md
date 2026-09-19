@@ -500,3 +500,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/rigged_combatant.gd; assets/shaders/battle_cloth.gdshader; docs/sentinel-production.md.
 - Verification: 30/60/120 Hz response agreement, rest settling, teleport/reduced-motion reset, actual attack bound; sampled rendered attack views; full Sentinel production regression. 068 logs clean except certificate warning.
 - Handoff: procedural secondary motion, not physical cloth collision or AAA acceptance. Source checkpoint only; published 0.22 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — 0.23 package validation, publication pending
+- Branch: feat/yonatan-sentinel-production. Frozen source a6fce5560dea25580ee01d03ff63eb3108832451; intended tag v0.23.0-test.
+- Built: OverkillSetup-0.23.0.exe (237,658,862 bytes), Overkill-0.23.0-Windows.zip (264,839,595 bytes), checksum file. Release notes docs/encounter-023.md. Installer compiler required approved sandbox escalation; final compile succeeded.
+- Verification: packaged runtime/PCK starter rules, Sentinel production, graphics settings, Boneghoul eight ending modes; explicit PCK preview/retry script asserts version 0.23.0. Six ZIP payload hashes match local source files. Final 069 package logs have no script/assertion/shader errors; known certificate warning only. Rendered Sentinel package frame reviewed.
+- Installer SHA256: 82e6723f0e4a7c820edc98853ef1802f8df1e9a77eda6144dd78e386b25e37d5. ZIP SHA256: f3f018fd52ea9e78b7e3530a51844387708dcdcc5abe4c7446698afdc7acdb3d.
+- Handoff: draft upload launched through .tools/069-upload.ps1; inspect current process/session and release before resuming. Do not duplicate uploads. Must verify three server asset digests, publish, verify HTTP access, then update main distribution docs. Public download remains 0.22 until verified. Publication locks retained. Interactive installer wizard and controlled performance remain unverified.
