@@ -1,6 +1,6 @@
 # Hollow Custodian production study
 
-Status: isolated articulated bust study, not a finished enemy or combat integration. Published 0.23 unchanged. The Act II elite currently uses the generic armored 3D fallback; this asset is not substituted into encounters yet.
+Status: isolated full-body costume study, not a finished enemy or combat integration. Published 0.23 unchanged. The Act II elite currently uses the generic armored 3D fallback; this asset is not substituted into encounters yet.
 
 ## Direction and source
 
@@ -37,3 +37,12 @@ Validation: final 074 Blender/import and rendered detail fixture passed. Whole u
 Added a pelvic crossmember, narrow thigh/shin mechanisms with paired pistons, crested armor shells, hip/knee/ankle bearings, and pointed feet connected to the foot bones. Current body has 49,238 Blender vertices, four surfaces and one skinned mesh. The whole silhouette is now available for proportion review; the split skirt/costume is still absent.
 
 Verification: 075 Blender/import/render checks passed. Full-body front/quarter/rear captures generated at inherited idle time 0.6 seconds; quarter and rear inspected. Increased inspection camera distance after the first rear view clipped a foot. Binding audit verifies every vertex has exactly one full-weight bone assignment, every vertex group names an existing bone, and all coordinates are finite. Logs: `.tools/075-build.log`, `075-import.log`, `075-study-final.log`, `075-bindings.log`. Known certificate warning only. No ground-contact or full-motion acceptance: the reference pose is not a Custodian animation. Rear torso rails still need articulated lower connections, the foot forms remain simple, and material surfaces are uniform. Next: split skirt silhouette, torso attachment correction and authored poses. Public release unchanged.
+
+
+## Split skirt checkpoint — 2026-09-19
+
+Added two curved, folded coat shells with uneven hems, overlapping hip lames, fasteners/supports and a central pointed tabard. Front openings preserve the exposed-leg silhouette. Coat vertices blend from the pelvis into the corresponding thigh, rather than following a single rigid pelvis bone. This is skinned costume geometry, not simulated cloth.
+
+First quarter/rear renders showed unsupported lames; added dark support rods behind the fasteners. The overall silhouette now reads as a robed automaton, but surfaces remain plain and the repeated plate shapes too regular. Torso rail attachments, material wear, authored motion, full-range costume/body clearance and encounter integration remain open. The inherited idle is only a fitting pose. Public 0.23 remains unchanged.
+
+Final verification: 55,263 Blender vertices, one skinned mesh/four surfaces. Final 076 build/import/render logs passed; final rear capture inspected after support correction. Binding audit verifies each vertex's weights sum to one, all groups reference real bones and coordinates are finite. Logs: `.tools/076-build-final.log`, `076-import-final.log`, `076-study-final.log`, `076-bindings.log`. No Python/script/assertion/shader errors; known certificate warning remains. This does not validate cloth simulation, combat poses or performance.

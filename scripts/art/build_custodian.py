@@ -254,7 +254,43 @@ for side in ['L','R']:
  mesh=bpy.data.meshes.new('Pointed foot');mesh.from_pydata(verts,[],faces);mesh.update()
  obj=bpy.data.objects.new('Custodian pointed foot '+side,mesh);bpy.context.collection.objects.link(obj);bind(obj,foot.name,'Iron',.003)
  rod('Ankle foot tie',ankle,Vector((x,y+.050,.069)),.019,.020,foot.name,'Iron')
-# Join the staged body into one skinned mesh; costume and combat remain unfinished.
+# Split armored coat: open at the front so the mechanical legs remain legible.
+# Each side is a curved, folded shell with an uneven broken hem, not a flat tile.
+for sign,side in [(-1,'L'),(1,'R')]:
+ cols=16;rows=20;verts=[]
+ for row in range(rows+1):
+  t=row/rows
+  for col in range(cols+1):
+   u=col/cols;angle=.38+u*1.73
+   hem=.23+.055*math.sin(u*math.pi*5+.4)**2+.055*u
+   height=1.085*(1-t)+hem*t
+   flare=.185+.12*t+.018*math.sin(t*math.pi)
+   fold=.010*math.cos(u*math.pi*6)*math.sin(t*math.pi*.8)
+   verts.append(xyz(sign*math.sin(angle)*(flare+fold),height,-math.cos(angle)*(.137+.095*t+fold)))
+ faces=[]
+ for row in range(rows):
+  for col in range(cols):
+   a=row*(cols+1)+col;faces.append((a,a+1,a+cols+2,a+cols+1))
+ mesh=bpy.data.meshes.new('Split coat shell');mesh.from_pydata(verts,[],faces);mesh.update()
+ coat=bpy.data.objects.new('Long split coat '+side,mesh);bpy.context.collection.objects.link(coat)
+ bpy.context.view_layer.objects.active=coat;coat.select_set(True)
+ wall=coat.modifiers.new('Coat armor thickness','SOLIDIFY');wall.thickness=.004;bpy.ops.object.modifier_apply(modifier=wall.name)
+ bind(coat,'hips','Iron',.001)
+ # Partial leg following prevents rigid pelvic skirts cutting through idle legs.
+ hip_group=coat.vertex_groups['hips'];leg_group=coat.vertex_groups.new(name='thigh.'+side)
+ for vertex in coat.data.vertices:
+  t=max(0,min(1,(1.085-vertex.co.z)/.8));weight=.62*t*t*(3-2*t)
+  hip_group.add([vertex.index],1-weight,'REPLACE');leg_group.add([vertex.index],weight,'REPLACE')
+ # Upper overlapping lames give a transition from the belt to the long shell.
+ for layer in range(3):
+  h=1.065-layer*.091
+  outline=[(.10,h),(.22,h+.025),(.285,h-.094),(.195,h-.14),(.12,h-.075)]
+  plate('Overlapping hip lame',[(sign*x,z) for x,z in outline],-.178-layer*.008,-.167-layer*.008,'thigh.'+side)
+  rod('Hip coat fastening',xyz(sign*.157,h-.011,-.185-layer*.008),xyz(sign*.157,h-.011,-.201-layer*.008),.009,.009,'thigh.'+side,'Bronze',12,.0008)
+  rod('Hip lame support',xyz(sign*.157,h-.011,-.192-layer*.008),xyz(sign*.157,h-.011,-.106),.010,.010,'thigh.'+side,'Recess',12,.0008)
+# Central hanging plate ends above the knees and leaves two long side openings.
+plate('Central split tabard',[(-.069,1.07),(.069,1.07),(.062,.66),(0,.585),(-.062,.66)],-.158,-.147,'hips')
+# Join the staged body into one skinned mesh; surface detail and combat remain unfinished.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
 bpy.context.view_layer.objects.active=parts[0];bpy.ops.object.join();body=bpy.context.object;body.name='Custodian_BodyStudy'

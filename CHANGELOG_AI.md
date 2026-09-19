@@ -556,3 +556,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: 075 Blender/import/render checks passed; 49,238 vertices, four surfaces, one skin. Full-body quarter/rear reviewed; valid full-weight bone assignment and finite coordinates for every vertex.
 - Handoff: split costume, torso rail attachments, worn surfaces and bespoke animations remain; no combat/ground-contact/performance acceptance. Source study only, published 0.23 unchanged. Locks released; overall AAA goal active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian split skirt study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: curved split coat shells, folded surfaces/uneven hems, overlapping hip lames with fasteners and support rods, central pointed tabard; pelvis/thigh blended skirt weights.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: final 076 Blender/import/render pass; 55,263 vertices, four surfaces. Quarter/rear fitting-pose review; final rear support correction inspected. Bone-weight sums, bone-name references and finite coordinates pass.
+- Handoff: incomplete costume study; no cloth simulation/full-motion/encounter/performance acceptance. Torso attachments, material wear and authored animation remain. Published 0.23 unchanged. Locks released; AAA objective active.
