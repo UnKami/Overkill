@@ -17,6 +17,20 @@ func _ready() -> void:
 	battle.start_combat([ContentDatabase.get_enemy("act1_boss")])
 	await get_tree().create_timer(2.0).timeout
 	var stage: DirectedArena = battle._stage
+	var hours: MultiMeshInstance3D = stage._world.get_node("FloorMajorHours")
+	var minor_ticks: MultiMeshInstance3D = stage._world.get_node("FloorMinorTicks")
+	assert(hours.multimesh.instance_count == 9)
+	assert(minor_ticks.multimesh.instance_count == 27)
+	var architecture: Node3D = stage._world.get_node("CathedralArchitecture")
+	assert(architecture.get_child_count() == 2, "Architecture must retain two instanced batches")
+	var pier: MultiMeshInstance3D = architecture.get_node("Clustered stone piers")
+	var arrays: Array = pier.multimesh.mesh.surface_get_arrays(0)
+	var positions: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+	# Side normals must point out of the column, not into its hollow center.
+	var side_vertex: int = 6 * 48
+	assert(normals[side_vertex].dot(Vector3(positions[side_vertex].x,0,positions[side_vertex].z)) > 0)
+	print("CATHEDRAL_STAGE_OK: nine floor hours, two architectural batches, outward pier normals")
 	await capture("idle")
 	if DisplayServer.get_name() != "headless":
 		var engraving: Control = battle._player_chrono._engraving

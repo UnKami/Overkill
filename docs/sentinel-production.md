@@ -73,3 +73,12 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Visual acceptance remains open: the character still has broad simple forms, generic surface detail and limited motion variety. The hammer and arena architecture remain noticeably less refined than the modeling target. The generated reference has not been matched.
 
 - Final validation: rendered SENTINEL_GUARD_OK / SENTINEL_PRODUCTION_OK and headless CINEMATIC_FINISH_OK, with no script/assertion errors. Reviewed cool-light close-up, guard and compact framing; fixed the visible open boot ends before final export. Local evidence `.tools/023-final-*` and `.tools/023-damage.log`.
+
+## Cathedral staging checkpoint
+
+- Replaced smooth metal-banded columns with moulded stone bases, bundled shafts, stepped capitals and pointed arcade ribs. A separate `CathedralArchitecture` component builds two meshes once and instances eight piers/four ribs; no geometry generation occurs per frame.
+- Reused the existing licensed stone textures with world-aligned projection on the architecture. Reworked the previously unused arena-stone shader for a matte, lower-contrast floor and dais; darkened the brazier stands to keep emphasis on characters and lights.
+- Corrected the stage's stale twelve-hour floor decoration to nine major marks and 27 subdivisions. Live gameplay clock rules are unchanged.
+- This improves environment coherence but does not finish environment art: braziers remain simple, the distant architecture is still a painted plane, contact shadows are hard and the architecture needs bespoke wear/debris/material transitions. Continue judging rendered composition, not just draw counts.
+
+- Validation: CATHEDRAL_STAGE_OK, SENTINEL_GUARD_OK and SENTINEL_PRODUCTION_OK; final 1080p/720p captures inspected. Two architecture batches and 371 full-battle draws retained. Short Intel sample median 46 ms / p95 50 ms is diagnostic only. Evidence `.tools/024-balanced-render/` and `.tools/024-balanced-render.log`.

@@ -107,19 +107,12 @@ func _mesh(shape: Mesh, at: Vector3, material: Material) -> MeshInstance3D:
 func _build_environment() -> void:
 	var floor_mesh := PlaneMesh.new()
 	floor_mesh.size = Vector2(60, 60)
-	var floor_mat := StandardMaterial3D.new()
-	floor_mat.albedo_texture = load("res://assets/environments/materials/stone_tiles_diff_2k.jpg")
-	floor_mat.albedo_color = Color(0.16,0.19,0.22)
-	floor_mat.normal_enabled = true
-	floor_mat.normal_texture = load("res://assets/environments/materials/stone_tiles_nor_gl_2k.jpg")
-	floor_mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
-	floor_mat.normal_scale = 0.22
-	floor_mat.roughness_texture = load("res://assets/environments/materials/stone_tiles_rough_2k.jpg")
-	floor_mat.roughness = 1.0
-	floor_mat.uv1_scale = Vector3(18,18,18)
+	var floor_mat: ShaderMaterial = ShaderMaterial.new()
+	floor_mat.shader = preload("res://assets/shaders/arena_stone.gdshader")
+	floor_mat.set_shader_parameter("stone_color",load("res://assets/environments/materials/stone_tiles_diff_2k.jpg"))
+	floor_mat.set_shader_parameter("stone_normal",load("res://assets/environments/materials/stone_tiles_nor_gl_2k.jpg"))
 	_mesh(floor_mesh, Vector3(0, -0.025, 0), floor_mat)
 	var bronze := _material(Color("655039"), 0.78, 0.36)
-	var stone := _material(Color("202b32"), 0.1, 0.8)
 	# Embedded concentric chronometer rings, physically sharing the fighter floor.
 	for radius in [2.8, 3.0, 3.65, 3.72]:
 		var ring := TorusMesh.new()
@@ -135,44 +128,30 @@ func _build_environment() -> void:
 		var marks := MultiMesh.new()
 		marks.transform_format = MultiMesh.TRANSFORM_3D
 		marks.mesh = mark
-		marks.instance_count = 12 if major else 36
+		marks.instance_count = 9 if major else 27
 		var instance_index := 0
-		for i in range(48):
+		for i in range(36):
 			if (i%4==0) != major: continue
-			var angle := i*TAU/48.0
+			var angle := i*TAU/36.0
 			marks.set_instance_transform(instance_index,Transform3D(Basis(Vector3.UP,angle),Vector3(sin(angle)*3.35,0.002,cos(angle)*3.35)))
 			instance_index += 1
 		var batched := MultiMeshInstance3D.new()
+		batched.name = "FloorMajorHours" if major else "FloorMinorTicks"
 		batched.multimesh = marks
 		batched.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_world.add_child(batched)
-	# Repeated architecture uses two instanced draws rather than forty meshes.
-	var columns: Array[Transform3D] = []
-	var bands: Array[Transform3D] = []
-	for side: float in [-1.0, 1.0]:
-		for row: int in 4:
-			var at: Vector3 = Vector3(side * (5.8 + row * 0.8), 0, -2.5 - row * 3.5)
-			columns.append(Transform3D(Basis.IDENTITY,at+Vector3(0,3.5,0)))
-			for y: float in [0.12,0.32,2.1,5.4]: bands.append(Transform3D(Basis.IDENTITY,at+Vector3(0,y,0)))
-	var column: CylinderMesh = CylinderMesh.new()
-	column.top_radius = 0.25
-	column.bottom_radius = 0.36
-	column.height = 7
-	column.radial_segments = 20
-	_batch(column,columns,stone)
-	var band: CylinderMesh = CylinderMesh.new()
-	band.top_radius = 0.4
-	band.bottom_radius = 0.43
-	band.height = 0.09
-	band.radial_segments = 20
-	_batch(band,bands,bronze)
+	# Dressed-stone bundled piers replace smooth metal-banded cylinders.
+	var architecture: CathedralArchitecture = CathedralArchitecture.new()
+	architecture.name = "CathedralArchitecture"
+	_world.add_child(architecture)
 	# A real stepped dais bridges the floor and the distant cathedral plate.
-	var step_mat: StandardMaterial3D = floor_mat.duplicate()
-	step_mat.uv1_scale = Vector3(3,1,1)
+	var step_mat: ShaderMaterial = floor_mat.duplicate()
+	step_mat.set_shader_parameter("tile_scale",Vector2(3,1))
 	for level: int in 3:
 		var step: BoxMesh = BoxMesh.new()
 		step.size = Vector3(9.0-level*0.4,0.16,3.5-level*0.45)
 		_mesh(step,Vector3(0,0.08+level*0.16,-6.0-level*0.22),step_mat)
+	var iron: StandardMaterial3D = _material(Color("2c2924"),0.65,0.72)
 	# Narrow backlights establish depth and separate the armor from the cathedral.
 	for side: float in [-1.0,1.0]:
 		var plinth: CylinderMesh = CylinderMesh.new()
@@ -180,7 +159,7 @@ func _build_environment() -> void:
 		plinth.bottom_radius = 0.24
 		plinth.height = 1.45
 		plinth.radial_segments = 12
-		_mesh(plinth,Vector3(side*3.0,0.72,-4.2),bronze)
+		_mesh(plinth,Vector3(side*3.0,0.72,-4.2),iron)
 		var bowl: CylinderMesh = CylinderMesh.new()
 		bowl.top_radius = 0.30
 		bowl.bottom_radius = 0.12

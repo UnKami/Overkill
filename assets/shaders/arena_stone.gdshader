@@ -1,17 +1,14 @@
 shader_type spatial;
-uniform vec4 stone_color : source_color = vec4(0.04,0.055,0.065,1.0);
-varying vec3 world_pos;
-float hash(vec2 p) { return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-void vertex() { world_pos=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz; }
+// Quiet matte limestone: preserve material relief without bright distracting seams.
+uniform sampler2D stone_color : source_color, filter_linear_mipmap_anisotropic;
+uniform sampler2D stone_normal : hint_normal, filter_linear_mipmap_anisotropic;
+uniform vec2 tile_scale = vec2(18.0);
 void fragment() {
-    vec2 tile=world_pos.xz*1.2;
-    tile.x+=mod(floor(tile.y),2.0)*0.5;
-    vec2 f=fract(tile);
-    float edge=min(min(f.x,1.0-f.x),min(f.y,1.0-f.y));
-    float grout=smoothstep(0.008,0.025,edge);
-    float variation=hash(floor(tile));
-    float grain=hash(floor(world_pos.xz*600.0));
-    ALBEDO=stone_color.rgb*(0.85+variation*0.2+grain*0.1)*mix(0.6,1.0,grout);
-    ROUGHNESS=0.53+variation*0.22;
-    METALLIC=0.15;
+    vec2 uv = UV * tile_scale;
+    vec3 stone = texture(stone_color, uv).rgb;
+    ALBEDO = mix(vec3(0.14, 0.15, 0.16), stone * vec3(0.35, 0.37, 0.39), 0.75);
+    NORMAL_MAP = texture(stone_normal, uv).rgb;
+    NORMAL_MAP_DEPTH = 0.10;
+    ROUGHNESS = 0.88;
+    SPECULAR = 0.25;
 }
