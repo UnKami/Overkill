@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Hollow Custodian mask study | scripts/art/build_custodian.py; assets/characters/rigged/custodian-study.glb; assets/characters/rigged/custodian-study.glb.import; art_source/characters/custodian-study.blend; docs/custodian-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

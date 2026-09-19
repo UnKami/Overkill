@@ -521,3 +521,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/ui/relic_pedestal_view.gd; docs/sentinel-production.md.
 - Verification: 1080p and 720p large-text captures inspected; all-live-relic text fit, replacement/empty/locked states, safe inspection, bounds and ultrawide regression pass. 070 logs clean except known certificate warning.
 - Handoff: source-only UI checkpoint, published 0.23 unchanged. Broader UX/art/animation goal remains active. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Hollow Custodian mask study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: original mask/neck asset based on existing Act II elite artwork; real vertical visor opening and recessed amber lens, neck collars/pistons; smoothed initial forehead seam. One skinned mesh, four surfaces, 6,216 vertices.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb and import; docs/custodian-production.md.
+- Verification: final Blender/import, Vulkan front/quarter image review; one skin/four materials/idle-only export checks. 071 final logs clean except certificate warning.
+- Handoff: isolated incomplete study, no encounter wiring or combat acceptance. Next body/armor and authored motion. Published 0.23 unchanged. Locks released; AAA objective active.
