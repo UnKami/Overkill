@@ -16,6 +16,8 @@ var _elapsed := 0.0
 var _finished := false
 var _attacking_player: bool = true
 var _sparks: Array[Dictionary] = []
+var _spark_batch: MultiMeshInstance3D
+var _spark_instances: MultiMesh
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -250,16 +252,44 @@ func impact(on_player: bool, blocked: bool) -> void:
 	_camera_motion.tween_property(_camera, "fov", 39.0, 0.48).set_trans(Tween.TRANS_SINE)
 
 func _emit_sparks(at: Vector3, blocked: bool) -> void:
-	var mat := _material(Color("81deff") if blocked else Color("ffd08a"))
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	for i in range(12):
+	if not is_instance_valid(_spark_batch):
+		var mat: StandardMaterial3D = _material(Color.WHITE)
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mat.vertex_color_use_as_albedo = true
+		mat.vertex_color_is_srgb = true
 		var spark_mesh := SphereMesh.new()
 		spark_mesh.radius = 0.012
 		spark_mesh.height = 0.06
 		spark_mesh.radial_segments = 4
 		spark_mesh.rings = 2
-		var spark := _mesh(spark_mesh, at, mat)
-		_sparks.append({"node": spark, "velocity": Vector3(randf_range(-2.2,2.2),randf_range(0.7,2.8),randf_range(-0.6,1.4)), "life": 0.0})
+		spark_mesh.material = mat
+		_spark_instances = MultiMesh.new()
+		_spark_instances.transform_format = MultiMesh.TRANSFORM_3D
+		_spark_instances.use_colors = true
+		_spark_instances.mesh = spark_mesh
+		_spark_instances.instance_count = 32
+		_spark_instances.visible_instance_count = 0
+		_spark_batch = MultiMeshInstance3D.new()
+		_spark_batch.name = "ImpactSparks"
+		_spark_batch.multimesh = _spark_instances
+		_spark_batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		_world.add_child(_spark_batch)
+	for i in range(12):
+		_sparks.append({"position": at, "color":Color("81deff") if blocked else Color("ffd08a"), "velocity": Vector3(randf_range(-2.2,2.2),randf_range(0.7,2.8),randf_range(-0.6,1.4)), "life": 0.0})
+	_sync_sparks()
+
+func _sync_sparks() -> void:
+	if not is_instance_valid(_spark_batch): return
+	# Capacity grows only on unusually overlapping hits and is then reused.
+	if _sparks.size() > _spark_instances.instance_count:
+		_spark_instances.instance_count = maxi(_sparks.size(),_spark_instances.instance_count*2)
+	_spark_instances.visible_instance_count = _sparks.size()
+	_spark_batch.visible = not _sparks.is_empty()
+	for index: int in range(_sparks.size()):
+		var particle: Dictionary = _sparks[index]
+		var scale_amount: float = maxf(0.0,1.0-particle.life/0.42)
+		_spark_instances.set_instance_transform(index,Transform3D(Basis.IDENTITY.scaled(Vector3.ONE*scale_amount),particle.position))
+		_spark_instances.set_instance_color(index,particle.color)
 
 func _process(delta: float) -> void:
 	_elapsed += delta
@@ -267,11 +297,11 @@ func _process(delta: float) -> void:
 		var p: Dictionary = _sparks[i]
 		p.life += delta
 		p.velocity.y -= delta * 8.5
-		p.node.position += p.velocity * delta
-		p.node.scale = Vector3.ONE * maxf(0.0, 1.0 - p.life / 0.42)
+		p.position += p.velocity * delta
 		if p.life > 0.42:
-			p.node.queue_free()
 			_sparks.remove_at(i)
+	if is_instance_valid(_spark_batch) and (_spark_instances.visible_instance_count > 0 or not _sparks.is_empty()):
+		_sync_sparks()
 
 func finish(won: bool) -> void:
 	if _finished: return

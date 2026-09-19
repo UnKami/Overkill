@@ -162,3 +162,22 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Flame shape uses a compact procedural shader with rising distortion and independent phase per prop. Its plane retains depth testing so basket bars occlude the fire. The two existing shadow-free warm lights keep their original color/range and base energy, with under five percent variation. Reduced motion freezes both flame shape and light energy.
 - Default Vulkan and GL compatibility rendered checks cover shader compilation, metal batching, no extra local shadow passes and stable reduced-motion fire/light behavior, alongside existing contact/reaction/choice-framing checks. Reviewed action and compact scenes. Draw count remains 321 Vulkan / 351 GL in the diagnostic scene; no frame-rate improvement or full-fight acceptance is claimed. Evidence `.tools/035-render.log`, `.tools/035-gl.log` and capture folders; known certificate-store warning remains.
 - Fire is a small camera-facing procedural surface, not volumetric simulation. Environment material transitions, wear, distant geometry, fuller character production and frame pacing remain unfinished. This development checkpoint is not included in the published 0.19 installer.
+
+## Impact batching and fresh profiling (unreleased)
+
+The arena now reuses one instanced spark mesh instead of allocating twelve SphereMesh/MeshInstance pairs per impact. Per-instance colors preserve warm damage and cyan block effects. Capacity starts at 32, grows for overlapping effects and is reused; no live particles are discarded. Gravity, initial velocity ranges, count, shrinking and 0.42-second lifetime are unchanged. Sparks no longer submit shadow passes. Empty batches are hidden to avoid an idle draw. Instance colors are interpreted as sRGB to match the previous material colors.
+
+The diagnostic `arena_profile.tscn` accepts `--arena-profile-engraving` to hide/restore both engraving layers and `--arena-profile-actions` to replay stage attacks, impacts, reaction animations and effects in normal/fast/reduced-motion modes. It records peak draws and frames above 16.667 ms alongside existing timing percentiles. This is a presentation workload, not a complete gameplay simulation or performance acceptance test.
+
+Fresh Vulkan/Intel 1600x813 stage, 1920x1080 UI, VSync off:
+- Idle baseline: full median 13.32/13.35 ms before/after stage isolation; stage-only 10.73 ms.
+- Engraving isolation: full 12.35 ms, hidden 12.20 ms, restored 12.44 ms; draws 321 -> 295 -> 321. No material timing improvement, so no engraving rewrite was made.
+- Normal action baseline -> batched: median 12.54 -> 13.65 ms, p95 18.50 -> 18.28 ms, peak draws 321 -> 298.
+- Fast action: median 12.30 -> 12.37 ms, p95 18.48 -> 18.16 ms, peak draws 321 -> 298.
+- Reduced-motion action: median 12.40 -> 12.56 ms, p95 18.46 -> 17.73 ms, peak draws 320 -> 297.
+
+The draw reduction is demonstrated; a consistent frame-time gain is not. Earlier much slower samples and these fresh samples show why a single short measurement is not stable-FPS evidence. Profiling runs were sequential without concurrent test rendering. Evidence: `.tools/039-before.log`, `.tools/039-isolate.log`, `.tools/039-actions.log`, `.tools/039-after.log`.
+
+Vulkan initial batch checks and final GL SENTINEL_PRODUCTION_OK / IMPACT_BATCH_OK verify shared geometry, mixed color, overlapping capacity, cleanup, contact and UI framing. GL readback differs by under 0.001 per channel; checks allow one 8-bit step. Headless dummy rendering cannot read GPU instance colors, so that assertion is limited to rendered runs. Final GL mixed-impact capture inspected. Headless FINISH_SEQUENCE_OK covers all eight outcome/speed/motion combinations. Final logs have no script/assertion/shader failures; known certificate warning remains. Evidence `.tools/039-render.log`, `.tools/039-gl-final.log`, `.tools/039-gl-final-errors.log`, `.tools/039-finish.log`. Reject initial headless GPU-color and exact-precision GL assertion attempts.
+
+This is an unreleased rendering improvement. It does not close the art, animation, roster, full-fight pacing or AAA-quality requirements.

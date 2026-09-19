@@ -3,6 +3,24 @@ extends Node
 var battle: CombatController
 var stage: DirectedArena
 var hidden_ui: Array[CanvasItem] = []
+var exercise_actions: bool = false
+var action_cycle: int = 0
+var action_elapsed: float = 0.0
+var contact_sent: bool = false
+
+func _process(delta: float) -> void:
+	if not exercise_actions: return
+	action_elapsed += delta * AudioManager.animation_speed_scale()
+	var from_player: bool = action_cycle % 2 == 0
+	var actor: RiggedCombatant = stage.player if from_player else stage.enemy
+	if not contact_sent and action_elapsed >= actor.contact_time():
+		stage.impact(not from_player,action_cycle % 3 == 0)
+		contact_sent = true
+	if action_elapsed >= 1.6:
+		action_elapsed = 0.0
+		contact_sent = false
+		action_cycle += 1
+		stage.attack(action_cycle % 2 == 0)
 
 func _ready() -> void:
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
@@ -19,6 +37,34 @@ func _ready() -> void:
 	for child: Node in battle.get_children():
 		if child is CanvasItem and child != stage and child.visible: hidden_ui.append(child)
 	await sample("full_start")
+	if "--arena-profile-actions" in OS.get_cmdline_user_args():
+		battle._choice_overlay.hide()
+		stage.set_decision_view(false)
+		exercise_actions = true
+		stage.attack(true)
+		await sample("action_normal")
+		AudioManager.fast_mode = true
+		await sample("action_fast")
+		AudioManager.fast_mode = false
+		AudioManager.reduced_motion = true
+		stage.set_decision_view(true)
+		await sample("action_reduced")
+		exercise_actions = false
+		print("ARENA_PROFILE_DONE presentation_cycles=",action_cycle)
+		get_tree().quit()
+		return
+	if "--arena-profile-engraving" in OS.get_cmdline_user_args():
+		var engravings: Array[CanvasItem] = []
+		for node: Node in battle.find_children("*","Control",true,false):
+			if node.get_script() == preload("res://scripts/ui/clock_engraving.gd"):
+				engravings.append(node)
+				node.hide()
+		await sample("without_engraving")
+		for node: CanvasItem in engravings: node.show()
+		await sample("full_end")
+		print("ARENA_PROFILE_DONE engraving_count=",engravings.size())
+		get_tree().quit()
+		return
 	for item: CanvasItem in hidden_ui: item.hide()
 	await sample("stage_only")
 	for item: CanvasItem in hidden_ui: item.show()
@@ -51,6 +97,7 @@ func sample(label: String) -> void:
 	var times: Array[float] = []
 	var cpu: Array[float] = []
 	var gpu: Array[float] = []
+	var draw_counts: Array[float] = []
 	var begin: int = Time.get_ticks_usec()
 	var previous: int = begin
 	while Time.get_ticks_usec()-begin < 8000000:
@@ -60,13 +107,16 @@ func sample(label: String) -> void:
 		previous = now
 		cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(stage._view.get_viewport_rid()))
 		gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(stage._view.get_viewport_rid()))
+		draw_counts.append(Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	times.sort()
 	cpu.sort()
 	gpu.sort()
+	draw_counts.sort()
 	var result: Dictionary = {"phase":label,"samples":times.size(),"median_ms":times[times.size()/2],
 		"p95_ms":times[int(times.size()*0.95)],"p99_ms":times[int(times.size()*0.99)],
 		"stage_cpu_ms":cpu[cpu.size()/2] if stage._view.render_target_update_mode != SubViewport.UPDATE_DISABLED else null,
 		"stage_gpu_ms":gpu[gpu.size()/2] if stage._view.render_target_update_mode != SubViewport.UPDATE_DISABLED else null,
 		"draws":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),
+		"peak_draws":draw_counts.back(),"over_16ms_pct":100.0*times.filter(func(t: float) -> bool: return t > 16.667).size()/times.size(),
 		"render_size":str(stage._view.size)}
 	print("ARENA_PROFILE ",JSON.stringify(result))

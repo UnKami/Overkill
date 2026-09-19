@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-sentinel-production` | Clock rendering profile | `scripts/combat/arena_profile.gd`, `scripts/combat/directed_arena.gd`, `scripts/ui/clock_engraving.gd`, `scripts/combat/sentinel_production_test.gd`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 

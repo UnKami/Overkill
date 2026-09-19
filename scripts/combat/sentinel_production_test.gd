@@ -37,6 +37,28 @@ func _ready() -> void:
 		assert(brazier.get_node("ForgedFrame").get_child_count() == 2, "Brazier metal must remain batched by its two finishes")
 		assert(not brazier._light.shadow_enabled, "Local fire must not add expensive shadow passes")
 	await capture("idle")
+	stage._emit_sparks(Vector3(0,1.4,0),false)
+	stage._emit_sparks(Vector3(0,1.4,0),true)
+	assert(stage._sparks.size() == 24 and stage._spark_instances.visible_instance_count == 24)
+	assert(stage._sparks[0].color == Color("ffd08a") and stage._sparks[12].color == Color("81deff"))
+	if DisplayServer.get_name() != "headless":
+		for pair: Array in [[0,Color("ffd08a")],[12,Color("81deff")]]:
+			var actual: Color = stage._spark_instances.get_instance_color(pair[0])
+			var expected: Color = pair[1]
+			print("IMPACT_COLOR ",actual," expected=",expected)
+			# Compatibility stores instance colors at lower precision than Vulkan.
+			assert(absf(actual.r-expected.r) <= 1.0/255.0 and absf(actual.g-expected.g) <= 1.0/255.0 and absf(actual.b-expected.b) <= 1.0/255.0)
+	var spark_mesh: Mesh = stage._spark_instances.mesh
+	stage._emit_sparks(Vector3(0,1.4,0),false)
+	assert(stage._spark_instances.visible_instance_count == 36, "Overlapping effects must grow without dropping particles")
+	assert(stage._spark_instances.mesh == spark_mesh, "Impacts must reuse shared geometry")
+	assert(stage._spark_batch.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+	await get_tree().create_timer(0.08).timeout
+	await capture("mixed-impact-sparks")
+	await get_tree().create_timer(0.6).timeout
+	assert(stage._sparks.is_empty() and stage._spark_instances.visible_instance_count == 0)
+	assert(not stage._spark_batch.visible, "Expired batch must not submit an idle draw")
+	print("IMPACT_BATCH_OK: shared mesh, mixed hit colors, overlapping capacity and lifetime cleanup")
 	check_choice_clearance(stage)
 	if DisplayServer.get_name() != "headless":
 		var engraving: Control = battle._player_chrono._engraving

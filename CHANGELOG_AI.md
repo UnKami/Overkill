@@ -276,3 +276,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** Boneghoul builder, Blender source/GLB, study script, production notes.
 - **Verification:** Rendered Vulkan BONEGHOUL_CLAW_OK and BONEGHOUL_STUDY_OK retain skin, timing, foot and recovery checks. Added verification that imported materials use nonuniform vertex color. Final skull close-up inspected. `.tools/038-verified.log` and error log have no script/assertion/shader failures; existing certificate warning remains. Earlier unfused facial additions and unused-color export rejected.
 - **Handoff:** Still simplified anatomy and unfinished material/cloth quality. Nasal aperture, jaw, sculpt detail, shoulder deformation and full combat integration remain open. No installer release or AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan's AI — Impact batching and action profiling (unreleased)
+- **Branch:** `feat/yonatan-sentinel-production`; installer remains 0.19.
+- **Completed:** Reusable instanced impact sparks replace per-hit mesh/node allocation. Mixed colors, overlap capacity, original count/trajectory/lifetime preserved; empty batch hidden and tiny particle shadow passes removed. Added engraving-isolation and presentation-action profile modes with peak draws and slow-frame percentage.
+- **Files:** `scripts/combat/directed_arena.gd`, `arena_profile.gd`, `sentinel_production_test.gd`, `docs/sentinel-production.md`.
+- **Verification:** Initial Vulkan batch validation; final GL IMPACT_BATCH_OK/SENTINEL_PRODUCTION_OK and inspected mixed-impact capture; headless FINISH_SEQUENCE_OK all eight cases. Final logs clean of script/assertion/shader errors; certificate warning remains. GPU color tests skip headless dummy renderer and allow one byte of GL quantization after observed readback differences.
+- **Measured result:** Normal/fast action peak draws 321 -> 298; no consistent frame-time improvement. Engraving isolation removed 26 draws with negligible timing benefit, so engraving code was not changed. Detailed sequential baseline/after measurements and limitations in production notes. Evidence `.tools/039-*.log`.
+- **Handoff:** Presentation replay is not a complete fight. Broader frame pacing, bespoke character art/animation and integration remain unfinished. No installer release or AAA acceptance. Locks released.
