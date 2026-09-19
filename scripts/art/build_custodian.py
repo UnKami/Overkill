@@ -9,6 +9,24 @@ rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
 for o in list(bpy.data.objects):
  if o!=rig:bpy.data.objects.remove(o,do_unlink=True)
+# Dedicated rail bones keep both ends mounted as the chest moves over the hips.
+# Constraints are baked into the GLB; Godot needs no procedural attachment code.
+bpy.context.view_layer.objects.active=rig;rig.select_set(True)
+bpy.ops.object.mode_set(mode='EDIT')
+for sign,side in [(-1,'L'),(1,'R')]:
+ lower=Vector((sign*.105,-.035,1.09));upper=Vector((sign*.20,-.035,1.58))
+ for label,at,parent in [('lower',lower,'hips'),('upper',upper,'chest')]:
+  bone=rig.data.edit_bones.new('custodian_mount_'+label+'.'+side)
+  bone.head=at;bone.tail=at+Vector((0,0,.025));bone.parent=rig.data.edit_bones[parent]
+ bone=rig.data.edit_bones.new('custodian_rail.'+side)
+ bone.head=lower;bone.tail=upper;bone.parent=rig.data.edit_bones['custodian_mount_lower.'+side]
+bpy.ops.object.mode_set(mode='OBJECT')
+for side in ['L','R']:
+ constraint=rig.pose.bones['custodian_rail.'+side].constraints.new('STRETCH_TO')
+ constraint.target=rig;constraint.subtarget='custodian_mount_upper.'+side
+ constraint.rest_length=rig.data.bones['custodian_rail.'+side].length
+ constraint.volume='NO_VOLUME'
+rig.select_set(False)
 materials={};parts=[]
 for name,color,metal,rough in [('Iron',(.115,.145,.155,1),.82,.48),('Bronze',(.24,.16,.07,1),.75,.55),('Recess',(.008,.011,.014,1),.1,.94),('Amber',(.85,.35,.025,1),.1,.3)]:
  m=bpy.data.materials.new('Custodian_'+name);m.use_nodes=True
@@ -131,7 +149,12 @@ for i in range(9):
  h=1.08+i*.055
  rod('Spinal coupling',xyz(0,h,.045),xyz(0,h+.019,.045),.054,.052,'spine' if h<1.34 else 'chest','Iron')
 for sign in [-1,1]:
- rod('Torso side rail',xyz(sign*.105,1.09,.035),xyz(sign*.20,1.58,.035),.016,.018,'chest','Bronze')
+ rail_side='L' if sign<0 else 'R'
+ rod('Torso side rail',xyz(sign*.105,1.09,.035),xyz(sign*.20,1.58,.035),.016,.018,'custodian_rail.'+rail_side,'Bronze')
+ for label,at in [('lower',xyz(sign*.105,1.09,.035)),('upper',xyz(sign*.20,1.58,.035))]:
+  bpy.ops.mesh.primitive_uv_sphere_add(segments=16,ring_count=10,radius=.026,location=at)
+  mount=bpy.context.object;mount.name='Torso rail '+label+' bearing'
+  bind(mount,'custodian_mount_'+label+'.'+rail_side,'Iron',0)
  rod('Clavicle tie',xyz(0,1.62,.015),xyz(sign*.255,1.62,.015),.020,.025,'chest','Iron')
  # Three separately backed shards retain narrow dark fractures, not bright cracks.
  outlines=[[(.052,1.645),(.18,1.685),(.238,1.608),(.188,1.537),(.093,1.566)],

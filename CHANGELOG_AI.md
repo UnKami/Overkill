@@ -600,3 +600,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
 - Verification: 081 build/import/render checks pass; duration, all-bone endpoints, fixed feet, idle return and hit interruption; wrist advances 0.519 m at frame 14/30 s. Wind-up and extension reviewed from primary and side views. Idle/guard/hit regressions pass.
 - Handoff: no target contact or damage synchronization yet. Collapse, encounter integration, attachment/clearance refinement and final art remain. Published 0.23 unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian torso rail attachments
+- Branch: feat/yonatan-sentinel-production.
+- Completed: dedicated hips/chest mounts, baked constrained rail bones and four bearings; tightened this asset's animation import precision after proving importer track reduction caused attachment error.
+- Files: scripts/art/build_custodian.py; source Blend/GLB and GLB import settings; docs/custodian-production.md.
+- Verification: 082 source/export diagnosis, 844 exported pose samples at 120 Hz, maximum endpoint error 0.450 mm below 1 mm threshold. Attack side render reviewed; all four animation regressions pass. 55,847 vertices/four surfaces.
+- Handoff: preserve tracked import settings. Rails now follow their mounts in current clips; collapse/contact/encounter and final visual finish still incomplete. No controlled performance or AAA acceptance. Published 0.23 unchanged. Locks released.
