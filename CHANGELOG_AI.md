@@ -563,3 +563,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: final 076 Blender/import/render pass; 55,263 vertices, four surfaces. Quarter/rear fitting-pose review; final rear support correction inspected. Bone-weight sums, bone-name references and finite coordinates pass.
 - Handoff: incomplete costume study; no cloth simulation/full-motion/encounter/performance acceptance. Torso attachments, material wear and authored animation remain. Published 0.23 unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian material study and reusable scene
+- Branch: feat/yonatan-sentinel-production.
+- Completed: geometry-authored bevel masks and stable per-part variation; cool steel/muted bronze material binder using shared metal shader; reusable scenes/custodian_study.tscn with lighting/reflections and inherited idle.
+- Fixed: default Blender color export discarded wear masks. Explicit ACTIVE color export now preserves the full face/bevel range in Godot; reduced over-bright exposed-edge color after render inspection.
+- Files: scripts/art/build_custodian.py; source Blend/GLB; scripts/combat/custodian_materials.gd and UID; scripts/art/custodian_study_view.gd and UID; scenes/custodian_study.tscn; docs/custodian-production.md.
+- Verification: final 077 build/import/render checks passed; actual imported color-array ranges, exactly two metal overrides and playing idle verified. Final scene image reviewed. Geometry unchanged at 55,263 vertices.
+- Handoff: run scenes/custodian_study.tscn with F6 in Godot. Study only; no encounter or installer change. Forms, wear, attachments and bespoke animation remain unfinished; performance and AAA acceptance open. Locks released.

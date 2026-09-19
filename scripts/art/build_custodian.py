@@ -1,4 +1,4 @@
-"""Hollow Custodian articulated bust study. Original geometry; shared skeleton only.
+"""Hollow Custodian full-body study. Original geometry; shared skeleton only.
 Blender --background executioner-production.blend --python this script.
 Not connected to gameplay. Retains only the reference idle animation.
 """
@@ -22,10 +22,22 @@ def bind(o,bone,mat,bevel=.002):
  bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
  bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
  o.data.materials.clear();o.data.materials.append(materials[mat])
+ o.data.materials.append(materials[mat])
  if bevel:
-  mod=o.modifiers.new('Forged edge','BEVEL');mod.width=bevel;mod.segments=3;bpy.ops.object.modifier_apply(modifier=mod.name)
+  mod=o.modifiers.new('Forged edge','BEVEL');mod.width=bevel;mod.segments=3;mod.material=1;bpy.ops.object.modifier_apply(modifier=mod.name)
  for p in o.data.polygons:p.use_smooth=True
  mod=o.modifiers.new('Weighted normals','WEIGHTED_NORMAL');mod.keep_sharp=True;bpy.ops.object.modifier_apply(modifier=mod.name)
+ # R marks actual bevel faces; G is stable part-level variation; B retains AO.
+ # CustodianMaterials applies the shared metal shader to decode these channels.
+ mask=o.data.color_attributes.new(name='ForgedWear',type='FLOAT_COLOR',domain='CORNER')
+ o.data.color_attributes.active_color=mask
+ variation=sum((i+1)*ord(c) for i,c in enumerate(o.name))%101/100
+ for polygon in o.data.polygons:
+  exposed=1.0 if bevel and polygon.material_index==1 else 0.0
+  color=(exposed,variation,1.0,1.0) if mat in ['Iron','Bronze'] else (1,1,1,1)
+  for index in polygon.loop_indices:mask.data[index].color=color
+  polygon.material_index=0
+ o.data.materials.clear();o.data.materials.append(materials[mat])
  o.vertex_groups.new(name=bone).add(list(range(len(o.data.vertices))),1,'REPLACE')
  parts.append(o);o.select_set(False)
  return o
@@ -302,5 +314,5 @@ for track in list(rig.animation_data.nla_tracks):
  else:track.mute=False
 bpy.context.scene.frame_set(1);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/custodian-study.blend').resolve()))
-bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True)
+bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)
 print('CUSTODIAN_BUILD_OK',len(body.data.vertices),len(body.data.materials))
