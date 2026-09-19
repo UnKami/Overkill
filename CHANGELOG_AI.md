@@ -67,3 +67,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `README.md`, `installer/README.md`, `install/README.md`, `installer/OverkillSetup-0.18.0.sha256`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`.
 - **Verification:** Installer 230931689 bytes, ZIP 258282703 bytes. All three release assets verified HTTP 200 and GitHub SHA-256 matches against local files. Source/exported mechanics, preview, audio lifecycle and rendered contact checks passed; portable entries match export.
 - **Handoff:** Partner navigation: repository → Releases → 0.18.0 → Assets. Play Sentinel opens the 3D slice. Gameplay is not merged to main; use the exact tag/feature branch. This remains an incremental playtest, not AAA completion.
+
+## 2026-09-19 | Yonatan's AI — Verified 0.19 partner downloads
+- **Branch / PR:** `feat/yonatan-019-downloads`; distribution documentation only.
+- **Completed:** Published `v0.19.0-test` from source `2df0d09817f50bea863af4dd4d8e2c8a39f08454`. Updated homepage, installer/install folders, release notes, checksums and update log. Gameplay remains on `feat/yonatan-sentinel-production` pending review.
+- **Files:** `README.md`, `install/README.md`, `installer/README.md`, `installer/OverkillSetup-0.19.0.sha256`, `docs/encounter-019.md`, `UPDATE_LOG.md`.
+- **Verification:** All three published assets returned HTTP 200 and GitHub SHA-256 digests matched local files. Installer is 232253209 bytes; portable ZIP is 260925693 bytes. All five ZIP entries hash-match the tested payload. Exported mechanics, preview, contact, graphics-settings and terminal-finish tests pass; Vulkan rendered Sentinel/large-text/inspection checks pass. Installer wizard remains untested.
+- **Handoff:** Tell partner: repository → Releases → 0.19.0 → Assets → OverkillSetup-0.19.0.exe, then Play Sentinel encounter. The installer folder also provides access. This remains a development playtest: broader character/animation production and frame pacing are unfinished. No experimental gameplay files are included in this documentation change.
