@@ -2,16 +2,16 @@
 
 ## Download and test
 
-**[Download the Windows installer — 0.20.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.20.0-test/OverkillSetup-0.20.0.exe)**
+**[Download the Windows installer — 0.21.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.21.0-test/OverkillSetup-0.21.0.exe)**
 
-[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.20.0-test/Overkill-0.20.0-Windows.zip) · [All releases](https://github.com/UnKami/Overkill/releases) · **[Update log](UPDATE_LOG.md)**
+[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.21.0-test/Overkill-0.21.0-Windows.zip) · [All releases](https://github.com/UnKami/Overkill/releases) · **[Update log](UPDATE_LOG.md)**
 
-Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update adds a clearer enemy-action readout, consistent clock pointers, a refined Sentinel helmet, forged braziers and batched impact effects. Art and frame pacing remain in development. Use Play Sentinel from the installed shortcuts or portable folder to test it directly. The installer is unsigned. This is a playtest build; boss balance is still under review.
+Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update adds a playable 3D Boneghoul preview with authored claw attacks, pre-contact guard and a complete collapse. Art and frame pacing remain in development. Use Play Boneghoul preview from the Start menu or Play Boneghoul.cmd in the portable folder; Play Sentinel remains available. The installer is unsigned. This is a playtest build; boss balance is still under review.
 
 ## Partner sync
 
 Every delivered gameplay feature or update must have a versioned GitHub Release, downloadable Windows installer, and entry in the [update log](UPDATE_LOG.md). Release notes identify the exact source commit, test results, known issues, and save compatibility. Downloads live in Releases; the [installer folder](installer/README.md) provides direct links.
 
-The current playtest is built from the `v0.20.0-test` tag on `feat/yonatan-sentinel-production`. Its gameplay changes are not yet merged into main. Open Releases, select 0.20.0, and expand Assets to find the installer.
+The current playtest is built from the `v0.21.0-test` tag on `feat/yonatan-sentinel-production`. Its gameplay changes are not yet merged into main. Open Releases, select 0.21.0, and expand Assets to find the installer.
 
 [AI collaboration instructions](AGENTS.md) · [Technical handoff log](CHANGELOG_AI.md) · [Active work](ACTIVE_WORK.md)
