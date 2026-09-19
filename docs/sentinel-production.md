@@ -56,3 +56,10 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Controller sound delay and stage recovery follow the active actor's timing. The hammer trail now ends at the hammer head rather than a sword-length tip. Animation-name results are cached and timing tables are constants, avoiding new per-frame array allocation.
 - Validation checks separate hero/enemy clip lengths, increasing key times, anticipation before the heavy contact point, weapon reach and recovery in normal/fast modes; damage accounting across normal/fast/reduced motion remains covered. Rendered pose captures accompany the numeric tests.
 - This is cadence differentiation using the existing authored attack poses, not a new motion-captured performance or broad attack animation library. Unique heavy poses, attack alternatives, guard reactions and death production remain unfinished.
+
+## Braced guard and visual target
+
+- Authored a Sentinel-specific guard action: forward torso brace, off-hand protecting the clock core, guarded weapon arm, a short hold and controlled release. It preserves the existing foot placement and idle pose.
+- Rendered tests check a visible off-hand displacement, planted supporting foot and recovery after consecutive blocked hits. Normal/fast/reduced-motion damage regressions remain covered. Capture: `.tools/022-render/Godot/app_userdata/Overkill/sentinel-019/sentinel-guard.png`.
+- A new generated modeling reference is stored at `art_source/concepts/sentinel-target-v1.png`; its exact built-in imagegen prompt and critique are in the sibling Markdown file. It establishes a materially stronger target than the current blockout. It is not a 3D game render or proof of achieved quality.
+- Next modeling work should adopt curved layered armor, a recessed helm/gorget, covered joints and articulated lower-leg armor while preserving the real model's nine clock marks. The generated clock-face marks are not mechanically authoritative. Avoid expanding the current blocky robot construction across the roster before closing this larger visual gap.

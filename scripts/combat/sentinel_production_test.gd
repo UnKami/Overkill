@@ -62,6 +62,26 @@ func _ready() -> void:
 		await capture("player-impact" if from_player else "sentinel-impact")
 		await get_tree().create_timer(0.8).timeout
 		assert(is_zero_approx(actor._model.position.z),"Attack translation must settle, including repeated actions")
+	var defender: RiggedCombatant = stage.enemy
+	var left_foot: int = defender._skeleton.find_bone("foot.L")
+	var left_hand: int = defender._skeleton.find_bone("hand.L")
+	var initial_foot: Vector3 = defender._skeleton.get_bone_global_pose(left_foot).origin
+	var initial_hand: Vector3 = defender._skeleton.get_bone_global_pose(left_hand).origin
+	for repeat: int in 2:
+		defender.hit(true)
+		await get_tree().create_timer(0.10).timeout
+		defender._skeleton.force_update_all_bone_transforms()
+		assert(defender._skeleton.get_bone_global_pose(left_foot).origin.distance_to(initial_foot) < 0.025, "Bracing must keep the supporting foot planted")
+		assert(defender._skeleton.get_bone_global_pose(left_hand).origin.distance_to(initial_hand) > 0.07, "Guard must visibly change the off-hand pose")
+		if repeat == 0:
+			defender.set_process(false)
+			defender._animation.pause()
+			await capture("sentinel-guard")
+			defender.set_process(true)
+			defender.hit(true)
+	await get_tree().create_timer(0.65).timeout
+	assert(defender._animation.current_animation == defender._clip("combat_idle"), "Repeated guards must recover to idle")
+	print("SENTINEL_GUARD_OK: distinct off-hand brace, planted foot and repeated-hit recovery")
 	AudioManager.reduced_motion = true
 	stage.attack(true)
 	await get_tree().create_timer(0.2).timeout
