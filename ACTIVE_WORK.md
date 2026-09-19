@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
+| Yonatan / Codex | `feat/yonatan-020-downloads` | 0.20 release navigation | `README.md`, `installer/README.md`, `install/README.md`, `UPDATE_LOG.md`, `docs/encounter-020.md`, `installer/OverkillSetup-0.20.0.sha256`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
@@ -39,3 +39,4 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
 | **Audio & SFX** | `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+
