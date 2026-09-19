@@ -213,7 +213,48 @@ for side in ['L','R']:
    if segment==3:
     # Closed pointed tips follow the terminal bone; no unweighted extensions.
     rod('Tapered claw tip',b-direction*.009,b+direction*.009,radius*.76,.0015,bone.name,'Iron',12,.0006)
-# Join the staged upper body into one skinned mesh; lower body and combat remain unfinished.
+# Slender leg mechanisms, with armor carried by each articulated segment.
+for side in ['L','R']:
+ thigh=rig.data.bones['thigh.'+side];shin=rig.data.bones['shin.'+side];foot=rig.data.bones['foot.'+side]
+ hip=thigh.head_local.copy();knee=shin.head_local.copy();ankle=foot.head_local.copy()
+ lateral=Vector((1,0,0));front=Vector((0,1,0))
+ rod('Pelvic crossmember',Vector((0,hip.y,hip.z)),hip,.024,.030,'hips','Iron')
+ for bone,a,b in [(thigh,hip,knee),(shin,knee,ankle)]:
+  rod('Leg spindle',a,b,.024,.018,bone.name,'Recess')
+  for sign in [-1,1]:
+   shift=lateral*sign*.029
+   rod('Leg piston housing',a.lerp(b,.13)+shift,a.lerp(b,.63)+shift,.014,.012,bone.name,'Iron')
+   rod('Leg piston extension',a.lerp(b,.59)+shift,a.lerp(b,.92)+shift,.008,.008,bone.name,'Bronze')
+  # Four longitudinal stations form a narrow front crest, not a solid boot.
+  verts=[]
+  for t,width,depth in [(.13,.033,.028),(.28,.054,.045),(.65,.036,.038),(.87,.018,.022)]:
+   center=a.lerp(b,t)
+   for x,y in [(-1,0),(-.60,.75),(0,1),(.60,.75),(1,0)]:
+    verts.append(center+lateral*(x*width)+front*(.027+y*depth))
+  faces=[]
+  for row in range(3):
+   for col in range(4):
+    k=row*5+col;faces.append((k,k+1,k+6,k+5))
+  mesh=bpy.data.meshes.new('Leg crest');mesh.from_pydata(verts,[],faces);mesh.update()
+  shell=bpy.data.objects.new('Crested '+bone.name,mesh);bpy.context.collection.objects.link(shell)
+  bpy.context.view_layer.objects.active=shell;shell.select_set(True)
+  wall=shell.modifiers.new('Armor wall','SOLIDIFY');wall.thickness=.004;bpy.ops.object.modifier_apply(modifier=wall.name)
+  bind(shell,bone.name,'Iron',.0015)
+ for name,at,radius,bone in [('Hip',hip,.037,thigh.name),('Knee',knee,.031,shin.name),('Ankle',ankle,.026,foot.name)]:
+  rod(name+' axle',at-lateral*.040,at+lateral*.040,radius,radius,bone,'Recess')
+  for sign in [-1,1]:
+   rod(name+' bearing cap',at+lateral*(sign*.037),at+lateral*(sign*.045),radius*.74,radius*.74,bone,'Bronze')
+ # Shaped heel and long pointed toe. Sole clears the rest-pose ground plane.
+ x=ankle.x;y=ankle.y
+ outline=[(-.034,-.055),(.034,-.055),(.043,.100),(.017,.208),(0,.240),(-.017,.208),(-.043,.100)]
+ verts=[Vector((x+dx,y+dy,.016)) for dx,dy in outline]
+ verts.extend(Vector((x+dx*.83,y+dy,.045 if dy>.18 else .090)) for dx,dy in outline)
+ n=len(outline);faces=[tuple(reversed(range(n))),tuple(range(n,2*n))]
+ for i in range(n):faces.append((i,(i+1)%n,(i+1)%n+n,i+n))
+ mesh=bpy.data.meshes.new('Pointed foot');mesh.from_pydata(verts,[],faces);mesh.update()
+ obj=bpy.data.objects.new('Custodian pointed foot '+side,mesh);bpy.context.collection.objects.link(obj);bind(obj,foot.name,'Iron',.003)
+ rod('Ankle foot tie',ankle,Vector((x,y+.050,.069)),.019,.020,foot.name,'Iron')
+# Join the staged body into one skinned mesh; costume and combat remain unfinished.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
 bpy.context.view_layer.objects.active=parts[0];bpy.ops.object.join();body=bpy.context.object;body.name='Custodian_BodyStudy'

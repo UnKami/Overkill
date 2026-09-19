@@ -549,3 +549,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: final 074 Blender/import/render checks passed; 42,374 vertices, one skin/four surfaces. Upper-body idle and both hand close-ups inspected; final pin correction reviewed. No new script/shader/assertion errors.
 - Handoff: incomplete source study only. Lower body, worn material detail, Custodian-specific poses and full articulation checks remain. No installer change or AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Custodian lower-body study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: pelvic crossmember, thigh/shin mechanisms, narrow crested shells, hip/knee/ankle bearings and bone-bound pointed feet.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: 075 Blender/import/render checks passed; 49,238 vertices, four surfaces, one skin. Full-body quarter/rear reviewed; valid full-weight bone assignment and finite coordinates for every vertex.
+- Handoff: split costume, torso rail attachments, worn surfaces and bespoke animations remain; no combat/ground-contact/performance acceptance. Source study only, published 0.23 unchanged. Locks released; overall AAA goal active.
