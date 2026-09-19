@@ -30,11 +30,11 @@ def bind(o,bone,mat,bevel=.002):
  parts.append(o);o.select_set(False)
  return o
 
-def rod(name,a,b,r1,r2,bone,mat):
+def rod(name,a,b,r1,r2,bone,mat,vertices=16,bevel=.002):
  a=Vector(a);b=Vector(b);v=b-a
- bpy.ops.mesh.primitive_cone_add(vertices=16,radius1=r1,radius2=r2,depth=v.length,location=(a+b)/2)
+ bpy.ops.mesh.primitive_cone_add(vertices=vertices,radius1=r1,radius2=r2,depth=v.length,location=(a+b)/2)
  o=bpy.context.object;o.name=name;o.rotation_euler=v.to_track_quat('Z','Y').to_euler()
- return bind(o,bone,mat)
+ return bind(o,bone,mat,bevel)
 def box(name,at,size,bone,mat,bevel=.003):
  bpy.ops.mesh.primitive_cube_add(size=1,location=at);o=bpy.context.object;o.name=name;o.scale=size
  return bind(o,bone,mat,bevel)
@@ -184,7 +184,36 @@ for side in ['L','R']:
  rod('Elbow center pin',elbow+front*.044,elbow+front*.051,.011,.011,lower.name,'Iron')
  axis=(wrist-elbow).normalized()
  rod('Wrist coupling',wrist-axis*.025,wrist+axis*.010,.027,.025,lower.name,'Bronze')
-# Join the staged bust into one skinned mesh; limbs and combat remain unfinished.
+# Open metacarpal frames and five independently skinned mechanical digits.
+# Palm rods reach actual finger roots, not the shorter hand-bone tail.
+for side in ['L','R']:
+ hand=rig.data.bones['hand.'+side]
+ fingers=['f_index','f_middle','f_ring','f_pinky']
+ roots=[rig.data.bones[f+'.01.'+side].head_local.copy() for f in fingers]
+ center=sum(roots,Vector())/4;axis=(center-hand.head_local).normalized()
+ across=(roots[0]-roots[-1]).normalized();normal=axis.cross(across).normalized()
+ # Dorsal wrist bridge, with a narrow open frame running to each knuckle.
+ rod('Palm wrist bridge',hand.head_local-across*.020,hand.head_local+across*.020,.015,.015,hand.name,'Iron')
+ for index,root in enumerate(roots):
+  start=hand.head_local+across*(.016-index*.010)
+  rod('Metacarpal strut',start,root,.009,.011,hand.name,'Iron')
+  rod('Dorsal tendon',start+normal*.011,root+normal*.010,.0035,.0035,hand.name,'Bronze')
+ rod('Knuckle bridge',roots[0],roots[-1],.010,.010,hand.name,'Iron')
+ thumb=rig.data.bones['thumb.01.'+side]
+ rod('Thumb saddle',hand.head_local.lerp(center,.25),thumb.head_local,.012,.013,hand.name,'Iron')
+ for finger in fingers+['thumb']:
+  for segment in range(1,4):
+   bone=rig.data.bones[f'{finger}.{segment:02d}.{side}']
+   a=bone.head_local.copy();b=bone.tail_local.copy();direction=(b-a).normalized()
+   radius=.009 if finger!='f_pinky' else .0075
+   bpy.ops.mesh.primitive_uv_sphere_add(segments=12,ring_count=8,radius=radius*1.1,location=a)
+   joint=bpy.context.object;joint.name='Digit bearing';bind(joint,bone.name,'Recess',0)
+   rod('Digit hinge pin',a-normal*radius*1.18,a+normal*radius*1.18,radius*.48,radius*.48,bone.name,'Bronze',12,.0006)
+   rod('Finger phalanx',a+direction*.006,b-direction*.005,radius,radius*.72,bone.name,'Iron',12,.0006)
+   if segment==3:
+    # Closed pointed tips follow the terminal bone; no unweighted extensions.
+    rod('Tapered claw tip',b-direction*.009,b+direction*.009,radius*.76,.0015,bone.name,'Iron',12,.0006)
+# Join the staged upper body into one skinned mesh; lower body and combat remain unfinished.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
 bpy.context.view_layer.objects.active=parts[0];bpy.ops.object.join();body=bpy.context.object;body.name='Custodian_BodyStudy'

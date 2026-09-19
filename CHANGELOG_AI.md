@@ -542,3 +542,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: 073 Blender/import/render logs passed; 30,258 vertices, four surfaces, one skin, idle-only clips. Quarter/rear rest and sampled 0.6-second idle image reviewed; no new runtime/script errors.
 - Handoff: study remains incomplete and disconnected from gameplay. Hands/lower body/material wear/authored animation and combat pose clearances remain. No performance or AAA acceptance. Published 0.23 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Custodian mechanical hands
+- Branch: feat/yonatan-sentinel-production.
+- Completed: open metacarpal frames, thumb saddles, ten articulated three-segment digits, joint bearings/pins and closed claw tips; reduced excessive small-part bevels and corrected submerged pins.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: final 074 Blender/import/render checks passed; 42,374 vertices, one skin/four surfaces. Upper-body idle and both hand close-ups inspected; final pin correction reviewed. No new script/shader/assertion errors.
+- Handoff: incomplete source study only. Lower body, worn material detail, Custodian-specific poses and full articulation checks remain. No installer change or AAA acceptance. Locks released.
