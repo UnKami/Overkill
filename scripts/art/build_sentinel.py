@@ -145,18 +145,21 @@ for layer in range(3):
 box('Pelvic housing',(0,1.015,0),(.34,.18,.24),'hips','Recess',.03)
 for side in [-1,1]:
     panel('Hip skirt',[(side*.025,1.11),(side*.19,1.12),(side*.245,.88),(side*.07,.85)],-.155,.085,'hips',bevel=.014)
-# Curved bell shell: five forged courses taper to a rounded crown around an open face.
+# Enclosed forged crown, with a shallow visor assembly instead of an open bucket.
 def bell_shell():
-    levels=[(1.79,.11,.10),(1.84,.16,.13),(1.95,.145,.145),(2.025,.12,.12),(2.065,.035,.045)]
-    verts=[];count=33
+    levels=[(1.79,.105,.095),(1.84,.145,.13),(1.95,.155,.145),(2.035,.13,.125),(2.09,.075,.075)]
+    verts=[];count=40
     for h,rx,rd in levels:
         for i in range(count):
-            a=math.radians(30)+math.radians(300)*i/(count-1)
+            a=math.tau*i/count
             verts.append(xyz(math.sin(a)*rx,h,-math.cos(a)*rd+.015))
     faces=[]
     for row in range(len(levels)-1):
-        for i in range(count-1):
-            a=row*count+i;faces.append((a,a+1,a+count+1,a+count))
+        for i in range(count):
+            a=row*count+i;b=row*count+(i+1)%count
+            faces.append((a,b,b+count,a+count))
+    top=len(verts);verts.append(xyz(0,2.11,.015))
+    for i in range(count):faces.append(((len(levels)-1)*count+i,(len(levels)-1)*count+(i+1)%count,top))
     mesh=bpy.data.meshes.new('Bell shell');mesh.from_pydata(verts,[],faces);mesh.update()
     o=bpy.data.objects.new('Bell shell',mesh);bpy.context.collection.objects.link(o)
     bpy.context.view_layer.objects.active=o;o.select_set(True)
@@ -164,20 +167,28 @@ def bell_shell():
     bpy.ops.object.modifier_apply(modifier=solid.name)
     bind(o,'head','Iron',.006)
 bell_shell()
-# Bell helm: a smooth faceless visor recessed into angular temple armor.
+# Articulated neck lames protect the exposed mechanism without a floating collar.
 box('Neck block',(0,1.74,0),(.18,.14,.16),'neck','Recess',.025)
+for course in range(3):
+    h=1.695+course*.035
+    rod('Neck lame',xyz(0,h,.025),xyz(0,h+.04,.025),.17-course*.018,.15-course*.018,'neck','Iron',32)
 ring('Gorget',(0,1.738,0),.16,.018,'chest',front=False)
-panel('Blind visor',[(-.115,2.035),(.115,2.035),(.14,1.82),(.085,1.765),(-.085,1.765),(-.14,1.82)],-.154,.055,'head','Recess',.025)
-# A central forged crest and recessed vertical grille replace the toy-like brow/horns.
-profile=[(-.15,2.00),(-.07,2.15),(.04,2.19),(.17,2.08),(.14,1.99)]
+panel('Recessed face',[(-.10,2.005),(.10,2.005),(.12,1.85),(.07,1.795),(-.07,1.795),(-.12,1.85)],-.157,-.12,'head','Recess',.009)
+for side in [-1,1]:
+    panel('Brow plate',[(side*.008,2.02),(side*.105,2.018),(side*.132,1.971),(side*.025,1.961)],-.176,-.14,'head','Iron',.007)
+    panel('Cheek plate',[(side*.122,1.951),(side*.147,1.913),(side*.113,1.815),(side*.057,1.783),(side*.075,1.84)],-.169,-.115,'head','Iron',.008)
+    rod('Temple hinge',xyz(side*.147,1.965,-.02),xyz(side*.16,1.965,-.02),.028,.025,'head','Bronze',16)
+    rod('Hinge pin',xyz(side*.16,1.965,-.02),xyz(side*.165,1.965,-.02),.011,.011,'head','Recess',12)
+# Low crest follows the closed crown, rather than exposing its open upper edge.
+profile=[(-.125,2.045),(-.045,2.14),(.075,2.135),(.15,2.055),(.11,2.005)]
 verts=[xyz(x,h,d) for x in [-.014,.014] for d,h in profile];n=len(profile)
 faces=[tuple(reversed(range(n))),tuple(range(n,2*n))]+[(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
 data=bpy.data.meshes.new('Helmet crest');data.from_pydata(verts,[],faces);data.update()
 o=bpy.data.objects.new('Forged helmet crest',data);bpy.context.collection.objects.link(o);bind(o,'head','Iron',.005)
-for x in [-.09,-.045,0,.045,.09]:
-    top=2.015-abs(x)*.25
-    rod('Visor grille',xyz(x,1.82,-.183),xyz(x,top,-.183),.008,.006,'head','Bronze',8)
-box('Recessed visor light',(0,1.932,-.163),(.10,.018,.008),'head','Ember',.003)
+for x in [-.072,-.036,0,.036,.072]:
+    bottom=1.817+abs(x)*.3
+    rod('Breathing grille',xyz(x,bottom,-.174),xyz(x,1.913,-.174),.005,.005,'head','Iron',8)
+box('Recessed visor light',(0,1.943,-.163),(.105,.012,.008),'head','Ember',.002)
 # Folded split tabard bridges the cuirass and legs without covering the clock core.
 for side in [-1,1]:
     verts=[];cols=8;rows=12

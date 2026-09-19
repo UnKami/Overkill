@@ -171,6 +171,8 @@ func _ready() -> void:
 		get_window().size = Vector2i(1920,1080)
 		for child: Node in battle.get_children():
 			if child is CanvasItem and child != stage: child.hide()
+		# Let the overlay-driven composition finish before placing the inspection camera.
+		await get_tree().create_timer(0.4).timeout
 		stage.player.hide()
 		stage._camera.v_offset = 0.0
 		stage._camera.fov = 40
