@@ -209,19 +209,23 @@ func _build_cloak() -> void:
 	rest_space.transform = _skeleton.get_bone_global_rest(_skeleton.find_bone("chest")).affine_inverse()
 	var surface := SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Four folds need more than four samples each to avoid cardboard-like creases.
+	const CLOAK_COLUMNS: int = 48
 	for y in range(22):
-		for x in range(16):
+		for x in range(CLOAK_COLUMNS):
 			for corner in [Vector2i(0,0),Vector2i(1,0),Vector2i(0,1),Vector2i(1,0),Vector2i(1,1),Vector2i(0,1)]:
-				var uv := Vector2(float(x+corner.x)/16.0,float(y+corner.y)/22.0)
+				var uv := Vector2(float(x+corner.x)/float(CLOAK_COLUMNS),float(y+corner.y)/22.0)
 				var width := lerpf(0.26,0.44,uv.y)
 				var z := 0.16 + uv.y*0.20 + sin(uv.x*PI*8)*0.027*uv.y
 				surface.set_uv(uv)
 				surface.add_vertex(Vector3((uv.x-0.5)*2*width,1.67-uv.y*1.29,z))
 	surface.generate_normals()
+	surface.index()
 	_cloth = ShaderMaterial.new()
 	_cloth.shader = preload("res://assets/shaders/battle_cloth.gdshader")
 	_cloth.set_shader_parameter("cloth_color",Color("381822") if hostile else Color("132938"))
 	var cloak: MeshInstance3D = _mesh(rest_space,surface.commit(),Vector3.ZERO,_cloth)
+	cloak.name = "TailoredCloak"
 	cloak.extra_cull_margin = 1.0 # Shader drape extends beyond the rigid rest-pose bounds.
 
 func _heavy_attack() -> bool:

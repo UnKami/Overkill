@@ -37,7 +37,10 @@ void fragment() {
     vec2 footprint = fwidth(UV*frequency);
     float filtered = 1.0-smoothstep(0.5,1.5,max(footprint.x,footprint.y));
     float weave = sin(UV.x*frequency.x)*sin(UV.y*frequency.y)*0.035*filtered;
-    float hem = step(UV.x,0.035)+step(0.965,UV.x)+step(0.97,UV.y);
-    ALBEDO = mix(cloth_color.rgb*(0.85+weave),vec3(0.20,0.14,0.07),clamp(hem,0.0,1.0));
+    // Narrow woven binding replaces the broad, flat gold border. Filter at distance.
+    float edge_distance = min(min(UV.x,1.0-UV.x),1.0-UV.y);
+    float aa = max(fwidth(edge_distance),0.0001);
+    float hem = 1.0-smoothstep(0.012-aa,0.012+aa,edge_distance);
+    ALBEDO = mix(cloth_color.rgb*(0.85+weave),vec3(0.095,0.067,0.039)*(0.95+weave),hem);
     ROUGHNESS = 0.94;
 }

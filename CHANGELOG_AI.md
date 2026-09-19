@@ -486,3 +486,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_sentinel.py; assets/characters/rigged/sentinel.glb; art_source/characters/sentinel-production.blend; docs/sentinel-production.md.
 - Verification: Blender/import; idle, guard, hit and kneeling-death close-up visual checks. Final 066 pose fixture passes; initial wrong clip name corrected and failed test process cleaned up. No performance claim under competing GPU workload.
 - Handoff: source-only, next release must include outstanding model/material/thumbnail changes. Published 0.22 unchanged; broader art goal active. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Cloak folds and binding
+- Branch: feat/yonatan-sentinel-production.
+- Completed: twelve mesh samples per cloak fold, indexed vertices; narrower darker antialiased fabric border for both actors.
+- Files: scripts/combat/rigged_combatant.gd; assets/shaders/battle_cloth.gdshader; docs/sentinel-production.md.
+- Verification: rendered back views of both actors in Vulkan/OpenGL; Sentinel production regression including reduced motion and framing; 067 logs clean except certificate warning. Per cloak 1,127 vertices / 2,112 triangles. No performance acceptance under competing game workload.
+- Handoff: procedural drape still needs richer animation/collision/art; source-only checkpoint, published 0.22 unchanged. Locks released.
