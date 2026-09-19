@@ -119,10 +119,16 @@ def mantle(side,layer):
     sign=-1 if side=='L' else 1
     center=Vector((sign*(.31+layer*.022),1.65-layer*.065,.01))
     width=.245-layer*.023;depth=.205-layer*.018;height=.12-layer*.015
-    segments=32;rows=8
+    segments=48 if layer==0 else 32;rows=10 if layer==0 else 8
     def point(phi,t,expand=0):
         theta=t*(1.62+.075*math.cos(3*phi))
-        return center+Vector((math.cos(phi)*math.sin(theta)*(width+expand),math.cos(theta)*height,math.sin(phi)*math.sin(theta)*(depth+expand)))
+        # Six hammered radial flutes crest across the crown and fade into the lip.
+        # They are part of the plate shell, so highlights follow actual relief.
+        crest=max(0.0,math.cos(6*phi))**4
+        fade=max(0.0,min(1.0,(t-.20)/.25))
+        relief=(.014 if layer==0 else 0.0)*crest*math.sin(math.pi*t)**1.5*fade*fade*(3-2*fade)
+        radial=math.sin(theta)
+        return center+Vector((math.cos(phi)*(radial*(width+expand)+relief*radial),math.cos(theta)*height+relief*radial*math.cos(theta),math.sin(phi)*(radial*(depth+expand)+relief*radial)))
     verts=[xyz(center.x,center.y+height,center.z)]
     for row in range(1,rows+1):
         for segment in range(segments):verts.append(xyz(*point(segment*math.tau/segments,row/rows)))

@@ -464,3 +464,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files retained: docs/sentinel-production.md; CHANGELOG_AI.md; ACTIVE_WORK.md lock release. No runtime changes retained.
 - Verification: rendered Vulkan material swaps, two materials/two views, no shader/script errors; known certificate warning. Visual rejection overrides passing compilation. Baseline restoration checked by hash and git diff.
 - Handoff: prioritize shaped plate forms and authored surface detail; broad oxidation/sheens did not provide sufficient quality gain. Goal unfinished; published 0.22 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Sentinel shoulder forms
+- Branch: feat/yonatan-sentinel-production.
+- Completed: radial flutes on outer shoulder shells, softened crown transition; lower overlapping plates retain simpler shapes. Final 39,252 vertices / four surfaces, +2,248 vertices.
+- Files: scripts/art/build_sentinel.py; assets/characters/rigged/sentinel.glb; art_source/characters/sentinel-production.blend; docs/sentinel-production.md.
+- Verification: final Blender/import, close-up/gameplay visual inspection, two full Sentinel production regressions. Investigated unusually slow timing with old/new/old mesh swaps; revised geometry no slower in this noisy sample, no performance acceptance. Details and limitations in production notes.
+- Handoff: source checkpoint only; published 0.22 unchanged. Requires next packaged release along with prior unreleased changes. Broader AAA target unfinished. Locks released.
