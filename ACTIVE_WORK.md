@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | Content-sized battle choices | scripts/ui/relic_pedestal_view.gd; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
