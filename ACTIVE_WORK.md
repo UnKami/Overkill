@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-sentinel-production` | Defeat animation and reward handoff review | `scripts/combat/finish_sequence_test.gd`, `scripts/combat/finish_sequence_test.gd.uid`, `scenes/finish_sequence_test.tscn`, `scripts/combat/directed_arena.gd`, `scripts/combat/rigged_combatant.gd`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
