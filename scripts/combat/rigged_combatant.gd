@@ -19,6 +19,7 @@ var _trail_points: Array[Dictionary] = []
 var _trail_material: StandardMaterial3D
 var _metal_cache: Dictionary = {}
 var _clip_cache: Dictionary = {}
+var _grip_bones: Array[Vector2i] = []
 const AUTHORED_ATTACK_TIMES: Array[float] = [0.0, 0.20, 0.32, 0.40, 0.76]
 const HEAVY_ATTACK_TIMES: Array[float] = [0.0, 0.30, 0.46, 0.56, 1.08]
 
@@ -28,6 +29,10 @@ func _ready() -> void:
 	_model.rotation.y = PI
 	_find_nodes(_model)
 	assert(_skeleton != null and _animation != null, "Combat asset requires a skeleton and animation player")
+	for finger: String in ["f_index", "f_middle", "f_ring"]:
+		var pair: Vector2i = Vector2i(_skeleton.find_bone(finger + ".01.R"), _skeleton.find_bone(finger + ".03.R"))
+		assert(pair.x >= 0 and pair.y >= 0, "Combat asset requires right-hand grip bones")
+		_grip_bones.append(pair)
 	_configure_attack_timing()
 	_style(_model)
 	_build_equipment()
@@ -285,10 +290,9 @@ func _align_weapon() -> void:
 	var surface: Vector3 = opponent.global_position + Vector3(0,1.45,0) + (global_position-opponent.global_position).normalized()*0.12
 	if opponent.has_method("is_guarding") and opponent.is_guarding():
 		surface = opponent.guard_contact_point(global_position)
-	# Aim from the current palm, not the previous frame weapon transform.
-	var wrist: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("hand.R")).origin
-	var knuckle: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("f_middle.01.R")).origin
-	var palm: Vector3 = _skeleton.to_global(wrist.lerp(knuckle, 0.7))
+	# Anchor in the curled fingers, not on the back of the palm. Average three
+	# fingers so the center follows the authored grip without picking one knuckle.
+	var palm: Vector3 = grip_center()
 	var toward: Vector3 = (surface - palm).normalized()
 	var idle := (Vector3.UP + toward*0.15).normalized()
 	var direction := idle
@@ -307,6 +311,14 @@ func _align_weapon() -> void:
 	_weapon.global_basis = Basis.looking_at(-direction,up).scaled(Vector3.ONE*global_basis.get_scale().x)
 	# Center the handle inside the palm rather than at the wrist joint.
 	_weapon.global_position = palm - _weapon.global_basis * Vector3(0,0.05,0)
+
+func grip_center() -> Vector3:
+	var center: Vector3 = Vector3.ZERO
+	for pair: Vector2i in _grip_bones:
+		var base: Vector3 = _skeleton.get_bone_global_pose(pair.x).origin
+		var curl: Vector3 = _skeleton.get_bone_global_pose(pair.y).origin
+		center += base.lerp(curl, 0.5)
+	return _skeleton.to_global(center / 3.0)
 
 func _update_trail(delta: float) -> void:
 	for point in _trail_points: point.age += delta

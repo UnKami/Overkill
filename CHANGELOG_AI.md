@@ -380,3 +380,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_boneghoul.py, art_source/characters/boneghoul-production.blend, assets/characters/rigged/boneghoul.glb, docs/boneghoul-production.md.
 - Verification: final `.tools/051-build-complete.log`, `051-import-complete.log`, `051-complete*`, `051-contact-complete.log`; rendered skull and animation review, planted collapse, contact/guard/interruption checks. No final Python/script/assertion/shader errors; known warnings remain. Rejected intermediate cutter-normal and wide-gape candidates documented.
 - Handoff: stylized anatomy remains below target. Published installer stays 0.21. No AAA or performance acceptance. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Finger-centered weapon attachment
+- Branch: feat/yonatan-sentinel-production.
+- Completed: move weapon anchor from dorsal palm into averaged finger curl; cache grip bone indices; add five-pose close-up study with deferred-transform stability assertion.
+- Files: scripts/combat/rigged_combatant.gd, scripts/combat/weapon_grip_test.gd, scenes/weapon_grip_test.tscn, docs/sentinel-production.md.
+- Verification: rendered Vulkan Sentinel production and Boneghoul contact/guard/interruption regressions; grip close-ups and stability check. Evidence `.tools/052-final*`, `052-sentinel*`, `052-contact*`. Full final logs checked for script/assertion/shader errors; existing certificate warning remains.
+- Handoff: wrist orientation and finger posing still need authored animation correction. This is a source checkpoint, not a release or AAA acceptance. Published 0.21 unchanged. Locks released.
