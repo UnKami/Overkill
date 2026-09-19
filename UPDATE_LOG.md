@@ -2,6 +2,21 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.19.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.19.0 → Assets → `OverkillSetup-0.19.0.exe`. After installing, use **Play Sentinel encounter** to inspect the 3D work directly. The **installer** folder also points to this release.
+
+[Release, installer and portable ZIP](https://github.com/UnKami/Overkill/releases/tag/v0.19.0-test)
+
+- Original skinned Sentinel, layered armor and authored wear/cavity masks; distinct guard, recoil and stagger-to-kneel defeat.
+- Cathedral piers/arches, quieter stone/metal, nine floor hours, blade ridge and gravity-aware cloak drape.
+- Closer action and inspection camera, clear wider decision framing, terminal defeat guidance and isolated emissive shutdown.
+- Saved High/Balanced/Performance 3D resolution settings; full-resolution UI and High default retained.
+- No balance, starter, clock or save-format changes. Existing 0.14–0.18 saves remain compatible.
+- Verification covers source/packaged mechanics, previews, contact, model/reaction checks, saved settings and finish modes, plus rendered Vulkan/GL review at 1080p/720p and large text. Published assets are checked against SHA-256 and HTTP availability.
+- **Known limits:** not AAA completion; enemy roster, richer animation/materials, audio listening and full-run/balance review remain. Intel Vulkan diagnostics still show substantial frame-time spikes. Resolution presets are not performance acceptance. Unsigned installer; interactive wizard untested.
+- Source: `v0.19.0-test`, `feat/yonatan-sentinel-production`; gameplay awaits review. [Detailed notes](docs/encounter-019.md).
+
 ## 0.18.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.18.0 → Assets → `OverkillSetup-0.18.0.exe`. Choose **Play Sentinel** to inspect the 3D encounter directly.

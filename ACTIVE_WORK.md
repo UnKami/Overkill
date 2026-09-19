@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-019-downloads` | 0.19 distribution docs | `README.md`, `install/README.md`, `installer/README.md`, `installer/OverkillSetup-0.19.0.sha256`, `docs/encounter-019.md`, `UPDATE_LOG.md`, `CHANGELOG_AI.md` | 2026-09-19 |
+| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
 
 ---
 
