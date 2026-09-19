@@ -2,6 +2,18 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.23.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.23.0 → Assets → `OverkillSetup-0.23.0.exe`. After installing, choose **Play Sentinel encounter** to inspect the armor and cloth refinements. **Play Boneghoul preview** remains available.
+
+[Release and assets](https://github.com/UnKami/Overkill/releases/tag/v0.23.0-test) · [Detailed changes and limitations](docs/encounter-023.md)
+
+- Sentinel: fitted gauntlets and closed fingertips, distinct guard/recoil hand poses, fluted shoulders and shaped knee armor.
+- Both fighters: smoother capes, subdued edging and restrained follow-through driven by body movement; reduced-motion support retained.
+- Varied stone surface response; cleaner filtering for small relic artwork.
+- Rules and balance unchanged. Packaged combat/settings/retry checks pass and all three uploaded asset hashes verified. No performance improvement claim: recent profiling was affected by other running games. Still unfinished art and gameplay, not AAA quality.
+- Source: `a6fce5560dea25580ee01d03ff63eb3108832451`, tag `v0.23.0-test`.
+
 ## 0.22.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.22.0 → Assets → `OverkillSetup-0.22.0.exe`. Choose **Play Boneghoul preview** or **Play Sentinel encounter** after installing. The homepage and installer folder point to this release.
