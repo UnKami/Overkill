@@ -212,7 +212,8 @@ func _build_cloak() -> void:
 	_cloth = ShaderMaterial.new()
 	_cloth.shader = preload("res://assets/shaders/battle_cloth.gdshader")
 	_cloth.set_shader_parameter("cloth_color",Color("381822") if hostile else Color("132938"))
-	_mesh(rest_space,surface.commit(),Vector3.ZERO,_cloth)
+	var cloak: MeshInstance3D = _mesh(rest_space,surface.commit(),Vector3.ZERO,_cloth)
+	cloak.extra_cull_margin = 1.0 # Shader drape extends beyond the rigid rest-pose bounds.
 
 func _heavy_attack() -> bool:
 	return hostile and archetype == "sentinel"
