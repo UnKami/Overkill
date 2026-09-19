@@ -479,3 +479,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Verification: three sequential diagnostic fixtures; final logs no script/shader/assertion errors. GPU counters showed SlayTheSpire2 ~69%, separate Overkill ~19%, ChatGPT ~8%; user processes left running.
 - Handoff: do not optimize from noisy comparisons or claim a model regression; request user close competing games before fresh profiling. Previous art checks remain visual/functional evidence, not performance acceptance. Locks released; goal remains active.
 - User follow-up: Overkill closed, Slay the Spire 2 remains in use; continue art work and defer controlled profiling.
+
+## 2026-09-19 | Yonatan / Codex — Sentinel dished knee armor
+- Branch: feat/yonatan-sentinel-production.
+- Completed: shaped closed knee cups replace flat panels, with raised center and rim; 39,426 vertices / four surfaces.
+- Files: scripts/art/build_sentinel.py; assets/characters/rigged/sentinel.glb; art_source/characters/sentinel-production.blend; docs/sentinel-production.md.
+- Verification: Blender/import; idle, guard, hit and kneeling-death close-up visual checks. Final 066 pose fixture passes; initial wrong clip name corrected and failed test process cleaned up. No performance claim under competing GPU workload.
+- Handoff: source-only, next release must include outstanding model/material/thumbnail changes. Published 0.22 unchanged; broader art goal active. Locks released.

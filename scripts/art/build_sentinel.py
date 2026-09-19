@@ -296,10 +296,21 @@ for side in ['L','R']:
     box('Boot sole',(foot.x,.024,-.067),(.18,.035,.33),'foot.'+side,'Recess',.018)
     # Pointed knee plate covers the spherical pivot and overlaps the greave.
     knee=rig.data.bones['shin.'+side].head_local
-    panel('Knee poleyn',[(knee.x-.085,knee.z+.015),(knee.x,knee.z+.095),
-        (knee.x+.085,knee.z+.015),(knee.x+.065,knee.z-.055),
-        (knee.x,knee.z-.105),(knee.x-.065,knee.z-.055)],
-        -knee.y-.092,-knee.y-.045,'shin.'+side,'Iron',.012)
+    # A dished, faceted cup wraps the joint; flat extruded panels looked pasted on.
+    outline=[(-.085,.015),(0,.095),(.085,.015),(.065,-.055),(0,-.105),(-.065,-.055)]
+    verts=[]
+    for scale,depth in [(1.0,-.075),(.60,-.124)]:
+        for x,h in outline: verts.append(xyz(knee.x+x*scale,knee.z+h*scale,-knee.y+depth))
+    verts.append(xyz(knee.x,knee.z-.005,-knee.y-.145))
+    for x,h in outline: verts.append(xyz(knee.x+x,knee.z+h,-knee.y-.045))
+    faces=[]
+    for i in range(6):
+        j=(i+1)%6
+        faces.extend([(i,j,6+j,6+i),(6+i,6+j,12),(i,13+i,13+j,j)])
+    faces.append(tuple(range(13,19)))
+    data=bpy.data.meshes.new('Dished poleyn');data.from_pydata(verts,[],faces);data.update()
+    o=bpy.data.objects.new('Faceted knee cup '+side,data);bpy.context.collection.objects.link(o)
+    bind(o,'shin.'+side,'Iron',.005)
 # Single skinned mesh; four PBR surface groups, rather than dozens of rigid draws.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
