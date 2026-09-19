@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Relic thumbnail filtering | assets/cards/executioner/bloodprice.jpg.import; scripts/ui/relic_pedestal_view.gd; scripts/ui/clock_socket_view.gd; assets/relics/active/rel_01_iron_strike.jpg.import; assets/relics/active/rel_02_twin_blades.jpg.import; assets/relics/active/rel_03_heavy_hammer.jpg.import; assets/relics/active/rel_04_guard_plate.jpg.import; assets/relics/active/rel_05_spiked_buckler.jpg.import; assets/relics/active/rel_06_reinforced_wall.jpg.import; assets/relics/active/rel_07_rusting_spike.jpg.import; assets/relics/active/rel_08_momentum_spring.jpg.import; assets/relics/active/rel_09_corrosive_oil.jpg.import; assets/relics/active/rel_10_kinetic_battery.jpg.import; assets/relics/active/rel_11_execution_wedge.jpg.import; assets/relics/active/rel_12_recoil_piston.jpg.import | 2026-09-19 |
 
 ---
 

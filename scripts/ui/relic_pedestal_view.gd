@@ -26,6 +26,7 @@ func _ready() -> void:
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_art_rect.custom_minimum_size.y = 140
+	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_desc_label.add_theme_font_size_override("normal_font_size", 24)
 	_slot_button.add_theme_font_size_override("font_size", 22)
 	_slot_button.custom_minimum_size.y = 48

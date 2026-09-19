@@ -429,3 +429,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Distribution PR https://github.com/UnKami/Overkill/pull/11 merged as 8171a0d460b3774c8140a76456d10943a3be3108. Homepage, installer README and update log read back from main with 0.22.0.
 - Partner path: repository -> Releases -> 0.22.0 -> Assets -> OverkillSetup-0.22.0.exe; Start menu -> Play Boneghoul preview or Play Sentinel encounter.
 - Published package does not include the subsequent thumbnail-filtering pass. Interactive installer wizard remains untested; broader AAA goal unfinished. Publication locks released.
+
+## 2026-09-19 | Yonatan / Codex — Relic thumbnail filtering, unreleased
+- Branch: feat/yonatan-sentinel-production.
+- Completed: mipmaps for twelve active relic JPEGs plus Blood Siphon's fallback; explicit mipmapped linear filtering in choices and clock sockets.
+- Files: scripts/ui/relic_pedestal_view.gd, scripts/ui/clock_socket_view.gd, assets/relics/active/*.jpg.import (12 files), assets/cards/executioner/bloodprice.jpg.import, docs/sentinel-production.md.
+- Verification: source Vulkan battle capture at 1280x720 reviewed; reduced noisy edges on starter relic thumbnails. Import and source result/retry fixture pass; `.tools/059-final*` logs clean apart from known certificate warning. Reused fixture sentinel naming does not imply a packaged test for these changes.
+- Handoff: published 0.22 remains unchanged. Include this follow-up in the next build. Broader art/animation/performance goal remains unfinished. Locks released.

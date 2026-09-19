@@ -25,6 +25,7 @@ func _ready() -> void:
 	var mask := ShaderMaterial.new()
 	mask.shader = preload("res://assets/ui/combat/circular_art.gdshader")
 	_icon_rect.material = mask
+	_icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	var metal := ShaderMaterial.new()
 	metal.shader = preload("res://assets/ui/combat/socket_metal.gdshader")
 	_socket_base.material = metal

@@ -245,3 +245,9 @@ Intel integrated graphics, Vulkan Mobile; High stage 1600x813, Performance 960x4
 Evidence supports substantially reduced decision-transition stalls, not elimination: 116-163 ms outliers remain. Resolution p95 remains 21-22 ms on High, 16.59 ms on Performance. The unchanged combat traces protect the comparison from differing scripted choices. No claim of stable 60 FPS or AAA performance.
 
 Evidence: `.tools/056-encounter*` baseline, `056-after*` corrected, `056-text.log` (zero shared-theme signals for 12 unchanged applications; label/rich-text normal-large-normal), `056-settings*` (rendered live presets, persistence, compact/large-text fit). Large-text 720p settings capture inspected. Final logs have no script/assertion/shader failures; certificate-store warning remains. Published installer is still 0.21.
+
+## Relic thumbnail filtering (after 0.22; unreleased)
+
+Enabled mipmap generation for the twelve active relic JPEGs and Blood Siphon's bloodprice JPEG fallback. Choice artwork and clock socket textures explicitly use linear filtering with mipmaps. This preserves the original art while filtering high-frequency detail appropriately when 1024-pixel paintings are reduced to small thumbnails. Other fallback art outside the current relic set is unchanged.
+
+Source Vulkan 1280x720 battle captures reviewed before/after: Iron Strike, Guard Plate, Overdrive Piston and Blood Siphon now have less noisy silhouettes and highlights. Final import and source preview result/retry checks pass (`.tools/059-final-import.log`, `059-final-render*`); no script/assertion/shader failures, known certificate warning remains. Capture: `.tools/059-profile/Godot/app_userdata/Overkill/release022-retry.png`. The reused fixture's sentinel says PACKAGED but this pass explicitly runs the source project, not the frozen release PCK. No performance claim; mipmaps add texture storage. This change is NOT in the published 0.22 installer.
