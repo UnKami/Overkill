@@ -375,6 +375,59 @@ for name,keys in [
             p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
     track=rig.animation_data.nla_tracks.new();track.name=name
     track.strips.new(name,1,reaction);track.mute=True
+# A low exhausted collapse, distinct from the Sentinel's armored kneel. Bake
+# the two-bone leg solve at every export frame so interpolation cannot slide feet.
+rig.animation_data.action=None
+for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+bpy.context.view_layer.update()
+planted={side:rig.pose.bones['foot.'+side].matrix.copy() for side in ['L','R']}
+collapse=bpy.data.actions.new('claw_collapse')
+collapse_keys=[(1,0,0),(6,0,-.25),(11,.08,-.10),(25,1,1.05),(31,.95,.85),(40,1,1),(48,1,1)]
+for frame in range(1,49):
+    rig.animation_data.action=None
+    for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+    bpy.context.view_layer.update()
+    for left,right in zip(collapse_keys,collapse_keys[1:]):
+        if left[0]<=frame<=right[0]:
+            t=(frame-left[0])/(right[0]-left[0]);t=t*t*(3-2*t)
+            drop=left[1]+(right[1]-left[1])*t
+            fold=left[2]+(right[2]-left[2])*t
+            break
+    if frame>1:
+        hips=rig.pose.bones['hips'];matrix=hips.matrix.copy()
+        matrix.translation+=Vector((.065*drop,-.40*drop,-.82*drop))
+        hips.matrix=matrix;bpy.context.view_layer.update()
+        aim('spine',(.12*drop,.18+.45*fold,1))
+        aim('chest',(-.1*drop,.24+.65*fold,1))
+        aim('neck',(0,.22+.50*fold,1));aim('head',(.12*drop,-.06+1.1*fold,1-.7*drop))
+        for side,sign in [('L',-1),('R',1)]:
+            hip_at=rig.pose.bones['thigh.'+side].head.copy()
+            ankle=planted[side].translation
+            upper=rig.data.bones['thigh.'+side].length;lower=rig.data.bones['shin.'+side].length
+            distance=(ankle-hip_at).length
+            assert abs(upper-lower)+.0001<distance<upper+lower, 'Unreachable collapse ankle'
+            axis=(ankle-hip_at).normalized()
+            along=(upper*upper-lower*lower+distance*distance)/(2*distance)
+            height=math.sqrt(max(0,upper*upper-along*along))
+            pole=Vector((sign*.25,1,0));pole=(pole-axis*pole.dot(axis)).normalized()
+            knee=hip_at+axis*along+pole*height
+            aim('thigh.'+side,knee-hip_at);aim('shin.'+side,ankle-knee)
+            rig.pose.bones['foot.'+side].matrix=planted[side]
+            bpy.context.view_layer.update()
+            aim('upper_arm.'+side,(sign*(.35+.12*drop),.10+.30*drop,-1))
+            aim('forearm.'+side,(sign*.04,.55+.35*drop,-.7+.85*drop))
+            aim('hand.'+side,(0,.6+.4*drop,-.7+.55*drop))
+    rig.animation_data.action=collapse
+    for p in rig.pose.bones:
+        p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+track=rig.animation_data.nla_tracks.new();track.name='claw_collapse'
+track.strips.new('claw_collapse',1,collapse);track.mute=True
+rig.animation_data.action=collapse
+bpy.context.scene.frame_set(48);bpy.context.view_layer.update()
+evaluated=body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+lowest=min((evaluated.matrix_world @ v.co).z for v in evaluated.data.vertices)
+print('BONEGHOUL_COLLAPSE_MESH_FLOOR',lowest)
+assert lowest>-.015, 'Collapse mesh penetrates ground'
 rig.animation_data.action=None
 for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
 bpy.context.scene.frame_set(1);bpy.context.view_layer.update()

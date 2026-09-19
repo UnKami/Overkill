@@ -63,8 +63,10 @@ func _ready() -> void:
 	var idle: StringName = &""
 	var claw: StringName = &""
 	var reactions: Dictionary = {}
+	var collapse: StringName = &""
 	for clip: StringName in animation.get_animation_list():
-		assert("combat_idle" in str(clip) or "claw_rake" in str(clip) or "claw_guard" in str(clip) or "claw_recoil" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
+		assert("combat_idle" in str(clip) or "claw_rake" in str(clip) or "claw_guard" in str(clip) or "claw_recoil" in str(clip) or "claw_collapse" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
+		if "claw_collapse" in str(clip): collapse = clip
 		if "combat_idle" in str(clip): idle = clip
 		if "claw_rake" in str(clip): claw = clip
 		for kind: String in ["claw_guard","claw_recoil"]:
@@ -152,6 +154,26 @@ func _ready() -> void:
 		assert(skeleton.get_bone_global_pose(head).origin.distance_to(initial_head) < 0.002)
 		assert(skeleton.get_bone_global_pose(palm).origin.distance_to(initial_hand) < 0.002)
 	print("BONEGHOUL_REACTION_OK: protective claws, opposing recoil, planted feet and idle endpoints")
+	assert(collapse != &"")
+	assert(absf(animation.get_animation(collapse).length-1.6) < 0.02)
+	animation.play(collapse,0.0)
+	animation.pause()
+	var settled_head: Vector3
+	for frame: int in range(1,49):
+		animation.seek(frame/30.0,true)
+		skeleton.force_update_all_bone_transforms()
+		assert(skeleton.get_bone_global_pose(right_foot).origin.distance_to(feet[0]) < 0.002, "Collapse right foot slides")
+		assert(skeleton.get_bone_global_pose(left_foot).origin.distance_to(feet[1]) < 0.002, "Collapse left foot slides")
+		if frame == 40: settled_head = skeleton.get_bone_global_pose(head).origin
+		if frame in [11,25,48]:
+			await get_tree().process_frame
+			await get_tree().process_frame
+			await capture("collapse-"+str(frame))
+	var final_head: Vector3 = skeleton.get_bone_global_pose(head).origin
+	assert(initial_head.y-final_head.y > 0.5, "Defeat must visibly lower the body")
+	assert(final_head.distance_to(settled_head) < 0.002, "Defeat must hold its final pose")
+	assert(skeleton.get_bone_global_pose(palm).origin.y > 0.04, "Hand penetrates ground")
+	print("BONEGHOUL_COLLAPSE_OK: 48 planted samples, body drop and held final pose; encounter integration pending")
 	print("BONEGHOUL_STUDY_OK: original skinned body, four surfaces, finger rig and authored idle; combat integration pending")
 	get_tree().quit()
 

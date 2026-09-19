@@ -317,3 +317,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** Boneghoul builder, Blender source/GLB, model-study script and production notes.
 - **Verification:** Vulkan and headless BONEGHOUL_REACTION_OK plus existing claw/model checks. Guard hand rises over 0.1 m, head movement over 0.05 m, opposite response directions, foot drift and final head/hand error under 2 mm. Rendered peak poses inspected. Final `.tools/043-*final*` and `043-headless.log` clean of script/assertion/shader failures; known certificate/headless exit warnings remain. Failed first interpolation build/stale preview rejected.
 - **Handoff:** Isolated motion studies; no production routing. Shoulder/cloth deformation, richer weight transfer, death and actual combat contact/interruption still need work. No new installer or AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan's AI — Boneghoul collapse study (unreleased)
+- **Branch:** `feat/yonatan-sentinel-production`; installer remains 0.20.
+- **Completed:** Authored failing hold, pelvis drop, folded seated slump and held final pose. Baked analytical leg placement at 48 frames to retain planted feet. Revised initial crouch-like pose after rendered review.
+- **Files:** Boneghoul builder, Blender source/GLB, model-study script and production notes.
+- **Verification:** Vulkan/headless BONEGHOUL_COLLAPSE_OK plus prior attack/reaction/model checks. Both feet under 2 mm drift across 48 samples; body drop over 0.5 m, held endpoint and hand clearance. Final evaluated mesh minimum 0.00600004 m above ground. Final collapse render inspected. Final `.tools/044-*` logs have no script/assertion/shader failures; known certificate/headless exit warnings remain.
+- **Handoff:** Motion study only; actual combat contact, interruptions, terminal routing and better art/deformation remain. No ragdoll or full collision acceptance. No installer update or AAA acceptance. Locks released.

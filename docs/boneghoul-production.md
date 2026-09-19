@@ -10,7 +10,7 @@ Run Blender 4.5.9 in background mode with `art_source/characters/executioner-pro
 
 The body has 34,271 Blender vertices and four material surfaces: aged bone, iron, dark cloth and a muted core. Geometry includes ribs, vertebrae, clavicles, pelvis, paired limb bones, articulated claw segments, connected palms, clawed feet, recessed skull sockets, a separate jaw, hood, mantle and torn cloth strips. Evaluated foot geometry rests 0.006 m above the model ground plane.
 
-The original idle, claw-rake, claw-guard and claw-recoil studies are exported. Shared combat actions are retained as reference actions in the Blender source, excluded from the GLB because their sword performance is inappropriate for this enemy.
+The original idle, claw-rake, claw-guard, claw-recoil and collapse studies are exported. Shared combat actions are retained as reference actions in the Blender source, excluded from the GLB because their sword performance is inappropriate for this enemy.
 
 ## Verification
 
@@ -52,3 +52,11 @@ Rendered Vulkan and headless BONEGHOUL_REACTION_OK validate both clips, protecti
 The first build rejected a negative quaternion-slerp factor for the settle; interpolation now uses a relative axis-angle rotation supporting the authored overshoot. That failed build and its stale-asset preview are not validation evidence. Final logs contain no build/script/assertion/shader failures; certificate-store and headless ObjectDB exit warnings remain.
 
 These are motion-blocking studies. Shoulder/cloth deformation, convincing weight transfer, death, actual opponent contact, interruption during gameplay and encounter routing remain unfinished. The published 0.20 installer does not include these new reactions. This is not AAA acceptance.
+
+## Seated collapse study (unreleased)
+
+Added a 1.6-second defeat clip: brief recoil/failing hold, pelvis drop, forward fold, settling beat and held seated slump. It is distinct from the Sentinel's armored kneel. Two-bone leg placement is baked at each of 48 export frames; both feet retain their original transforms. The first higher pose read as a crouch and was revised to a lower seated position with settled forearms.
+
+Vulkan and headless BONEGHOUL_COLLAPSE_OK verify clip duration, foot drift below 2 mm at all 48 samples, body/head drop over 0.5 m, hand clearance and final held head position. Blender evaluates the final skinned mesh minimum at 0.00600004 m above the ground plane. Final render inspected. Existing attack/reaction/material/skin checks continue to pass. Evidence `.tools/044-build-final.log`, `.tools/044-import-final.log`, `.tools/044-final.log`, `.tools/044-final-errors.log`, `.tools/044-headless.log` and final collapse captures under `.tools/044-final/Godot/app_userdata/Overkill/boneghoul-036/`.
+
+This remains authored motion blocking, not ragdoll or physically simulated cloth. Final mesh clearance does not establish collision-free motion at every intermediate pose. The model still has simplified anatomy/materials and shoulder/hood deformation issues. Opponent contact, gameplay interruptions, terminal state integration and encounter routing remain unverified. Published installer remains 0.20; these later animation studies are not shipped there.
