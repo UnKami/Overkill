@@ -800,6 +800,12 @@ func _check_combat_end() -> bool:
 func _finish_presentation(won: bool) -> void:
 	AudioManager.play_combat_sound("victory" if won else "defeat")
 	_stage.finish(won)
+	_guidance.clear()
+	for clock: ChronometerView in [_player_chrono,_enemy_chrono]:
+		clock.clear_quadrant_highlights()
+		clock.mark_hour(0)
+		clock.set_interactive_quadrant(active_quadrant,false)
+	_refresh_intent_readout()
 	_clear_pedestals()
 	_skip_button.hide()
 	_player_chrono.set_interactive_quadrant(active_quadrant, false)
@@ -865,6 +871,9 @@ func _refresh_guidance() -> void:
 		_guidance.point_to(_player_chrono,null,hours,"NEXT SWEEP\n%d → %d → %d" % hours)
 
 func _refresh_intent_readout() -> void:
+	if _combat_over:
+		_intent_readout.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
+		return
 	if enemy_sockets.is_empty(): return
 	var hours: Array = [turn_number] if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
 	var lines: Array[String] = []

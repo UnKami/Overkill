@@ -11,6 +11,7 @@ var _dead := false
 var _weapon: Node3D
 var _gold: Material
 var _glow: StandardMaterial3D
+var _emissive_materials: Array[StandardMaterial3D] = []
 var _time := 0.0
 var _cloth: ShaderMaterial
 var _trail: MeshInstance3D
@@ -84,6 +85,7 @@ func _style(node: Node) -> void:
 			if name_text == "Sentinel_Ember":
 				var ember: StandardMaterial3D = source.duplicate()
 				ember.emission_energy_multiplier = 1.2
+				_emissive_materials.append(ember)
 				node.set_surface_override_material(i, ember)
 			elif name_text == "Sentinel_Iron":
 				node.set_surface_override_material(i, _sentinel_metal(false))
@@ -128,6 +130,7 @@ func _build_equipment() -> void:
 	_glow.emission_enabled = true
 	_glow.emission = _glow.albedo_color
 	_glow.emission_energy_multiplier = 1.6
+	_emissive_materials.append(_glow)
 	var steel := _metal(Color("646a70"))
 	var leather := StandardMaterial3D.new()
 	leather.albedo_color = Color("211c1b")
@@ -336,6 +339,11 @@ func fall() -> void:
 	_dead = true
 	if _motion and _motion.is_valid(): _motion.kill()
 	_play("death",0.08)
+	# The defeated mechanism powers down; materials are private to this actor.
+	var power_down: Tween = create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	for light_material: StandardMaterial3D in _emissive_materials:
+		power_down.tween_property(light_material,"emission_energy_multiplier",0.0,0.48)
+		power_down.tween_property(light_material,"albedo_color",Color("101216"),0.48)
 
 func _animation_finished(_name: StringName) -> void:
 	if not _dead: _play("combat_idle",0.12)

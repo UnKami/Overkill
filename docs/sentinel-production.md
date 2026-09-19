@@ -100,3 +100,10 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Remaining motion work includes heavy attack pose variety, authored death/finish behavior, fuller weight transfer and complete-fight pacing review. One distinct reaction is not a complete animation-production pass.
 
 - Validation: rendered SENTINEL_RECOIL_OK proves opposite head-displacement directions for brace/recoil, visible recoil, supporting-foot stability and guard-to-hit interruption recovery at normal/fast speed. Guard/recoil captures inspected side by side. CINEMATIC_FINISH_OK retains damage checks through normal/fast/reduced-motion combinations. Evidence `.tools/026-render/` and `.tools/026-damage.log`; pose captures remain actor fixtures rather than a full live battle sequence.
+
+## Defeat state and handoff checkpoint
+
+- A rendered lethal-action review found stale placement guidance and enemy-next-action text surviving the fight. Finish now clears placement/quadrant/hour highlights and locks clock interaction; the enemy readout becomes DEFEATED or BATTLE OVER and stays terminal if guidance refreshes.
+- Defeated characters' private emissive materials fade to dark over 0.48 seconds (scaled in fast mode). The survivor's materials are unchanged. The stage ignores late impacts and duplicate finish requests, avoiding new effects or conflicting outcomes after death.
+- `finish_sequence_test.tscn` uses real lethal-damage and controller end-check paths for all eight win/loss, normal/fast, normal/reduced-motion combinations. It verifies no early result signal, exactly one correct result signal, terminal actor state, quiet guidance, isolated power-down and reduced-motion camera stability. Captures show the actual finish presentation, though the fixture sets up one-HP targets rather than playing a full run.
+- The result event is verified; a complete reward-screen/run transition still needs separate full-run coverage. Existing death poses remain shared animation work, not a newly authored bespoke death performance. Local evidence `.tools/027-final-render/` and `.tools/027-final-render.log`.

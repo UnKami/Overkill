@@ -219,6 +219,7 @@ func attack(from_player: bool) -> void:
 	_camera_motion.tween_property(_camera, "h_offset", -0.06 if from_player else 0.06, 0.3)
 
 func impact(on_player: bool, blocked: bool) -> void:
+	if _finished: return
 	(player if on_player else enemy).hit(blocked)
 	var target: Vector3 = contact_point(on_player)
 	_impact_light.position = target
@@ -260,6 +261,7 @@ func _process(delta: float) -> void:
 			_sparks.remove_at(i)
 
 func finish(won: bool) -> void:
+	if _finished: return
 	_finished = true
 	(enemy if won else player).fall()
 	if not AudioManager.reduced_motion:
