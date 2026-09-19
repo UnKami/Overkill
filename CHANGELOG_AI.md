@@ -635,3 +635,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; source Blend/GLB; docs/custodian-production.md.
 - Verification: same-camera close-up and guard/attack renders inspected; material masks and guard/attack state checks pass. Collapse check passed before final pin resize. 54,534 vertices/four surfaces, down 1,304 vertices. Guard fixture shutdown warning cleared after explicit fixture cleanup; final verbose rerun has no leak warning. No script/shader/assertion/Python errors; known certificate warning remains.
 - Handoff: repeated inner jewel-like borders removed, but fracture outlines and broader art finish still need work. No encounter or installer change, exhaustive collision/performance acceptance unproven. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian encounter preview
+- Branch: feat/yonatan-sentinel-production.
+- Completed: opt-in Custodian actor with manual attack contact crossing, held guard, hit interruption and held shutdown/private visor fade; arena/controller routing and direct encounter entry using existing Act II elite rules.
+- Files: scripts/combat/custodian_actor.gd and UID; directed_arena.gd; combat_controller.gd; scenes/custodian_encounter.tscn; custodian_encounter_test scene/script/UID; docs/custodian-production.md.
+- Verification: eight real-controller combinations of win/loss, fast and reduced motion pass; actor interruption/contact/guard/terminal/material isolation checks pass. Initial fixture renderer/shutdown warnings resolved with proper render/teardown waits; final verbose actor run clean except certificate warning. Existing Sentinel production regression passes. Battle choice/impact/terminal captures inspected.
+- Handoff: launch source scene with --custodian-3d; normal routing and public installer unchanged. Current staging shares Boneghoul coordinates and contact uses a bone landmark, so exact physical contact/choreography require dedicated calibration. Art, broader enemy coverage and controlled performance still unfinished. Locks released; AAA objective active.

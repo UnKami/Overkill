@@ -237,7 +237,7 @@ func _begin_combat() -> void:
 	player_next_attack_multiplier = 1
 
 	var main_enemy: EnemyData = enemies_data[0] if not enemies_data.is_empty() else null
-	if main_enemy and (main_enemy.id == "act1_boss" or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
+	if main_enemy and (main_enemy.id == "act1_boss" or (main_enemy.id == "act2_elite" and OS.get_cmdline_user_args().has("--custodian-3d")) or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
 		_install_directed_stage()
 	if main_enemy != null:
 		enemy_max_hp = main_enemy.max_hp

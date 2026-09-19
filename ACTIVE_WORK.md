@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Custodian encounter preview | scripts/combat/custodian_actor.gd; scripts/combat/custodian_actor.gd.uid; scripts/combat/directed_arena.gd; scripts/combat/combat_controller.gd; scenes/custodian_encounter.tscn; docs/custodian-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

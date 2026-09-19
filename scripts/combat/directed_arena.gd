@@ -173,13 +173,16 @@ func _build_environment() -> void:
 
 func configure_enemy(kind: String) -> void:
 	_kind = "boneghoul" if kind == "stalker" and OS.get_cmdline_user_args().has("--boneghoul-3d") else kind
+	if kind == "bulwark" and OS.get_cmdline_user_args().has("--custodian-3d"): _kind = "custodian"
 	if is_node_ready(): _replace_enemy()
 
 func _replace_enemy() -> void:
 	if is_instance_valid(enemy):
 		_world.remove_child(enemy)
 		enemy.queue_free()
-	if _kind == "boneghoul":
+	if _kind == "custodian":
+		enemy = CustodianActor.new()
+	elif _kind == "boneghoul":
 		enemy = BoneghoulActor.new()
 	else:
 		enemy = preload("res://scripts/combat/rigged_combatant.gd").new()
@@ -190,7 +193,7 @@ func _replace_enemy() -> void:
 	enemy.rotation.y = -1.05 if _kind == "sentinel" else -1.4
 	if _kind in ["sentinel", "bulwark", "twin", "eclipse"]: enemy.scale *= 1.14
 	player.opponent = enemy
-	if enemy is BoneghoulActor:
+	if (enemy is BoneghoulActor or enemy is CustodianActor):
 		enemy.position = Vector3(0.505534, 0.0, -0.02731)
 		enemy.rotation.y = -1.064631
 	else:
@@ -333,11 +336,11 @@ func recovery_delay() -> float:
 	return actor.recovery_time()
 
 func finish_delay() -> float:
-	if enemy is BoneghoulActor: return finish_fade_delay() + 0.3
+	if (enemy is BoneghoulActor or enemy is CustodianActor): return finish_fade_delay() + 0.3
 	return 1.45
 
 func finish_fade_delay() -> float:
-	return 1.6 / AudioManager.animation_speed_scale() + 0.1 if enemy is BoneghoulActor else 1.15
+	return 1.6 / AudioManager.animation_speed_scale() + 0.1 if (enemy is BoneghoulActor or enemy is CustodianActor) else 1.15
 
 func prepare_defense(on_player: bool, fully_blocked: bool) -> void:
 	var target: Node3D = player if on_player else enemy
@@ -364,7 +367,7 @@ func _add_contact_shadow(actor: Node3D) -> void:
 
 func guard_pulse(on_player: bool) -> void:
 	var actor: Node3D = player if on_player else enemy
-	var braced: bool = actor is BoneghoulActor and actor.is_guarding()
+	var braced: bool = (actor is BoneghoulActor or actor is CustodianActor) and actor.is_guarding()
 	var ring: TorusMesh = TorusMesh.new()
 	ring.inner_radius = 0.15 if braced else 0.40
 	ring.outer_radius = 0.17 if braced else 0.42
@@ -402,7 +405,7 @@ func contact_point(on_player: bool) -> Vector3:
 	var attacker: Node3D = enemy if on_player else player
 	if target.has_method("is_guarding") and target.is_guarding():
 		return target.guard_contact_point(attacker.global_position)
-	if on_player and enemy is BoneghoulActor and enemy.state == BoneghoulActor.State.ATTACK:
+	if on_player and ((enemy is BoneghoulActor and enemy.state == BoneghoulActor.State.ATTACK) or (enemy is CustodianActor and enemy.state == CustodianActor.State.ATTACK)):
 		return enemy.claw_tip()
 	var facing: Vector3 = (attacker.global_position-target.global_position).normalized()
 	return target.global_position + Vector3.UP*1.45 + facing*0.12
