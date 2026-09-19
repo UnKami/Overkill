@@ -124,14 +124,14 @@ func _box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Material) 
 	return _mesh(parent, shape, at, material)
 
 func _build_equipment() -> void:
-	_gold = _metal(Color("967549"), 0.78)
+	_gold = _metal(Color("7a6345"), 0.78)
 	_glow = StandardMaterial3D.new()
 	_glow.albedo_color = Color("f0a061") if hostile else Color("79d8e4")
 	_glow.emission_enabled = true
 	_glow.emission = _glow.albedo_color
 	_glow.emission_energy_multiplier = 1.6
 	_emissive_materials.append(_glow)
-	var steel := _metal(Color("646a70"))
+	var steel := _metal(Color("4c555b"))
 	var leather := StandardMaterial3D.new()
 	leather.albedo_color = Color("211c1b")
 	leather.roughness = 0.8
@@ -155,9 +155,9 @@ func _build_equipment() -> void:
 		for mark: int in 3:
 			_box(_weapon, Vector3(-0.14 + mark * 0.14,0.193,0.82), Vector3(0.025,0.004,0.10), _glow)
 	else:
-		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("9babad"),0.72))
+		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("828d95"),0.72))
 		for n: int in 4:
-			_box(_weapon, Vector3(0,0.071,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
+			_box(_weapon, Vector3(0,0.079,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
 	# Equipment is rigid in weapon space: combine matching finishes once, preserving
 	# every bevel and inlay while reducing submissions in color and shadow passes.
 	ForgedArmor.combine_finish(_weapon)
@@ -364,6 +364,7 @@ func _beveled_box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Ma
 		rings.append(ring)
 	var surface: SurfaceTool = SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface.set_smooth_group(-1) # Keep broad forged faces planar across the bevel boundary.
 	for layer: int in 3:
 		for i: int in 8:
 			var next: int = (i + 1) % 8

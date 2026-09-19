@@ -16,9 +16,8 @@ void fragment() {
         + texture(surface_detail, local_pos.xz * 1.3).rgb * weights.y
         + texture(surface_detail, local_pos.xy * 1.3).rgb * weights.z;
     float detail = clamp(dot(scanned, vec3(0.333)) * 2.2, 0.0, 1.0);
-    float patina = detail;
-    float wear_mask = smoothstep(0.55,0.82,detail) * wear * 0.06;
-    ALBEDO = steel_color.rgb * (0.67 + patina * 0.22 + detail * 0.45) + vec3(wear_mask);
-    METALLIC = metalness * mix(0.72, 1.0, detail);
-    ROUGHNESS = clamp(0.54 + (1.0 - detail) * 0.25 - wear_mask, 0.48, 0.82);
+    // Fine scan variation belongs mainly in roughness, not bright white albedo speckle.
+    ALBEDO = steel_color.rgb * mix(0.90, 1.03, detail);
+    METALLIC = metalness;
+    ROUGHNESS = clamp(mix(0.76, 0.57, detail) - wear * 0.025, 0.52, 0.80);
 }

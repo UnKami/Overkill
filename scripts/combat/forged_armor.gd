@@ -127,17 +127,28 @@ static func executioner_blade(parent: Node3D, steel: Material, edge_material: Ma
 		Vector2(0.095,1.12),Vector2(-0.085,1.16),Vector2(-0.12,0.79)])
 	var surface: SurfaceTool = SurfaceTool.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface.set_smooth_group(-1)
 	var bevel: SurfaceTool = SurfaceTool.new()
 	bevel.begin(Mesh.PRIMITIVE_TRIANGLES)
+	bevel.set_smooth_group(-1)
 	for side: float in [-1.0,1.0]:
+		# Two forged planes meet along a longitudinal ridge instead of one flat slab.
+		var ridge_base: Vector3 = Vector3(0,0.05+side*0.026,lerpf(0.66,0.19,0.96))
+		var ridge_tip: Vector3 = Vector3(0,0.05+side*0.026,lerpf(0.66,1.14,0.96))
+		var inner: Array[Vector3] = []
+		for edge: Vector2 in outline:
+			inner.append(Vector3(edge.x*0.73,0.05+side*0.019,lerpf(0.66,edge.y,0.96)))
+		var faces: Array[Vector3] = [ridge_base,inner[0],inner[5],ridge_base,inner[5],ridge_tip,
+			ridge_tip,inner[5],inner[4],ridge_tip,inner[4],inner[3],
+			ridge_tip,inner[3],inner[2],ridge_tip,inner[2],ridge_base,
+			ridge_base,inner[2],inner[1]]
+		if side < 0: faces.reverse()
+		for point: Vector3 in faces: surface.add_vertex(point)
 		for i: int in outline.size():
 			var a: Vector2 = outline[i]
 			var b: Vector2 = outline[(i+1)%outline.size()]
 			var inner_a: Vector2 = Vector2(a.x*0.73,lerpf(0.66,a.y,0.96))
 			var inner_b: Vector2 = Vector2(b.x*0.73,lerpf(0.66,b.y,0.96))
-			var face: Array[Vector3] = [Vector3(0,0.05+side*0.019,0.66),Vector3(inner_a.x,0.05+side*0.019,inner_a.y),Vector3(inner_b.x,0.05+side*0.019,inner_b.y)]
-			if side > 0: face.reverse()
-			for point: Vector3 in face: surface.add_vertex(point)
 			var strip: Array[Vector3] = [Vector3(inner_a.x,0.05+side*0.019,inner_a.y),Vector3(a.x,0.05,a.y),Vector3(b.x,0.05,b.y),Vector3(inner_a.x,0.05+side*0.019,inner_a.y),Vector3(b.x,0.05,b.y),Vector3(inner_b.x,0.05+side*0.019,inner_b.y)]
 			if side > 0: strip.reverse()
 			for point: Vector3 in strip: bevel.add_vertex(point)

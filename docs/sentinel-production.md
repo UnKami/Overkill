@@ -115,3 +115,11 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - The shader surface matches `RiggedCombatant._build_cloak` UV parameterization; keep those dimensions coordinated. This is not a full cloth solver: inertia, body collision and self-collision remain absent. Full animation/environment acceptance still requires broader review.
 
 - Validation: rendered FINISH_SEQUENCE_OK across eight outcome/speed/motion combinations, plus SENTINEL_PRODUCTION_OK / SENTINEL_RECOIL_OK. Victory, defeat and windup captures inspected. Draw count remains 351; short sample about 44 ms median with VSync, not a performance acceptance claim. Fixed shader compilation by passing the per-instance model transform explicitly into the helper. Final evidence `.tools/028-fixed-finish/`, `.tools/028-motion/` and matching logs.
+
+## Forged weapon material checkpoint
+
+- Removed bright additive speckle from the shared forged-metal response. Scanned detail now contributes mainly to roughness with restrained albedo variation and stable metalness. Darkened weapon steel and brass to sit closer to the approved armor palette while retaining brighter blade bevels.
+- Rebuilt the execution blade's broad face around a longitudinal ridge, preserving its outline and contact reach. Raised the existing inlays above that ridge. Separated broad-face/bevel normals so the hammer no longer shows artificial diagonal smoothing gradients across flat planes.
+- This affects shared forged equipment/hero armor as well as the weapons; the Sentinel body's authored wear/cavity material remains separate. Four finishes per weapon and existing rigid batching are retained. Hand-painted damage, engraving, leather-wrap detail and final close-up production still remain open.
+
+- Validation: rendered SENTINEL_PRODUCTION_OK / WEAPON_BATCH_OK / SENTINEL_RECOIL_OK plus modular SILHOUETTE_OK. Reviewed battle framing and warm-light close-up; broad hammer planes are now flat-shaded and blade contact reach is preserved. Four finishes per weapon and 351 full-battle draws retained. Evidence `.tools/029-final-render/`, `.tools/029-final-render.log`, `.tools/029-silhouette.log`; no frame-rate acceptance claim.
