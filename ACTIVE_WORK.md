@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Real encounter performance audit | scripts/combat/encounter_profile.gd; scripts/combat/encounter_profile.gd.uid; scenes/encounter_profile.tscn; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
+| Yonatan / Codex | feat/yonatan-sentinel-production | Real encounter performance audit | scripts/ui/screen_design.gd; scripts/combat/encounter_profile.gd; scripts/combat/encounter_profile.gd.uid; scenes/encounter_profile.tscn; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
