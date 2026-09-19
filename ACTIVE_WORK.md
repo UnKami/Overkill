@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-sentinel-production` | Clock readout clearance | `scripts/ui/chronometer_view.gd`, `scripts/combat/battle_guidance.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/sentinel_production_test.gd`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 
@@ -38,6 +39,7 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
 | **Audio & SFX** | `scripts/art/build_executioner.py`, `assets/characters/rigged/executioner.glb`, `art_source/characters/executioner-production.blend`, `scripts/combat/forged_armor.gd`, `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+
 
 
 
