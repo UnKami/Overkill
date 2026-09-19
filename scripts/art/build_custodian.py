@@ -35,14 +35,16 @@ for name,color,metal,rough in [('Iron',(.115,.145,.155,1),.82,.48),('Bronze',(.2
  materials[name]=m
 
 def xyz(x,h,d):return Vector((x,-d,h))
-def bind(o,bone,mat,bevel=.002):
+def bind(o,bone,mat,bevel=.002,bevel_angle=None):
  bpy.context.view_layer.objects.active=o;o.select_set(True)
  bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
  bm=bmesh.new();bm.from_mesh(o.data);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(o.data);bm.free()
  o.data.materials.clear();o.data.materials.append(materials[mat])
  o.data.materials.append(materials[mat])
  if bevel:
-  mod=o.modifiers.new('Forged edge','BEVEL');mod.width=bevel;mod.segments=3;mod.material=1;bpy.ops.object.modifier_apply(modifier=mod.name)
+  mod=o.modifiers.new('Forged edge','BEVEL');mod.width=bevel;mod.segments=3;mod.material=1
+  if bevel_angle is not None:mod.limit_method='ANGLE';mod.angle_limit=bevel_angle
+  bpy.ops.object.modifier_apply(modifier=mod.name)
  for p in o.data.polygons:p.use_smooth=True
  mod=o.modifiers.new('Weighted normals','WEIGHTED_NORMAL');mod.keep_sharp=True;bpy.ops.object.modifier_apply(modifier=mod.name)
  # R marks actual bevel faces; G is stable part-level variation; B retains AO.
@@ -70,19 +72,24 @@ def box(name,at,size,bone,mat,bevel=.003):
  return bind(o,bone,mat,bevel)
 
 def plate(name,outline,front,back,bone,mat='Iron'):
- # Crown the metal rather than extruding a flat silhouette like a cardboard tile.
+ # A shallow rolled shell: only the perimeter gets a polished bevel.
+ # Multiple crown rings avoid the raised inset-jewel shape of the old plates.
  n=len(outline);cx=sum(x for x,h in outline)/n;ch=sum(h for x,h in outline)/n
- crown=min(.025,(max(x for x,h in outline)-min(x for x,h in outline))*.16) if mat=='Iron' else 0
- verts=[xyz(x,h,front+.12*x*x) for x,h in outline]
- verts.extend(xyz(cx+(x-cx)*.60,ch+(h-ch)*.60,front-crown+.12*x*x) for x,h in outline)
+ crown=min(.010,(max(x for x,h in outline)-min(x for x,h in outline))*.065) if mat=='Iron' else 0
+ verts=[]
+ for scale,depth in [(1,0),(.72,.60),(.35,.94)]:
+  for x,h in outline:
+   px=cx+(x-cx)*scale
+   verts.append(xyz(px,ch+(h-ch)*scale,front-crown*depth+.12*px*px))
  verts.extend(xyz(x,h,back+.12*x*x) for x,h in outline)
- faces=[tuple(range(n,2*n)),tuple(reversed(range(2*n,3*n)))]
+ faces=[tuple(range(2*n,3*n)),tuple(reversed(range(3*n,4*n)))]
  for i in range(n):
   j=(i+1)%n
-  faces.extend([(i,j,n+j,n+i),(i,2*n+i,2*n+j,j)])
+  for ring in range(2):faces.append((ring*n+i,ring*n+j,(ring+1)*n+j,(ring+1)*n+i))
+  faces.append((i,3*n+i,3*n+j,j))
  mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update()
  o=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(o)
- return bind(o,bone,mat,.003)
+ return bind(o,bone,mat,.002,bevel_angle=.70)
 
 def wheel(name,x,h,d,radius,bone,teeth=20):
  # Closed annular cog with a clear center; spokes are real three-dimensional struts.
@@ -174,7 +181,7 @@ for sign in [-1,1]:
  # Long broken crown fragments distinguish the Custodian from rounded Sentinel lames.
  plate('Shoulder shard',[(sign*x,h) for x,h in [(.285,1.70),(.31,1.88),(.35,1.76),(.348,1.69)]],-.01,.025,'shoulder.'+side)
  plate('Outer shoulder shard',[(sign*x,h) for x,h in [(.37,1.69),(.46,1.79),(.445,1.67),(.415,1.63)]],.025,.055,'shoulder.'+side)
- rod('Chest suspension pin',xyz(sign*.185,1.618,-.186),xyz(sign*.185,1.618,-.154),.022,.022,'chest','Bronze')
+ rod('Chest suspension pin',xyz(sign*.185,1.618,-.163),xyz(sign*.185,1.618,-.137),.014,.014,'chest','Bronze')
  plate('Pelvic arch',[(sign*x,h) for x,h in [(.02,1.11),(.17,1.14),(.20,1.065),(.065,1.00),(.015,1.027)]],-.09,-.068,'hips')
 wheel('Upper escapement',0,1.465,-.096,.075,'chest',24)
 wheel('Offset drive',.063,1.305,-.086,.054,'spine',18)

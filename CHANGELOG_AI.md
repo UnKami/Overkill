@@ -628,3 +628,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: assets/shaders/custodian_metal.gdshader and UID; scripts/combat/custodian_materials.gd; docs/custodian-production.md.
 - Verification: same-camera close-up comparison and full-body Vulkan renders inspected; first noisy pass reduced. Material/mask study and collapse/visor reset pass. No script/shader/assertion/Python errors; known certificate warning remains.
 - Handoff: six texture samples versus three previously; controlled performance and motion texture stability still unverified. Geometry silhouette/detail remains unfinished. Isolated study, published installer unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian armor curvature
+- Branch: feat/yonatan-sentinel-production.
+- Completed: shallow three-ring armor crowns, perimeter-only angle bevels, smaller embedded chest fasteners; regenerated source Blend and GLB.
+- Files: scripts/art/build_custodian.py; source Blend/GLB; docs/custodian-production.md.
+- Verification: same-camera close-up and guard/attack renders inspected; material masks and guard/attack state checks pass. Collapse check passed before final pin resize. 54,534 vertices/four surfaces, down 1,304 vertices. Guard fixture shutdown warning cleared after explicit fixture cleanup; final verbose rerun has no leak warning. No script/shader/assertion/Python errors; known certificate warning remains.
+- Handoff: repeated inner jewel-like borders removed, but fracture outlines and broader art finish still need work. No encounter or installer change, exhaustive collision/performance acceptance unproven. Locks released; AAA objective active.
