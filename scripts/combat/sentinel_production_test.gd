@@ -37,6 +37,32 @@ func _ready() -> void:
 		assert(brazier.get_node("ForgedFrame").get_child_count() == 2, "Brazier metal must remain batched by its two finishes")
 		assert(not brazier._light.shadow_enabled, "Local fire must not add expensive shadow passes")
 	await capture("idle")
+	for dial: ChronometerView in [battle._player_chrono,battle._enemy_chrono]:
+		assert(dial._readout_clearance and not dial._center_hub.visible)
+		assert(absf(angle_difference(dial._center_hand_pivot.rotation,deg_to_rad(-50.0))) < 0.01, "Opening pointer must agree with hour-one intent")
+		var marker: Polygon2D = dial._center_hand_pivot.get_node("ForgedHand")
+		for hour: int in range(1,10):
+			var angle: float = deg_to_rad(hour*40.0-90.0)
+			var text_bounds: Rect2 = Rect2(Vector2(-105,-75),Vector2(210,150)) if dial == battle._enemy_chrono else Rect2(Vector2(-115,-38),Vector2(230,76))
+			for point: Vector2 in marker.polygon:
+				assert(not text_bounds.has_point(point.rotated(angle)), "Clock pointer crosses decision text")
+	battle._guidance.clear()
+	assert(not battle._player_chrono._readout_clearance and battle._player_chrono._center_hub.visible)
+	battle._refresh_guidance()
+	var revealed: Array[bool] = []
+	for socket: ClockSocketData in battle.enemy_sockets:
+		revealed.append(socket.intent_revealed)
+		socket.intent_revealed = true
+	battle.phase = CombatController.Phase.QUADRANT
+	battle.active_quadrant = 1
+	battle._refresh_guidance()
+	await get_tree().create_timer(0.25).timeout
+	assert(battle._intent_readout.size.y <= 150.0, "Three-hour intent must fit the clock center")
+	await capture("sweep-readout")
+	battle.phase = CombatController.Phase.ASSEMBLY
+	for index: int in range(revealed.size()): battle.enemy_sockets[index].intent_revealed = revealed[index]
+	battle._refresh_guidance()
+	print("CLOCK_READOUT_OK: nine-hour pointer clearance and full player hand restoration")
 	stage._emit_sparks(Vector3(0,1.4,0),false)
 	stage._emit_sparks(Vector3(0,1.4,0),true)
 	assert(stage._sparks.size() == 24 and stage._spark_instances.visible_instance_count == 24)

@@ -21,9 +21,11 @@ var _is_enemy: bool = false
 var _hand_tween: Tween = null
 var _engraving: Control
 var rotation_direction: int = 1
+var _readout_clearance: bool = false
 
 
 func _ready() -> void:
+	resized.connect(_update_hand_geometry)
 	_engraving = preload("res://scripts/ui/clock_engraving.gd").new()
 	add_child(_engraving)
 	move_child(_engraving, _socket_container.get_index())
@@ -81,6 +83,27 @@ func _style_chassis() -> void:
 		_engraving.accent = Color("e99778") if _is_enemy else Color("7bd6de")
 	if _dial_texture.material:
 		_dial_texture.material.set_shader_parameter("tint", Color(0.95, 0.65, 0.48) if _is_enemy else Color(0.7, 0.9, 0.95))
+	_update_hand_geometry()
+
+## During decisions, leave the center readable while retaining an hour pointer.
+## The full mechanical hand returns when the player's guidance is cleared.
+func set_readout_clearance(enabled: bool) -> void:
+	if _readout_clearance == enabled: return
+	_readout_clearance = enabled
+	_update_hand_geometry()
+
+func _update_hand_geometry() -> void:
+	if not is_instance_valid(_hand_line): return
+	var inner: float = size.x*0.45
+	var outer: float = size.x*0.49
+	_hand_line.points = PackedVector2Array([Vector2(inner,0),Vector2(outer,0)]) if _readout_clearance else PackedVector2Array([Vector2(-22,0),Vector2(145,0)])
+	var hand: Polygon2D = _center_hand_pivot.get_node_or_null("ForgedHand")
+	if hand:
+		hand.polygon = PackedVector2Array([Vector2(outer,-6),Vector2(inner,0),Vector2(outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-30,0),Vector2(-12,-7),Vector2(100,-3),Vector2(156,0),Vector2(100,3),Vector2(-12,7)])
+	_center_hub.visible = not _readout_clearance
+	var twin: Polygon2D = _center_hand_pivot.get_node_or_null("TwinHand")
+	if twin:
+		twin.polygon = PackedVector2Array([Vector2(-inner,0),Vector2(-outer,-6),Vector2(-outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-146,0),Vector2(-95,-4),Vector2(0,-2),Vector2(0,2),Vector2(-95,4)])
 
 
 func _create_clock_sockets() -> void:
@@ -141,6 +164,7 @@ func set_twin_hand(enabled: bool) -> void:
 		echo.color = Color("c98ad8")
 		_center_hand_pivot.add_child(echo)
 	_center_hand_pivot.get_node("TwinHand").visible = enabled
+	_update_hand_geometry()
 
 
 ## Highlights the 3 sockets in quadrant q (1: 1-3, 2: 4-6, 3: 7-9)

@@ -86,8 +86,8 @@ func _ready() -> void:
 	_choice_overlay.install(self)
 	_intent_readout = Label.new()
 	_enemy_chrono.add_child(_intent_readout)
-	_intent_readout.position = Vector2(85,130)
-	_intent_readout.size = Vector2(250,150)
+	_intent_readout.position = Vector2(105,135)
+	_intent_readout.size = Vector2(210,150)
 	_intent_readout.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_intent_readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_intent_readout.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -866,15 +866,20 @@ func _refresh_guidance() -> void:
 	_refresh_intent_readout()
 	if _resolving or _combat_over: return
 	if phase == Phase.ASSEMBLY:
+		_player_chrono.snap_hand_to_hour(turn_number,0.18)
+		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(turn_number,_active_enemy()),0.18)
 		_phase_label.text = "Choose one relic for hour %d. Unchosen relics return to the draw pile." % turn_number
 		_guidance.point_to(_player_chrono,_player_chrono.get_socket_view(turn_number),[turn_number],"NEXT SLOT\n%d O'CLOCK" % turn_number)
 	else:
 		var hours := ChronometerView.get_quadrant_hours(active_quadrant)
+		_player_chrono.snap_hand_to_hour(hours[0],0.18)
+		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(hours[0],_active_enemy()),0.18)
 		_phase_label.text = "Replace one pulsing slot, then activate hours %d → %d → %d. Keep & Sweep discards the drawn relic." % hours
 		if current_drawn_relic == null: _phase_label.text = "No reserve relic available. Sweep hours %d → %d → %d with your equipped relics." % hours
 		_guidance.point_to(_player_chrono,null,hours,"NEXT SWEEP\n%d → %d → %d" % hours)
 
 func _refresh_intent_readout() -> void:
+	_enemy_chrono.set_readout_clearance(true)
 	if _combat_over:
 		_intent_readout.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
 		return
