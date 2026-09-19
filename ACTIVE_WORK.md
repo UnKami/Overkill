@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | Custodian metal look development | scripts/art/build_custodian.py; scripts/combat/custodian_materials.gd; scripts/combat/custodian_materials.gd.uid; assets/characters/rigged/custodian-study.glb; art_source/characters/custodian-study.blend; docs/custodian-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
