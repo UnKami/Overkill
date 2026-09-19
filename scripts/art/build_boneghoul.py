@@ -216,20 +216,39 @@ sheet('Tattered hood',verts,faces,'head')
 for side_index in [0,count-1]:
     edge=[verts[row*count+side_index] for row in range(len(levels))]+[verts[top]]
     tube('Hood rolled seam',edge,[.008]*len(edge),'head','Cloth',8)
-# A ragged shoulder mantle connects the hood silhouette to the narrow torso.
-verts=[];rows=7;cols=32
+# A heavy, folded mantle drapes from the neck across the shoulder girdle.
+# Fold amplitude grows below the pinned collar; the hem has broad worn breaks
+# instead of a regular sawtooth rim that reads as sheet metal.
+verts=[];rows=18;cols=64
 for row in range(rows+1):
     t=row/rows
     for col in range(cols+1):
         angle=.75+(math.tau-1.5)*col/cols
-        radius=.20+.12*math.sin(t*math.pi*.8)
-        h=1.74-.36*t-.025*math.sin(col*2.1)*t*t
+        folds=(math.cos(angle*10+.3*math.sin(t*3))+.32*math.cos(angle*19-.7))* .015*math.sin(t*math.pi*.7)
+        radius=.19+.13*math.sin(t*math.pi*.78)+folds
+        hem=.018*math.sin(angle*3+.6)+.012*math.sin(angle*7)
+        # Three irregular tears with smooth shoulders, rather than repeated teeth.
+        for center,width,depth in [(1.5,.12,.055),(3.6,.09,.035),(4.65,.15,.075)]:
+            hem+=depth*math.exp(-((angle-center)/width)**2)
+        h=1.75-.42*t+hem*t**5+.018*math.sin(angle)*t
         verts.append((math.sin(angle)*radius,math.cos(angle)*radius*.65-.025,h))
 faces=[]
 for row in range(rows):
     for col in range(cols):
         a=row*(cols+1)+col;faces.append((a,a+1,a+cols+2,a+cols+1))
-sheet('Torn shoulder mantle',verts,faces,'chest')
+mantle=sheet('Torn shoulder mantle',verts,faces,'chest',thickness=.009)
+for side,sign in [('L',-1),('R',1)]:
+    shoulder=mantle.vertex_groups.new(name='upper_arm.'+side)
+    for vertex in mantle.data.vertices:
+        # Follow the upper shoulder slightly while retaining a stable collar.
+        across=max(0,min(1,(sign*vertex.co.x-.18)/.12))
+        height=max(0,min(1,(vertex.co.z-1.38)/.18))
+        weight=.28*across*height
+        if weight:
+            mantle.vertex_groups['chest'].add([vertex.index],1-weight,'REPLACE')
+            shoulder.add([vertex.index],weight,'REPLACE')
+hem=[verts[rows*(cols+1)+col] for col in range(cols+1)]
+tube('Mantle worn hem',hem,[.0045]*len(hem),'chest','Cloth',6)
 # Four narrow, torn skirt panels preserve the thin leg silhouette.
 for strip in range(4):
     side=-1 if strip<2 else 1;back=strip%2

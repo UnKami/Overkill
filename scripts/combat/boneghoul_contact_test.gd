@@ -21,6 +21,8 @@ func _ready() -> void:
 	opponent.set_process(false)
 	opponent.position = Vector3(-0.72, 0.0, 0.2)
 	opponent.rotation.y = 1.4
+	opponent.opponent = actor
+	opponent._animation.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	_build_stage()
 	for speed: float in [1.0, 2.0]:
 		for reduced: bool in [false, true]:
@@ -53,6 +55,31 @@ func _ready() -> void:
 	assert(actor.claw_tip().distance_to(chest_surface) < 0.06, "Claw must reach the torso surface in the staged stance")
 	print("BONEGHOUL_CLOSE_STANCE gap=", actor.claw_tip().distance_to(chest_surface), " position=", actor.position, " yaw=", actor.rotation.y)
 	await capture("close-stance-contact")
+	actor.hit(false)
+	actor.advance_motion(0.9)
+	opponent.attack()
+	opponent.prepare_contact()
+	var blade_start: Vector3 = opponent._weapon.to_global(Vector3(0.0, 0.05, 0.22))
+	var blade_end: Vector3 = opponent._weapon.to_global(Vector3(0.0, 0.05, 1.14))
+	var ghoul_chest: Vector3 = actor.bone_point("chest")
+	var closest: Vector3 = Geometry3D.get_closest_point_to_segment(ghoul_chest, blade_start, blade_end)
+	print("BONEGHOUL_RETURN_AUDIT chest=", ghoul_chest, " blade_start=", blade_start, " blade_end=", blade_end, " center_gap=", closest.distance_to(ghoul_chest))
+	assert(closest.distance_to(ghoul_chest) < 0.10, "Return strike must intersect the ribcage envelope")
+	assert(blade_start.distance_to(ghoul_chest) > 0.40, "The sword grip must remain outside the opponent torso")
+	await capture("return-strike")
+	for guarded: bool in [false, true]:
+		actor.hit(guarded)
+		actor.advance_motion(0.20)
+		opponent._align_weapon()
+		blade_start = opponent._weapon.to_global(Vector3(0.0, 0.05, 0.22))
+		blade_end = opponent._weapon.to_global(Vector3(0.0, 0.05, 1.14))
+		ghoul_chest = actor.bone_point("chest")
+		closest = Geometry3D.get_closest_point_to_segment(ghoul_chest, blade_start, blade_end)
+		assert(closest.distance_to(ghoul_chest) < 0.22, "Reaction must remain within sword reach")
+		await capture("return-guard" if guarded else "return-recoil")
+		actor.advance_motion(0.9)
+	print("BONEGHOUL_RECIPROCAL_OK: idle and reaction torso envelopes reached; grip clearance retained")
+	opponent._play("combat_idle", 0.0)
 	actor.attack()
 	actor.advance_motion(1.1)
 	assert(event_position.distance_to(chest_surface) < 0.06, "A long frame must emit contact at the strike pose, not follow-through")

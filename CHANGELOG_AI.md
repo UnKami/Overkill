@@ -331,3 +331,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/boneghoul_actor.gd (+uid), scripts/combat/boneghoul_contact_test.gd (+uid), scenes/boneghoul_contact_test.tscn, docs/boneghoul-production.md.
 - Verification: headless `.tools/045-verified.log`; Vulkan `.tools/045-render.log` and errors log; both contact captures inspected. 0.7679 m original center miss; calibrated surface gap 0.0371 m. Tests include synchronous contact-to-death callback and long-frame contact position. Known certificate/headless-exit warnings remain.
 - Handoff: isolated study only, not normal encounter routing or an installer update. Reciprocal weapon clearance, moving targets, full-fight scheduling and art refinement remain. Published 0.20 unchanged; no AAA acceptance. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Boneghoul mantle and return-strike audit
+- Branch: feat/yonatan-sentinel-production.
+- Completed: folded/thicker mantle with worn hem and restrained shoulder weights; reciprocal sword reach fixture at calibrated close stance.
+- Files: scripts/art/build_boneghoul.py, art_source/characters/boneghoul-production.blend, assets/characters/rigged/boneghoul.glb, scripts/combat/boneghoul_contact_test.gd, docs/boneghoul-production.md.
+- Verification: Blender build/import; Vulkan model study and contact fixture, final `.tools/046-study*` and `.tools/046-final*` logs. Rendered idle/attack/guard/recoil/collapse inspected. 36,603 vertices, four surfaces. No final script/assertion/shader errors; known certificate/ObjectDB warnings remain.
+- Handoff: guard still aims incoming sword into ribs despite raised claws. Implement pre-contact interception before accepting battle choreography. Model remains isolated/unreleased; no installer or main gameplay change. Locks released.
