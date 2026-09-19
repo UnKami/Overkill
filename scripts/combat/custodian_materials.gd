@@ -15,9 +15,12 @@ static func apply(root: Node3D) -> int:
 			if not bronze and source.resource_name != "Custodian_Iron":
 				continue
 			var material: ShaderMaterial = ShaderMaterial.new()
-			material.shader = preload("res://assets/shaders/sentinel_metal.gdshader")
-			material.set_shader_parameter("plate_color", Color("705638") if bronze else Color("475a65"))
-			material.set_shader_parameter("exposed_color", Color("907954") if bronze else Color("64737b"))
+			material.shader = preload("res://assets/shaders/custodian_metal.gdshader")
+			material.set_shader_parameter("plate_color", Color("71502e") if bronze else Color("394e59"))
+			material.set_shader_parameter("exposed_color", Color("a68a59") if bronze else Color("78868a"))
+			material.set_shader_parameter("oxide_color", Color("29433e") if bronze else Color("303a3d"))
+			material.set_shader_parameter("face_roughness", 0.42 if bronze else 0.48)
+			material.set_shader_parameter("oxide_amount", 0.58 if bronze else 0.30)
 			material.set_shader_parameter("metalness", 0.76 if bronze else 0.86)
 			material.set_shader_parameter("surface_detail", preload("res://assets/characters/rigged/worn_metal_015.png"))
 			mesh_instance.set_surface_override_material(surface, material)

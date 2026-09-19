@@ -621,3 +621,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: 49 authored poses show minimum knee-center/coat distance 64.406 mm, approximately 13.8 mm beyond conservative axle/cap envelope. Godot 193-pose collapse audit: floor clearance 15.556 mm, foot drift 0.448 mm, held/reset state and visor pass. Side render inspected; idle/attack regressions pass. No script/shader/assertion/Python errors; known certificate warning remains.
 - Handoff: focused knee check only, not exhaustive collision/cross-fade certification. 55,838 vertices/four surfaces. Isolated art study; encounter integration, production finish and controlled performance remain open. Published installer unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian material separation
+- Branch: feat/yonatan-sentinel-production.
+- Completed: dedicated Custodian metal shader, separate steel/bronze roughness and oxide palettes, broad tarnish and restrained fine texture, irregular bevel exposure. Shared Sentinel shader unchanged.
+- Files: assets/shaders/custodian_metal.gdshader and UID; scripts/combat/custodian_materials.gd; docs/custodian-production.md.
+- Verification: same-camera close-up comparison and full-body Vulkan renders inspected; first noisy pass reduced. Material/mask study and collapse/visor reset pass. No script/shader/assertion/Python errors; known certificate warning remains.
+- Handoff: six texture samples versus three previously; controlled performance and motion texture stability still unverified. Geometry silhouette/detail remains unfinished. Isolated study, published installer unchanged. Locks released; AAA objective active.

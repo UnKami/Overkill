@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Custodian material separation | assets/shaders/custodian_metal.gdshader; assets/shaders/custodian_metal.gdshader.uid; scripts/combat/custodian_materials.gd; docs/custodian-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

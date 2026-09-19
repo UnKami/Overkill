@@ -114,3 +114,11 @@ Blender audit across all 49 authored collapse frames measures a minimum 64.406 m
 Exported Godot collapse checked at 120 Hz (193 samples): minimum deformed vertex height 15.556 mm, maximum foot drift 0.448 mm; held terminal state, visor fade and explicit reset pass. Side terminal render inspected. Final geometry 55,838 Blender vertices / four surfaces. Logs: `.tools/084-build-final.log`, `084-coat-final.log`, `084-import-final.log`, `084-collapse-dense.log`, `084-side-final.log`. No script, shader, assertion or Python errors; known certificate warning remains. Art finish, encounter integration and controlled performance acceptance remain open. Public installer unchanged.
 
 Idle and attack regression fixtures pass after the coat rebuild (084 logs), including idle loop endpoints, planted feet, attack recovery and hit interruption.
+
+## Material separation checkpoint — 2026-09-19
+
+Custodian now uses a dedicated metal shader, leaving Sentinel unchanged. Darker blue steel and warmer bronze use separate roughness and oxidation settings. Two triplanar texture scales provide broad tarnish and restrained fine variation; the geometry-authored bevel mask still controls exposed edges, with broken coverage instead of identical bright borders. Existing scanned metal texture is reused; no new texture allocation or geometry. This shader uses six texture samples versus the shared shader's three; controlled GPU cost has not been benchmarked.
+
+The first high-contrast grain pass was rejected after close-up comparison. Reduced detail contrast and scale before final review. Identical-camera before/after close-ups and the full-body study were inspected. Surface separation improves, but repeated polygonal plate forms, sparse machinery and the smooth mask still read as an unfinished model. This is not production art acceptance.
+
+Verification: isolated Vulkan study loads both material overrides with intact vertex wear masks; close-up/full-body renders and collapse/visor reset checks pass. Logs `.tools/085-import.log`, `085-after-final.log`, `085-fullbody.log`, `085-collapse.log` have no script/shader/assertion/Python errors; known certificate-store warning remains. No encounter wiring or installer change. Full motion texture stability and controlled performance remain unverified.
