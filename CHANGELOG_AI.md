@@ -443,3 +443,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: assets/shaders/arena_stone.gdshader; scripts/combat/directed_arena.gd; docs/sentinel-production.md.
 - Verification: Vulkan/GL before-after images reviewed; both material instances, no final shader/script/assertion failures. Old/new/old shader comparison measured roughly 0.17-0.19 ms extra stage GPU cost in the short idle fixture. `.tools/060-profile-final*`, `060-render*`, `060-gl*`. Earlier temporary profiler scope typo rejected; final logs clean except certificate warning.
 - Handoff: not a performance guarantee or AAA acceptance. Environment and character work remains. Published 0.22 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Sentinel articulated gauntlets
+- Branch: feat/yonatan-sentinel-production.
+- Completed: shallow palms spanning real knuckle roots, dark finger pivots, tighter metal plate bevels, closed fingertips and smaller pinky plates. 37,004 vertices / four surfaces.
+- Files: scripts/art/build_sentinel.py; art_source/characters/sentinel-production.blend; assets/characters/rigged/sentinel.glb; docs/sentinel-production.md.
+- Verification: final Blender build/import; Vulkan close-ups; grip, full-swing continuity and Sentinel production regressions. `.tools/061-*-final*` / `061-final-*` logs checked. Rejected initial palm gap caused by using hand-bone tail instead of knuckle positions. Known certificate warning only in final runtime logs.
+- Handoff: thumb/grip animation and broader art remain unfinished; no performance or AAA acceptance. Published 0.22 unchanged. Locks released.

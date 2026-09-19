@@ -48,13 +48,41 @@ def bind(o,bone,mat,bevel=0):
 def xyz(x,h,d):return Vector((x,-d,h))
 def box(name,at,size,bone,mat='Iron',bevel=.016):
     bpy.ops.mesh.primitive_cube_add(size=1,location=xyz(*at));o=bpy.context.object;o.name=name;o.scale=(size[0],size[2],size[1]);return bind(o,bone,mat,bevel)
-def sphere(name,at,size,bone,mat='Iron'):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=20,ring_count=12,radius=1,location=at);o=bpy.context.object;o.name=name;o.scale=size;return bind(o,bone,mat)
-def rod(name,a,b,r1,r2,bone,mat='Iron',vertices=12):
+def sphere(name,at,size,bone,mat='Iron',segments=20,rings=12):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments,ring_count=rings,radius=1,location=at);o=bpy.context.object;o.name=name;o.scale=size;return bind(o,bone,mat)
+def rod(name,a,b,r1,r2,bone,mat='Iron',vertices=12,bevel=.009):
     axis=Vector(b)-Vector(a)
     bpy.ops.mesh.primitive_cone_add(vertices=vertices,radius1=r1,radius2=r2,depth=axis.length,location=(Vector(a)+Vector(b))*.5)
     o=bpy.context.object;o.name=name;o.rotation_mode='QUATERNION';o.rotation_quaternion=Vector((0,0,1)).rotation_difference(axis)
-    return bind(o,bone,mat,.009)
+    return bind(o,bone,mat,bevel)
+
+def gauntlet_palm(side):
+    name='hand.'+side;hand=rig.data.bones[name]
+    knuckles=[rig.data.bones[f+'.01.'+side].head_local for f in ['f_index','f_middle','f_ring','f_pinky']]
+    knuckle_center=sum(knuckles,Vector())/len(knuckles)
+    span=knuckle_center-hand.head_local
+    axis=span.normalized()
+    across=(rig.data.bones['f_index.01.'+side].head_local-rig.data.bones['f_pinky.01.'+side].head_local).normalized()
+    across=(across-axis*across.dot(axis)).normalized()
+    depth=axis.cross(across).normalized()
+    # A shallow metacarpal housing rather than a cylindrical pipe for the palm.
+    # The rig's hand tail stops before the knuckles; cover the actual metacarpals.
+    rows=[(-.04,.033,.024),(.12,.047,.030),(.63,.052,.029),(1.02,.051,.022)]
+    verts=[];segments=16
+    for t,width,thickness in rows:
+        center=hand.head_local+span*t
+        for i in range(segments):
+            angle=i*math.tau/segments
+            verts.append(center+across*(math.cos(angle)*width)+depth*(math.sin(angle)*thickness))
+    faces=[]
+    for row in range(len(rows)-1):
+        for i in range(segments):
+            a=row*segments+i;b=row*segments+(i+1)%segments
+            faces.append((a,b,b+segments,a+segments))
+    faces.extend([tuple(reversed(range(segments))),tuple(range((len(rows)-1)*segments,len(rows)*segments))])
+    mesh=bpy.data.meshes.new('Metacarpal housing');mesh.from_pydata(verts,[],faces);mesh.update()
+    obj=bpy.data.objects.new('Gauntlet palm '+side,mesh);bpy.context.collection.objects.link(obj)
+    bind(obj,name,'Iron',.003)
 def ring(name,at,radius,tube,bone,mat='Bronze',front=True):
     bpy.ops.mesh.primitive_torus_add(major_segments=48,minor_segments=8,major_radius=radius,minor_radius=tube,location=xyz(*at),rotation=(math.pi/2 if front else 0,0,0))
     o=bpy.context.object;o.name=name;return bind(o,bone,mat)
@@ -230,11 +258,16 @@ for side in ['L','R']:
     sphere('Shoulder pivot',center,(.12,.13,.12),'upper_arm.'+side,'Recess')
     for layer in range(3):mantle(side,layer)
     hand=rig.data.bones['hand.'+side]
-    rod('Gauntlet palm',hand.head_local,hand.tail_local,.065,.057,'hand.'+side)
+    gauntlet_palm(side)
     for finger in ['f_index','f_middle','f_ring','f_pinky','thumb']:
         for segment in range(1,4):
             name=f'{finger}.{segment:02d}.{side}';b=rig.data.bones[name]
-            rod('Finger',b.head_local,b.tail_local,.014,.012,name,'Iron',8)
+            axis=b.tail_local-b.head_local
+            radius=.014 if finger!='f_pinky' else .012
+            sphere('Finger articulation',b.head_local,(radius*.96,)*3,name,'Recess',12,8)
+            rod('Finger plate',b.head_local+axis*.13,b.tail_local-axis*.07,radius,radius*.87,name,'Iron',10,.002)
+            if segment==3:
+                sphere('Closed fingertip',b.tail_local-axis*.06,(radius*.86,)*3,name,'Iron',12,8)
     foot=rig.data.bones['foot.'+side].head_local
     # Overlapping arched sabatons taper to the toe instead of a rectangular boot.
     for course in range(4):
