@@ -33,6 +33,7 @@ func _ready() -> void:
 	add_child(screen)
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	resized.connect(_resize_view)
+	AudioManager.settings_changed.connect(_on_settings_changed)
 	_world = Node3D.new()
 	_view.add_child(_world)
 	var environment := WorldEnvironment.new()
@@ -204,8 +205,15 @@ func _replace_enemy() -> void:
 
 func _resize_view() -> void:
 	if _view and size.x > 0 and size.y > 0:
-		var render_width := mini(1600,mini(get_window().size.x,roundi(size.x)))
-		_view.size = Vector2i(render_width,roundi(render_width * size.y / size.x))
+		var limit: int = 1600
+		if AudioManager.render_quality == "balanced": limit = 1280
+		elif AudioManager.render_quality == "performance": limit = 960
+		var render_width: int = mini(limit,mini(get_window().size.x,roundi(size.x)))
+		var render_size: Vector2i = Vector2i(render_width,roundi(render_width * size.y / size.x))
+		if _view.size != render_size: _view.size = render_size
+
+func _on_settings_changed(_settings: Dictionary) -> void:
+	_resize_view()
 
 func attack(from_player: bool) -> void:
 	if _finished: return

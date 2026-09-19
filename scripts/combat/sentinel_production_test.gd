@@ -96,6 +96,8 @@ func _ready() -> void:
 	for repeat: int in 2:
 		defender.hit(true)
 		await get_tree().create_timer(0.10).timeout
+		defender._animation.play(defender._clip("guard"),0.0)
+		defender._animation.seek(0.10,true) # Inspect the authored pose independently of GPU frame stalls.
 		defender._skeleton.force_update_all_bone_transforms()
 		assert(defender._skeleton.get_bone_global_pose(left_foot).origin.distance_to(initial_foot) < 0.025, "Bracing must keep the supporting foot planted")
 		assert(defender._skeleton.get_bone_global_pose(left_hand).origin.distance_to(initial_hand) > 0.07, "Guard must visibly change the off-hand pose")
@@ -116,6 +118,8 @@ func _ready() -> void:
 		await get_tree().create_timer(0.06/AudioManager.animation_speed_scale()).timeout
 		defender.hit(false)
 		await get_tree().create_timer(0.10/AudioManager.animation_speed_scale()).timeout
+		defender._animation.play(defender._clip("hit"),0.0)
+		defender._animation.seek(0.10,true)
 		defender._skeleton.force_update_all_bone_transforms()
 		var recoil_direction: Vector3 = defender._skeleton.get_bone_global_pose(head_index).origin-initial_head
 		assert(recoil_direction.length() > 0.05, "Unguarded hit needs readable upper-body recoil")

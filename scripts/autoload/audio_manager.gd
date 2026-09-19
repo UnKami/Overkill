@@ -10,6 +10,7 @@ var sfx_volume: float = 1.0
 var fast_mode: bool = false
 var text_size: String = "normal"
 var reduced_motion: bool = false
+var render_quality: String = "high"
 var _clock_sounds: Dictionary = {}
 var _music_player: AudioStreamPlayer
 const MAX_COMBAT_VOICES: int = 8
@@ -116,6 +117,8 @@ func load_settings() -> void:
 	fast_mode = settings.get("fast_mode", false)
 	text_size = settings.get("text_size", "normal")
 	reduced_motion = settings.get("reduced_motion", false)
+	render_quality = settings.get("render_quality", "high")
+	if render_quality not in ["high","balanced","performance"]: render_quality = "high"
 
 
 func save_settings() -> void:
@@ -126,6 +129,7 @@ func save_settings() -> void:
 		"fast_mode": fast_mode,
 		"text_size": text_size,
 		"reduced_motion": reduced_motion,
+		"render_quality": render_quality,
 	}
 	SaveManager.save_meta(settings)
 	settings_changed.emit(settings)
@@ -165,3 +169,7 @@ func set_text_size(value: String) -> void:
 ## by this rather than hiding information, per the doc's explicit rule.
 func animation_speed_scale() -> float:
 	return 2.0 if fast_mode else 1.0
+
+func set_render_quality(value: String) -> void:
+	render_quality = value if value in ["high","balanced","performance"] else "high"
+	save_settings()
