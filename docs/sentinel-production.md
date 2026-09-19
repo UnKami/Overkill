@@ -227,3 +227,21 @@ The grip study checks 93 samples per actor and rejects orientation steps above 3
 Replaced the rectangular sword crossguard with swept, tapered octagonal quillons; added raised leather binding seams, metal grip collars and a rounded steel pommel. Existing grip center and blade reach stay unchanged. All pieces use the existing materials and enter the existing finish batching, retaining four weapon batches. Hammer geometry is unchanged.
 
 Reviewed Vulkan windup and impact close-ups. A geometry audit caught inward guard winding in the first candidate; corrected shell and end-cap winding. Final audit reports zero inward shell normals across 960 sampled vertices. Rendered grip study and Sentinel production suite pass, including swing continuity, deferred attachment stability, contacts, reactions and layout. Evidence `.tools/055-normals-final.log`, `.tools/055-final-weapon_grip_test*`, `.tools/055-final-sentinel_production_test*`. Final logs have no script/assertion/shader errors. A first standalone audit launch outside the isolated profile crashed before startup; the isolated-profile rerun completed. Known certificate and standalone audit ObjectDB exit warnings remain. No FPS claim from this pass. Installer remains 0.21; no AAA acceptance.
+
+## Real encounter profiling and shared-theme invalidation fix (unreleased)
+
+Added `scenes/encounter_profile.tscn`: real Sentinel combat at 1920x1080, seed 1729, unchanged 80 HP starter run, first draft option then sector sweeps. It measures decision/resolution/ending wall time and stage CPU/GPU timings across High -> Performance -> High, with VSync disabled and four seconds warmup. No synthetic health, forced victory or presentation-only attacks. Muted audio, one encounter/policy/device; this is diagnostic, not broad performance acceptance. Every baseline and corrected trial reaches the same defeat after 17 decisions, with identical relic traces and final HP (-18 player / 121 enemy).
+
+Found redundant shared-theme writes in `ScreenDesign.apply_text_size`: every relic bind and overlay presentation reissued unchanged font sizes. Each theme change notified all consumers. Shared settings and per-control font overrides now change only when the target differs. Normal -> large -> normal still restores exact base sizes.
+
+Intel integrated graphics, Vulkan Mobile; High stage 1600x813, Performance 960x488. Measurements in milliseconds:
+
+| Trial | Decision p95 before / after | Worst decision before / after | Resolution median before / after |
+| --- | --- | --- | --- |
+| High first | 172.890 / 24.611 | 247.616 / 156.244 | 16.374 / 16.276 |
+| Performance | 111.278 / 24.264 | 288.687 / 116.411 | 10.971 / 10.678 |
+| High repeat | 165.110 / 27.829 | 345.318 / 162.876 | 16.346 / 16.320 |
+
+Evidence supports substantially reduced decision-transition stalls, not elimination: 116-163 ms outliers remain. Resolution p95 remains 21-22 ms on High, 16.59 ms on Performance. The unchanged combat traces protect the comparison from differing scripted choices. No claim of stable 60 FPS or AAA performance.
+
+Evidence: `.tools/056-encounter*` baseline, `056-after*` corrected, `056-text.log` (zero shared-theme signals for 12 unchanged applications; label/rich-text normal-large-normal), `056-settings*` (rendered live presets, persistence, compact/large-text fit). Large-text 720p settings capture inspected. Final logs have no script/assertion/shader failures; certificate-store warning remains. Published installer is still 0.21.

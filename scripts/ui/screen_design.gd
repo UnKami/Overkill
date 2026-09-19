@@ -146,21 +146,29 @@ static func polish(root: Control) -> void:
 static func apply_text_size(root: Node) -> void:
 	var multiplier := 1.15 if AudioManager.text_size == "large" else 1.0
 	var shared := build_theme()
-	shared.default_font_size = roundi(22*multiplier)
+	var target_size: int = roundi(22*multiplier)
+	# Theme mutations notify every consumer. Rebinding a relic must not restyle
+	# the entire battle when the accessibility setting has not changed.
+	if shared.default_font_size != target_size: shared.default_font_size = target_size
 	for type in ["Button","SecondaryButton","DangerButton","OptionButton"]:
-		shared.set_font_size("font_size",type,roundi(22*multiplier))
+		if shared.get_font_size("font_size",type) != target_size:
+			shared.set_font_size("font_size",type,target_size)
 	_scale_labels(root,multiplier)
 
 static func _scale_labels(root: Node, multiplier: float) -> void:
 	if root is RichTextLabel and root.has_theme_font_size_override("normal_font_size"):
 		if not root.has_meta("base_body_size"):
 			root.set_meta("base_body_size", root.get_theme_font_size("normal_font_size"))
-		root.add_theme_font_size_override("normal_font_size", roundi(int(root.get_meta("base_body_size")) * multiplier))
+		var target_body: int = roundi(int(root.get_meta("base_body_size")) * multiplier)
+		if root.get_theme_font_size("normal_font_size") != target_body:
+			root.add_theme_font_size_override("normal_font_size", target_body)
 	if root is Control and root.has_theme_font_size_override("font_size"):
 		if not root.has_meta("base_text_size"):
 			root.set_meta("base_text_size",root.get_theme_font_size("font_size"))
 		var base: int = root.get_meta("base_text_size")
-		if base <= 32: root.add_theme_font_size_override("font_size",roundi(base*multiplier))
+		var target_text: int = roundi(base*multiplier)
+		if base <= 32 and root.get_theme_font_size("font_size") != target_text:
+			root.add_theme_font_size_override("font_size",target_text)
 	for child in root.get_children(): _scale_labels(child,multiplier)
 
 static func _hover() -> void:

@@ -408,3 +408,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/forged_armor.gd; scripts/combat/rigged_combatant.gd; docs/sentinel-production.md.
 - Verification: corrected initial inward guard winding; final zero-inward-normal audit, rendered grip/continuity and Sentinel production suites pass. Four weapon batches retained. Vulkan windup/impact close-ups reviewed. Evidence `.tools/055-normals-final.log`, `055-final-*`. First unisolated audit launch crashed; isolated rerun passed. Known warnings documented.
 - Handoff: refinement remains below overall AAA target; broader anatomy, animation and performance work continues. Published 0.21 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Decision transition stutter reduction
+- Branch: feat/yonatan-sentinel-production.
+- Completed: prevent redundant shared-theme and font-override writes; real-controller encounter profiler separating decision/resolution/finish with High-Performance-High comparison and JSON export.
+- Files: scripts/ui/screen_design.gd; scripts/combat/encounter_profile.gd; scenes/encounter_profile.tscn; docs/sentinel-production.md.
+- Verification: six real Sentinel encounters with identical traces/end states. Decision p95 improved from 173/111/165 ms to 25/24/28 ms; large outliers remain. No-op signal check and normal-large-normal exact restoration; rendered graphics/settings regression and 720p large-text capture. `.tools/056-*` logs clean of script/assertion/shader errors, known certificate warning remains.
+- Handoff: continue investigating residual transition spikes and broader art/animation. Single muted encounter/device is not full-game performance acceptance. Publish accumulated source/art fixes in the next playtest installer; current public version remains 0.21. Locks released.
