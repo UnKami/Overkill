@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | 0.21 Boneghoul preview packaging and publication | VERSION; project.godot; scripts/combat/sentinel_encounter.gd; scenes/boneghoul_encounter.tscn; scripts/release/build_installer.ps1; installer/overkill.iss; installer/OverkillSetup-0.21.0.sha256; README.md; installer/README.md; install/README.md; UPDATE_LOG.md; docs/encounter-021.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
