@@ -19,7 +19,7 @@ var _trail_material: StandardMaterial3D
 var _metal_cache: Dictionary = {}
 
 func _ready() -> void:
-	_model = preload("res://assets/characters/rigged/executioner.glb").instantiate()
+	_model = preload("res://assets/characters/rigged/sentinel.glb").instantiate() if hostile and archetype == "sentinel" else preload("res://assets/characters/rigged/executioner.glb").instantiate()
 	add_child(_model)
 	_model.rotation.y = PI
 	_find_nodes(_model)
@@ -65,7 +65,17 @@ func _style(node: Node) -> void:
 		for i in range(node.mesh.get_surface_count()):
 			var source: Material = node.mesh.surface_get_material(i)
 			var name_text := source.resource_name if source else ""
-			if "Gold" in name_text:
+			if name_text == "Sentinel_Ember":
+				var ember: StandardMaterial3D = source.duplicate()
+				ember.emission_energy_multiplier = 1.2
+				node.set_surface_override_material(i, ember)
+			elif name_text == "Sentinel_Iron":
+				node.set_surface_override_material(i, _metal(Color("343d42"), 0.8))
+			elif name_text == "Sentinel_Bronze":
+				node.set_surface_override_material(i, _metal(Color("927044"), 0.76))
+			elif name_text == "Sentinel_Recess":
+				node.set_surface_override_material(i, source)
+			elif "Gold" in name_text:
 				node.set_surface_override_material(i, _metal(Color("806441"), 0.76))
 			elif "White" in name_text:
 				node.set_surface_override_material(i, _metal(Color("443a38") if hostile else Color("344650")))
@@ -129,6 +139,9 @@ func _build_equipment() -> void:
 		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("9babad"),0.72))
 		for n: int in 4:
 			_box(_weapon, Vector3(0,0.071,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
+	if hostile and archetype == "sentinel":
+		_build_cloak()
+		return
 	if hostile:
 		ForgedArmor.sentinel(_skeleton,_metal(Color("272c30"),0.74),_gold)
 	else:
@@ -303,6 +316,13 @@ func _apply_attack_weight() -> void:
 		elif t < 0.32: offset = lerpf(-0.035,0.065,smoothstep(0.20,0.32,t))
 		else: offset = lerpf(0.065,0.0,smoothstep(0.32,0.76,t))
 	_model.position.z = offset
+	# The Sentinel presents its chest in guard, then turns into the hammer strike.
+	# This is body mechanics, so it remains enabled with reduced camera motion.
+	var turn: float = 0.0
+	if hostile and archetype == "sentinel" and _animation.current_animation == _clip("execution_cut"):
+		var t: float = _animation.current_animation_position
+		turn = smoothstep(0.0, 0.20, t) if t < 0.40 else 1.0 - smoothstep(0.40, 0.76, t)
+	_model.rotation.y = PI - 0.35 * turn
 
 func at_contact() -> bool:
 	return _animation.current_animation != _clip("execution_cut") or _animation.current_animation_position >= 0.30

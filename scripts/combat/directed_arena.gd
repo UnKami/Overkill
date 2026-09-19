@@ -216,7 +216,7 @@ func _replace_enemy() -> void:
 	enemy.archetype = _kind
 	_world.add_child(enemy)
 	enemy.position = Vector3(0.9, 0, -0.1)
-	enemy.rotation.y = -1.4
+	enemy.rotation.y = -1.05 if _kind == "sentinel" else -1.4
 	if _kind in ["sentinel", "bulwark", "twin", "eclipse"]: enemy.scale *= 1.14
 	player.opponent = enemy
 	enemy.opponent = player

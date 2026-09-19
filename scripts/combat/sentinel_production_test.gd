@@ -17,16 +17,30 @@ func _ready() -> void:
 	battle.start_combat([ContentDatabase.get_enemy("act1_boss")])
 	await get_tree().create_timer(2.0).timeout
 	var stage: DirectedArena = battle._stage
-	# Preserve coverage of the modular plate assembly used by the other heavy enemies.
-	# The bespoke Sentinel body has its own sentinel_production_test.
-	stage.configure_enemy("bulwark")
 	await capture("idle")
-	check_armor(stage.enemy)
+	if DisplayServer.get_name() != "headless":
+		var engraving: Control = battle._player_chrono._engraving
+		var cache: SubViewport = engraving._engraving_cache
+		var prior: PackedByteArray = cache.get_texture().get_image().get_data()
+		# Godot's node getter retains UPDATE_ONCE; verify the pixels actually stay cached.
+		engraving._static.modulate = Color.GREEN
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		assert(cache.get_texture().get_image().get_data() == prior, "Static cache must not redraw without invalidation")
+		engraving._static.modulate = Color.WHITE
+		var original: Color = engraving.accent
+		engraving.accent = Color.RED
+		await get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		assert(cache.get_texture().get_image().get_data() != prior, "Faction color changes must invalidate the cache")
+		engraving.accent = original
+
+	check_model(stage.enemy)
 	measuring = true
 	await get_tree().create_timer(3.0).timeout
 	measuring = false
 	frames.sort()
-	print("SILHOUETTE_PERF median_ms=",frames[frames.size()/2]," p95_ms=",frames[int(frames.size()*0.95)]," draws=",Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	print("SENTINEL_PRODUCTION_PERF median_ms=",frames[frames.size()/2]," p95_ms=",frames[int(frames.size()*0.95)]," draws=",Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
 	for from_player: bool in [true,false]:
 		var actor: RiggedCombatant = stage.player if from_player else stage.enemy
 		stage.attack(from_player)
@@ -37,7 +51,7 @@ func _ready() -> void:
 		# Restart so PNG capture time cannot shift the actual contact measurement.
 		stage.attack(from_player)
 		await stage.await_contact(from_player)
-		check_armor(stage.enemy)
+		check_model(stage.enemy)
 		var contact: Vector3 = actor._weapon.to_global(Vector3(0,0.05,1.14 if from_player else 0.82))
 		var gap: float = contact.distance_to(stage.contact_point(not from_player))
 		print("STRIKE_GAP ",from_player," ",gap," clip_time=",actor._animation.current_animation_position)
@@ -57,29 +71,26 @@ func _ready() -> void:
 	get_window().size = Vector2i(1280,720)
 	await get_tree().create_timer(0.3).timeout
 	await capture("compact")
-	print("SILHOUETTE_OK: mounted armor bounds, outward faces, repeated strikes, settled root, reduced motion and cleanup")
+	print("SENTINEL_PRODUCTION_OK: original mesh, four surfaces, skinning, repeated strikes, contact, reduced motion, cleanup and framing")
 	get_tree().quit()
 
-func check_armor(actor: RiggedCombatant) -> void:
-	var count: int = 0
-	for anchor: Node in actor._skeleton.get_children():
-		if not anchor is BoneAttachment3D: continue
-		if not String(anchor.bone_name).begins_with("shoulder"): continue
-		for piece: Node in anchor.find_children("*","MeshInstance3D",true,false):
-			var center: Vector3 = piece.to_global(piece.get_aabb().get_center())
-			assert(center.distance_to(anchor.global_position) < 0.42,"Armor must stay near its shoulder, not across the body")
-			var arrays: Array = piece.mesh.surface_get_arrays(0)
-			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-			var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
-			for i: int in range(0,vertices.size(),3):
-				var cross: Vector3 = (vertices[i+1]-vertices[i]).cross(vertices[i+2]-vertices[i])
-				if cross.length_squared() > 0.000000001:
-					assert(cross.dot(normals[i]) < 0.0,"Godot front faces need clockwise winding")
-			count += 1
-	assert(count == 8,"Both layered shoulder assemblies must exist")
+func check_model(actor: RiggedCombatant) -> void:
+	var meshes: Array[Node] = actor._model.find_children("*", "MeshInstance3D", true, false)
+	var body: Array[MeshInstance3D] = []
+	for candidate: MeshInstance3D in meshes:
+		assert(not String(candidate.name).begins_with("Knight_"))
+		if candidate.skin != null: body.append(candidate)
+	assert(body.size() == 1, "Sentinel must have one authored skinned body")
+	var mesh: MeshInstance3D = body[0]
+	assert(mesh.mesh.get_surface_count() == 4)
+	assert(mesh.skin != null, "Sentinel body must be skinned to the combat rig")
+	assert(actor._skeleton.find_bone("hand.R") >= 0)
+	for surface: int in mesh.mesh.get_surface_count():
+		var arrays: Array = mesh.mesh.surface_get_arrays(surface)
+		assert(not (arrays[Mesh.ARRAY_BONES] as PackedInt32Array).is_empty())
 
 func capture(label: String) -> void:
 	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
-	DirAccess.make_dir_recursive_absolute("user://silhouette-016")
-	get_viewport().get_texture().get_image().save_png("user://silhouette-016/"+label+".png")
+	DirAccess.make_dir_recursive_absolute("user://sentinel-019")
+	get_viewport().get_texture().get_image().save_png("user://sentinel-019/"+label+".png")

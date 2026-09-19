@@ -4,7 +4,7 @@ var accent: Color = Color("7bd6de"):
 	set(value):
 		accent = value
 		queue_redraw()
-		if is_instance_valid(_static): _static.queue_redraw()
+		if is_instance_valid(_static): _refresh_engraving()
 var active_hour: int = 0:
 	set(value):
 		active_hour = value
@@ -15,16 +15,37 @@ var quadrant: int = 0:
 		queue_redraw()
 var elapsed: float = 0.0
 var _static: Control
+var _engraving_cache: SubViewport
 var _was_reduced: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# The etched rings do not animate. Render their antialiased strokes once,
+	# preserving their appearance without submitting thousands of segments per frame.
+	_engraving_cache = SubViewport.new()
+	_engraving_cache.transparent_bg = true
+	_engraving_cache.disable_3d = true
+	_engraving_cache.render_target_update_mode = SubViewport.UPDATE_ONCE
+	add_child(_engraving_cache)
 	_static = Control.new()
 	_static.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_static)
-	_static.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_engraving_cache.add_child(_static)
 	_static.draw.connect(_draw_static)
-	resized.connect(func() -> void: _static.queue_redraw())
+	var image: TextureRect = TextureRect.new()
+	image.texture = _engraving_cache.get_texture()
+	image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(image)
+	image.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	resized.connect(_refresh_engraving)
+	_refresh_engraving()
+
+func _refresh_engraving() -> void:
+	if not is_instance_valid(_engraving_cache): return
+	_engraving_cache.size = Vector2i(maxi(1, roundi(size.x)), maxi(1, roundi(size.y)))
+	_static.size = size
+	_static.queue_redraw()
+	_engraving_cache.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 func _process(delta: float) -> void:
 	var reduced: bool = AudioManager.reduced_motion
