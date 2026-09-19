@@ -2,6 +2,17 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.22.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.22.0 → Assets → `OverkillSetup-0.22.0.exe`. Choose **Play Boneghoul preview** or **Play Sentinel encounter** after installing. The homepage and installer folder point to this release.
+
+[Release and assets](https://github.com/UnKami/Overkill/releases/tag/v0.22.0-test) · [Detailed changes and limitations](docs/encounter-022.md)
+
+- Refined Boneghoul skull, jaw, neck and bone materials.
+- Improved weapon grip placement and wrist poses; removed abrupt overhead weapon roll; refined sword hilt.
+- Reduced redundant UI theme work when relic choices appear. Repeated real encounters show substantially lower decision-frame p95; intermittent stalls remain.
+- Rules and balance unchanged. This remains unfinished art and gameplay, not AAA acceptance.
+
 ## 0.21.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.21.0 → Assets → `OverkillSetup-0.21.0.exe`. After installing, open **Play Boneghoul preview**. Portable folder: **Play Boneghoul.cmd**. The homepage and **installer** folder point to this release.
