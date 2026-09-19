@@ -493,3 +493,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/rigged_combatant.gd; assets/shaders/battle_cloth.gdshader; docs/sentinel-production.md.
 - Verification: rendered back views of both actors in Vulkan/OpenGL; Sentinel production regression including reduced motion and framing; 067 logs clean except certificate warning. Per cloak 1,127 vertices / 2,112 triangles. No performance acceptance under competing game workload.
 - Handoff: procedural drape still needs richer animation/collision/art; source-only checkpoint, published 0.22 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Cloak movement response
+- Branch: feat/yonatan-sentinel-production.
+- Completed: capped, smoothed trailing movement at cape hems driven by chest motion; fixed shoulder seam; reset for reduced motion, spawn, teleport and long stalls.
+- Files: scripts/combat/rigged_combatant.gd; assets/shaders/battle_cloth.gdshader; docs/sentinel-production.md.
+- Verification: 30/60/120 Hz response agreement, rest settling, teleport/reduced-motion reset, actual attack bound; sampled rendered attack views; full Sentinel production regression. 068 logs clean except certificate warning.
+- Handoff: procedural secondary motion, not physical cloth collision or AAA acceptance. Source checkpoint only; published 0.22 unchanged. Locks released.

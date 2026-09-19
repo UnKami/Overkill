@@ -2,6 +2,7 @@ shader_type spatial;
 render_mode cull_disabled, world_vertex_coords;
 uniform vec4 cloth_color : source_color = vec4(0.025,0.06,0.085,1);
 uniform float motion = 1.0;
+uniform vec3 inertia_offset = vec3(0.0);
 
 // Parametric surface matches RiggedCombatant._build_cloak; its mesh supplies UVs and bounds.
 vec3 cloth_position(vec2 uv, mat4 model) {
@@ -16,6 +17,8 @@ vec3 cloth_position(vec2 uv, mat4 model) {
     vec3 rigid_drop = (model*vec4(0.0,-uv.y*1.29,0.0,0.0)).xyz;
     vec3 gravity_drop = vec3(0.0,-length(rigid_drop),0.0);
     world_point += (gravity_drop-rigid_drop)*smoothstep(0.03,0.72,uv.y)*0.90;
+    // The fixed shoulder seam leads; the free hem trails measured body movement.
+    world_point += inertia_offset*weight*motion;
     // A quiet ground constraint lets a kneeling actor's hem pool behind its feet.
     vec3 back = (model*vec4(0.0,0.0,1.0,0.0)).xyz;
     back.y = 0.0;

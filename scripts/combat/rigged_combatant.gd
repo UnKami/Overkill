@@ -14,6 +14,10 @@ var _glow: StandardMaterial3D
 var _emissive_materials: Array[StandardMaterial3D] = []
 var _time := 0.0
 var _cloth: ShaderMaterial
+var _cloak_bone: int = -1
+var _cloak_previous_anchor: Vector3
+var _cloak_lag: Vector3 = Vector3.ZERO
+var _cloak_initialized: bool = false
 var _trail: MeshInstance3D
 var _trail_points: Array[Dictionary] = []
 var _trail_material: StandardMaterial3D
@@ -203,6 +207,7 @@ func _build_equipment() -> void:
 	_build_cloak()
 
 func _build_cloak() -> void:
+	_cloak_bone = _skeleton.find_bone("chest")
 	var chest := _attach("chest")
 	var rest_space := Node3D.new()
 	chest.add_child(rest_space)
@@ -287,8 +292,23 @@ func _process(delta: float) -> void:
 		_animation.speed_scale = AudioManager.animation_speed_scale()
 	if _cloth: _cloth.set_shader_parameter("motion",0.0 if AudioManager.reduced_motion else 1.0)
 	_apply_attack_weight()
+	_update_cloak(delta)
 	_align_weapon()
 	_update_trail(delta)
+
+func _update_cloak(delta: float) -> void:
+	if not _cloth or _cloak_bone < 0: return
+	var anchor: Vector3 = _skeleton.to_global(_skeleton.get_bone_global_pose(_cloak_bone).origin)
+	var displacement: Vector3 = anchor - _cloak_previous_anchor
+	if not _cloak_initialized or AudioManager.reduced_motion or delta <= 0.0 or delta > 0.15 or displacement.length_squared() > 0.25:
+		# Spawns, teleports and long stalls must not create a whipping cape.
+		_cloak_lag = Vector3.ZERO
+	else:
+		var target: Vector3 = (-displacement / delta * 0.075).limit_length(0.09)
+		_cloak_lag = _cloak_lag.lerp(target, 1.0 - exp(-12.0 * delta))
+	_cloak_previous_anchor = anchor
+	_cloak_initialized = true
+	_cloth.set_shader_parameter("inertia_offset", _cloak_lag)
 
 func _align_weapon() -> void:
 	if not is_instance_valid(opponent) or not _weapon: return
