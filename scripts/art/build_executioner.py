@@ -205,7 +205,10 @@ def pose(kind,amount=1.0,breath=0.0):
     aim('upper_arm.R',upper); aim('forearm.R',lower); aim('hand.R',hand)
     if kind in ['strike','recovery','death']:
         wrist=rig.pose.bones['hand.R']
-        wrist.rotation_quaternion=wrist.rotation_quaternion @ Quaternion((1,0,0),math.radians(-75 if kind=='strike' else -45))
+        # Keep the wrist near the forearm's line of force. The previous 75-degree
+        # strike bend folded the hand under the gauntlet at the impact frame.
+        wrist_roll={'strike': -25, 'recovery': -20, 'death': -45}[kind]
+        wrist.rotation_quaternion=wrist.rotation_quaternion @ Quaternion((1,0,0),math.radians(wrist_roll))
     # Off-hand protects the face on a block and counterbalances the sword arc.
     left_upper=(-0.25,0.25,-1); left_lower=(0.15,0.9,-0.2)
     if kind=='guard': left_upper=(-0.22,0.65,-0.25); left_lower=(0.30,0.22,0.95)

@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Authored wrist pose correction | scripts/art/build_executioner.py; assets/characters/rigged/executioner.glb; art_source/characters/executioner-production.blend; assets/characters/rigged/sentinel.glb; art_source/characters/sentinel-production.blend; scripts/combat/weapon_grip_test.gd; scripts/combat/weapon_grip_test.gd.uid; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

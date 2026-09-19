@@ -387,3 +387,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/rigged_combatant.gd, scripts/combat/weapon_grip_test.gd, scenes/weapon_grip_test.tscn, docs/sentinel-production.md.
 - Verification: rendered Vulkan Sentinel production and Boneghoul contact/guard/interruption regressions; grip close-ups and stability check. Evidence `.tools/052-final*`, `052-sentinel*`, `052-contact*`. Full final logs checked for script/assertion/shader errors; existing certificate warning remains.
 - Handoff: wrist orientation and finger posing still need authored animation correction. This is a source checkpoint, not a release or AAA acceptance. Published 0.21 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Authored wrist correction
+- Branch: feat/yonatan-sentinel-production.
+- Completed: reduced excessive strike/recovery wrist flexion in source animation; rebuilt Executioner and Sentinel production Blender/GLB assets; sampled wrist-angle assertions in the existing grip study.
+- Files: scripts/art/build_executioner.py; art_source/characters/{executioner,sentinel}-production.blend; assets/characters/rigged/{executioner,sentinel}.glb; scripts/combat/weapon_grip_test.gd (+uid); docs/sentinel-production.md.
+- Verification: both Blender build sentinels; Godot import; rendered five-pose grip, Boneghoul contact/guard/interruption, Sentinel production suites. Final `.tools/053-*` logs clean of script/assertion/shader/Python failures, known certificate warning remains. Player/Sentinel impact wrist bends approximately 17 degrees. Reviewed close-up captures.
+- Handoff: finger/thumb wrapping, hand/weapon orientation through the whole swing, richer body motion and broader visual quality remain unfinished. Source checkpoint only; published 0.21 unchanged. Locks released.
