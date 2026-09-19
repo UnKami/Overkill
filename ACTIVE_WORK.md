@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
+| Yonatan / Codex | feat/yonatan-022-downloads | 0.22 distribution docs | README.md; installer/README.md; install/README.md; UPDATE_LOG.md; docs/encounter-022.md; installer/OverkillSetup-0.22.0.sha256; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
