@@ -237,7 +237,7 @@ func _begin_combat() -> void:
 	player_next_attack_multiplier = 1
 
 	var main_enemy: EnemyData = enemies_data[0] if not enemies_data.is_empty() else null
-	if main_enemy and main_enemy.id == "act1_boss" and not OS.get_cmdline_user_args().has("--illustrated"):
+	if main_enemy and (main_enemy.id == "act1_boss" or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
 		_install_directed_stage()
 	if main_enemy != null:
 		enemy_max_hp = main_enemy.max_hp
@@ -662,6 +662,7 @@ func _resolve_tick(hour: int) -> void:
 
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
+	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
 	_stage.attack(true)
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
@@ -722,6 +723,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
+	if _stage.has_method("prepare_defense"): _stage.prepare_defense(true, player_block >= amount)
 	_stage.attack(false)
 	var swing_wait: float = _stage.swing_delay(false) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
@@ -847,7 +849,7 @@ func _finish_presentation(won: bool) -> void:
 	var fade := Presentation.create_fade(self)
 	fade.color.a = 0.0
 	var fade_tween := create_tween()
-	fade_tween.tween_interval(1.15 if _stage is DirectedArena else 0.5)
+	fade_tween.tween_interval(_stage.finish_fade_delay() if _stage.has_method("finish_fade_delay") else (1.15 if _stage is DirectedArena else 0.5))
 	fade_tween.tween_property(fade, "color:a", 1.0, 0.28)
 
 

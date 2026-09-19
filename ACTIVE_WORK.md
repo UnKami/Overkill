@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | feat/yonatan-sentinel-production | Opt-in Boneghoul battle integration | scripts/combat/boneghoul_actor.gd; scripts/combat/directed_arena.gd; scripts/combat/combat_controller.gd; scripts/combat/boneghoul_encounter_test.gd; scripts/combat/boneghoul_encounter_test.gd.uid; scenes/boneghoul_encounter_test.tscn; docs/boneghoul-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 

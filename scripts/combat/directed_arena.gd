@@ -171,22 +171,29 @@ func _build_environment() -> void:
 	_mesh(backdrop, Vector3(0, 1.8, -16), background_mat)
 
 func configure_enemy(kind: String) -> void:
-	_kind = kind
+	_kind = "boneghoul" if kind == "stalker" and OS.get_cmdline_user_args().has("--boneghoul-3d") else kind
 	if is_node_ready(): _replace_enemy()
 
 func _replace_enemy() -> void:
 	if is_instance_valid(enemy):
 		_world.remove_child(enemy)
 		enemy.queue_free()
-	enemy = preload("res://scripts/combat/rigged_combatant.gd").new()
-	enemy.hostile = true
-	enemy.archetype = _kind
+	if _kind == "boneghoul":
+		enemy = BoneghoulActor.new()
+	else:
+		enemy = preload("res://scripts/combat/rigged_combatant.gd").new()
+		enemy.hostile = true
+		enemy.archetype = _kind
 	_world.add_child(enemy)
 	enemy.position = Vector3(0.9, 0, -0.1)
 	enemy.rotation.y = -1.05 if _kind == "sentinel" else -1.4
 	if _kind in ["sentinel", "bulwark", "twin", "eclipse"]: enemy.scale *= 1.14
 	player.opponent = enemy
-	enemy.opponent = player
+	if enemy is BoneghoulActor:
+		enemy.position = Vector3(0.505534, 0.0, -0.02731)
+		enemy.rotation.y = -1.064631
+	else:
+		enemy.opponent = player
 	_add_contact_shadow(enemy)
 
 func _resize_view() -> void:
@@ -313,19 +320,28 @@ func finish(won: bool) -> void:
 		_camera_motion.tween_property(_camera, "fov", 37.5, 0.75).set_trans(Tween.TRANS_SINE)
 
 func impact_delay() -> float:
-	var actor: RiggedCombatant = player if _attacking_player else enemy
+	var actor: Node3D = player if _attacking_player else enemy
 	return actor.contact_time()
 
 func swing_delay(from_player: bool) -> float:
-	var actor: RiggedCombatant = player if from_player else enemy
+	var actor: Node3D = player if from_player else enemy
 	return maxf(0.0, actor.contact_time() - 0.32)
 
 func recovery_delay() -> float:
-	var actor: RiggedCombatant = player if _attacking_player else enemy
+	var actor: Node3D = player if _attacking_player else enemy
 	return actor.recovery_time()
 
 func finish_delay() -> float:
+	if enemy is BoneghoulActor: return finish_fade_delay() + 0.3
 	return 1.45
+
+func finish_fade_delay() -> float:
+	return 1.6 / AudioManager.animation_speed_scale() + 0.1 if enemy is BoneghoulActor else 1.15
+
+func prepare_defense(on_player: bool, fully_blocked: bool) -> void:
+	var target: Node3D = player if on_player else enemy
+	if fully_blocked and target.has_method("prepare_guard"):
+		target.prepare_guard()
 
 func impact_position(on_player: bool) -> Vector2:
 	var point := _camera.unproject_position(contact_point(on_player))
@@ -347,16 +363,19 @@ func _add_contact_shadow(actor: Node3D) -> void:
 
 func guard_pulse(on_player: bool) -> void:
 	var actor: Node3D = player if on_player else enemy
+	var braced: bool = actor is BoneghoulActor and actor.is_guarding()
 	var ring: TorusMesh = TorusMesh.new()
-	ring.inner_radius = 0.40
-	ring.outer_radius = 0.42
+	ring.inner_radius = 0.15 if braced else 0.40
+	ring.outer_radius = 0.17 if braced else 0.42
 	ring.rings = 40
 	ring.ring_segments = 6
 	var material: StandardMaterial3D = _material(Color("72dce9"))
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.albedo_color.a = 0.7
-	var effect: MeshInstance3D = _mesh(ring, actor.position + Vector3(0, 1.10, 0.32), material)
+	var location: Vector3 = contact_point(on_player) if braced else actor.position + Vector3(0, 1.10, 0.32)
+	var effect: MeshInstance3D = _mesh(ring, location, material)
+	effect.name = "GuardPulse"
 	effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	effect.rotation.x = PI * 0.5
 	var pulse: Tween = create_tween().set_parallel(true)
@@ -380,11 +399,15 @@ func _batch(shape: Mesh, transforms: Array[Transform3D], material: Material) -> 
 func contact_point(on_player: bool) -> Vector3:
 	var target: Node3D = player if on_player else enemy
 	var attacker: Node3D = enemy if on_player else player
+	if target.has_method("is_guarding") and target.is_guarding():
+		return target.guard_contact_point(attacker.global_position)
+	if on_player and enemy is BoneghoulActor and enemy.state == BoneghoulActor.State.ATTACK:
+		return enemy.claw_tip()
 	var facing: Vector3 = (attacker.global_position-target.global_position).normalized()
 	return target.global_position + Vector3.UP*1.45 + facing*0.12
 
 func await_contact(from_player: bool) -> void:
-	var actor: RiggedCombatant = player if from_player else enemy
+	var actor: Node3D = player if from_player else enemy
 	while is_instance_valid(actor) and not _finished and not actor._dead and not actor.at_contact():
 		await get_tree().process_frame
 	if is_instance_valid(actor) and not _finished: actor.prepare_contact()

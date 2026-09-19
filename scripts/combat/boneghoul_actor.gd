@@ -12,6 +12,7 @@ var animation: AnimationPlayer
 var _clips: Dictionary = {}
 var _contact_sent: bool = false
 var _guard_held: bool = false
+var _dead: bool = false
 const GUARD_HOLD_TIME: float = 7.0 / 30.0
 
 func _ready() -> void:
@@ -82,6 +83,7 @@ func hit(blocked: bool) -> void:
 
 func fall() -> void:
 	if state == State.DEAD: return
+	_dead = true
 	_guard_held = false
 	state = State.DEAD
 	_play("claw_collapse", 0.08)
@@ -106,6 +108,14 @@ func contact_time() -> float:
 
 func recovery_time() -> float:
 	return ATTACK_LENGTH - CONTACT_TIME
+
+func at_contact() -> bool:
+	return state != State.ATTACK or _contact_sent
+
+func prepare_contact() -> void:
+	if state != State.ATTACK: return
+	animation.seek(CONTACT_TIME, true)
+	skeleton.force_update_all_bone_transforms()
 
 func bone_point(bone: String) -> Vector3:
 	return skeleton.to_global(skeleton.get_bone_global_pose(skeleton.find_bone(bone)).origin)

@@ -345,3 +345,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/boneghoul_actor.gd, scripts/combat/rigged_combatant.gd, scripts/combat/boneghoul_contact_test.gd, docs/boneghoul-production.md.
 - Verification: rendered `.tools/047-final-render*` guard sequence; `.tools/047-sentinel*` full Sentinel checks; `.tools/047-finish.log` eight terminal combinations. Timed guard and both Sentinel impact renders inspected. No final script/assertion/shader errors; known certificate/ObjectDB warnings remain.
 - Handoff: Boneghoul remains isolated/unreleased. Actual battle scheduling must prepare guards before contact and use the new destination for impact effects. Broader model/material/grip and full encounter quality still below target. Installer unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Opt-in Boneghoul battle integration
+- Branch: feat/yonatan-sentinel-production.
+- Completed: --boneghoul-3d opt-in routing, close staging, actor contact/recovery protocol, guard anticipation and forearm VFX, finger-position claw impacts, speed-aware collapse fade/handoff.
+- Files: scripts/combat/boneghoul_actor.gd, scripts/combat/directed_arena.gd, scripts/combat/combat_controller.gd, scripts/combat/boneghoul_encounter_test.gd (+uid), scenes/boneghoul_encounter_test.tscn, docs/boneghoul-production.md.
+- Verification: `.tools/048-verified*` eight rendered modes and 720p captures; `.tools/048-regression.log`, `.tools/048-clock.log`, `.tools/048-playthrough.log`. Final logs scanned with no script/assertion/shader errors. Known certificate/ObjectDB warnings remain. The initial rendered observer failures are rejected evidence and documented.
+- Handoff: package a labeled preview/installer and release notes next, then profile and refine art. Opt-in source behavior only; published 0.20 unchanged. No AAA acceptance. Locks released.
