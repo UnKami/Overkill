@@ -436,3 +436,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/ui/relic_pedestal_view.gd, scripts/ui/clock_socket_view.gd, assets/relics/active/*.jpg.import (12 files), assets/cards/executioner/bloodprice.jpg.import, docs/sentinel-production.md.
 - Verification: source Vulkan battle capture at 1280x720 reviewed; reduced noisy edges on starter relic thumbnails. Import and source result/retry fixture pass; `.tools/059-final*` logs clean apart from known certificate warning. Reused fixture sentinel naming does not imply a packaged test for these changes.
 - Handoff: published 0.22 remains unchanged. Include this follow-up in the next build. Broader art/animation/performance goal remains unfinished. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Stone surface response, unreleased
+- Branch: feat/yonatan-sentinel-production.
+- Completed: use existing stone roughness texture; increase restrained relief and quiet mortar contrast on floor/stairs.
+- Files: assets/shaders/arena_stone.gdshader; scripts/combat/directed_arena.gd; docs/sentinel-production.md.
+- Verification: Vulkan/GL before-after images reviewed; both material instances, no final shader/script/assertion failures. Old/new/old shader comparison measured roughly 0.17-0.19 ms extra stage GPU cost in the short idle fixture. `.tools/060-profile-final*`, `060-render*`, `060-gl*`. Earlier temporary profiler scope typo rejected; final logs clean except certificate warning.
+- Handoff: not a performance guarantee or AAA acceptance. Environment and character work remains. Published 0.22 unchanged. Locks released.

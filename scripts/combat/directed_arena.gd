@@ -116,6 +116,7 @@ func _build_environment() -> void:
 	floor_mat.shader = preload("res://assets/shaders/arena_stone.gdshader")
 	floor_mat.set_shader_parameter("stone_color",load("res://assets/environments/materials/stone_tiles_diff_2k.jpg"))
 	floor_mat.set_shader_parameter("stone_normal",load("res://assets/environments/materials/stone_tiles_nor_gl_2k.jpg"))
+	floor_mat.set_shader_parameter("stone_roughness",load("res://assets/environments/materials/stone_tiles_rough_2k.jpg"))
 	_mesh(floor_mesh, Vector3(0, -0.025, 0), floor_mat)
 	var bronze := _material(Color("655039"), 0.78, 0.36)
 	# Embedded concentric chronometer rings, physically sharing the fighter floor.
