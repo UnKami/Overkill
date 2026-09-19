@@ -90,6 +90,9 @@ func _ready() -> void:
 	var left_hand: int = defender._skeleton.find_bone("hand.L")
 	var initial_foot: Vector3 = defender._skeleton.get_bone_global_pose(left_foot).origin
 	var initial_hand: Vector3 = defender._skeleton.get_bone_global_pose(left_hand).origin
+	var head_index: int = defender._skeleton.find_bone("head")
+	var initial_head: Vector3 = defender._skeleton.get_bone_global_pose(head_index).origin
+	var brace_direction: Vector3 = Vector3.ZERO
 	for repeat: int in 2:
 		defender.hit(true)
 		await get_tree().create_timer(0.10).timeout
@@ -97,6 +100,7 @@ func _ready() -> void:
 		assert(defender._skeleton.get_bone_global_pose(left_foot).origin.distance_to(initial_foot) < 0.025, "Bracing must keep the supporting foot planted")
 		assert(defender._skeleton.get_bone_global_pose(left_hand).origin.distance_to(initial_hand) > 0.07, "Guard must visibly change the off-hand pose")
 		if repeat == 0:
+			brace_direction = defender._skeleton.get_bone_global_pose(head_index).origin-initial_head
 			defender.set_process(false)
 			defender._animation.pause()
 			await capture("sentinel-guard")
@@ -105,6 +109,28 @@ func _ready() -> void:
 	await get_tree().create_timer(0.65).timeout
 	assert(defender._animation.current_animation == defender._clip("combat_idle"), "Repeated guards must recover to idle")
 	print("SENTINEL_GUARD_OK: distinct off-hand brace, planted foot and repeated-hit recovery")
+	for fast: bool in [false,true]:
+		AudioManager.fast_mode = fast
+		# A fresh hit must interrupt an existing brace and recover cleanly.
+		defender.hit(true)
+		await get_tree().create_timer(0.06/AudioManager.animation_speed_scale()).timeout
+		defender.hit(false)
+		await get_tree().create_timer(0.10/AudioManager.animation_speed_scale()).timeout
+		defender._skeleton.force_update_all_bone_transforms()
+		var recoil_direction: Vector3 = defender._skeleton.get_bone_global_pose(head_index).origin-initial_head
+		assert(recoil_direction.length() > 0.05, "Unguarded hit needs readable upper-body recoil")
+		assert(recoil_direction.dot(brace_direction) < 0.0, "A hit must recoil away from the forward guard brace")
+		assert(defender._skeleton.get_bone_global_pose(left_foot).origin.distance_to(initial_foot) < 0.025, "Impact must not slide the supporting foot")
+		if not fast:
+			defender.set_process(false)
+			defender._animation.pause()
+			await capture("sentinel-recoil")
+			defender.set_process(true)
+			defender.hit(false)
+		await get_tree().create_timer(0.65/AudioManager.animation_speed_scale()).timeout
+		assert(defender._animation.current_animation == defender._clip("combat_idle"), "Recoil must settle after interruption and repeated impacts")
+	AudioManager.fast_mode = false
+	print("SENTINEL_RECOIL_OK: opposite guard/hit directions, planted foot, normal/fast interruption recovery")
 	AudioManager.reduced_motion = true
 	stage.attack(true)
 	await get_tree().create_timer(0.2).timeout

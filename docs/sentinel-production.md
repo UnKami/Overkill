@@ -7,7 +7,7 @@ The goal remains a cinematic, readable, polished 3D game in the approved dark fa
 | Area | Evidence required for acceptance | Current state |
 |---|---|---|
 | Character production | Distinct authored models and material response for the full enemy roster; readable silhouettes at battle size; close-up topology/normal/skin review | New Sentinel body candidate; other enemies and hero still require production work |
-| Animation | Intent, anticipation, contact, recoil, guard, recovery and death coherent through entire fights; variety appropriate to each enemy; no sliding or weapon misses | Shared five-clip rig; current contact tests; Sentinel guard-to-strike turn being validated |
+| Animation | Intent, anticipation, contact, recoil, guard, recovery and death coherent through entire fights; variety appropriate to each enemy; no sliding or weapon misses | Shared five-clip rig with Sentinel-specific guard and recoil; contact tests pass, full-fight motion variety remains unfinished |
 | Material detail | Correct scale, convincing forged edges, cavities, wear and roughness under multiple lighting conditions | Sentinel now has geometry-authored edge wear and baked local cavity visibility; unique textures and broader material polish incomplete |
 | Environment and staging | Cohesive finished arena composition, character separation, no UI obstruction at supported aspect ratios | Cathedral arena prototype with authored lighting; breadth and detail incomplete |
 | Information and control | Readable 720p/1080p UI, keyboard/mouse parity, exact placement and outcome previews, staged reveals, no obscured choices | Existing 0.17/0.18 coverage; fresh broad visual audit still required |
@@ -91,3 +91,12 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Final rendered capture confirms the hammer head and blade remain present; contact/recovery, guard, material and compact-framing tests pass. Full battle draw count falls from 371 to 351. This is a verified draw-count reduction, not proof of a stable frame-rate gain.
 
 - Corrected post-batch profile: full median 20.7-21.4 ms / p95 65-70 ms; stage-only median 18.1 ms, 125 draws. This overlaps the earlier range and does not demonstrate a speedup. Evidence `.tools/025-profile.log`, `.tools/025-fixed-profile.log`, `.tools/025-fixed-render/`. Never cite the discarded `.tools/025-batch-profile.log` as a valid comparison.
+
+## Distinct impact reaction checkpoint
+
+- Authored a Sentinel-specific unguarded hit clip: rapid backward torso recoil with off-axis chest/head turn, opened arms, a short settling hold and controlled return. Guard remains a forward protective brace, giving blocked and damaging outcomes opposite readable body responses.
+- Preserved the existing pelvis/leg stance and half-second hit duration. This adds authored reaction poses to the actual skinned 3D model; damage rules, clocks and production render defaults are unchanged.
+- Guard and hit now share one explicit reaction-authoring helper in the reproducible Blender build. The exported body retains 30,322 vertices and four surfaces.
+- Remaining motion work includes heavy attack pose variety, authored death/finish behavior, fuller weight transfer and complete-fight pacing review. One distinct reaction is not a complete animation-production pass.
+
+- Validation: rendered SENTINEL_RECOIL_OK proves opposite head-displacement directions for brace/recoil, visible recoil, supporting-foot stability and guard-to-hit interruption recovery at normal/fast speed. Guard/recoil captures inspected side by side. CINEMATIC_FINISH_OK retains damage checks through normal/fast/reduced-motion combinations. Evidence `.tools/026-render/` and `.tools/026-damage.log`; pose captures remain actor fixtures rather than a full live battle sequence.

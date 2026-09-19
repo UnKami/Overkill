@@ -279,9 +279,9 @@ for poly in mesh.data.polygons:
 print('CAVITY_BAKE_RANGE',min(visibility),max(visibility))
 mod=mesh.modifiers.new('Sentinel skin','ARMATURE');mod.object=rig;mesh.parent=rig
 rig.data.pose_position='POSE'
-# Author a Sentinel-specific braced guard while preserving the source foot placement.
-def author_guard():
-    track=next(t for t in rig.animation_data.nla_tracks if t.name=='guard')
+# Distinct planted reactions: brace toward a block, recoil away from an unguarded hit.
+def author_reaction(name):
+    track=next(t for t in rig.animation_data.nla_tracks if t.name==name)
     source=track.strips[0].action
     rig.animation_data.action=source
     bpy.context.scene.frame_set(1)
@@ -295,35 +295,50 @@ def author_guard():
         desired=(rotation.to_matrix() @ basis).to_4x4()
         desired.translation=p.parent.matrix @ (p.parent.bone.matrix_local.inverted() @ rest.head_local) if p.parent else rest.head_local
         p.matrix=desired;bpy.context.view_layer.update()
-    aim_bone('spine',(0,.12,1))
-    aim_bone('chest',(0,.14,1))
-    aim_bone('head',(0,.04,1))
-    # Broad left vambrace crosses the clock core; the weapon arm protects the outer line.
-    aim_bone('upper_arm.L',(-.35,.7,-.45))
-    aim_bone('forearm.L',(.75,.2,.65))
-    aim_bone('hand.L',(.6,.4,.3))
-    aim_bone('upper_arm.R',(.2,.55,-.6))
-    aim_bone('forearm.R',(-.2,.35,.75))
-    aim_bone('hand.R',(0,.4,.8))
+    if name=='guard':
+        aim_bone('spine',(0,.12,1))
+        aim_bone('chest',(0,.14,1))
+        aim_bone('head',(0,.04,1))
+        aim_bone('upper_arm.L',(-.35,.7,-.45))
+        aim_bone('forearm.L',(.75,.2,.65))
+        aim_bone('hand.L',(.6,.4,.3))
+        aim_bone('upper_arm.R',(.2,.55,-.6))
+        aim_bone('forearm.R',(-.2,.35,.75))
+        aim_bone('hand.R',(0,.4,.8))
+        keys=[(1,0.0),(4,1.0),(10,1.0),(18,.45),(33,0.0)]
+    else:
+        # The clock core recoils and turns off-axis; arms open instead of bracing.
+        # Pelvis/legs retain the idle base so weight remains over the planted feet.
+        aim_bone('spine',(0,-.22,1))
+        aim_bone('chest',(.14,-.28,1))
+        aim_bone('head',(-.10,-.18,1))
+        aim_bone('upper_arm.L',(-.5,-.12,-.8))
+        aim_bone('forearm.L',(.10,.3,-.6))
+        aim_bone('hand.L',(0,.25,-.7))
+        aim_bone('upper_arm.R',(.35,-.14,-1))
+        aim_bone('forearm.R',(.05,.5,-.5))
+        aim_bone('hand.R',(0,.65,-.45))
+        keys=[(1,0.0),(4,.8),(7,1.0),(11,.82),(20,.24),(31,0.0)]
     brace={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
     rig.animation_data.action=None
     rig.animation_data.nla_tracks.remove(track)
-    source.name='SourceGuardReference'
-    action=bpy.data.actions.new('guard')
+    source.name='SourceReactionReference_'+name
+    action=bpy.data.actions.new(name)
     rig.animation_data.action=action
-    for frame,weight in [(1,0.0),(4,1.0),(10,1.0),(18,.45),(33,0.0)]:
+    for frame,weight in keys:
         for p in rig.pose.bones:
             p.matrix_basis=idle[p.name].lerp(brace[p.name],weight)
             p.keyframe_insert('location',frame=frame)
             p.keyframe_insert('rotation_quaternion',frame=frame)
             p.keyframe_insert('scale',frame=frame)
-    new_track=rig.animation_data.nla_tracks.new();new_track.name='guard'
-    new_track.strips.new('guard',1,action);new_track.mute=True
+    new_track=rig.animation_data.nla_tracks.new();new_track.name=name
+    new_track.strips.new(name,1,action);new_track.mute=True
     rig.animation_data.action=None
     for p in rig.pose.bones:p.matrix_basis=idle[p.name]
     bpy.context.scene.frame_set(1)
-    print('SENTINEL_GUARD_AUTHORED',action.name)
-author_guard()
+    print('SENTINEL_REACTION_AUTHORED',action.name)
+author_reaction('guard')
+author_reaction('hit')
 rig.select_set(True)
 bpy.context.view_layer.objects.active=rig
 out=Path('assets/characters/rigged/sentinel.glb')
