@@ -106,7 +106,10 @@ for side in [-1,1]:
 tube('Lower spinal cord',[(0,-.035,1.025),(0,-.035,1.36)],[.025,.027],'spine','Iron')
 tube('Upper spinal cord',[(0,-.035,1.33),(0,-.035,1.73)],[.027,.025],'chest','Iron')
 neck=rig.data.bones['neck']
-tube('Cervical column',[neck.head_local,neck.tail_local],[.035,.032],'neck')
+tube('Cervical core',[neck.head_local,neck.tail_local],[.014,.012],'neck','Iron')
+for index in range(7):
+    at=neck.head_local.lerp(neck.tail_local,index/6)
+    sphere('Cervical vertebra',at,(.034,.030,.012),'neck',segments=16)
 for index in range(3):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1,radius=1,location=((index-1)*.032,.005,1.45+index*.043))
     shard=bpy.context.object;shard.name='Fractured soul';shard.scale=(.036,.035,.085)
@@ -165,6 +168,24 @@ for side in [-1,1]:
     bpy.context.view_layer.objects.active=skull
     boolean=skull.modifiers.new('Carved eye socket','BOOLEAN');boolean.operation='DIFFERENCE';boolean.object=cutter
     bpy.ops.object.modifier_apply(modifier=boolean.name);bpy.data.objects.remove(cutter,do_unlink=True)
+# Remove the solid lower mask below the upper dental arch. Keep the mouth as
+# actual negative space between maxilla and mandible.
+bpy.ops.mesh.primitive_cube_add(size=1,location=(0,.235,1.635))
+cutter=bpy.context.object;cutter.scale=(.4,.4,.5)
+bpy.context.view_layer.objects.active=skull
+boolean=skull.modifiers.new('Open oral cavity','BOOLEAN');boolean.operation='DIFFERENCE';boolean.object=cutter
+bpy.ops.object.modifier_apply(modifier=boolean.name);bpy.data.objects.remove(cutter,do_unlink=True)
+# A recessed pear-shaped nasal aperture replaces the flat triangular insert.
+nasal_profile=[(-.004,1.972),(-.012,1.956),(-.022,1.931),(-.016,1.915),(0,1.91),(.016,1.915),(.022,1.931),(.012,1.956),(.004,1.972)]
+nasal_vertices=[(x,y,z) for y in [.015,.16] for x,z in nasal_profile]
+n=len(nasal_profile)
+nasal_faces=[tuple(reversed(range(n))),tuple(range(n,n*2))]+[(i,(i+1)%n,(i+1)%n+n,i+n) for i in range(n)]
+mesh=bpy.data.meshes.new('Nasal cutter');mesh.from_pydata(nasal_vertices,[],nasal_faces);mesh.update()
+bm=bmesh.new();bm.from_mesh(mesh);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(mesh);bm.free()
+cutter=bpy.data.objects.new('Nasal cutter',mesh);bpy.context.collection.objects.link(cutter)
+bpy.context.view_layer.objects.active=skull
+boolean=skull.modifiers.new('Nasal aperture','BOOLEAN');boolean.operation='DIFFERENCE';boolean.object=cutter
+bpy.ops.object.modifier_apply(modifier=boolean.name);bpy.data.objects.remove(cutter,do_unlink=True)
 bind(skull,'head','Bone')
 facial_bones=[skull]
 for side in [-1,1]:
@@ -173,15 +194,40 @@ for side in [-1,1]:
     sphere('Soul eye',(side*.051,.047,1.986),(.005,.004,.006),'head','Core')
     facial_bones.append(tube('Supraorbital ridge',[(side*.010,.092,2.014),(side*.045,.099,2.017),(side*.084,.062,2.016)],[.009,.013,.007],'head'))
     facial_bones.append(tube('Zygomatic arch',[(side*.091,.031,1.98),(side*.085,.064,1.954),(side*.052,.080,1.932)],[.011,.014,.009],'head'))
-    tube('Jawbone',[(side*.095,.025,1.93),(side*.082,.077,1.83),(side*.035,.108,1.815),(0,.111,1.815)],[.018,.019,.017,.016],'head')
+    facial_bones.append(tube('Upper dental arch',[(side*.065,.054,1.903),(side*.047,.080,1.897),(side*.021,.096,1.895),(0,.099,1.895)],[.011,.011,.009,.009],'head'))
+# One continuous curved mandible: narrower ascending rami, curved angles and a
+# shallow rounded chin. Avoid the former two thick bars meeting at a hard seam.
+jaw_control=[(-.080,.018,1.937),(-.084,.013,1.883),(-.067,.059,1.845),(-.033,.096,1.842),(0,.105,1.839),(.033,.096,1.842),(.067,.059,1.845),(.084,.013,1.883),(.080,.018,1.937)]
+jaw_points=[]
+for segment in range(len(jaw_control)-1):
+    p0=Vector(jaw_control[max(0,segment-1)]);p1=Vector(jaw_control[segment])
+    p2=Vector(jaw_control[segment+1]);p3=Vector(jaw_control[min(len(jaw_control)-1,segment+2)])
+    for step in range(5):
+        t=step/5
+        jaw_points.append(.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t*t*t))
+jaw_points.append(Vector(jaw_control[-1]))
+tube('Curved mandible',jaw_points,[.010+.003*math.sin(i/(len(jaw_points)-1)*math.pi) for i in range(len(jaw_points))],'head',sides=12)
 for row in [0,1]:
     for index in range(9):
         if (row==0 and index==1) or (row==1 and index==7):continue
-        x=(index-4)*.013
-        h=1.886 if row==0 else 1.829
-        end=h-.014-(index%3)*.003 if row==0 else h+.013
-        tube('Tooth',[(x,.103-abs(x)*.15,h),(x,.112-abs(x)*.15,end)],[.006,.0045],'head',sides=6)
-sheet('Nasal recess',[(-.018,.113,1.943),(.018,.113,1.943),(0,.12,1.916)],[(0,1,2)],'head','Cloth')
+        x=(index-4)*.012
+        y=.102-.034*(abs(x)/.052)**2
+        h=1.895 if row==0 else 1.854
+        direction=-1 if row==0 else 1
+        canine=index in [1,7]
+        length=.019 if canine else .014+(index%3)*.0015
+        verts=[]
+        for layer,factor in enumerate([.70,1.0,.90,.28 if canine else .68]):
+            for edge in range(8):
+                angle=math.tau*edge/8
+                verts.append((x+math.cos(angle)*.0055*factor,y+math.sin(angle)*.004*factor,h+direction*length*layer/3))
+        faces=[tuple(reversed(range(8))),tuple(range(24,32))]
+        for layer in range(3):
+            for edge in range(8):
+                a=layer*8+edge;b=layer*8+(edge+1)%8;faces.append((a,b,b+8,a+8))
+        mesh=bpy.data.meshes.new('Worn tooth');mesh.from_pydata(verts,[],faces);mesh.update()
+        tooth=bpy.data.objects.new('Worn tooth',mesh);bpy.context.collection.objects.link(tooth);bind(tooth,'head','Bone')
+sheet('Nasal cavity shadow',[(x,.018,z) for x,z in nasal_profile],[tuple(range(n))],'head','Cloth',.001)
 # Fuse cheek/brow additions into the cranium so they read as bone, not glued rods.
 bpy.ops.object.select_all(action='DESELECT')
 for piece in facial_bones:
@@ -197,6 +243,13 @@ bpy.ops.object.modifier_apply(modifier=decimate.name)
 skull.vertex_groups.clear()
 for attribute in list(skull.data.color_attributes):skull.data.color_attributes.remove(attribute)
 bind(skull,'head','Bone')
+bpy.context.view_layer.update()
+inverse=skull.matrix_world.inverted()
+hit,location,normal,index=skull.ray_cast(inverse @ Vector((0,.2,1.94)),inverse.to_3x3() @ Vector((0,-1,0)))
+assert hit and (skull.matrix_world @ location).y<.04, 'Nasal opening was sealed during remesh'
+mouth_hit,mouth_location,_,_=skull.ray_cast(inverse @ Vector((0,.2,1.868)),inverse.to_3x3() @ Vector((0,-1,0)))
+assert not mouth_hit or (skull.matrix_world @ mouth_location).y<.04, 'Solid skull masks the oral cavity'
+print('BONEGHOUL_FACE_CAVITIES_OK nasal depth and open mouth after final remesh')
 
 # Folded hood: open around the face, tapering into a sewn closed crown.
 levels=[(1.72,.21,.16,.28),(1.82,.18,.16,.85),(1.99,.175,.17,.78),(2.10,.155,.15,.52),(2.17,.08,.085,.12)]

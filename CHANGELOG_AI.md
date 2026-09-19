@@ -373,3 +373,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: assets/shaders/aged_bone.gdshader (+uid), scripts/combat/boneghoul_actor.gd, scripts/combat/boneghoul_material_test.gd (+uid), scenes/boneghoul_material_test.tscn, scripts/combat/arena_profile.gd, docs/boneghoul-production.md.
 - Verification: Vulkan/GL close and wide renders; override/restoration structure; contact/interruption regression; sequential integrated idle comparison. Final `.tools/050-final*`, `050-gl*`, `050-structural.log`, `050-contact.log`, `050-arena*`. No final script/assertion/shader errors; known warnings remain. Draws unchanged at 308; approximately 14-15 ms medians / 20 ms p95, variable and not performance acceptance.
 - Handoff: anatomy remains simplified; shader is an incremental surface treatment, not AAA finish. GL isolated lighting is darker even at baseline. Published 0.21 unchanged. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Boneghoul facial structure refinement
+- Branch: feat/yonatan-sentinel-production.
+- Completed: recessed nasal opening with post-remesh depth checks; open front mouth and dental arch; curved thinner mandible, varied teeth and less exaggerated gape; segmented cervical forms. 39,232 vertices, four surfaces.
+- Files: scripts/art/build_boneghoul.py, art_source/characters/boneghoul-production.blend, assets/characters/rigged/boneghoul.glb, docs/boneghoul-production.md.
+- Verification: final `.tools/051-build-complete.log`, `051-import-complete.log`, `051-complete*`, `051-contact-complete.log`; rendered skull and animation review, planted collapse, contact/guard/interruption checks. No final Python/script/assertion/shader errors; known warnings remain. Rejected intermediate cutter-normal and wide-gape candidates documented.
+- Handoff: stylized anatomy remains below target. Published installer stays 0.21. No AAA or performance acceptance. Locks released.
