@@ -145,6 +145,45 @@ wheel('Upper escapement',0,1.465,-.096,.075,'chest',24)
 wheel('Offset drive',.063,1.305,-.086,.054,'spine',18)
 wheel('Lower balance',-.025,1.184,-.097,.077,'hips',24)
 rod('Central bearing support',xyz(0,1.15,-.075),xyz(0,1.55,-.075),.015,.015,'spine','Recess')
+# Slender articulated armature. Rest-space anchors come from the actual bones,
+# so elbow pivots coincide under animation rather than merely looking aligned.
+for side in ['L','R']:
+ upper=rig.data.bones['upper_arm.'+side];lower=rig.data.bones['forearm.'+side]
+ shoulder=upper.head_local.copy();elbow=lower.head_local.copy();wrist=lower.tail_local.copy()
+ front=Vector((0,1,0))
+ rod('Shoulder axle',shoulder-front*.050,shoulder+front*.050,.046,.046,upper.name,'Recess')
+ rod('Shoulder bearing cap',shoulder+front*.040,shoulder+front*.055,.039,.039,upper.name,'Bronze')
+ # Rear bracket carries the previously unsupported outer shoulder armor.
+ sign=-1 if side=='L' else 1
+ rod('Shoulder armor bracket',shoulder,xyz(sign*.35,1.66,-.057),.014,.014,'shoulder.'+side,'Iron')
+ for bone,a,b in [(upper,shoulder,elbow),(lower,elbow,wrist)]:
+  axis=(b-a).normalized();across=axis.cross(front).normalized()
+  rod('Arm dark spindle',a.lerp(b,.08),a.lerp(b,.93),.021,.017,bone.name,'Recess')
+  for offset in [-1,1]:
+   shift=across*(offset*.027)
+   rod('Arm piston housing',a.lerp(b,.16)+shift,a.lerp(b,.60)+shift,.013,.012,bone.name,'Iron')
+   rod('Arm piston extension',a.lerp(b,.57)+shift,a.lerp(b,.88)+shift,.007,.007,bone.name,'Bronze')
+  # A faceted, tapered half-shell leaves the rear linkage visible.
+  verts=[];rings=[(.12,.039),(.27,.052),(.64,.043),(.86,.025)]
+  for t,width in rings:
+   center=a.lerp(b,t)
+   for i in range(9):
+    angle=-math.pi*.58+i*math.pi*1.16/8
+    verts.append(center+across*(math.sin(angle)*width)+front*(math.cos(angle)*width))
+  faces=[]
+  for ring in range(3):
+   for i in range(8):
+    k=ring*9+i;faces.append((k,k+1,k+10,k+9))
+  mesh=bpy.data.meshes.new('Arm shell');mesh.from_pydata(verts,[],faces);mesh.update()
+  shell=bpy.data.objects.new('Tapered '+bone.name+' armor',mesh);bpy.context.collection.objects.link(shell)
+  bpy.context.view_layer.objects.active=shell;shell.select_set(True)
+  solid=shell.modifiers.new('Forged wall','SOLIDIFY');solid.thickness=.004;bpy.ops.object.modifier_apply(modifier=solid.name)
+  bind(shell,bone.name,'Iron',.0015)
+ rod('Elbow axle',elbow-front*.045,elbow+front*.045,.035,.035,lower.name,'Recess')
+ rod('Elbow bronze bearing',elbow+front*.034,elbow+front*.046,.028,.028,lower.name,'Bronze')
+ rod('Elbow center pin',elbow+front*.044,elbow+front*.051,.011,.011,lower.name,'Iron')
+ axis=(wrist-elbow).normalized()
+ rod('Wrist coupling',wrist-axis*.025,wrist+axis*.010,.027,.025,lower.name,'Bronze')
 # Join the staged bust into one skinned mesh; limbs and combat remain unfinished.
 bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)

@@ -535,3 +535,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
 - Verification: Blender build 24,834 vertices/four surfaces; Godot import and rendered isolated study passed skin/material/idle checks. Front/quarter/rear visual review; final front review after pin correction. 072 final logs clean except known certificate warning.
 - Handoff: unfinished bust only, no gameplay integration or new installer. Limbs, attachments, wear and motion still needed. Performance measurements deferred while user plays Slay the Spire 2. Published 0.23 unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian arm study
+- Branch: feat/yonatan-sentinel-production.
+- Completed: bone-aligned upper arms/forearms, piston rods, open-backed tapered shells, shoulder support brackets, elbow bearings and wrist couplings.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: 073 Blender/import/render logs passed; 30,258 vertices, four surfaces, one skin, idle-only clips. Quarter/rear rest and sampled 0.6-second idle image reviewed; no new runtime/script errors.
+- Handoff: study remains incomplete and disconnected from gameplay. Hands/lower body/material wear/authored animation and combat pose clearances remain. No performance or AAA acceptance. Published 0.23 unchanged. Locks released.
