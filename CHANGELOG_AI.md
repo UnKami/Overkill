@@ -74,3 +74,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `README.md`, `install/README.md`, `installer/README.md`, `installer/OverkillSetup-0.19.0.sha256`, `docs/encounter-019.md`, `UPDATE_LOG.md`.
 - **Verification:** All three published assets returned HTTP 200 and GitHub SHA-256 digests matched local files. Installer is 232253209 bytes; portable ZIP is 260925693 bytes. All five ZIP entries hash-match the tested payload. Exported mechanics, preview, contact, graphics-settings and terminal-finish tests pass; Vulkan rendered Sentinel/large-text/inspection checks pass. Installer wizard remains untested.
 - **Handoff:** Tell partner: repository → Releases → 0.19.0 → Assets → OverkillSetup-0.19.0.exe, then Play Sentinel encounter. The installer folder also provides access. This remains a development playtest: broader character/animation production and frame pacing are unfinished. No experimental gameplay files are included in this documentation change.
+
+## 2026-09-19 | Yonatan's AI — 0.20 partner download navigation
+- **Branch:** `feat/yonatan-020-downloads`; documentation-only release update.
+- **Completed:** Homepage, installer/install folders, update log, delivery notes and checksum file point to published `v0.20.0-test`.
+- **Verified:** Installer 233448556 bytes, portable ZIP 262141678 bytes and checksum asset return HTTP 200; GitHub SHA-256 digests match local tested files. Release source is `c5650f121a5180b928432dfab3901bc49803dc56` on `feat/yonatan-sentinel-production`.
+- **Handoff:** Repository → Releases → 0.20.0 → Assets → OverkillSetup-0.20.0.exe, then Play Sentinel encounter. Gameplay is not merged by this documentation PR. Not AAA completion; limits are in release notes. Locks released.
