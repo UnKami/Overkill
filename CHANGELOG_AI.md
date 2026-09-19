@@ -514,3 +514,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Distribution PR https://github.com/UnKami/Overkill/pull/12 merged as b2549ad560b3df54c96a9aedeca51df3941af945. Homepage, installer README and update log read back from main with 0.23.0.
 - Partner navigation: Overkill -> Releases -> 0.23.0 -> Assets -> OverkillSetup-0.23.0.exe. After installing: Play Sentinel encounter; Boneghoul preview also available.
 - Source branch documentation synchronized. Publication locks released. Interactive installer wizard and controlled performance remain unverified; overall AAA objective remains active.
+
+## 2026-09-19 | Yonatan / Codex — Content-sized relic choices
+- Branch: feat/yonatan-sentinel-production.
+- Completed: battle description height follows content; starter cards 42 design pixels shorter; bottom-aligned action buttons and live text-size refit. Font sizes and destination labels retained.
+- Files: scripts/ui/relic_pedestal_view.gd; docs/sentinel-production.md.
+- Verification: 1080p and 720p large-text captures inspected; all-live-relic text fit, replacement/empty/locked states, safe inspection, bounds and ultrawide regression pass. 070 logs clean except known certificate warning.
+- Handoff: source-only UI checkpoint, published 0.23 unchanged. Broader UX/art/animation goal remains active. Locks released.

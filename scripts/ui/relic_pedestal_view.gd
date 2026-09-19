@@ -59,11 +59,15 @@ func _ready() -> void:
 	_slot_button.mouse_exited.connect(func() -> void: preview_ended.emit())
 	_slot_button.focus_entered.connect(_on_mouse_entered)
 	_slot_button.focus_exited.connect(_on_mouse_exited)
+	_desc_label.theme_changed.connect(func() -> void: call_deferred("_fit_content"))
 
 func _fit_content() -> void:
 	if _battle_layout:
-		_desc_label.size = Vector2(280,120)
-		_slot_button.size = Vector2(364, 48)
+		var description_top: float = maxf(48.0, _name_label.position.y + _name_label.get_minimum_size().y + 4.0)
+		var description_height: float = maxf(78.0, float(_desc_label.get_content_height()))
+		_desc_label.position.y = description_top
+		_desc_label.size = Vector2(280, description_height)
+		custom_minimum_size.y = description_top + description_height + 64.0
 	else:
 		custom_minimum_size.y = maxf(370, _card_panel.get_node("Margin").get_combined_minimum_size().y)
 
@@ -75,7 +79,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func use_battle_layout() -> void:
 	_battle_layout = true
-	custom_minimum_size = Vector2(380,232)
+	custom_minimum_size = Vector2(380,190)
 	pivot_offset = Vector2(190,97)
 	_card_panel.pivot_offset = pivot_offset
 	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
@@ -95,8 +99,11 @@ func use_battle_layout() -> void:
 	_desc_label.position = Vector2(86,48)
 	_desc_label.fit_content = false
 	_desc_label.size = Vector2(280,120)
-	_slot_button.position = Vector2(8,176)
-	_slot_button.size = Vector2(364,48)
+	_slot_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	_slot_button.offset_left = 8
+	_slot_button.offset_right = -8
+	_slot_button.offset_top = -56
+	_slot_button.offset_bottom = -8
 	_slot_button.custom_minimum_size.y = 48
 	_name_label.add_theme_font_size_override("font_size",25)
 	_desc_label.add_theme_font_size_override("normal_font_size",24)
