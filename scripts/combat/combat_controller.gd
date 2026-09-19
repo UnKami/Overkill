@@ -632,10 +632,11 @@ func _resolve_tick(hour: int) -> void:
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	_stage.attack(true)
+	AudioManager.play_combat_sound("swing")
 	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, Color("7bd6de"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
-	AudioManager.play_clock_sound("impact")
+	AudioManager.play_combat_sound("guard" if enemy_block >= amount else ("shatter" if enemy_block > 0 else "strike"))
 	_stage.impact(false, enemy_block >= amount)
 	var nexus_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
 	if not _stage is DirectedArena:
@@ -675,7 +676,9 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.lifesteal and player_hp > 0:
 		var healed: int = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
 		player_hp += healed
-		if healed > 0: _spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
+		if healed > 0:
+			AudioManager.play_combat_sound("heal")
+			_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
 	# Thorns check
 	if enemy_thorns > 0:
 		player_hp -= enemy_thorns
@@ -687,10 +690,11 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	_stage.attack(false)
+	AudioManager.play_combat_sound("swing")
 	if not _stage is DirectedArena: Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(false)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
-	AudioManager.play_clock_sound("impact")
+	AudioManager.play_combat_sound("guard" if player_block >= amount else ("shatter" if player_block > 0 else "strike"))
 	_stage.impact(true, player_block >= amount)
 	var p_pos: Vector2 = _stage.impact_position(true) if _stage is DirectedArena else _player_portrait.global_position + _player_portrait.size * 0.5
 	if not _stage is DirectedArena:
@@ -790,6 +794,7 @@ func _check_combat_end() -> bool:
 
 
 func _finish_presentation(won: bool) -> void:
+	AudioManager.play_combat_sound("victory" if won else "defeat")
 	_stage.finish(won)
 	_clear_pedestals()
 	_skip_button.hide()

@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-cinematic-encounter` | Complete encounter motion, sound, clarity and performance | `scripts/autoload/audio_manager.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/illustrated_actor.gd`, `scripts/combat/illustrated_stage.gd`, `scripts/combat/directed_arena.gd`, `scripts/combat/rigged_combatant.gd`, `scripts/combat/encounter_director.gd`, `scripts/combat/encounter_quality_test.gd`, `scenes/encounter_quality_test.tscn`, `scripts/audio/build_combat_audio.py`, `assets/audio/combat/`, `docs/encounter-018.md`, `VERSION`, `CHANGELOG_AI.md`, `UPDATE_LOG.md`, `README.md`, `installer/README.md`, `install/README.md`, `scripts/release/build_installer.ps1` | 2026-09-19 |
 
 ---
 
@@ -38,5 +37,5 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Map & Events** | `scenes/map_screen.tscn`, `scripts/map/`, `data/events/` | Procedural map nodes, random events, rest sites |
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
-| **Audio & SFX** | `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+| **Audio & SFX** | `scripts/art/build_executioner.py`, `assets/characters/rigged/executioner.glb`, `art_source/characters/executioner-production.blend`, `scripts/combat/forged_armor.gd`, `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
 

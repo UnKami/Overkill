@@ -170,7 +170,9 @@ def pose(kind,amount=1.0,breath=0.0):
     rig.pose.bones['hips'].matrix=hip_matrix
     bpy.context.view_layer.update()
     aim('spine',(0,lean,1))
-    aim('chest',(0,lean+breath*0.012,1))
+    # Shoulder counter-rotation gives the cut a torso-led arc while IK holds the feet.
+    twist = -0.15 if kind=='windup' else (0.13 if kind=='strike' else 0.0)
+    aim('chest',(twist,lean+breath*0.012,1))
     aim('neck',(0,0.04,1))
     aim('head',(0,0.1 if kind!='death' else 0.7,1))
     for side,sign in [('L',-1),('R',1)]:
@@ -204,8 +206,14 @@ def pose(kind,amount=1.0,breath=0.0):
     if kind in ['strike','recovery','death']:
         wrist=rig.pose.bones['hand.R']
         wrist.rotation_quaternion=wrist.rotation_quaternion @ Quaternion((1,0,0),math.radians(-75 if kind=='strike' else -45))
-    aim('upper_arm.L',(-0.25,0.25,-1))
-    aim('forearm.L',(0.15,0.9,0.25 if kind=='guard' else -0.2))
+    # Off-hand protects the face on a block and counterbalances the sword arc.
+    left_upper=(-0.25,0.25,-1); left_lower=(0.15,0.9,-0.2)
+    if kind=='guard': left_upper=(-0.22,0.65,-0.25); left_lower=(0.30,0.22,0.95)
+    elif kind=='windup': left_upper=(-0.30,0.45,-0.75); left_lower=(0.2,0.85,0.25)
+    elif kind=='strike': left_upper=(-0.4,-0.15,-0.8); left_lower=(0.1,0.65,-0.4)
+    elif kind=='hit': left_upper=(-0.4,-0.15,-0.8); left_lower=(0.1,0.35,-0.5)
+    aim('upper_arm.L',left_upper)
+    aim('forearm.L',left_lower)
     aim('hand.L',(0.05,1,0.1))
     for side in ['L','R']:
         for finger in ['f_index','f_middle','f_ring','f_pinky','thumb']:

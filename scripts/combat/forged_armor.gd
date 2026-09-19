@@ -80,6 +80,40 @@ static func sentinel(skeleton: Skeleton3D, steel: Material, trim: Material) -> v
 	inlay.material_override = trim
 	torso.add_child(inlay)
 
+static func combine_finish(parent: Node3D) -> void:
+	# Merge rigid lames sharing a bone and finish to avoid a draw call per plate.
+	var groups: Dictionary = {}
+	for child: Node in parent.get_children():
+		if not child is MeshInstance3D: continue
+		var material: Material = child.material_override
+		if not groups.has(material):
+			var surface: SurfaceTool = SurfaceTool.new()
+			surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+			groups[material] = surface
+		var target: SurfaceTool = groups[material]
+		target.append_from(child.mesh, 0, child.transform)
+		parent.remove_child(child)
+		child.free()
+	for material: Material in groups:
+		var surface: SurfaceTool = groups[material]
+		add_mesh(parent, surface.commit(), material)
+
+static func executioner(skeleton: Skeleton3D, steel: Material, trim: Material) -> void:
+	# A high sword-side pauldron and overlapping lames distinguish the lighter hero.
+	for side: float in [-1.0, 1.0]:
+		var shoulder: Node3D = mount(skeleton, "shoulder.L" if side < 0 else "shoulder.R")
+		var width: float = 0.18 if side < 0 else 0.22
+		for layer: int in 3:
+			plate(shoulder, Vector3(side * (0.29 + layer * 0.018), 1.65 - layer * 0.065, 0.01), Vector3(width - layer * 0.018, 0.07, 0.17 - layer * 0.012), steel, trim)
+		combine_finish(shoulder)
+	var waist: Node3D = mount(skeleton, "hips")
+	for side: float in [-1.0, 1.0]:
+		for layer: int in 3:
+			plate(waist, Vector3(side * 0.15, 1.01 - layer * 0.075, -0.09), Vector3(0.13, 0.038, 0.11), steel, trim, Basis(Vector3.RIGHT, -PI * 0.35))
+	combine_finish(waist)
+	var chest: Node3D = mount(skeleton, "chest")
+	plate(chest, Vector3(0, 1.43, -0.12), Vector3(0.20, 0.12, 0.26), steel, trim, Basis(Vector3.RIGHT, -PI * 0.5))
+
 static func executioner_blade(parent: Node3D, steel: Material, edge_material: Material) -> void:
 	# A broad execution blade with bevels catches a thin highlight along its edge.
 	var outline: PackedVector2Array = PackedVector2Array([

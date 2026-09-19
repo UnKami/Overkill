@@ -1,0 +1,1 @@
+Original Overkill procedural sound design. Generated from mathematical oscillators and deterministic noise by scripts/audio/build_combat_audio.py. No third-party recordings. Licensed under the same terms as the game source.

@@ -60,7 +60,7 @@ func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
 
 func _style(node: Node) -> void:
 	if node is MeshInstance3D:
-		if hostile and node.name in ["Knight_Shoulder-Plate", "Knight_BreastPlate"]:
+		if node.name in ["Knight_Shoulder-Plate", "Knight_BreastPlate"]:
 			node.hide()
 		for i in range(node.mesh.get_surface_count()):
 			var source: Material = node.mesh.surface_get_material(i)
@@ -131,6 +131,8 @@ func _build_equipment() -> void:
 			_box(_weapon, Vector3(0,0.071,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
 	if hostile:
 		ForgedArmor.sentinel(_skeleton,_metal(Color("272c30"),0.74),_gold)
+	else:
+		ForgedArmor.executioner(_skeleton,_metal(Color("344650"),0.80),_gold)
 
 	# Helm ornament and clock aureole are authored in rest-space then bone-attached.
 	var head := _attach("head")
@@ -201,7 +203,11 @@ func _process(delta: float) -> void:
 func _align_weapon() -> void:
 	if not is_instance_valid(opponent) or not _weapon: return
 	var surface: Vector3 = opponent.global_position + Vector3(0,1.45,0) + (global_position-opponent.global_position).normalized()*0.12
-	var toward: Vector3 = (surface - _weapon.global_position).normalized()
+	# Aim from the current palm, not the previous frame weapon transform.
+	var wrist: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("hand.R")).origin
+	var knuckle: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("f_middle.01.R")).origin
+	var palm: Vector3 = _skeleton.to_global(wrist.lerp(knuckle, 0.7))
+	var toward: Vector3 = (surface - palm).normalized()
 	var idle := (Vector3.UP + toward*0.15).normalized()
 	var direction := idle
 	if _dead:
@@ -218,9 +224,6 @@ func _align_weapon() -> void:
 	var up := Vector3.FORWARD if absf(direction.dot(Vector3.UP)) > 0.98 else Vector3.UP
 	_weapon.global_basis = Basis.looking_at(-direction,up).scaled(Vector3.ONE*global_basis.get_scale().x)
 	# Center the handle inside the palm rather than at the wrist joint.
-	var wrist := _skeleton.get_bone_global_pose(_skeleton.find_bone("hand.R")).origin
-	var knuckle := _skeleton.get_bone_global_pose(_skeleton.find_bone("f_middle.01.R")).origin
-	var palm := _skeleton.to_global(wrist.lerp(knuckle,0.7))
 	_weapon.global_position = palm - _weapon.global_basis * Vector3(0,0.05,0)
 
 func _update_trail(delta: float) -> void:
