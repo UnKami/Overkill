@@ -188,6 +188,10 @@ func _install_directed_stage() -> void:
 	_stage.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_stage.offset_top = 64
 	_stage.offset_bottom = 1040
+	_choice_overlay.visibility_changed.connect(func() -> void:
+		if is_instance_valid(_stage) and _stage is DirectedArena:
+			_stage.set_decision_view(_choice_overlay.visible))
+	_stage.set_decision_view(_choice_overlay.visible)
 
 
 func _begin_combat() -> void:

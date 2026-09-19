@@ -9,6 +9,8 @@ var _camera: Camera3D
 var _camera_motion: Tween
 var _impact_light: OmniLight3D
 var _home := Vector3(0, 2.45, 6.45)
+var _composition_motion: Tween
+var _decision_visible: bool = true
 var _look := Vector3(0, 1.1, 0)
 var _elapsed := 0.0
 var _finished := false
@@ -60,7 +62,7 @@ func _ready() -> void:
 	_world.add_child(_camera)
 	_camera.position = _home
 	_camera.fov = 39
-	_camera.v_offset = 0.65
+	_camera.v_offset = 0.78
 	_camera.look_at(_look)
 	var key := DirectionalLight3D.new()
 	key.rotation_degrees = Vector3(-48, -30, 0)
@@ -214,6 +216,27 @@ func _resize_view() -> void:
 
 func _on_settings_changed(_settings: Dictionary) -> void:
 	_resize_view()
+	_update_composition(false)
+
+func set_decision_view(visible_choices: bool) -> void:
+	if _decision_visible == visible_choices: return
+	_decision_visible = visible_choices
+	_update_composition(true)
+
+func _update_composition(animate: bool) -> void:
+	if not is_instance_valid(_camera): return
+	if _composition_motion and _composition_motion.is_valid(): _composition_motion.kill()
+	var wide: bool = _decision_visible or AudioManager.reduced_motion
+	var target_position: Vector3 = _home if wide else Vector3(0,2.45,5.8)
+	var target_offset: float = (0.86 if AudioManager.text_size == "large" else 0.78) if wide else 0.35
+	if not animate or AudioManager.reduced_motion:
+		_camera.position = target_position
+		_camera.v_offset = target_offset
+		return
+	_composition_motion = create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	_composition_motion.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_composition_motion.tween_property(_camera,"position",target_position,0.32)
+	_composition_motion.tween_property(_camera,"v_offset",target_offset,0.32)
 
 func attack(from_player: bool) -> void:
 	if _finished: return

@@ -33,6 +33,7 @@ func _ready() -> void:
 	assert(normals[side_vertex].dot(Vector3(positions[side_vertex].x,0,positions[side_vertex].z)) > 0)
 	print("CATHEDRAL_STAGE_OK: nine floor hours, two architectural batches, outward pier normals")
 	await capture("idle")
+	check_choice_clearance(stage)
 	if DisplayServer.get_name() != "headless":
 		var engraving: Control = battle._player_chrono._engraving
 		var cache: SubViewport = engraving._engraving_cache
@@ -64,6 +65,10 @@ func _ready() -> void:
 	measuring = false
 	frames.sort()
 	print("SENTINEL_PRODUCTION_PERF median_ms=",frames[frames.size()/2]," p95_ms=",frames[int(frames.size()*0.95)]," draws=",Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME))
+	# Actor fixtures must not show selectable cards over action poses.
+	battle._choice_overlay.hide()
+	await get_tree().create_timer(0.4).timeout
+	assert(stage._camera.position.z < 6.0, "Actions should use the closer battlefield framing")
 	for from_player: bool in [true,false]:
 		var actor: RiggedCombatant = stage.player if from_player else stage.enemy
 		stage.attack(from_player)
@@ -136,16 +141,32 @@ func _ready() -> void:
 	AudioManager.fast_mode = false
 	print("SENTINEL_RECOIL_OK: opposite guard/hit directions, planted foot, normal/fast interruption recovery")
 	AudioManager.reduced_motion = true
+	stage._on_settings_changed({})
+	var reduced_camera: Vector3 = stage._camera.position
 	stage.attack(true)
 	await get_tree().create_timer(0.2).timeout
 	assert(is_zero_approx(stage.player._model.position.z))
 	stage.impact(false,true)
 	await get_tree().create_timer(0.6).timeout
 	assert(stage._sparks.is_empty())
+	assert(stage._camera.position == reduced_camera, "Reduced motion must suppress composition travel")
 	AudioManager.reduced_motion = false
 	get_window().size = Vector2i(1280,720)
-	await get_tree().create_timer(0.3).timeout
+	battle._choice_overlay.present(battle)
+	await get_tree().create_timer(0.5).timeout
+	check_choice_clearance(stage)
 	await capture("compact")
+	AudioManager.set_text_size("large")
+	await get_tree().create_timer(0.3).timeout
+	check_choice_clearance(stage)
+	await capture("compact-large")
+	battle._choice_overlay.toggle_inspection()
+	await get_tree().create_timer(0.4).timeout
+	assert(not battle._choice_overlay.visible and stage._camera.position.z < 6.0)
+	battle._choice_overlay.toggle_inspection()
+	await get_tree().create_timer(0.4).timeout
+	check_choice_clearance(stage)
+	AudioManager.set_text_size("normal")
 	if DisplayServer.get_name() != "headless":
 		get_window().size = Vector2i(1920,1080)
 		for child: Node in battle.get_children():
@@ -163,6 +184,20 @@ func _ready() -> void:
 		await capture("material-warm")
 	print("SENTINEL_PRODUCTION_OK: original mesh, four surfaces, skinning, repeated strikes, contact, reduced motion, cleanup and framing")
 	get_tree().quit()
+
+func check_choice_clearance(stage: DirectedArena) -> void:
+	# Include wrapped placement instructions, including the large-text preference.
+	var label: Label = battle._phase_label
+	var line_height: float = label.get_theme_font("font").get_height(label.get_theme_font_size("font_size"))
+	var choice_bottom: float = label.global_position.y + line_height*label.get_line_count()
+	for actor: RiggedCombatant in [stage.player,stage.enemy]:
+		var head: Vector3 = actor._skeleton.to_global(actor._skeleton.get_bone_global_pose(actor._skeleton.find_bone("head")).origin)
+		# Include helmet height rather than testing only the neck/head joint.
+		var top: Vector2 = stage.global_position + stage._camera.unproject_position(head+Vector3.UP*0.3)*stage.size/Vector2(stage._view.size)
+		var foot: Vector2 = stage.global_position + stage._camera.unproject_position(actor.global_position)*stage.size/Vector2(stage._view.size)
+		assert(top.y > choice_bottom+16, "Top relic options must leave clear space above the characters")
+		assert(foot.y < stage.get_global_rect().end.y-30, "Camera must retain floor space below the feet")
+		print("BATTLE_FRAMING_OK head_top=",top," floor=",foot," choices_end=",choice_bottom)
 
 func check_model(actor: RiggedCombatant) -> void:
 	var meshes: Array[Node] = actor._model.find_children("*", "MeshInstance3D", true, false)
