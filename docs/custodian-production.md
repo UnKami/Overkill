@@ -104,3 +104,13 @@ This remains an isolated character study. The defeated state still needs encount
 Final primary check: 1.6-second duration, held terminal pose, explicit reset and visor fade/reset pass. Across six deformed-mesh samples the minimum vertex height is 15.97 mm above the study ground plane; maximum sampled foot drift is 0.205 mm; head lowers 0.314 m. Rail attachment audit now covers 1,037 poses across five clips, maximum endpoint error 0.450 mm. This does not prove collision clearance at every interpolated time or during cross-fades.
 
 Final review: primary and side terminal renders inspected; side view still exposes rough coat/knee behavior that needs costume deformation refinement before final art acceptance. Idle/guard/hit/attack regressions remain green. Final 083 build/import, collapse, side, rail and regression logs have no script/assertion/shader/Python errors; known certificate warning remains. Geometry unchanged at 55,847 vertices/four surfaces. Published installer unchanged.
+
+## Coat deformation checkpoint — 2026-09-19
+
+Reweighted the split coat so front panels follow the thighs below the waist while rear panels remain looser. Added a gradual 15 mm lateral / 12 mm depth flare toward the hem without moving the waistband. This addresses knee penetration during the mechanical slump; it remains skinned geometry, not cloth simulation.
+
+Blender audit across all 49 authored collapse frames measures a minimum 64.406 mm from either knee center to the coat surface, versus 21.032 mm at a previously sampled failing pose. This exceeds the conservative 50.6 mm knee axle/cap envelope by approximately 13.8 mm. It is a focused knee-envelope check, not exhaustive whole-body collision detection or cross-fade validation.
+
+Exported Godot collapse checked at 120 Hz (193 samples): minimum deformed vertex height 15.556 mm, maximum foot drift 0.448 mm; held terminal state, visor fade and explicit reset pass. Side terminal render inspected. Final geometry 55,838 Blender vertices / four surfaces. Logs: `.tools/084-build-final.log`, `084-coat-final.log`, `084-import-final.log`, `084-collapse-dense.log`, `084-side-final.log`. No script, shader, assertion or Python errors; known certificate warning remains. Art finish, encounter integration and controlled performance acceptance remain open. Public installer unchanged.
+
+Idle and attack regression fixtures pass after the coat rebuild (084 logs), including idle loop endpoints, planted feet, attack recovery and hit interruption.

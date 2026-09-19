@@ -299,9 +299,9 @@ for sign,side in [(-1,'L'),(1,'R')]:
    u=col/cols;angle=.38+u*1.73
    hem=.23+.055*math.sin(u*math.pi*5+.4)**2+.055*u
    height=1.085*(1-t)+hem*t
-   flare=.185+.12*t+.018*math.sin(t*math.pi)
+   flare=.185+.12*t+.018*math.sin(t*math.pi)+.015*math.sin(t*math.pi/2)
    fold=.010*math.cos(u*math.pi*6)*math.sin(t*math.pi*.8)
-   verts.append(xyz(sign*math.sin(angle)*(flare+fold),height,-math.cos(angle)*(.137+.095*t+fold)))
+   verts.append(xyz(sign*math.sin(angle)*(flare+fold),height,-math.cos(angle)*(.137+.095*t+fold+.012*math.sin(t*math.pi/2))))
  faces=[]
  for row in range(rows):
   for col in range(cols):
@@ -311,10 +311,13 @@ for sign,side in [(-1,'L'),(1,'R')]:
  bpy.context.view_layer.objects.active=coat;coat.select_set(True)
  wall=coat.modifiers.new('Coat armor thickness','SOLIDIFY');wall.thickness=.004;bpy.ops.object.modifier_apply(modifier=wall.name)
  bind(coat,'hips','Iron',.001)
- # Partial leg following prevents rigid pelvic skirts cutting through idle legs.
+ # Front panels follow the thigh below the waistband; the back stays looser.
+ # A uniform low weight let the forward-moving knee pass through the coat.
  hip_group=coat.vertex_groups['hips'];leg_group=coat.vertex_groups.new(name='thigh.'+side)
  for vertex in coat.data.vertices:
-  t=max(0,min(1,(1.085-vertex.co.z)/.8));weight=.62*t*t*(3-2*t)
+  t=max(0,min(1,(1.085-vertex.co.z)/.28))
+  frontness=max(0,min(1,(vertex.co.y+.02)/.12))
+  weight=(.38+.60*frontness)*t*t*(3-2*t)
   hip_group.add([vertex.index],1-weight,'REPLACE');leg_group.add([vertex.index],weight,'REPLACE')
  # Upper overlapping lames give a transition from the belt to the long shell.
  for layer in range(3):

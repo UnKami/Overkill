@@ -614,3 +614,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
 - Verification: final 083 checks pass: held/reset pose and visor, six deformed-mesh ground samples (minimum 15.97 mm), 0.205 mm sampled foot drift, 0.314 m head drop. Rail audit 1,037 poses/0.450 mm max error. Existing four animation regressions pass. Primary/side renders reviewed.
 - Handoff: side view reveals coat/knee deformation still needs refinement. Shutdown is not a ragdoll/floor-impact death. Encounter/contact integration and production art/performance remain open. Published 0.23 unchanged. Locks released; AAA objective active.
+
+## 2026-09-19 | Yonatan / Codex — Custodian coat clearance
+- Branch: feat/yonatan-sentinel-production.
+- Completed: front-sensitive thigh weighting and gradual hem flare for split armored coat; regenerated source Blend and GLB.
+- Files: scripts/art/build_custodian.py; art_source/characters/custodian-study.blend; assets/characters/rigged/custodian-study.glb; docs/custodian-production.md.
+- Verification: 49 authored poses show minimum knee-center/coat distance 64.406 mm, approximately 13.8 mm beyond conservative axle/cap envelope. Godot 193-pose collapse audit: floor clearance 15.556 mm, foot drift 0.448 mm, held/reset state and visor pass. Side render inspected; idle/attack regressions pass. No script/shader/assertion/Python errors; known certificate warning remains.
+- Handoff: focused knee check only, not exhaustive collision/cross-fade certification. 55,838 vertices/four surfaces. Isolated art study; encounter integration, production finish and controlled performance remain open. Published installer unchanged. Locks released; AAA objective active.
