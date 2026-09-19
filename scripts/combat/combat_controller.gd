@@ -69,6 +69,8 @@ var _resolution_hour: int = 1
 var _combat_history: Array[String] = []
 var _history_button: Button
 var _intent_readout: Label
+var _intent_clock_label: Label
+var _intent_panel: PanelContainer
 var _guidance: BattleGuidance
 
 
@@ -85,15 +87,40 @@ func _ready() -> void:
 	add_child(_choice_overlay)
 	_choice_overlay.install(self)
 	_intent_readout = Label.new()
-	_enemy_chrono.add_child(_intent_readout)
-	_intent_readout.position = Vector2(105,135)
-	_intent_readout.size = Vector2(210,150)
+	_intent_panel = PanelContainer.new()
+	_intent_panel.name = "EnemyIntentPanel"
+	_intent_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_intent_panel.z_index = 29
+	add_child(_intent_panel)
+	_intent_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_intent_panel.offset_left = -350
+	_intent_panel.offset_right = -20
+	_intent_panel.offset_top = 86
+	var intent_style: StyleBoxFlat = StyleBoxFlat.new()
+	intent_style.bg_color = Color(0.035,0.045,0.055,0.94)
+	intent_style.border_color = Color("8e6650")
+	intent_style.border_width_left = 2
+	intent_style.content_margin_left = 14
+	intent_style.content_margin_right = 14
+	intent_style.content_margin_top = 12
+	intent_style.content_margin_bottom = 12
+	_intent_panel.add_theme_stylebox_override("panel",intent_style)
+	_intent_panel.add_child(_intent_readout)
+	_intent_readout.custom_minimum_size.x = 302
 	_intent_readout.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_intent_readout.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_intent_readout.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_intent_readout.add_theme_font_size_override("font_size",24)
-	_intent_readout.add_theme_constant_override("outline_size",8)
 	_intent_readout.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_intent_clock_label = Label.new()
+	_enemy_chrono.add_child(_intent_clock_label)
+	_intent_clock_label.position = Vector2(105,135)
+	_intent_clock_label.size = Vector2(210,150)
+	_intent_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_intent_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_intent_clock_label.add_theme_font_size_override("font_size",24)
+	_intent_clock_label.add_theme_constant_override("outline_size",6)
+	_intent_clock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	AudioManager.settings_changed.connect(_refresh_intent_text_size)
+	_refresh_intent_text_size()
 	_guidance = BattleGuidance.new()
 	add_child(_guidance)
 	_guidance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -882,14 +909,36 @@ func _refresh_intent_readout() -> void:
 	_enemy_chrono.set_readout_clearance(true)
 	if _combat_over:
 		_intent_readout.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
+		_intent_clock_label.text = _intent_readout.text
+		_intent_panel.call_deferred("reset_size")
 		return
 	if enemy_sockets.is_empty(): return
 	var hours: Array = [turn_number] if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
 	var lines: Array[String] = []
+	var clock_hours: PackedStringArray = []
+	var has_siphon: bool = false
 	for hour: int in hours:
 		var index: int = EnemyClockPattern.hour_for(hour,_active_enemy())
-		lines.append("%d: %s" % [index,DecisionPreview.intent(enemy_sockets[index-1])])
-	_intent_readout.text = "ENEMY NEXT\n" + "\n".join(lines)
+		clock_hours.append(str(index))
+		var socket: ClockSocketData = enemy_sockets[index-1]
+		has_siphon = has_siphon or (socket.intent_revealed and socket.is_siphon)
+		var description: String = DecisionPreview.intent(socket).replace("On HP damage: drain 25% Overkill","Siphon").replace("Attack ","").replace(" base"," damage")
+		lines.append("%d: %s" % [index,description])
+	if EnemyClockPattern.has_twin(_active_enemy()) and int(hours.back()) % 3 == 0:
+		var last_hour: int = EnemyClockPattern.hour_for(int(hours.back()),_active_enemy())
+		var echo_index: int = (last_hour + 3) % 9
+		var echo: ClockSocketData = enemy_sockets[echo_index]
+		var echo_text: String = "No strike" if echo.intent_revealed and echo.intent_damage == 0 else DecisionPreview.intent(echo)
+		lines.append("Second hand · %d: %s" % [echo_index+1,echo_text])
+	_intent_clock_label.text = "ENEMY NEXT\n" + " → ".join(clock_hours)
+	_intent_readout.text = "ENEMY NEXT\nBase damage shown\n" + "\n".join(lines)
+	if has_siphon: _intent_readout.text += "\nSiphon: lose 25% Overkill on HP damage."
+	_intent_panel.call_deferred("reset_size")
+
+func _refresh_intent_text_size(_settings: Dictionary = {}) -> void:
+	ScreenDesign.apply_text_size(_intent_panel)
+	ScreenDesign.apply_text_size(_intent_clock_label)
+	_intent_panel.call_deferred("reset_size")
 
 func _preview_allocation(view: RelicPedestalView) -> void:
 	if _resolving or _combat_over or phase != Phase.ASSEMBLY: return

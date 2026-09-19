@@ -9,6 +9,7 @@ static func intent(socket: ClockSocketData) -> String:
 	if socket.intent_bleed > 0: parts.append("Apply %d Bleed" % socket.intent_bleed)
 	if socket.intent_weak > 0: parts.append("Apply %d Weak" % socket.intent_weak)
 	if socket.intent_vulnerable > 0: parts.append("Apply %d Vulnerable" % socket.intent_vulnerable)
+	if socket.is_siphon: parts.append("On HP damage: drain 25% Overkill")
 	return " · ".join(parts) if not parts.is_empty() else "Wait"
 
 static func forecast(b: CombatController, hours: Array, replace_hour: int = 0, relic: ClockRelicData = null) -> String:

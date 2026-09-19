@@ -291,3 +291,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Files:** `chronometer_view.gd`, `battle_guidance.gd`, `combat_controller.gd`, `sentinel_production_test.gd`, production notes.
 - **Verification:** Vulkan/final GL SENTINEL_PRODUCTION_OK and CLOCK_READOUT_OK; nine-angle clearance, opening-hour consistency, full-hand restoration and Sentinel three-hour readout fit. Normal/compact/large captures reviewed. CLOCK_SMOKE_OK and eight FINISH_SEQUENCE_OK cases pass. Final `.tools/040-*` logs contain no script/assertion/shader failures; certificate warning remains.
 - **Handoff:** Long combined-effect enemy intents still need roster-wide layout review. Sweep capture is an isolated guidance fixture, not full replacement-flow validation. AAA art/performance goals remain incomplete. No new installer. Locks released.
+
+## 2026-09-19 | Yonatan's AI — Roster enemy intent readability (unreleased)
+- **Branch:** `feat/yonatan-sentinel-production`; installer remains 0.19.
+- **Completed:** Full enemy actions moved to upper-right readout, short ordered-hour cue retained in clock. Live normal/large text support. Added missing Siphon drain description and scheduled second-hand telegraph, including no-strike echo behavior and hidden-action protection.
+- **Files:** `combat_controller.gd`, `decision_preview.gd`, `sentinel_production_test.gd`, new `enemy_intent_readout_test.gd`/UID and scene, production notes.
+- **Verification:** 30 roster sweep layouts in each text mode, bounds/choice clearance, Siphon/echo/hidden checks. Vulkan large-text captures reviewed; final headless Sentinel regression covers live settings and contact/framing. Eight finish cases pass. Final `.tools/041-verified*`, `041-normal-verified.log`, `041-regression-final.log`, `041-finish.log` have no script/assertion/signal/shader failures; certificate/headless exit warnings remain. Earlier overflow and signal mismatch attempts rejected.
+- **Handoff:** Fixture changes readout data on the Sentinel scene, not finished enemy encounters. Art, animation and frame pacing still need substantial work. No installer release or AAA acceptance. Locks released.

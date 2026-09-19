@@ -57,7 +57,7 @@ func _ready() -> void:
 	battle.active_quadrant = 1
 	battle._refresh_guidance()
 	await get_tree().create_timer(0.25).timeout
-	assert(battle._intent_readout.size.y <= 150.0, "Three-hour intent must fit the clock center")
+	assert(battle._intent_panel.get_rect().end.y < 480.0, "Detailed intent must stay above the clock title")
 	await capture("sweep-readout")
 	battle.phase = CombatController.Phase.ASSEMBLY
 	for index: int in range(revealed.size()): battle.enemy_sockets[index].intent_revealed = revealed[index]
