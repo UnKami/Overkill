@@ -6,7 +6,7 @@
 
 [Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.22.0-test/Overkill-0.22.0-Windows.zip) · [All releases](https://github.com/UnKami/Overkill/releases) · **[Update log](UPDATE_LOG.md)**
 
-Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update adds a playable 3D Boneghoul preview with authored claw attacks, pre-contact guard and a complete collapse. Art and frame pacing remain in development. Use Play Boneghoul preview from the Start menu or Play Boneghoul.cmd in the portable folder; Play Sentinel remains available. The installer is unsigned. This is a playtest build; boss balance is still under review.
+Install and start a **new run** to test the 12-relic starter deck, nine-hour clock and readable top-positioned combat choices. This update refines the Boneghoul model and bone materials, improves weapon grips and motion, and reduces relic-choice UI stutter. Art and frame pacing remain in development. Use Play Boneghoul preview from the Start menu or Play Boneghoul.cmd in the portable folder; Play Sentinel remains available. The installer is unsigned. This is a playtest build; boss balance is still under review.
 
 ## Partner sync
 

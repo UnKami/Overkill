@@ -415,3 +415,17 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/ui/screen_design.gd; scripts/combat/encounter_profile.gd; scenes/encounter_profile.tscn; docs/sentinel-production.md.
 - Verification: six real Sentinel encounters with identical traces/end states. Decision p95 improved from 173/111/165 ms to 25/24/28 ms; large outliers remain. No-op signal check and normal-large-normal exact restoration; rendered graphics/settings regression and 720p large-text capture. `.tools/056-*` logs clean of script/assertion/shader errors, known certificate warning remains.
 - Handoff: continue investigating residual transition spikes and broader art/animation. Single muted encounter/device is not full-game performance acceptance. Publish accumulated source/art fixes in the next playtest installer; current public version remains 0.21. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — 0.22 release validation
+- Branch: feat/yonatan-sentinel-production. Build source: ef66b17f037f7e1ba9ae5d5eb8b7e8176daf3e09.
+- Packaged executable passed starter rules, rendered graphics/settings, grip/continuity and eight Boneghoul terminal-mode checks. Direct preview result/retry passed; 720p retry capture inspected. All six ZIP entries match their build payload SHA-256 hashes.
+- Evidence: `.tools/057-export-*`, `057-launcher.log`, `057-profile/Godot/app_userdata/Overkill/release022-retry.png`. No final script/assertion/shader failures; known warnings remain. Inno compiler launch needed escalation after sandbox access denial; approved compilation succeeded. Interactive installer wizard remains untested.
+- GitHub publication verification and distribution handoff follow below. This release does not claim AAA completion.
+
+## 2026-09-19 | Yonatan / Codex — 0.22 publication verified
+- Release: https://github.com/UnKami/Overkill/releases/tag/v0.22.0-test. Source ef66b17f037f7e1ba9ae5d5eb8b7e8176daf3e09.
+- Installer: 233683579 bytes, SHA256 09e38220ff76db408075576e688537700af9c9f6d85f66c1e9b9f0eb71c17c7f. Portable ZIP: 260864789 bytes, SHA256 53948cffed5bda07aedfc2c4d4ec90bc7a3c7a74e37bffd8df0fcfb46d100895. All three GitHub asset digests match local files and downloads return HTTP 200.
+- Stronger lossless ZIP compression preserved all six payload hashes. Timed-out uploads were caused by approximately 238-252 KB/s throughput; a longer streaming upload completed. The same draft was retained throughout.
+- Distribution PR https://github.com/UnKami/Overkill/pull/11 merged as 8171a0d460b3774c8140a76456d10943a3be3108. Homepage, installer README and update log read back from main with 0.22.0.
+- Partner path: repository -> Releases -> 0.22.0 -> Assets -> OverkillSetup-0.22.0.exe; Start menu -> Play Boneghoul preview or Play Sentinel encounter.
+- Published package does not include the subsequent thumbnail-filtering pass. Interactive installer wizard remains untested; broader AAA goal unfinished. Publication locks released.
