@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | 0.21 Boneghoul preview packaging and publication | VERSION; project.godot; scripts/combat/sentinel_encounter.gd; scenes/boneghoul_encounter.tscn; scripts/release/build_installer.ps1; installer/overkill.iss; installer/OverkillSetup-0.21.0.sha256; README.md; installer/README.md; install/README.md; UPDATE_LOG.md; docs/encounter-021.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
@@ -38,6 +39,7 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
 | **Audio & SFX** | `scripts/art/build_executioner.py`, `assets/characters/rigged/executioner.glb`, `art_source/characters/executioner-production.blend`, `scripts/combat/forged_armor.gd`, `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+
 
 
 
