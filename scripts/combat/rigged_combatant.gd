@@ -58,6 +58,18 @@ func _metal(color: Color, metalness: float = 0.88) -> ShaderMaterial:
 	mat.set_shader_parameter("surface_detail", preload("res://assets/characters/rigged/worn_metal_015.png"))
 	return mat
 
+func _sentinel_metal(bronze: bool) -> ShaderMaterial:
+	var key: String = "sentinel_bronze" if bronze else "sentinel_iron"
+	if _metal_cache.has(key): return _metal_cache[key]
+	var material: ShaderMaterial = ShaderMaterial.new()
+	material.shader = preload("res://assets/shaders/sentinel_metal.gdshader")
+	material.set_shader_parameter("plate_color", Color("66513a") if bronze else Color("343d42"))
+	material.set_shader_parameter("exposed_color", Color("a78a5e") if bronze else Color("69757c"))
+	material.set_shader_parameter("metalness", 0.78 if bronze else 0.86)
+	material.set_shader_parameter("surface_detail", preload("res://assets/characters/rigged/worn_metal_015.png"))
+	_metal_cache[key] = material
+	return material
+
 func _style(node: Node) -> void:
 	if node is MeshInstance3D:
 		if node.name in ["Knight_Shoulder-Plate", "Knight_BreastPlate"]:
@@ -70,9 +82,9 @@ func _style(node: Node) -> void:
 				ember.emission_energy_multiplier = 1.2
 				node.set_surface_override_material(i, ember)
 			elif name_text == "Sentinel_Iron":
-				node.set_surface_override_material(i, _metal(Color("343d42"), 0.8))
+				node.set_surface_override_material(i, _sentinel_metal(false))
 			elif name_text == "Sentinel_Bronze":
-				node.set_surface_override_material(i, _metal(Color("927044"), 0.76))
+				node.set_surface_override_material(i, _sentinel_metal(true))
 			elif name_text == "Sentinel_Recess":
 				node.set_surface_override_material(i, source)
 			elif "Gold" in name_text:

@@ -71,6 +71,21 @@ func _ready() -> void:
 	get_window().size = Vector2i(1280,720)
 	await get_tree().create_timer(0.3).timeout
 	await capture("compact")
+	if DisplayServer.get_name() != "headless":
+		get_window().size = Vector2i(1920,1080)
+		for child: Node in battle.get_children():
+			if child is CanvasItem and child != stage: child.hide()
+		stage.player.hide()
+		stage._camera.v_offset = 0.0
+		stage._camera.fov = 40
+		stage._camera.position = stage.enemy.position + Vector3(-2.2,1.8,3.2)
+		stage._camera.look_at(stage.enemy.position + Vector3.UP * 1.2)
+		await get_tree().create_timer(0.3).timeout
+		await capture("material-cool")
+		for light: Node in stage._world.get_children():
+			if light is DirectionalLight3D: light.light_color = Color("ffcf9c")
+		await get_tree().create_timer(0.3).timeout
+		await capture("material-warm")
 	print("SENTINEL_PRODUCTION_OK: original mesh, four surfaces, skinning, repeated strikes, contact, reduced motion, cleanup and framing")
 	get_tree().quit()
 
@@ -88,6 +103,22 @@ func check_model(actor: RiggedCombatant) -> void:
 	for surface: int in mesh.mesh.get_surface_count():
 		var arrays: Array = mesh.mesh.surface_get_arrays(surface)
 		assert(not (arrays[Mesh.ARRAY_BONES] as PackedInt32Array).is_empty())
+		var source: Material = mesh.mesh.surface_get_material(surface)
+		if source.resource_name in ["Sentinel_Iron", "Sentinel_Bronze"]:
+			var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+			assert(not colors.is_empty(), "Authored wear must survive the model export")
+			var minimum: float = 1.0
+			var maximum: float = 0.0
+			var cavity_min: float = 1.0
+			var cavity_max: float = 0.0
+			for color: Color in colors:
+				minimum = minf(minimum, color.r)
+				maximum = maxf(maximum, color.r)
+				cavity_min = minf(cavity_min, color.b)
+				cavity_max = maxf(cavity_max, color.b)
+			assert(minimum < 0.1 and maximum > 0.9, "Both plate faces and exposed bevels need authored mask values")
+			assert(cavity_min < 0.9 and cavity_max > 0.9, "Baked cavity visibility must survive export")
+			assert(mesh.get_surface_override_material(surface) is ShaderMaterial)
 
 func capture(label: String) -> void:
 	if DisplayServer.get_name() == "headless": return

@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-sentinel-production` | Authored edge wear and material response | `scripts/art/build_sentinel.py`, `assets/characters/rigged/sentinel.glb`, `art_source/characters/sentinel-production.blend`, `assets/shaders/sentinel_metal.gdshader`, `scripts/combat/rigged_combatant.gd`, `scripts/combat/sentinel_production_test.gd`, `docs/sentinel-production.md`, `CHANGELOG_AI.md` | 2026-09-19 |
 
 ---
 

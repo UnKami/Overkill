@@ -2,9 +2,10 @@
 Blender --background --disable-autoexec art_source/characters/executioner-production.blend --python scripts/art/build_sentinel.py
 No source knight geometry is retained. Skeleton/animation provenance remains in the character license.
 """
-import bpy, math, json
+import bpy, bmesh, math, json
 from pathlib import Path
 from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 rig=next(o for o in bpy.data.objects if o.type=='ARMATURE')
 rig.data.pose_position='REST'
 for o in list(bpy.data.objects):
@@ -19,12 +20,27 @@ parts=[]
 def bind(o,bone,mat,bevel=0):
     bpy.context.view_layer.objects.active=o;o.select_set(True)
     bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
+    # Mirrored panel outlines reverse winding; orient the closed shell before beveling.
+    bm=bmesh.new();bm.from_mesh(o.data)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces))
+    bm.to_mesh(o.data);bm.free()
+    o.data.materials.clear()
+    o.data.materials.append(materials[mat]);o.data.materials.append(materials[mat])
     if bevel:
-        mod=o.modifiers.new('Forged bevel','BEVEL');mod.width=bevel;mod.segments=3
+        mod=o.modifiers.new('Forged bevel','BEVEL');mod.width=bevel;mod.segments=3;mod.material=1
         bpy.ops.object.modifier_apply(modifier=mod.name)
     for p in o.data.polygons:p.use_smooth=True
     normal=o.modifiers.new('Weighted face normals','WEIGHTED_NORMAL');normal.keep_sharp=True
     bpy.ops.object.modifier_apply(modifier=normal.name)
+    # Corner-domain masks keep polished bevels separate from broad forged faces.
+    # Channels: exposed edge, stable per-part patina variation, reserved, opaque.
+    mask=o.data.color_attributes.new(name='ForgedWear',type='FLOAT_COLOR',domain='CORNER')
+    o.data.color_attributes.active_color=mask
+    for poly in o.data.polygons:
+        edge=1.0 if bevel and poly.material_index==1 else 0.0
+        color=(edge,((len(parts)*37)%101)/100.0,0.0,1.0) if mat in ['Iron','Bronze'] else (1,1,1,1)
+        for index in poly.loop_indices:mask.data[index].color=color
+        poly.material_index=0
     o.data.materials.clear();o.data.materials.append(materials[mat])
     o.vertex_groups.new(name=bone).add(list(range(len(o.data.vertices))),1,'REPLACE')
     o.select_set(False);parts.append(o)
@@ -124,11 +140,33 @@ bpy.ops.object.select_all(action='DESELECT')
 for o in parts:o.select_set(True)
 bpy.context.view_layer.objects.active=parts[0]
 bpy.ops.object.join();mesh=bpy.context.object;mesh.name='Sentinel_AuthoredBody'
+# Bake short-range cavity occlusion into the spare blue mask channel.
+# Radius is local (8 cm), avoiding broad pose-dependent shadows on moving limbs.
+vertices=[v.co.copy() for v in mesh.data.vertices]
+tree=BVHTree.FromPolygons(vertices,[list(p.vertices) for p in mesh.data.polygons])
+visibility=[]
+for vertex in mesh.data.vertices:
+    normal=vertex.normal.normalized()
+    axis=Vector((0,0,1)) if abs(normal.z)<.9 else Vector((1,0,0))
+    tangent=normal.cross(axis).normalized();bitangent=normal.cross(tangent)
+    clear=0
+    for sample in range(16):
+        r=math.sqrt((sample+.5)/16);a=sample*2.399963229728653
+        direction=(tangent*(r*math.cos(a))+bitangent*(r*math.sin(a))+normal*math.sqrt(1-r*r)).normalized()
+        hit=tree.ray_cast(vertex.co+normal*.0015,direction,.08)
+        if hit[0] is None: clear+=1
+    visibility.append(clear/16)
+mask=mesh.data.color_attributes.active_color
+for poly in mesh.data.polygons:
+    if mesh.data.materials[poly.material_index].name not in ['Sentinel_Iron','Sentinel_Bronze']:continue
+    for index in poly.loop_indices:
+        color=list(mask.data[index].color);color[2]=visibility[mesh.data.loops[index].vertex_index];mask.data[index].color=color
+print('CAVITY_BAKE_RANGE',min(visibility),max(visibility))
 mod=mesh.modifiers.new('Sentinel skin','ARMATURE');mod.object=rig;mesh.parent=rig
 rig.data.pose_position='POSE'
 rig.select_set(True)
 bpy.context.view_layer.objects.active=rig
 out=Path('assets/characters/rigged/sentinel.glb')
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/sentinel-production.blend').resolve()))
-bpy.ops.export_scene.gltf(filepath=str(out.resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=False,export_yup=True)
+bpy.ops.export_scene.gltf(filepath=str(out.resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=False,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)
 print('SENTINEL_BUILD_OK vertices=',len(mesh.data.vertices),' surfaces=',len(mesh.data.materials))
