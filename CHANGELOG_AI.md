@@ -92,3 +92,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - Prepared: homepage, installer/install instructions, update log, detailed release notes and SHA-256 manifest for v0.22.0-test.
 - Validation: packaged game checks and six portable payload hashes pass on the source branch. GitHub installer asset uploaded; portable ZIP still transferring on the measured slow connection. Do not merge these links into main until the release is published and all uploaded digests/downloads are verified.
 - Scope: distribution documentation only; no gameplay merge. Publication handoff follows after verification.
+
+## 2026-09-19 | Yonatan / Codex — 0.22 distribution ready for main
+- Release: https://github.com/UnKami/Overkill/releases/tag/v0.22.0-test, source ef66b17f037f7e1ba9ae5d5eb8b7e8176daf3e09.
+- Verified all three uploaded asset SHA-256 digests against local files and HTTP 200 downloads. Installer 233683579 bytes; portable ZIP 260864789 bytes. Stronger ZIP compression preserves all six payload hashes. Slow transfer required a longer upload timeout; publication succeeded without recreating the draft.
+- Partner navigation: repository -> Releases -> 0.22.0 -> Assets -> OverkillSetup-0.22.0.exe; Start menu -> Play Boneghoul preview or Play Sentinel encounter.
+- Main changes only distribution docs/checksums. Gameplay remains on the source feature branch. Published 0.22 does not include the later thumbnail filtering experiment. Locks released.
