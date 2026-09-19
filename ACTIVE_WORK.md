@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| *None currently* | `main` | No active file locks | *None* | 2026-09-19 |
+| Yonatan / Codex | `feat/yonatan-cinematic-encounter` | Complete encounter motion, sound, clarity and performance | `scripts/autoload/audio_manager.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/illustrated_actor.gd`, `scripts/combat/illustrated_stage.gd`, `scripts/combat/directed_arena.gd`, `scripts/combat/rigged_combatant.gd`, `scripts/combat/encounter_director.gd`, `scripts/combat/encounter_quality_test.gd`, `scenes/encounter_quality_test.tscn`, `scripts/audio/build_combat_audio.py`, `assets/audio/combat/`, `docs/encounter-018.md`, `VERSION`, `CHANGELOG_AI.md`, `UPDATE_LOG.md`, `README.md`, `installer/README.md`, `install/README.md`, `scripts/release/build_installer.ps1` | 2026-09-19 |
 
 ---
 
