@@ -2,6 +2,19 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.20.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.20.0 → Assets → `OverkillSetup-0.20.0.exe`. Use **Play Sentinel encounter** after installing. The **installer** folder and homepage point to the release.
+
+[Release, installer and portable ZIP](https://github.com/UnKami/Overkill/releases/tag/v0.20.0-test)
+
+- Dedicated readable enemy-intent panel; includes Siphon and second-hand actions while respecting hidden information.
+- Clear clock centers, upcoming-hour pointer consistency and hover connectors that avoid placement text.
+- Refined Sentinel helmet and forged braziers with restrained fire; reduced-motion support.
+- Reusable batched sparks reduce peak action draws; consistent frame-time improvement is not proven.
+- Original Boneghoul art/animation study remains outside normal encounters.
+- No balance or save-format changes. AAA art, animation, roster and performance goals remain unfinished. Unsigned installer; interactive wizard untested.
+- Source: `v0.20.0-test`, `feat/yonatan-sentinel-production`. [Detailed notes](docs/encounter-020.md).
 ## 0.19.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.19.0 → Assets → `OverkillSetup-0.19.0.exe`. After installing, use **Play Sentinel encounter** to inspect the 3D work directly. The **installer** folder also points to this release.
