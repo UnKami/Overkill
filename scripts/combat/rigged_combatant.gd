@@ -155,6 +155,9 @@ func _build_equipment() -> void:
 		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("9babad"),0.72))
 		for n: int in 4:
 			_box(_weapon, Vector3(0,0.071,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)
+	# Equipment is rigid in weapon space: combine matching finishes once, preserving
+	# every bevel and inlay while reducing submissions in color and shadow passes.
+	ForgedArmor.combine_finish(_weapon)
 	if hostile and archetype == "sentinel":
 		_build_cloak()
 		return

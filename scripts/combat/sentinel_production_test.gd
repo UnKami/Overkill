@@ -8,6 +8,7 @@ func _process(delta: float) -> void:
 	if measuring: frames.append(delta * 1000.0)
 
 func _ready() -> void:
+	check_mixed_weapon_geometry()
 	AudioManager.set_master_volume(0)
 	AudioManager.fast_mode = false
 	get_window().size = Vector2i(1920,1080)
@@ -50,6 +51,14 @@ func _ready() -> void:
 		engraving.accent = original
 
 	check_model(stage.enemy)
+	for actor: RiggedCombatant in [stage.player,stage.enemy]:
+		var materials: Dictionary = {}
+		for piece: Node in actor._weapon.get_children():
+			assert(piece is MeshInstance3D)
+			assert(not materials.has(piece.material_override), "Weapon finish must use one mesh per material")
+			materials[piece.material_override] = true
+		assert(materials.size() == 4, "Weapon must retain grip, steel, trim and luminous/blade finish")
+	print("WEAPON_BATCH_OK: four retained finishes per weapon")
 	measuring = true
 	await get_tree().create_timer(3.0).timeout
 	measuring = false
@@ -161,3 +170,25 @@ func capture(label: String) -> void:
 	await RenderingServer.frame_post_draw
 	DirAccess.make_dir_recursive_absolute("user://sentinel-019")
 	get_viewport().get_texture().get_image().save_png("user://sentinel-019/"+label+".png")
+
+func check_mixed_weapon_geometry() -> void:
+	var fixture: Node3D = Node3D.new()
+	add_child(fixture)
+	var finish: StandardMaterial3D = StandardMaterial3D.new()
+	var box: BoxMesh = BoxMesh.new()
+	ForgedArmor.add_mesh(fixture,box,finish)
+	var triangle: SurfaceTool = SurfaceTool.new()
+	triangle.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for point: Vector3 in [Vector3(3,0,0),Vector3(4,0,0),Vector3(3,1,0)]: triangle.add_vertex(point)
+	triangle.generate_normals()
+	var plate: MeshInstance3D = ForgedArmor.add_mesh(fixture,triangle.commit(),finish)
+	plate.position = Vector3(2,0,0)
+	ForgedArmor.combine_finish(fixture)
+	assert(fixture.get_child_count() == 1)
+	var combined: MeshInstance3D = fixture.get_child(0)
+	var arrays: Array = combined.mesh.surface_get_arrays(0)
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	assert(indices.size() == 39, "All twelve indexed box triangles and the authored triangle must survive")
+	assert(is_equal_approx(combined.mesh.get_aabb().end.x,6.0), "Baking must preserve each piece transform")
+	fixture.queue_free()
+	print("MIXED_GEOMETRY_OK: indexed and non-indexed pieces retain all triangles and placement")

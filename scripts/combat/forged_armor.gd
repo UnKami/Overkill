@@ -81,21 +81,27 @@ static func sentinel(skeleton: Skeleton3D, steel: Material, trim: Material) -> v
 	torso.add_child(inlay)
 
 static func combine_finish(parent: Node3D) -> void:
-	# Merge rigid lames sharing a bone and finish to avoid a draw call per plate.
+	# Normalize index formats before concatenating: mixing indexed primitives and
+	# non-indexed authored bevels otherwise leaves some triangles unreferenced.
 	var groups: Dictionary = {}
 	for child: Node in parent.get_children():
 		if not child is MeshInstance3D: continue
-		var material: Material = child.material_override
-		if not groups.has(material):
-			var surface: SurfaceTool = SurfaceTool.new()
-			surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-			groups[material] = surface
-		var target: SurfaceTool = groups[material]
-		target.append_from(child.mesh, 0, child.transform)
+		for index: int in child.mesh.get_surface_count():
+			var material: Material = child.get_active_material(index)
+			if not groups.has(material):
+				var surface: SurfaceTool = SurfaceTool.new()
+				surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+				groups[material] = surface
+			var source: SurfaceTool = SurfaceTool.new()
+			source.create_from(child.mesh,index)
+			source.deindex()
+			var target: SurfaceTool = groups[material]
+			target.append_from(source.commit(),0,child.transform)
 		parent.remove_child(child)
 		child.free()
 	for material: Material in groups:
 		var surface: SurfaceTool = groups[material]
+		surface.index()
 		add_mesh(parent, surface.commit(), material)
 
 static func executioner(skeleton: Skeleton3D, steel: Material, trim: Material) -> void:
