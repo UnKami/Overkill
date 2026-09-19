@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | 0.22 playtest publication | VERSION; project.godot; README.md; installer/README.md; install/README.md; UPDATE_LOG.md; docs/encounter-022.md; installer/OverkillSetup-0.22.0.sha256; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
