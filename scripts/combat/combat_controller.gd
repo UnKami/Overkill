@@ -632,6 +632,8 @@ func _resolve_tick(hour: int) -> void:
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	_stage.attack(true)
+	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
+	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
 	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, Color("7bd6de"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
@@ -690,6 +692,8 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	_stage.attack(false)
+	var swing_wait: float = _stage.swing_delay(false) if _stage.has_method("swing_delay") else 0.0
+	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
 	if not _stage is DirectedArena: Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(false)

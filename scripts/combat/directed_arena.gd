@@ -12,6 +12,7 @@ var _home := Vector3(0, 2.45, 6.45)
 var _look := Vector3(0, 1.1, 0)
 var _elapsed := 0.0
 var _finished := false
+var _attacking_player: bool = true
 var _sparks: Array[Dictionary] = []
 
 func _ready() -> void:
@@ -229,6 +230,7 @@ func _resize_view() -> void:
 
 func attack(from_player: bool) -> void:
 	if _finished: return
+	_attacking_player = from_player
 	(player if from_player else enemy).attack()
 	if AudioManager.reduced_motion: return
 	if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
@@ -287,10 +289,16 @@ func finish(won: bool) -> void:
 		_camera_motion.tween_property(_camera, "fov", 37.5, 0.75).set_trans(Tween.TRANS_SINE)
 
 func impact_delay() -> float:
-	return 0.32
+	var actor: RiggedCombatant = player if _attacking_player else enemy
+	return actor.contact_time()
+
+func swing_delay(from_player: bool) -> float:
+	var actor: RiggedCombatant = player if from_player else enemy
+	return maxf(0.0, actor.contact_time() - 0.32)
 
 func recovery_delay() -> float:
-	return 0.44
+	var actor: RiggedCombatant = player if _attacking_player else enemy
+	return actor.recovery_time()
 
 func finish_delay() -> float:
 	return 1.45

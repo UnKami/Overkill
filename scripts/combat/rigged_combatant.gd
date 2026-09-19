@@ -17,6 +17,9 @@ var _trail: MeshInstance3D
 var _trail_points: Array[Dictionary] = []
 var _trail_material: StandardMaterial3D
 var _metal_cache: Dictionary = {}
+var _clip_cache: Dictionary = {}
+const AUTHORED_ATTACK_TIMES: Array[float] = [0.0, 0.20, 0.32, 0.40, 0.76]
+const HEAVY_ATTACK_TIMES: Array[float] = [0.0, 0.30, 0.46, 0.56, 1.08]
 
 func _ready() -> void:
 	_model = preload("res://assets/characters/rigged/sentinel.glb").instantiate() if hostile and archetype == "sentinel" else preload("res://assets/characters/rigged/executioner.glb").instantiate()
@@ -24,6 +27,7 @@ func _ready() -> void:
 	_model.rotation.y = PI
 	_find_nodes(_model)
 	assert(_skeleton != null and _animation != null, "Combat asset requires a skeleton and animation player")
+	_configure_attack_timing()
 	_style(_model)
 	_build_equipment()
 	_trail = MeshInstance3D.new()
@@ -204,9 +208,50 @@ func _build_cloak() -> void:
 	_cloth.set_shader_parameter("cloth_color",Color("381822") if hostile else Color("132938"))
 	_mesh(rest_space,surface.commit(),Vector3.ZERO,_cloth)
 
+func _heavy_attack() -> bool:
+	return hostile and archetype == "sentinel"
+
+func _retimed_attack_time(source_time: float) -> float:
+	if not _heavy_attack(): return source_time
+	for i: int in range(1, AUTHORED_ATTACK_TIMES.size()):
+		if source_time <= AUTHORED_ATTACK_TIMES[i]:
+			return remap(source_time, AUTHORED_ATTACK_TIMES[i-1], AUTHORED_ATTACK_TIMES[i], HEAVY_ATTACK_TIMES[i-1], HEAVY_ATTACK_TIMES[i])
+	return source_time + 0.32
+
+func _attack_phase_time() -> float:
+	var time: float = _animation.current_animation_position
+	if not _heavy_attack(): return time
+	for i: int in range(1, HEAVY_ATTACK_TIMES.size()):
+		if time <= HEAVY_ATTACK_TIMES[i]:
+			return remap(time, HEAVY_ATTACK_TIMES[i-1], HEAVY_ATTACK_TIMES[i], AUTHORED_ATTACK_TIMES[i-1], AUTHORED_ATTACK_TIMES[i])
+	return time - 0.32
+
+func _configure_attack_timing() -> void:
+	if not _heavy_attack(): return
+	# Imported animation resources are shared. Give this actor a private library.
+	for library_name: StringName in _animation.get_animation_library_list():
+		var library: AnimationLibrary = _animation.get_animation_library(library_name).duplicate(true)
+		_animation.remove_animation_library(library_name)
+		_animation.add_animation_library(library_name, library)
+	var clip: Animation = _animation.get_animation(_clip("execution_cut"))
+	for track: int in clip.get_track_count():
+		# All mapped times move forward, so reverse order preserves key indices.
+		for key: int in range(clip.track_get_key_count(track)-1, -1, -1):
+			clip.track_set_key_time(track, key, _retimed_attack_time(clip.track_get_key_time(track, key)))
+	clip.length = _retimed_attack_time(clip.length)
+
+func contact_time() -> float:
+	return _retimed_attack_time(0.32)
+
+func recovery_time() -> float:
+	return _retimed_attack_time(0.76) - contact_time()
+
 func _clip(fragment: String) -> StringName:
+	if _clip_cache.has(fragment): return _clip_cache[fragment]
 	for clip_name in _animation.get_animation_list():
-		if fragment in clip_name: return clip_name
+		if fragment in clip_name:
+			_clip_cache[fragment] = clip_name
+			return clip_name
 	return &""
 
 func _play(fragment: String, blend: float = 0.08) -> void:
@@ -238,7 +283,7 @@ func _align_weapon() -> void:
 	if _dead:
 		direction = (toward*0.5 + Vector3.DOWN*0.8).normalized()
 	elif _animation.current_animation == _clip("execution_cut"):
-		var t := _animation.current_animation_position
+		var t := _attack_phase_time()
 		var back := (-toward + Vector3.UP*0.4).normalized()
 		var down := (toward + Vector3.DOWN*0.6).normalized()
 		if t < 0.20: direction = idle.slerp(back,smoothstep(0.0,0.20,t))
@@ -255,9 +300,9 @@ func _update_trail(delta: float) -> void:
 	for point in _trail_points: point.age += delta
 	while not _trail_points.is_empty() and _trail_points[0].age > 0.11: _trail_points.pop_front()
 	if not _dead and _animation.current_animation == _clip("execution_cut"):
-		var t := _animation.current_animation_position
+		var t := _attack_phase_time()
 		if t > 0.23 and t < 0.41:
-			_trail_points.append({"root":_weapon.to_global(Vector3(0,0.05,0.22)),"tip":_weapon.to_global(Vector3(0,0.05,1.1)),"age":0.0})
+			_trail_points.append({"root":_weapon.to_global(Vector3(0,0.05,0.22)),"tip":_weapon.to_global(Vector3(0,0.05,0.82 if hostile and archetype in ["sentinel", "bulwark", "twin", "eclipse"] else 1.14)),"age":0.0})
 	if _trail_points.size() < 2:
 		_trail.mesh = null
 		return
@@ -323,7 +368,7 @@ func _apply_attack_weight() -> void:
 	# Keep the root/feet stable; a small authored-direction shift weights the cut.
 	var offset: float = 0.0
 	if not _dead and _animation.current_animation == _clip("execution_cut") and not AudioManager.reduced_motion:
-		var t: float = _animation.current_animation_position
+		var t: float = _attack_phase_time()
 		if t < 0.20: offset = lerpf(0.0,-0.035,smoothstep(0.0,0.20,t))
 		elif t < 0.32: offset = lerpf(-0.035,0.065,smoothstep(0.20,0.32,t))
 		else: offset = lerpf(0.065,0.0,smoothstep(0.32,0.76,t))
@@ -332,12 +377,12 @@ func _apply_attack_weight() -> void:
 	# This is body mechanics, so it remains enabled with reduced camera motion.
 	var turn: float = 0.0
 	if hostile and archetype == "sentinel" and _animation.current_animation == _clip("execution_cut"):
-		var t: float = _animation.current_animation_position
+		var t: float = _attack_phase_time()
 		turn = smoothstep(0.0, 0.20, t) if t < 0.40 else 1.0 - smoothstep(0.40, 0.76, t)
 	_model.rotation.y = PI - 0.35 * turn
 
 func at_contact() -> bool:
-	return _animation.current_animation != _clip("execution_cut") or _animation.current_animation_position >= 0.30
+	return _animation.current_animation != _clip("execution_cut") or _animation.current_animation_position >= contact_time()
 
 func prepare_contact() -> void:
 	if _dead: return
@@ -345,7 +390,7 @@ func prepare_contact() -> void:
 	_trail.mesh = null
 	if _animation.current_animation != _clip("execution_cut"):
 		_animation.play(_clip("execution_cut"),0.0)
-	_animation.seek(0.32,true)
+	_animation.seek(contact_time(),true)
 	_skeleton.force_update_all_bone_transforms()
 	_apply_attack_weight()
 	_align_weapon()

@@ -44,10 +44,12 @@ func _ready() -> void:
 	for from_player: bool in [true,false]:
 		var actor: RiggedCombatant = stage.player if from_player else stage.enemy
 		stage.attack(from_player)
-		await get_tree().create_timer(0.19).timeout
+		await get_tree().create_timer(actor._retimed_attack_time(0.19)).timeout
 		assert(absf(actor._model.position.z) <= 0.07)
+		actor.set_process(false)
 		actor._animation.pause()
 		await capture("player-windup" if from_player else "sentinel-windup")
+		actor.set_process(true)
 		# Restart so PNG capture time cannot shift the actual contact measurement.
 		stage.attack(from_player)
 		await stage.await_contact(from_player)

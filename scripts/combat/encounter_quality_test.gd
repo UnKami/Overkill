@@ -22,6 +22,24 @@ func _ready() -> void:
 	stage.size = Vector2(1920, 976)
 	add_child(stage)
 	await get_tree().process_frame
+	var hero_clip: Animation = stage.player._animation.get_animation(stage.player._clip("execution_cut"))
+	var heavy_clip: Animation = stage.enemy._animation.get_animation(stage.enemy._clip("execution_cut"))
+	assert(hero_clip.length < 0.8 and heavy_clip.length > 1.0, "Enemy retiming must not mutate the hero's shared clip")
+	assert(is_equal_approx(stage.player.contact_time(), 0.32))
+	assert(is_equal_approx(stage.enemy.contact_time(), 0.46))
+	assert(is_equal_approx(stage.enemy.recovery_time(), 0.62))
+	for track: int in heavy_clip.get_track_count():
+		var prior_time: float = -1.0
+		for key: int in heavy_clip.track_get_key_count(track):
+			var key_time: float = heavy_clip.track_get_key_time(track, key)
+			assert(key_time > prior_time and key_time <= heavy_clip.length + 0.00001)
+			prior_time = key_time
+	stage.enemy._animation.play(stage.enemy._clip("execution_cut"), 0.0)
+	stage.enemy._animation.advance(0.0)
+	stage.enemy._animation.seek(0.32, true)
+	assert(not stage.enemy.at_contact(), "Sentinel must remain in anticipation after the hero's contact time")
+	stage.enemy._animation.seek(0.46, true)
+	assert(stage.enemy.at_contact())
 	var actor: RiggedCombatant = stage.player
 	var animation: AnimationPlayer = actor._animation
 	animation.play("execution_cut", 0)
@@ -46,6 +64,6 @@ func _ready() -> void:
 			stage.impact(not from_player, true)
 			await get_tree().create_timer(0.8).timeout
 			assert(is_zero_approx(actor._model.position.z))
-	print("ENCOUNTER_018_OK: muted allocation, bounded voices, live volume, cleanup, planted feet, normal/fast weapon contact")
+	print("ENCOUNTER_018_OK: muted allocation, bounded voices, live volume, cleanup, planted feet, normal/fast weapon contact, isolated heavy timing and ordered animation keys")
 	get_tree().quit()
 

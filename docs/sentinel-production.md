@@ -48,3 +48,11 @@ The engraving regression checks rendered pixels: changing a cached canvas item a
 - Recalculate mirrored panel face orientation before beveling and baking.
 - Model inspection includes cool and warm directional light close-ups, plus the existing 1080p/720p battle, cache invalidation, skinning and contact checks. Captures/logs: `.tools/020-*` locally. The drawing budget remains 371 for the full test battle; this pass does not establish a frame-rate improvement.
 - Art review remains open: helmet/shoulder proportions, broad plain surfaces, hammer/body material consistency, bespoke engraving and richer animation still fall short of the target. Do not call this model AAA-ready based on the mask or contact tests.
+
+## Heavy attack cadence checkpoint
+
+- Sentinel timing now maps the source attack's anticipation, strike, contact and recovery into a longer heavy cadence: contact at 0.46 seconds, settled recovery at 1.08 seconds. Hero contact stays 0.32 seconds, with recovery at 0.76 seconds. Fast mode scales both through the existing animation-speed setting.
+- The retimed animation library is private to the Sentinel; imported shared clips are not mutated. Weapon direction, body turn, root weight shift and trail use the inverse phase mapping, keeping the contact pose aligned with the longer clip.
+- Controller sound delay and stage recovery follow the active actor's timing. The hammer trail now ends at the hammer head rather than a sword-length tip. Animation-name results are cached and timing tables are constants, avoiding new per-frame array allocation.
+- Validation checks separate hero/enemy clip lengths, increasing key times, anticipation before the heavy contact point, weapon reach and recovery in normal/fast modes; damage accounting across normal/fast/reduced motion remains covered. Rendered pose captures accompany the numeric tests.
+- This is cadence differentiation using the existing authored attack poses, not a new motion-captured performance or broad attack animation library. Unique heavy poses, attack alternatives, guard reactions and death production remain unfinished.
