@@ -11,6 +11,8 @@ var skeleton: Skeleton3D
 var animation: AnimationPlayer
 var _clips: Dictionary = {}
 var _contact_sent: bool = false
+var _guard_held: bool = false
+const GUARD_HOLD_TIME: float = 7.0 / 30.0
 
 func _ready() -> void:
 	model = preload("res://assets/characters/rigged/boneghoul.glb").instantiate()
@@ -31,6 +33,10 @@ func _process(delta: float) -> void:
 
 func advance_motion(seconds: float) -> void:
 	var before: float = animation.current_animation_position
+	if state == State.GUARD and _guard_held:
+		animation.advance(minf(seconds, maxf(0.0, GUARD_HOLD_TIME - before)))
+		skeleton.force_update_all_bone_transforms()
+		return
 	if state == State.ATTACK and not _contact_sent and before + seconds >= CONTACT_TIME:
 		var until_contact: float = maxf(0.0, CONTACT_TIME - before)
 		animation.advance(until_contact)
@@ -60,19 +66,40 @@ func _play(key: String, blend: float) -> void:
 
 func attack() -> void:
 	if state == State.DEAD: return
+	_guard_held = false
 	state = State.ATTACK
 	_contact_sent = false
 	_play("claw_rake", 0.06)
 
 func hit(blocked: bool) -> void:
 	if state == State.DEAD: return
+	if blocked and state == State.GUARD and _guard_held:
+		_guard_held = false
+		return # Release the existing brace; do not restart its raise at impact.
+	_guard_held = false
 	state = State.GUARD if blocked else State.RECOIL
 	_play("claw_guard" if blocked else "claw_recoil", 0.025)
 
 func fall() -> void:
 	if state == State.DEAD: return
+	_guard_held = false
 	state = State.DEAD
 	_play("claw_collapse", 0.08)
+
+func prepare_guard() -> void:
+	if state == State.DEAD: return
+	if state == State.GUARD and _guard_held: return
+	state = State.GUARD
+	_guard_held = true
+	_play("claw_guard", 0.025)
+
+func is_guarding() -> bool:
+	return state == State.GUARD
+
+func guard_contact_point(attacker_position: Vector3) -> Vector3:
+	# Meet the armored right forearm rather than the ribcage behind it.
+	var bracer: Vector3 = bone_point("forearm.R").lerp(bone_point("hand.R"), 0.65)
+	return bracer + (attacker_position - bracer).normalized() * 0.035
 
 func contact_time() -> float:
 	return CONTACT_TIME

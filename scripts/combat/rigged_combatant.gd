@@ -138,6 +138,9 @@ func _build_equipment() -> void:
 	var wrist := _attach("hand.R")
 	_weapon = Node3D.new()
 	wrist.add_child(_weapon)
+	# _align_weapon owns the complete world transform. BoneAttachment updates can
+	# arrive after it; inheriting that transform would move the weapon a second time.
+	_weapon.top_level = true
 	# Equipment moves with the wrist, not with the root of the character.
 	var grip := CylinderMesh.new()
 	grip.top_radius = 0.027
@@ -280,6 +283,8 @@ func _process(delta: float) -> void:
 func _align_weapon() -> void:
 	if not is_instance_valid(opponent) or not _weapon: return
 	var surface: Vector3 = opponent.global_position + Vector3(0,1.45,0) + (global_position-opponent.global_position).normalized()*0.12
+	if opponent.has_method("is_guarding") and opponent.is_guarding():
+		surface = opponent.guard_contact_point(global_position)
 	# Aim from the current palm, not the previous frame weapon transform.
 	var wrist: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("hand.R")).origin
 	var knuckle: Vector3 = _skeleton.get_bone_global_pose(_skeleton.find_bone("f_middle.01.R")).origin

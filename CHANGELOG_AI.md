@@ -338,3 +338,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_boneghoul.py, art_source/characters/boneghoul-production.blend, assets/characters/rigged/boneghoul.glb, scripts/combat/boneghoul_contact_test.gd, docs/boneghoul-production.md.
 - Verification: Blender build/import; Vulkan model study and contact fixture, final `.tools/046-study*` and `.tools/046-final*` logs. Rendered idle/attack/guard/recoil/collapse inspected. 36,603 vertices, four surfaces. No final script/assertion/shader errors; known certificate/ObjectDB warnings remain.
 - Handoff: guard still aims incoming sword into ribs despite raised claws. Implement pre-contact interception before accepting battle choreography. Model remains isolated/unreleased; no installer or main gameplay change. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Pre-contact guard and stable weapon placement
+- Branch: feat/yonatan-sentinel-production.
+- Completed: held pre-contact Boneghoul brace, forearm interception destination, release without animation restart; fixed shared weapon world transform being overwritten by deferred bone attachment movement.
+- Files: scripts/combat/boneghoul_actor.gd, scripts/combat/rigged_combatant.gd, scripts/combat/boneghoul_contact_test.gd, docs/boneghoul-production.md.
+- Verification: rendered `.tools/047-final-render*` guard sequence; `.tools/047-sentinel*` full Sentinel checks; `.tools/047-finish.log` eight terminal combinations. Timed guard and both Sentinel impact renders inspected. No final script/assertion/shader errors; known certificate/ObjectDB warnings remain.
+- Handoff: Boneghoul remains isolated/unreleased. Actual battle scheduling must prepare guards before contact and use the new destination for impact effects. Broader model/material/grip and full encounter quality still below target. Installer unchanged. Locks released.

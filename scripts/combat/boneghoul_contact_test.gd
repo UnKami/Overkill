@@ -68,17 +68,65 @@ func _ready() -> void:
 	assert(blade_start.distance_to(ghoul_chest) > 0.40, "The sword grip must remain outside the opponent torso")
 	await capture("return-strike")
 	for guarded: bool in [false, true]:
-		actor.hit(guarded)
-		actor.advance_motion(0.20)
+		if guarded:
+			actor.prepare_guard()
+			actor.advance_motion(opponent.contact_time())
+		else:
+			actor.hit(false)
+			actor.advance_motion(0.20)
 		opponent._align_weapon()
 		blade_start = opponent._weapon.to_global(Vector3(0.0, 0.05, 0.22))
 		blade_end = opponent._weapon.to_global(Vector3(0.0, 0.05, 1.14))
 		ghoul_chest = actor.bone_point("chest")
 		closest = Geometry3D.get_closest_point_to_segment(ghoul_chest, blade_start, blade_end)
-		assert(closest.distance_to(ghoul_chest) < 0.22, "Reaction must remain within sword reach")
+		if guarded:
+			var contact: Vector3 = actor.guard_contact_point(opponent.global_position)
+			var intercept: Vector3 = Geometry3D.get_closest_point_to_segment(contact, blade_start, blade_end)
+			print("BONEGHOUL_GUARD_AUDIT bracer_gap=", intercept.distance_to(contact), " torso_gap=", closest.distance_to(ghoul_chest))
+			assert(intercept.distance_to(contact) < 0.06, "Sword must meet the bracer")
+			assert(closest.distance_to(ghoul_chest) > 0.22, "Blocked sword must stay outside the torso")
+			var held_hand: Vector3 = actor.bone_point("hand.R")
+			actor.advance_motion(0.8)
+			assert(actor.bone_point("hand.R").distance_to(held_hand) < 0.002, "Brace must hold until impact")
+			actor.hit(true)
+			assert(actor.bone_point("hand.R").distance_to(held_hand) < 0.002, "Impact must not restart guard raise")
+		else:
+			assert(closest.distance_to(ghoul_chest) < 0.22, "Recoil must remain within sword reach")
 		await capture("return-guard" if guarded else "return-recoil")
 		actor.advance_motion(0.9)
-	print("BONEGHOUL_RECIPROCAL_OK: idle and reaction torso envelopes reached; grip clearance retained")
+	print("BONEGHOUL_RECIPROCAL_OK: unguarded torso reached; blocked sword intercepted at bracer")
+	for speed: float in [1.0, 2.0]:
+		for reduced: bool in [false, true]:
+			AudioManager.reduced_motion = reduced
+			actor.prepare_guard()
+			opponent.attack()
+			var released: bool = false
+			var elapsed: float = 0.0
+			while elapsed < 1.1:
+				var dt: float = speed / 60.0
+				actor.advance_motion(dt)
+				opponent._animation.advance(dt)
+				opponent._skeleton.force_update_all_bone_transforms()
+				opponent._apply_attack_weight()
+				opponent._align_weapon()
+				elapsed += dt
+				if elapsed >= 0.30 and elapsed <= 0.40:
+					blade_start = opponent._weapon.to_global(Vector3(0.0, 0.05, 0.22))
+					blade_end = opponent._weapon.to_global(Vector3(0.0, 0.05, 1.14))
+					var bracer: Vector3 = actor.guard_contact_point(opponent.global_position)
+					# At 0.30 the blade is still approaching; contact is authored at 0.32.
+					if elapsed >= opponent.contact_time():
+						assert(Geometry3D.get_closest_point_to_segment(bracer, blade_start, blade_end).distance_to(bracer) < 0.06)
+					assert(Geometry3D.get_closest_point_to_segment(actor.bone_point("chest"), blade_start, blade_end).distance_to(actor.bone_point("chest")) > 0.22)
+				if not released and elapsed >= opponent.contact_time():
+					actor.hit(true)
+					released = true
+					if speed == 1.0 and not reduced:
+						var contact_transform: Transform3D = opponent._weapon.global_transform
+						await capture("timed-guard-contact")
+						assert(opponent._weapon.global_transform.is_equal_approx(contact_transform), "Deferred bone updates must not overwrite the visible weapon contact transform")
+			assert(actor.state == BoneghoulActor.State.IDLE, "Guard must recover after impact release")
+	print("BONEGHOUL_GUARD_SEQUENCE_OK: pre-contact brace, interception window and release at two speeds with reduced motion on/off")
 	opponent._play("combat_idle", 0.0)
 	actor.attack()
 	actor.advance_motion(1.1)
@@ -98,6 +146,7 @@ func _ready() -> void:
 	actor.hit(false)
 	actor.hit(true)
 	actor.fall()
+	actor.prepare_guard()
 	actor.advance_motion(2.0)
 	assert(contacts == 0 and actor.state == BoneghoulActor.State.DEAD)
 	assert(actor.bone_point("head").distance_to(final_head) < 0.002, "Terminal pose must survive late animation requests")
