@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | Continuous weapon orientation | scripts/combat/rigged_combatant.gd; scripts/combat/weapon_grip_test.gd; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
