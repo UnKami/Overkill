@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | feat/yonatan-sentinel-production | Cloak movement response | scripts/combat/rigged_combatant.gd; assets/shaders/battle_cloth.gdshader; docs/sentinel-production.md; CHANGELOG_AI.md | 2026-09-19 |
 
 ---
 
