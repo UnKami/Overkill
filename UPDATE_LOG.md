@@ -2,6 +2,18 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.21.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.21.0 → Assets → `OverkillSetup-0.21.0.exe`. After installing, open **Play Boneghoul preview**. Portable folder: **Play Boneghoul.cmd**. The homepage and **installer** folder point to this release.
+
+[Release, installer and portable ZIP](https://github.com/UnKami/Overkill/releases/tag/v0.21.0-test)
+
+- Playable 3D Boneghoul preview with authored idle, claw attack, brace, recoil and collapse; separate local preview profile and retry flow.
+- Guard anticipation and forearm interception, contact-synchronized damage and effects, full collapse before fade.
+- Fixed shared weapon transform conflict affecting visible equipment placement.
+- Clock/deck/block/reveal rules and balance unchanged. Source: `v0.21.0-test`, `feat/yonatan-sentinel-production`.
+- **Not AAA completion:** model/material quality, animation breadth and frame pacing remain unfinished. [Detailed notes](docs/encounter-021.md).
+
 ## 0.20.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.20.0 → Assets → `OverkillSetup-0.20.0.exe`. Use **Play Sentinel encounter** after installing. The **installer** folder and homepage point to the release.

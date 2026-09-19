@@ -31,6 +31,16 @@ cd /d "%~dp0"
 start "" "%~dp0Overkill.exe" --scene res://scenes/sentinel_encounter.tscn
 endlocal
 '@ | Set-Content -LiteralPath "$buildDir/Play Sentinel.cmd" -Encoding ascii
+    @'
+@echo off
+setlocal
+set "APPDATA=%LOCALAPPDATA%\OverkillBoneghoul"
+if not exist "%APPDATA%" mkdir "%APPDATA%"
+set "LOCALAPPDATA=%APPDATA%"
+cd /d "%~dp0"
+start "" "%~dp0Overkill.exe" --scene res://scenes/boneghoul_encounter.tscn -- --boneghoul-3d
+endlocal
+'@ | Set-Content -LiteralPath "$buildDir/Play Boneghoul.cmd" -Encoding ascii
     $compile = Start-Process -FilePath $Compiler -ArgumentList @("/DAppVersion=$version", "/O`"$installerDir`"", "`"$installerDir/overkill.iss`"") -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput "$buildDir/installer-compile.log" -RedirectStandardError "$buildDir/installer-compile-errors.log"
     if ($compile.ExitCode -ne 0) { throw "Installer compilation failed; see $buildDir/installer-compile-errors.log" }
     Get-Item -LiteralPath "$installerDir/OverkillSetup-$version.exe"

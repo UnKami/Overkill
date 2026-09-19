@@ -43,10 +43,12 @@ Source: "{#SourceDir}\Overkill.pck"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\GODOT-LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\DELIVERY.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\Play Sentinel.cmd"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\Play Boneghoul.cmd"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{group}\Play Sentinel encounter"; Filename: "{app}\Play Sentinel.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppExeName}"; Flags: runminimized
+Name: "{group}\Play Boneghoul preview"; Filename: "{app}\Play Boneghoul.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\{#AppExeName}"; Flags: runminimized
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
 

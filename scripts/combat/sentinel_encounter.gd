@@ -2,6 +2,8 @@ extends Control
 ## Direct entry into the playable first 3D encounter; launcher isolates its save profile.
 var _battle: CombatController
 var _result: Control
+@export var enemy_id: String = "act1_boss"
+@export var victory_title: String = "THE SENTINEL FALLS"
 
 func _ready() -> void:
 	_start()
@@ -16,7 +18,7 @@ func _start() -> void:
 	add_child(_battle)
 	_battle.combat_won.connect(func(_enemies: Array[EnemyData]) -> void: _finished(true))
 	_battle.combat_lost.connect(func() -> void: _finished(false))
-	_battle.start_combat([ContentDatabase.get_enemy("act1_boss")])
+	_battle.start_combat([ContentDatabase.get_enemy(enemy_id)])
 
 func _finished(won: bool) -> void:
 	_result = Control.new()
@@ -30,7 +32,7 @@ func _finished(won: bool) -> void:
 	layout.custom_minimum_size = Vector2(640,280)
 	layout.add_theme_constant_override("separation",24)
 	var title := Label.new()
-	title.text = "THE SENTINEL FALLS" if won else "THE CLOCK FALLS SILENT"
+	title.text = victory_title if won else "THE CLOCK FALLS SILENT"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size",32)
 	title.add_theme_color_override("font_color",Color("dfbc80"))
