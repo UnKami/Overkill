@@ -1,6 +1,6 @@
 """Hollow Custodian full-body study. Original geometry; shared skeleton only.
 Blender --background executioner-production.blend --python this script.
-Not connected to gameplay. Exports authored Custodian idle, guard and hit clips.
+Not connected to gameplay. Exports authored Custodian study animation clips.
 """
 import bpy,bmesh,math
 from pathlib import Path
@@ -388,9 +388,37 @@ for frame,amount in [(0,0),(3,1),(6,.72),(11,-.12),(18,.035),(24,0)]:
  for p in rig.pose.bones:
   p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
 rig.animation_data.action=None
+attack_poses={}
+for phase in ['windup','strike','follow']:
+ for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+ bpy.context.view_layer.update()
+ aim('upper_arm.L',(-.20,.55,-1));aim('forearm.L',(.45,.35,.85));aim('hand.L',(.30,.40,.75))
+ if phase=='windup':
+  aim('chest',(-.045,-.035,1))
+  aim('upper_arm.R',(.60,-.45,-.50));aim('forearm.R',(-.1,.12,1));aim('hand.R',(0,.25,1))
+ else:
+  aim('chest',(.025,.095 if phase=='strike' else .12,1))
+  aim('upper_arm.R',(.08,1,-.05));aim('forearm.R',(-.12,1,.05 if phase=='strike' else -.24))
+  aim('hand.R',(-.10,1,0 if phase=='strike' else -.30))
+ for finger in ['f_index','f_middle','f_ring','f_pinky']:
+  for segment,angle in [(1,20),(2,30),(3,20)]:
+   rig.pose.bones[f'{finger}.{segment:02d}.R'].rotation_quaternion=Quaternion((1,0,0),math.radians(angle))
+ attack_poses[phase]={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+attack=bpy.data.actions.new('custodian_attack')
+# Deliberate anticipation, fast extension (14/30 s), downward follow-through.
+for frame,phase,amount in [(0,'windup',0),(6,'windup',1),(10,'windup',1),(14,'strike',1),(18,'follow',1),(28,'follow',.25),(36,'follow',0)]:
+ rig.animation_data.action=None
+ for p in rig.pose.bones:
+  loc,rot,scale=idle_basis[p.name].decompose();target_loc,target_rot,target_scale=attack_poses[phase][p.name].decompose()
+  p.location=loc.lerp(target_loc,amount);p.rotation_quaternion=rot.slerp(target_rot,amount);p.scale=scale
+ rig.animation_data.action=attack
+ for p in rig.pose.bones:
+  p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+rig.animation_data.action=None
 track=rig.animation_data.nla_tracks.new();track.name='custodian_idle';track.strips.new('custodian_idle',0,idle)
 track=rig.animation_data.nla_tracks.new();track.name='custodian_guard';track.strips.new('custodian_guard',0,guard);track.mute=True
 track=rig.animation_data.nla_tracks.new();track.name='custodian_hit';track.strips.new('custodian_hit',0,hit);track.mute=True
+track=rig.animation_data.nla_tracks.new();track.name='custodian_attack';track.strips.new('custodian_attack',0,attack);track.mute=True
 bpy.context.scene.frame_set(0);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/custodian-study.blend').resolve()))
 bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)

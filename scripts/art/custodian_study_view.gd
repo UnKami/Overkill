@@ -21,7 +21,7 @@ func _ready() -> void:
 	var overlay: CanvasLayer = CanvasLayer.new()
 	add_child(overlay)
 	var instructions: Label = Label.new()
-	instructions.text = "CUSTODIAN • ART STUDY\nG: Guard     H: Hit     R: Return to idle"
+	instructions.text = "CUSTODIAN • ART STUDY\nA: Attack     G: Guard     H: Hit     R: Idle"
 	instructions.position = Vector2(24, 24)
 	instructions.add_theme_font_size_override("font_size", 20)
 	overlay.add_child(instructions)
@@ -30,6 +30,11 @@ func play_guard() -> void:
 	if _player and _player.has_animation("custodian_guard"):
 		_player.get_animation("custodian_guard").loop_mode = Animation.LOOP_NONE
 		_player.play("custodian_guard", 0.08)
+
+func play_attack() -> void:
+	if _player and _player.has_animation("custodian_attack"):
+		_player.get_animation("custodian_attack").loop_mode = Animation.LOOP_NONE
+		_player.play("custodian_attack", 0.08)
 
 func play_hit() -> void:
 	if _player and _player.has_animation("custodian_hit"):
@@ -46,6 +51,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_G:
 			play_guard()
+		elif event.keycode == KEY_A:
+			play_attack()
 		elif event.keycode == KEY_H:
 			play_hit()
 		elif event.keycode == KEY_R:

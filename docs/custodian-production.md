@@ -78,3 +78,11 @@ Added an original 0.8-second `custodian_hit`: peak recoil at 0.1 s, short damped
 Primary checks: exact 0.8-second duration, all-bone idle matching at start/end, fixed feet at six samples, guard interruption, repeated-hit restart and automatic idle return pass. Peak sampled head travel is 66.9 mm. Primary rendered recoil pose inspected. These state checks do not establish full geometric clearance or perceptual smoothness under every interruption. Attack, collapse, impact/contact synchronization, torso support refinement and final materials remain incomplete.
 
 Final verification: primary and side recoil renders reviewed; guard and idle regression fixtures remain green. `.tools/080-build.log`, `080-import.log`, `080-hit-check.log`, `080-side-check.log`, `080-guard-regression.log`, `080-idle-regression.log` have no script/assertion/shader/Python errors. Known certificate warning remains. Geometry remains 55,263 vertices/four surfaces. No installer or performance change claimed.
+
+## Attack animation checkpoint — 2026-09-19
+
+Added an original 1.2-second `custodian_attack`: raised right-arm wind-up, anticipation hold through frame 10, fast forward extension at frame 14 (0.467 s), downward follow-through, recovery to idle by frame 36. Left arm remains in a protective pose. A in the study scene plays attack; completion resumes idle, and H can interrupt it with the hit reaction.
+
+Primary validation: exact duration, all-bone idle-matched endpoints, fixed feet at seven samples, automatic idle return and hit interruption pass. Right wrist advances 0.519 m from idle at frame 14. This is an animation landmark, not validated opponent contact or a damage event. Wind-up and extension rendered poses inspected. Attack requires contact choreography, effects/sound synchronization and full clearance review before production use. Collapse and encounter integration remain absent; overall art finish still incomplete.
+
+Final verification: side-view extension inspected; idle, guard and hit regression checks still pass. Final 081 logs show no script/assertion/shader/Python errors; known certificate warning remains. Geometry remains 55,263 vertices/four surfaces. This is a functional animation study, not final motion quality, combat-contact validation or AAA acceptance. Public installer unchanged.
