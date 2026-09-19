@@ -60,3 +60,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Verification:** Installer 230817337 bytes and portable ZIP 258162235 bytes; both plus checksum are public HTTP 200 downloads with GitHub SHA-256 digests matching local artifacts. Exported gameplay/preview/typography/contact checks are recorded in the release notes. No gameplay merged to main.
 - **Files:** `README.md`, `installer/README.md`, `install/README.md`, `installer/OverkillSetup-0.17.0.sha256`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`.
 - **Handoff:** Partner navigation is repository → Releases → 0.17.0 → Assets → installer; folders contain direct links. Downloadable gameplay differs from main's runtime source; use the exact release tag or feature branch.
+
+## 2026-09-19 | Yonatan's AI — Publish verified 0.18.0 distribution
+- **Branch / PR:** `feat/yonatan-018-downloads`; documentation-only PR. Gameplay remains on `feat/yonatan-cinematic-encounter`.
+- **Completed:** Published `v0.18.0-test` from `fbb8055`; homepage, installer/install instructions, checksum and update log point to 0.18.
+- **Files:** `README.md`, `installer/README.md`, `install/README.md`, `installer/OverkillSetup-0.18.0.sha256`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`.
+- **Verification:** Installer 230931689 bytes, ZIP 258282703 bytes. All three release assets verified HTTP 200 and GitHub SHA-256 matches against local files. Source/exported mechanics, preview, audio lifecycle and rendered contact checks passed; portable entries match export.
+- **Handoff:** Partner navigation: repository → Releases → 0.18.0 → Assets. Play Sentinel opens the 3D slice. Gameplay is not merged to main; use the exact tag/feature branch. This remains an incremental playtest, not AAA completion.

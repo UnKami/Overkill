@@ -2,6 +2,19 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.18.0 playtest — 2026-09-19
+
+**GitHub navigation:** repository → Releases → 0.18.0 → Assets → `OverkillSetup-0.18.0.exe`. Choose **Play Sentinel** to inspect the 3D encounter directly.
+
+[Release, installer and portable ZIP](https://github.com/UnKami/Overkill/releases/tag/v0.18.0-test)
+
+- Distinct layered Executioner armor with combined meshes; torso-led sword motion and a protective off-hand guard pose.
+- Contact-synchronized swing, strike, block, block-break, healing and result cues; brief music ducking, bounded voices and live volume control.
+- No balance, deck or save-format changes. Existing 0.14–0.17 saves remain compatible.
+- Validation: source/exported mechanics, preview and contact tests; audio lifecycle tests; rendered mounted-armor, recovery and reduced-motion checks. Published assets checked for HTTP availability and SHA-256 match.
+- Remaining: full enemy model production, animation variety, sound listening review, performance optimization and human balance testing. This remains a playtest, not AAA completion.
+- Source: `v0.18.0-test`, `feat/yonatan-cinematic-encounter`; gameplay awaits review.
+
 ## 0.17.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.17.0 → Assets → `OverkillSetup-0.17.0.exe`.
