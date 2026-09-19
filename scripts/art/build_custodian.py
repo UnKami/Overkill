@@ -1,6 +1,6 @@
 """Hollow Custodian full-body study. Original geometry; shared skeleton only.
 Blender --background executioner-production.blend --python this script.
-Not connected to gameplay. Exports authored Custodian idle and guard animations.
+Not connected to gameplay. Exports authored Custodian idle, guard and hit clips.
 """
 import bpy,bmesh,math
 from pathlib import Path
@@ -364,8 +364,33 @@ for frame,amount in [(0,0),(4,.35),(9,1),(18,1),(30,0)]:
  for p in rig.pose.bones:
   p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
 rig.animation_data.action=None
+for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+bpy.context.view_layer.update()
+aim('spine',(0,-.055,1));aim('chest',(.035,-.08,1))
+aim('neck',(0,-.07,1));aim('head',(-.04,-.13,1))
+for side,sign in [('L',-1),('R',1)]:
+ aim('upper_arm.'+side,(sign*.44,.035,-1))
+ aim('forearm.'+side,(sign*.23,-.13,-1))
+ aim('hand.'+side,(sign*.22,-.10,-1))
+ for finger in ['f_index','f_middle','f_ring','f_pinky']:
+  for segment in range(1,4):
+   rig.pose.bones[f'{finger}.{segment:02d}.{side}'].rotation_quaternion=Quaternion((1,0,0),math.radians(5+segment*2))
+hit_basis={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+hit=bpy.data.actions.new('custodian_hit')
+# Fast recoil, damped counter-motion, then a longer recovery.
+for frame,amount in [(0,0),(3,1),(6,.72),(11,-.12),(18,.035),(24,0)]:
+ rig.animation_data.action=None
+ for p in rig.pose.bones:
+  loc,rot,scale=idle_basis[p.name].decompose();target_loc,target_rot,target_scale=hit_basis[p.name].decompose()
+  delta=rot.rotation_difference(target_rot)
+  p.location=loc+(target_loc-loc)*amount;p.rotation_quaternion=rot @ Quaternion(delta.axis,delta.angle*amount);p.scale=scale
+ rig.animation_data.action=hit
+ for p in rig.pose.bones:
+  p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+rig.animation_data.action=None
 track=rig.animation_data.nla_tracks.new();track.name='custodian_idle';track.strips.new('custodian_idle',0,idle)
 track=rig.animation_data.nla_tracks.new();track.name='custodian_guard';track.strips.new('custodian_guard',0,guard);track.mute=True
+track=rig.animation_data.nla_tracks.new();track.name='custodian_hit';track.strips.new('custodian_hit',0,hit);track.mute=True
 bpy.context.scene.frame_set(0);bpy.context.view_layer.update();rig.select_set(True);bpy.context.view_layer.objects.active=rig
 bpy.ops.wm.save_as_mainfile(filepath=str(Path('art_source/characters/custodian-study.blend').resolve()))
 bpy.ops.export_scene.gltf(filepath=str(Path('assets/characters/rigged/custodian-study.glb').resolve()),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_yup=True,export_vertex_color='ACTIVE',export_all_vertex_colors=False)

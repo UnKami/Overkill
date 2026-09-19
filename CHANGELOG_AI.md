@@ -586,3 +586,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
 - Verification: final 079 build/import/render checks pass; exact duration, idle-matched all-bone endpoints, fixed feet, automatic return and 0.417 m sampled wrist rise. Revised front/intermediate/side views inspected. Prior idle regression passes.
 - Handoff: study only, no gameplay integration or installer update. Attack/hit/collapse/contact and exhaustive clearance remain. Larger art/performance/AAA objective remains active. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Custodian hit reaction
+- Branch: feat/yonatan-sentinel-production.
+- Completed: authored 0.8-second recoil/counter-motion/recovery with arm and finger response; H preview control, guard interruption, repeated-hit restart and automatic idle return.
+- Files: scripts/art/build_custodian.py; scripts/art/custodian_study_view.gd; source Blend/GLB; docs/custodian-production.md.
+- Verification: 080 build/import/render checks passed; exact duration, all-bone endpoint continuity, fixed feet, state interruption/restart/return. Head travel 66.9 mm. Primary/side poses inspected; guard and idle regressions passed.
+- Handoff: isolated study, no encounter wiring or installer update. Attack/collapse/contact, torso support detail, full clearance and production finish remain open. Performance and AAA acceptance remain unproven. Locks released.
