@@ -1,6 +1,6 @@
 # Boneghoul 3D production study
 
-Status: early, unreleased model study on `feat/yonatan-sentinel-production`. The published installer remains 0.19. This asset is not connected to production encounters and does not meet the final art target.
+Status: early, unreleased model study on `feat/yonatan-sentinel-production`. The published installer remains 0.20. This asset is not connected to production encounters and does not meet the final art target.
 
 The production direction remains dark cinematic fantasy in 3D. `assets/enemies/act1/boneghoul_idle.png` supplies the existing silhouette reference: hood, exposed skeleton, armored extremities, clawed hands and restrained cyan light.
 
@@ -10,7 +10,7 @@ Run Blender 4.5.9 in background mode with `art_source/characters/executioner-pro
 
 The body has 34,271 Blender vertices and four material surfaces: aged bone, iron, dark cloth and a muted core. Geometry includes ribs, vertebrae, clavicles, pelvis, paired limb bones, articulated claw segments, connected palms, clawed feet, recessed skull sockets, a separate jaw, hood, mantle and torn cloth strips. Evaluated foot geometry rests 0.006 m above the model ground plane.
 
-The original idle and an authored claw-rake study are exported. Shared combat actions are retained as reference actions in the Blender source, excluded from the GLB because their sword performance is inappropriate for this enemy.
+The original idle, claw-rake, claw-guard and claw-recoil studies are exported. Shared combat actions are retained as reference actions in the Blender source, excluded from the GLB because their sword performance is inappropriate for this enemy.
 
 ## Verification
 
@@ -42,3 +42,13 @@ Narrowed the lower cranium, deepened sockets and reduced/recessed cyan eye light
 Vulkan study, clip duration, foot/recovery checks and material-color import checks pass. Each non-core surface must contain nonuniform color and use it as albedo. Final skull close-up inspected in `.tools/038-verified/Godot/app_userdata/Overkill/boneghoul-036/skull.png`; build/import/runtime evidence is `.tools/038-build-verified.log`, `.tools/038-import-verified.log`, `.tools/038-verified.log` and `.tools/038-verified-errors.log`. No final script/assertion/shader errors; existing certificate warning remains. First separate facial rods and unused-color export candidates were rejected.
 
 The face still reads as simplified stylized anatomy. Jaw shape, nasal aperture, hood thickness/folds, sculpted damage, material microdetail and shoulder deformation remain below the target. Vertex staining is broad material variation, not a substitute for finished texture work. No performance or AAA acceptance is implied, and this study is not in the published installer.
+
+## Protective brace and unguarded recoil (unreleased)
+
+Added two authored reaction studies on the existing skinned body. The protective brace brings both claws up and inclines the torso forward. Unguarded recoil opens the arms and rocks the chest/head backward, followed by a restrained settling overshoot. Pelvis and legs remain in the planted stance. Exported durations include frame zero: guard 25/30 seconds, recoil 22/30 seconds. The body remains 34,271 Blender vertices and four surfaces.
+
+Rendered Vulkan and headless BONEGHOUL_REACTION_OK validate both clips, protective hand rise above 0.1 m, visible head displacement above 0.05 m, opposing brace/recoil directions, less than 2 mm foot drift and idle hand/head endpoints within 2 mm. Existing rake, skin/material and timing checks remain passing. Guard and recoil captures inspected in `.tools/043-final/Godot/app_userdata/Overkill/boneghoul-036/`; logs `.tools/043-build-final.log`, `.tools/043-import-final.log`, `.tools/043-final.log`, `.tools/043-final-errors.log`, `.tools/043-headless.log`.
+
+The first build rejected a negative quaternion-slerp factor for the settle; interpolation now uses a relative axis-angle rotation supporting the authored overshoot. That failed build and its stale-asset preview are not validation evidence. Final logs contain no build/script/assertion/shader failures; certificate-store and headless ObjectDB exit warnings remain.
+
+These are motion-blocking studies. Shoulder/cloth deformation, convincing weight transfer, death, actual opponent contact, interruption during gameplay and encounter routing remain unfinished. The published 0.20 installer does not include these new reactions. This is not AAA acceptance.

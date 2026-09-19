@@ -339,6 +339,42 @@ for frame,pose in poses:
         p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
 track=rig.animation_data.nla_tracks.new();track.name='claw_rake'
 track.strips.new('claw_rake',1,strike);track.mute=True
+# Separate protective and unguarded responses. Keep the pelvis/legs planted;
+# chest, neck and arms supply opposing silhouettes and a short settling beat.
+for name,keys in [
+    ('claw_guard',[(1,0),(4,.85),(7,1),(12,.92),(19,.30),(25,0)]),
+    ('claw_recoil',[(1,0),(3,.85),(6,1),(10,.65),(15,-.10),(22,0)])]:
+    reaction=bpy.data.actions.new(name)
+    rig.animation_data.action=None
+    for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
+    bpy.context.view_layer.update()
+    if name=='claw_guard':
+        aim('spine',(0,.30,1));aim('chest',(0,.65,1));aim('neck',(0,.18,1));aim('head',(0,.28,1))
+        for side,sign in [('L',-1),('R',1)]:
+            aim('upper_arm.'+side,(sign*.55,.45,-.5))
+            aim('forearm.'+side,(-sign*.6,.55,.9))
+            aim('hand.'+side,(-sign*.4,.55,.5))
+    else:
+        aim('spine',(0,-.15,1));aim('chest',(.2,-.35,1));aim('neck',(-.1,-.15,1));aim('head',(-.15,-.35,1))
+        for side,sign in [('L',-1),('R',1)]:
+            aim('upper_arm.'+side,(sign*.7,-.15,-.7))
+            aim('forearm.'+side,(sign*.4,.1,-1))
+            aim('hand.'+side,(0,.4,-.8))
+    target_basis={p.name:p.matrix_basis.copy() for p in rig.pose.bones}
+    for frame,amount in keys:
+        rig.animation_data.action=None
+        for p in rig.pose.bones:
+            loc,rot,scale=idle_basis[p.name].decompose()
+            end_loc,end_rot,end_scale=target_basis[p.name].decompose()
+            p.location=loc.lerp(end_loc,amount)
+            delta_rotation=rot.rotation_difference(end_rot)
+            p.rotation_quaternion=rot @ Quaternion(delta_rotation.axis,delta_rotation.angle*amount)
+            p.scale=scale.lerp(end_scale,amount)
+        rig.animation_data.action=reaction
+        for p in rig.pose.bones:
+            p.keyframe_insert('location',frame=frame);p.keyframe_insert('rotation_quaternion',frame=frame);p.keyframe_insert('scale',frame=frame)
+    track=rig.animation_data.nla_tracks.new();track.name=name
+    track.strips.new(name,1,reaction);track.mute=True
 rig.animation_data.action=None
 for p in rig.pose.bones:p.matrix_basis=idle_basis[p.name]
 bpy.context.scene.frame_set(1);bpy.context.view_layer.update()

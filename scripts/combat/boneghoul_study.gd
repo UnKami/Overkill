@@ -62,10 +62,13 @@ func _ready() -> void:
 	var animation: AnimationPlayer = _model.find_children("*","AnimationPlayer",true,false)[0]
 	var idle: StringName = &""
 	var claw: StringName = &""
+	var reactions: Dictionary = {}
 	for clip: StringName in animation.get_animation_list():
-		assert("combat_idle" in str(clip) or "claw_rake" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
+		assert("combat_idle" in str(clip) or "claw_rake" in str(clip) or "claw_guard" in str(clip) or "claw_recoil" in str(clip) or clip == &"RESET", "Unvalidated sword clips must not ship on the clawed model")
 		if "combat_idle" in str(clip): idle = clip
 		if "claw_rake" in str(clip): claw = clip
+		for kind: String in ["claw_guard","claw_recoil"]:
+			if kind in str(clip): reactions[kind] = clip
 	assert(idle != &"")
 	assert(claw != &"")
 	assert(absf(animation.get_animation(claw).length - 40.0/30.0) < 0.02, "Claw authoring timebase must be 30 fps")
@@ -122,6 +125,33 @@ func _ready() -> void:
 		await get_tree().process_frame
 		await capture(sample[0])
 	print("BONEGHOUL_CLAW_OK: authored anticipation, rake and recovery; planted feet; encounter contact pending")
+	assert(reactions.size() == 2)
+	var head: int = skeleton.find_bone("head")
+	var initial_head: Vector3 = skeleton.get_bone_global_pose(head).origin
+	var guard_shift: Vector3
+	for kind: String in ["claw_guard","claw_recoil"]:
+		var endpoint: float = 25.0/30.0 if kind == "claw_guard" else 22.0/30.0
+		assert(absf(animation.get_animation(reactions[kind]).length-endpoint) < 0.02)
+		animation.play(reactions[kind],0.0)
+		animation.pause()
+		animation.seek(7.0/30.0 if kind == "claw_guard" else 6.0/30.0,true)
+		skeleton.force_update_all_bone_transforms()
+		var head_shift: Vector3 = skeleton.get_bone_global_pose(head).origin-initial_head
+		assert(head_shift.length() > 0.05, "Reaction must visibly affect torso/head")
+		if kind == "claw_guard":
+			guard_shift = head_shift
+			assert(skeleton.get_bone_global_pose(palm).origin.y > initial_hand.y+0.1, "Brace must lift claws protectively")
+		else: assert(head_shift.dot(guard_shift) < 0, "Unguarded recoil must oppose the brace")
+		assert(skeleton.get_bone_global_pose(right_foot).origin.distance_to(feet[0]) < 0.002)
+		assert(skeleton.get_bone_global_pose(left_foot).origin.distance_to(feet[1]) < 0.002)
+		await get_tree().process_frame
+		await get_tree().process_frame
+		await capture(kind)
+		animation.seek(endpoint,true)
+		skeleton.force_update_all_bone_transforms()
+		assert(skeleton.get_bone_global_pose(head).origin.distance_to(initial_head) < 0.002)
+		assert(skeleton.get_bone_global_pose(palm).origin.distance_to(initial_hand) < 0.002)
+	print("BONEGHOUL_REACTION_OK: protective claws, opposing recoil, planted feet and idle endpoints")
 	print("BONEGHOUL_STUDY_OK: original skinned body, four surfaces, finger rig and authored idle; combat integration pending")
 	get_tree().quit()
 
