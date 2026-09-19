@@ -86,3 +86,9 @@ This file provides asynchronous context sharing between developers and their AI 
 - Completed: homepage, installer/install folders, update log, preview notes and checksum file point to v0.21.0-test. Partner path: Releases → 0.21.0 → Assets → OverkillSetup-0.21.0.exe; installed shortcut Play Boneghoul preview.
 - Verification: GitHub release is public prerelease at source 758700f0e211e391c693a77d8112f270bed2a380. All three assets return HTTP 200 and match local SHA-256. Exported launcher/retry, eight rendered encounter modes, starter/clock/preview/settings checks passed. Interactive installer wizard untested; art/performance are not AAA acceptance.
 - Handoff: gameplay remains on feat/yonatan-sentinel-production; this branch changes distribution documentation only. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — 0.22 distribution documentation prepared
+- Branch: feat/yonatan-022-downloads, based on current main.
+- Prepared: homepage, installer/install instructions, update log, detailed release notes and SHA-256 manifest for v0.22.0-test.
+- Validation: packaged game checks and six portable payload hashes pass on the source branch. GitHub installer asset uploaded; portable ZIP still transferring on the measured slow connection. Do not merge these links into main until the release is published and all uploaded digests/downloads are verified.
+- Scope: distribution documentation only; no gameplay merge. Publication handoff follows after verification.
