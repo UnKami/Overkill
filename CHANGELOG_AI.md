@@ -507,3 +507,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Verification: packaged runtime/PCK starter rules, Sentinel production, graphics settings, Boneghoul eight ending modes; explicit PCK preview/retry script asserts version 0.23.0. Six ZIP payload hashes match local source files. Final 069 package logs have no script/assertion/shader errors; known certificate warning only. Rendered Sentinel package frame reviewed.
 - Installer SHA256: 82e6723f0e4a7c820edc98853ef1802f8df1e9a77eda6144dd78e386b25e37d5. ZIP SHA256: f3f018fd52ea9e78b7e3530a51844387708dcdcc5abe4c7446698afdc7acdb3d.
 - Handoff: draft upload launched through .tools/069-upload.ps1; inspect current process/session and release before resuming. Do not duplicate uploads. Must verify three server asset digests, publish, verify HTTP access, then update main distribution docs. Public download remains 0.22 until verified. Publication locks retained. Interactive installer wizard and controlled performance remain unverified.
+
+## 2026-09-19 | Yonatan / Codex — 0.23 published and verified
+- Branch: feat/yonatan-sentinel-production. Release https://github.com/UnKami/Overkill/releases/tag/v0.23.0-test is public; tag independently resolves to a6fce5560dea25580ee01d03ff63eb3108832451.
+- Verified: three GitHub asset digests equal local SHA256, uploaded states, public HTTP 200 for installer/ZIP/checksum. .tools/069-publish.ps1 and verify023.ps1 completed successfully. Upload session 29654 completed; do not restart.
+- Distribution PR https://github.com/UnKami/Overkill/pull/12 merged as b2549ad560b3df54c96a9aedeca51df3941af945. Homepage, installer README and update log read back from main with 0.23.0.
+- Partner navigation: Overkill -> Releases -> 0.23.0 -> Assets -> OverkillSetup-0.23.0.exe. After installing: Play Sentinel encounter; Boneghoul preview also available.
+- Source branch documentation synchronized. Publication locks released. Interactive installer wizard and controlled performance remain unverified; overall AAA objective remains active.
