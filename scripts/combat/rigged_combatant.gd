@@ -153,8 +153,8 @@ func _build_equipment() -> void:
 	grip.height = 0.25
 	var grip_piece := _mesh(_weapon, grip, Vector3(0,0.05,0), leather)
 	grip_piece.rotation.x = PI / 2
-	_box(_weapon, Vector3(0,0.05,0.14), Vector3(0.30,0.045,0.045), _gold)
 	if hostile and archetype in ["sentinel", "bulwark", "twin", "eclipse"]:
+		_box(_weapon, Vector3(0,0.05,0.14), Vector3(0.30,0.045,0.045), _gold)
 		_box(_weapon, Vector3(0,0.05,0.48), Vector3(0.045,0.045,0.68), steel)
 		_beveled_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.52,0.27,0.27), steel)
 		_beveled_box(_weapon, Vector3(0,0.05,0.82), Vector3(0.075,0.29,0.29), _gold)
@@ -163,6 +163,7 @@ func _build_equipment() -> void:
 		for mark: int in 3:
 			_box(_weapon, Vector3(-0.14 + mark * 0.14,0.193,0.82), Vector3(0.025,0.004,0.10), _glow)
 	else:
+		ForgedArmor.executioner_hilt(_weapon, leather, _gold, steel)
 		ForgedArmor.executioner_blade(_weapon, steel, _metal(Color("828d95"),0.72))
 		for n: int in 4:
 			_box(_weapon, Vector3(0,0.079,0.38+n*0.12), Vector3(0.022,0.003,0.03), _gold)

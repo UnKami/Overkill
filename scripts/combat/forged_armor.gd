@@ -120,6 +120,56 @@ static func executioner(skeleton: Skeleton3D, steel: Material, trim: Material) -
 	var chest: Node3D = mount(skeleton, "chest")
 	plate(chest, Vector3(0, 1.43, -0.12), Vector3(0.20, 0.12, 0.26), steel, trim, Basis(Vector3.RIGHT, -PI * 0.5))
 
+static func executioner_hilt(parent: Node3D, leather: Material, trim: Material, steel: Material) -> void:
+	# Swept, tapered quillons: a forged silhouette with a rounded octagonal section.
+	var guard: SurfaceTool = SurfaceTool.new()
+	guard.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for strip: int in 20:
+		for side: int in 8:
+			for uv: Vector2i in [Vector2i(strip,side),Vector2i(strip+1,side),Vector2i(strip,side+1),Vector2i(strip+1,side),Vector2i(strip+1,side+1),Vector2i(strip,side+1)]:
+				var t: float = uv.x / 20.0 * 2.0 - 1.0
+				var angle: float = uv.y / 8.0 * TAU
+				var thickness: float = lerpf(0.022,0.009,pow(absf(t),0.65))
+				guard.add_vertex(Vector3(t*0.155,0.05+cos(angle)*thickness,0.14-0.038*t*t+sin(angle)*thickness))
+	# Close the tips to avoid a hollow end visible in close-up.
+	for end: float in [-1.0,1.0]:
+		for side: int in 8:
+			var a: float = side / 8.0 * TAU
+			var b: float = (side+1) / 8.0 * TAU
+			var center: Vector3 = Vector3(end*0.155,0.05,0.102)
+			guard.add_vertex(center)
+			for angle: float in ([b,a] if end > 0 else [a,b]):
+				guard.add_vertex(center+Vector3(0,cos(angle)*0.009,sin(angle)*0.009))
+	guard.generate_normals()
+	add_mesh(parent,guard.commit(),trim)
+	# Raised leather seams catch the key light without introducing another finish.
+	for wrap: int in 10:
+		var ring: TorusMesh = TorusMesh.new()
+		ring.inner_radius = 0.0255
+		ring.outer_radius = 0.0285
+		ring.rings = 16
+		ring.ring_segments = 6
+		var seam: MeshInstance3D = add_mesh(parent,ring,leather)
+		seam.rotation.x = PI/2.0
+		seam.position = Vector3(0,0.05,-0.108+wrap*0.023)
+	for end: float in [-0.124,0.122]:
+		var collar: CylinderMesh = CylinderMesh.new()
+		collar.top_radius = 0.030
+		collar.bottom_radius = 0.030
+		collar.height = 0.012
+		collar.radial_segments = 16
+		var ferrule: MeshInstance3D = add_mesh(parent,collar,trim)
+		ferrule.rotation.x = PI/2.0
+		ferrule.position = Vector3(0,0.05,end)
+	var pommel: SphereMesh = SphereMesh.new()
+	pommel.radius = 0.039
+	pommel.height = 0.064
+	pommel.radial_segments = 16
+	pommel.rings = 8
+	var counterweight: MeshInstance3D = add_mesh(parent,pommel,steel)
+	counterweight.rotation.x = PI/2.0
+	counterweight.position = Vector3(0,0.05,-0.151)
+
 static func executioner_blade(parent: Node3D, steel: Material, edge_material: Material) -> void:
 	# A broad execution blade with bevels catches a thin highlight along its edge.
 	var outline: PackedVector2Array = PackedVector2Array([

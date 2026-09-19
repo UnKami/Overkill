@@ -401,3 +401,10 @@ This file provides asynchronous context sharing between developers and their AI 
 - Files: scripts/combat/rigged_combatant.gd; scripts/combat/weapon_grip_test.gd; docs/sentinel-production.md.
 - Verification: baseline 124.81/132.00-degree adjacent orientation snaps reduced to 21.02/20.28 degrees during the strike. Rendered grip, Boneghoul contact/guard/interruption and Sentinel production checks pass; close-up reviewed. Evidence `.tools/054-*`; no final script/assertion/shader failures, known certificate warning remains.
 - Handoff: continuous roll does not solve all finger/weapon alignment, choreography, art or performance needs. Not AAA acceptance. Published installer remains 0.21. Locks released.
+
+## 2026-09-19 | Yonatan / Codex — Forged sword hilt refinement
+- Branch: feat/yonatan-sentinel-production.
+- Completed: swept tapered crossguard, leather wrap seams, grip collars and steel pommel using existing finishes and batching.
+- Files: scripts/combat/forged_armor.gd; scripts/combat/rigged_combatant.gd; docs/sentinel-production.md.
+- Verification: corrected initial inward guard winding; final zero-inward-normal audit, rendered grip/continuity and Sentinel production suites pass. Four weapon batches retained. Vulkan windup/impact close-ups reviewed. Evidence `.tools/055-normals-final.log`, `055-final-*`. First unisolated audit launch crashed; isolated rerun passed. Known warnings documented.
+- Handoff: refinement remains below overall AAA target; broader anatomy, animation and performance work continues. Published 0.21 unchanged. Locks released.
