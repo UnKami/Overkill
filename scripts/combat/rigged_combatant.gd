@@ -24,6 +24,9 @@ var _trail_material: StandardMaterial3D
 var _metal_cache: Dictionary = {}
 var _clip_cache: Dictionary = {}
 var _grip_bones: Array[Vector2i] = []
+var _ability_hammer: Node3D
+var _base_weapon_parts: Array[Node] = []
+var _active_attack_profile: Dictionary = {}
 const AUTHORED_ATTACK_TIMES: Array[float] = [0.0, 0.20, 0.32, 0.40, 0.76]
 const HEAVY_ATTACK_TIMES: Array[float] = [0.0, 0.30, 0.46, 0.56, 1.08]
 
@@ -174,6 +177,9 @@ func _build_equipment() -> void:
 	# Equipment is rigid in weapon space: combine matching finishes once, preserving
 	# every bevel and inlay while reducing submissions in color and shadow passes.
 	ForgedArmor.combine_finish(_weapon)
+	if not hostile:
+		_base_weapon_parts.assign(_weapon.get_children())
+		_build_ability_hammer()
 	if hostile and archetype == "sentinel":
 		_build_cloak()
 		return
@@ -370,25 +376,29 @@ func _update_trail(delta: float) -> void:
 		var previous: Dictionary = _trail_points[i-1]
 		var next: Dictionary = _trail_points[i]
 		for vertex in [[previous,"root"],[previous,"tip"],[next,"tip"],[previous,"root"],[next,"tip"],[next,"root"]]:
-			var color := Color("ebb27c") if hostile else Color("8ad5e1")
+			var color := Color("ebb27c") if hostile else (Color("ff9d42") if AttackPresentation.is_heavy_hammer(_active_attack_profile) else Color("8ad5e1"))
 			color.a = (1.0-vertex[0].age/0.11)*0.25
 			surface.set_color(color)
 			surface.add_vertex(vertex[0][vertex[1]])
 	_trail.mesh = surface.commit()
 
-func attack() -> void:
+func attack(profile: Dictionary = {}) -> void:
 	if _dead: return
+	_active_attack_profile = profile
+	_set_heavy_hammer(AttackPresentation.is_heavy_hammer(profile))
 	_play("execution_cut",0.06)
 	if _motion and _motion.is_valid(): _motion.kill()
 	_model.position = Vector3.ZERO
 
 func hit(blocked: bool) -> void:
 	if _dead: return
+	_set_heavy_hammer(false)
 	_play("guard" if blocked else "hit",0.025)
 
 func fall() -> void:
 	if _dead: return
 	_dead = true
+	_set_heavy_hammer(false)
 	if _motion and _motion.is_valid(): _motion.kill()
 	_play("death",0.08)
 	# The defeated mechanism powers down; materials are private to this actor.
@@ -398,7 +408,41 @@ func fall() -> void:
 		power_down.tween_property(light_material,"albedo_color",Color("101216"),0.48)
 
 func _animation_finished(_name: StringName) -> void:
+	_set_heavy_hammer(false)
+	_active_attack_profile.clear()
 	if not _dead: _play("combat_idle",0.12)
+
+
+func _build_ability_hammer() -> void:
+	_ability_hammer = Node3D.new()
+	_ability_hammer.name = "HeavyHammerAbility"
+	_weapon.add_child(_ability_hammer)
+	var energy := StandardMaterial3D.new()
+	energy.albedo_color = Color("ff9d42")
+	energy.metallic = 0.72
+	energy.roughness = 0.22
+	energy.emission_enabled = true
+	energy.emission = Color("ff6d24")
+	energy.emission_energy_multiplier = 2.8
+	var handle_mat := StandardMaterial3D.new()
+	handle_mat.albedo_color = Color("4a2d20")
+	handle_mat.roughness = 0.82
+	var handle := CylinderMesh.new()
+	handle.top_radius = 0.035
+	handle.bottom_radius = 0.045
+	handle.height = 0.82
+	var handle_piece := _mesh(_ability_hammer, handle, Vector3(0,0.05,0.40), handle_mat)
+	handle_piece.rotation.x = PI * 0.5
+	_beveled_box(_ability_hammer, Vector3(0,0.05,0.88), Vector3(0.62,0.30,0.28), energy)
+	_beveled_box(_ability_hammer, Vector3(0,0.05,0.88), Vector3(0.12,0.35,0.34), energy)
+	_ability_hammer.hide()
+
+
+func _set_heavy_hammer(enabled: bool) -> void:
+	if not is_instance_valid(_ability_hammer): return
+	for part: Node in _base_weapon_parts:
+		if is_instance_valid(part) and part is VisualInstance3D: part.visible = not enabled
+	_ability_hammer.visible = enabled
 
 func _beveled_box(parent: Node3D, at: Vector3, dimensions: Vector3, material: Material) -> MeshInstance3D:
 	var half: Vector3 = dimensions * 0.5

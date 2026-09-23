@@ -13,28 +13,20 @@ func _ready() -> void:
 	stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ScreenDesign.shade(self)
 	ScreenDesign.frame(self,"CHOOSE YOUR EXECUTIONER")
+	# This screen ends at the Back action; the global motto reads like stray
+	# explanatory copy underneath it here, so keep the character page clean.
+	for child: Node in get_children():
+		if child is Label and child.text == "BIND THE HOURS. BREAK THE CYCLE.":
+			child.queue_free()
 	var column := ScreenDesign.column(self,0.16,0.40)
 	ScreenDesign.label(column,"01  /  THE EXECUTIONER",18,ScreenDesign.CYAN)
 	ScreenDesign.label(column,"Death by\ndesign.",66,ScreenDesign.TEXT,true)
 	var description := ScreenDesign.label(column,"A keeper of forbidden hours. Turn ancient relics into a killing mechanism — and make every final blow count.",23,ScreenDesign.MUTED)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ScreenDesign.spacer(column,12)
+	ScreenDesign.spacer(column,18)
 	ScreenDesign.rule(column)
-	var stats := HBoxContainer.new()
-	stats.add_theme_constant_override("separation",38)
-	column.add_child(stats)
-	for entry in [["75","VITALITY"],["9","CLOCK SLOTS"],["3","RESERVES"]]:
-		var stat := VBoxContainer.new()
-		stats.add_child(stat)
-		ScreenDesign.label(stat,entry[0],36,ScreenDesign.GOLD,true)
-		ScreenDesign.label(stat,entry[1],15,ScreenDesign.MUTED)
-	ScreenDesign.rule(column)
-	ScreenDesign.spacer(column,8)
-	ScreenDesign.label(column,"YOUR CLOCK. YOUR KILLING SEQUENCE.",17,ScreenDesign.CYAN)
-	var mechanics := ScreenDesign.label(column,"Bind a relic to each hour. Keep six in reserve.\nReplace relics between three-hour sweeps.\nDamage beyond lethal becomes Overkill currency.",21)
-	mechanics.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ScreenDesign.spacer(column,14)
-	_start_button = ScreenDesign.button(column,"ENTER THE CHRONOFORGE   ›",_on_start_pressed,true)
+	ScreenDesign.spacer(column,18)
+	_start_button = ScreenDesign.button(column,"STANDART BATTLE   ›",_on_start_pressed,true)
 	ScreenDesign.button(column,"‹   BACK",func() -> void: GameFlow.goto_title())
 	_start_button.grab_focus()
 	ScreenDesign.reveal(column)

@@ -76,7 +76,10 @@ var _guidance: BattleGuidance
 
 var _pending_enemies: Array[EnemyData] = []
 var _pending_background_id: String = ""
-var _is_started: bool = false
+var _is_prepared: bool = false
+var _phase_started: bool = false
+var _pending_intro: bool = false
+var _battle_intro: BattleIntroSequence
 
 
 func _ready() -> void:
@@ -195,15 +198,39 @@ func _ready() -> void:
 		guide.canceled.connect(guide.queue_free)
 		guide.popup_centered(Vector2i(1000,580)))
 	_player_chrono.socket_pressed.connect(_on_player_socket_pressed)
-	if not _is_started and not _pending_enemies.is_empty():
-		_begin_combat()
+	if not _is_prepared and not _pending_enemies.is_empty():
+		_prepare_combat(_pending_intro)
+		if not _pending_intro: _start_prepared_combat()
 
 
 func start_combat(incoming_enemies: Array[EnemyData], background_id: String = "") -> void:
 	_pending_enemies = incoming_enemies
 	_pending_background_id = background_id
+	_pending_intro = false
 	if is_node_ready():
-		_begin_combat()
+		_prepare_combat(false)
+		_start_prepared_combat()
+
+
+func prepare_combat(incoming_enemies: Array[EnemyData], background_id: String = "") -> void:
+	_pending_enemies = incoming_enemies
+	_pending_background_id = background_id
+	_pending_intro = true
+	if is_node_ready(): _prepare_combat(true)
+
+
+func begin_combat_intro() -> void:
+	if _phase_started: return
+	if not _is_prepared: _prepare_combat(true)
+	_phase_started = true
+	if is_instance_valid(_battle_intro): await _battle_intro.play()
+	_start_phase_one()
+
+
+func _start_prepared_combat() -> void:
+	if _phase_started: return
+	_phase_started = true
+	_start_phase_one()
 
 func _install_directed_stage() -> void:
 	if _stage is DirectedArena: return
@@ -221,10 +248,10 @@ func _install_directed_stage() -> void:
 	_stage.set_decision_view(_choice_overlay.visible)
 
 
-func _begin_combat() -> void:
-	if _is_started:
+func _prepare_combat(with_intro: bool) -> void:
+	if _is_prepared:
 		return
-	_is_started = true
+	_is_prepared = true
 	enemies_data = _pending_enemies
 	var background_id := _pending_background_id
 	_combat_over = false
@@ -237,7 +264,12 @@ func _begin_combat() -> void:
 	player_next_attack_multiplier = 1
 
 	var main_enemy: EnemyData = enemies_data[0] if not enemies_data.is_empty() else null
-	if main_enemy and (main_enemy.id == "act1_boss" or (main_enemy.id == "act2_elite" and OS.get_cmdline_user_args().has("--custodian-3d")) or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
+	# The directed 3D encounter remains a development showcase until its player
+	# model unmistakably matches the illustrated Executioner. Campaign navigation
+	# uses the cohesive illustrated stage for bosses as well as regular fights;
+	# direct showcase/test scenes can still exercise all authored 3D work.
+	var direct_showcase: bool = not with_intro and main_enemy != null and main_enemy.id == "act1_boss"
+	if main_enemy and (direct_showcase or (main_enemy.id == "act1_boss" and OS.get_cmdline_user_args().has("--boss-3d")) or (main_enemy.id == "act2_elite" and OS.get_cmdline_user_args().has("--custodian-3d")) or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
 		_install_directed_stage()
 	if main_enemy != null:
 		enemy_max_hp = main_enemy.max_hp
@@ -257,9 +289,10 @@ func _begin_combat() -> void:
 		socket.previewed.connect(_preview_swap)
 		socket.preview_ended.connect(_refresh_guidance)
 	_update_stats_display()
-
-	# Start Phase 1
-	_start_phase_one()
+	if with_intro:
+		_battle_intro = preload("res://scripts/combat/battle_intro_sequence.gd").new()
+		add_child(_battle_intro)
+		_battle_intro.prime(self, _stage)
 
 
 func _load_visual_assets(main_enemy: EnemyData, background_id: String) -> void:
@@ -662,21 +695,24 @@ func _resolve_tick(hour: int) -> void:
 
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
+	var profile: Dictionary = AttackPresentation.for_relic(p_socket.slotted_relic)
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
-	_stage.attack(true)
+	_stage.attack(true, profile)
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
-	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, Color("7bd6de"))
+	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, profile.get("accent", Color("7bd6de")))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if enemy_block >= amount else ("shatter" if enemy_block > 0 else "strike"))
-	_stage.impact(false, enemy_block >= amount)
+	_stage.impact(false, enemy_block >= amount, profile)
 	var nexus_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
-	if not _stage is DirectedArena:
-		CombatVFX.play_slash(self, nexus_pos, randf_range(-40, 40), Color(0.8, 1.4, 1.8))
-		CombatVFX.play_hit_sparks(self, nexus_pos, Color(1.0, 0.9, 0.5), 6)
+	if not _stage is DirectedArena or AttackPresentation.is_heavy_hammer(profile):
+		AttackPresentation.play_canvas_impact(self, nexus_pos, profile)
 	AmbientMotion.flash(_enemy_portrait, Color(2.0, 0.8, 0.8), 0.15)
+	if AttackPresentation.is_heavy_hammer(profile):
+		AmbientMotion.shake(self, float(profile.get("shake", 9.0)), 0.22)
+		await get_tree().create_timer(float(profile.get("impact_hold", 0.055)) / AudioManager.animation_speed_scale()).timeout
 
 	# Hazard modifier check (recoil)
 	if p_socket.is_hazard:
@@ -854,15 +890,22 @@ func _finish_presentation(won: bool) -> void:
 
 
 func _update_stats_display() -> void:
-	_player_stats_label.text = "%d / %d HP   ·   %d BLOCK\n%s" % [maxi(player_hp, 0), player_max_hp, player_block, _status_text(player_strength, player_bleed, player_thorns, player_weak, player_vulnerable)]
+	_player_stats_label.text = _combatant_stats_text(maxi(player_hp, 0), player_max_hp, player_block, _status_text(player_strength, player_bleed, player_thorns, player_weak, player_vulnerable))
 	if player_next_attack_multiplier > 1:
 		_player_stats_label.text += "  ·  NEXT ATTACK ×%d" % player_next_attack_multiplier
-	_enemy_stats_label.text = "%d / %d HP   ·   %d BLOCK\n%s" % [maxi(enemy_hp, 0), enemy_max_hp, enemy_block, _status_text(enemy_strength, enemy_bleed, enemy_thorns, enemy_weak, enemy_vulnerable)]
+	_enemy_stats_label.text = _combatant_stats_text(maxi(enemy_hp, 0), enemy_max_hp, enemy_block, _status_text(enemy_strength, enemy_bleed, enemy_thorns, enemy_weak, enemy_vulnerable))
 	_hud.bind_clock_state(player_hp, player_max_hp)
 	for entry in [[_player_portrait, player_hp, player_max_hp], [_enemy_portrait, enemy_hp, enemy_max_hp]]:
-		var bar: ProgressBar = _player_chrono.get_node("Vitality") if entry[0] == _player_portrait else _enemy_chrono.get_node("Vitality")
+		var bar: ProgressBar = entry[0].get_node("Vitality")
 		bar.max_value = entry[2]
 		bar.value = maxi(entry[1], 0)
+
+
+func _combatant_stats_text(hp: int, max_hp: int, block: int, statuses: String) -> String:
+	var text := "%d / %d HP\nBLOCK  %d" % [hp, max_hp, block]
+	if not statuses.is_empty():
+		text += "  ·  " + statuses
+	return text
 
 
 func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable: int) -> String:

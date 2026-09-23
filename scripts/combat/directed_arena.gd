@@ -18,6 +18,8 @@ var _attacking_player: bool = true
 var _sparks: Array[Dictionary] = []
 var _spark_batch: MultiMeshInstance3D
 var _spark_instances: MultiMesh
+var _ability_motion: Tween
+var _attack_profile: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -233,10 +235,14 @@ func _update_composition(animate: bool) -> void:
 	_composition_motion.tween_property(_camera,"position",target_position,0.32)
 	_composition_motion.tween_property(_camera,"v_offset",target_offset,0.32)
 
-func attack(from_player: bool) -> void:
+func attack(from_player: bool, profile: Dictionary = {}) -> void:
 	if _finished: return
 	_attacking_player = from_player
-	(player if from_player else enemy).attack()
+	_attack_profile = profile
+	var actor: Node3D = player if from_player else enemy
+	if actor is RiggedCombatant: actor.attack(profile)
+	else: actor.attack()
+	if from_player and AttackPresentation.is_heavy_hammer(profile): _play_heavy_lunge(actor, enemy)
 	if AudioManager.reduced_motion: return
 	if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
 	_camera_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
@@ -244,25 +250,26 @@ func attack(from_player: bool) -> void:
 	_camera_motion.tween_property(_camera, "fov", 38.2, 0.3).set_trans(Tween.TRANS_SINE)
 	_camera_motion.tween_property(_camera, "h_offset", -0.06 if from_player else 0.06, 0.3)
 
-func impact(on_player: bool, blocked: bool) -> void:
+func impact(on_player: bool, blocked: bool, profile: Dictionary = {}) -> void:
 	if _finished: return
 	(player if on_player else enemy).hit(blocked)
 	var target: Vector3 = contact_point(on_player)
 	_impact_light.position = target
-	_impact_light.light_color = Color("8ceaff") if blocked else Color("ffd296")
-	_impact_light.light_energy = 2.8 if blocked else 4.0
+	var heavy: bool = AttackPresentation.is_heavy_hammer(profile)
+	_impact_light.light_color = Color("8ceaff") if blocked else (Color("ff9d42") if heavy else Color("ffd296"))
+	_impact_light.light_energy = 2.8 if blocked else (6.8 if heavy else 4.0)
 	create_tween().tween_property(_impact_light, "light_energy", 0.0, 0.2)
-	_emit_sparks(target, blocked)
+	_emit_sparks(target, blocked, 22 if heavy else 12, Color("ffad52") if heavy else Color.TRANSPARENT)
 	if blocked: guard_pulse(on_player)
 	if AudioManager.reduced_motion: return
 	if _camera_motion and _camera_motion.is_valid(): _camera_motion.kill()
-	_camera.h_offset += -0.025 if on_player else 0.025
+	_camera.h_offset += (-0.055 if on_player else 0.055) if heavy else (-0.025 if on_player else 0.025)
 	_camera_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
 	_camera_motion.set_parallel(true)
 	_camera_motion.tween_property(_camera, "h_offset", 0.0, 0.36).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_camera_motion.tween_property(_camera, "fov", 39.0, 0.48).set_trans(Tween.TRANS_SINE)
 
-func _emit_sparks(at: Vector3, blocked: bool) -> void:
+func _emit_sparks(at: Vector3, blocked: bool, count: int = 12, accent: Color = Color.TRANSPARENT) -> void:
 	if not is_instance_valid(_spark_batch):
 		var mat: StandardMaterial3D = _material(Color.WHITE)
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -285,8 +292,9 @@ func _emit_sparks(at: Vector3, blocked: bool) -> void:
 		_spark_batch.multimesh = _spark_instances
 		_spark_batch.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_world.add_child(_spark_batch)
-	for i in range(12):
-		_sparks.append({"position": at, "color":Color("81deff") if blocked else Color("ffd08a"), "velocity": Vector3(randf_range(-2.2,2.2),randf_range(0.7,2.8),randf_range(-0.6,1.4)), "life": 0.0})
+	for i in range(count):
+		var spark_color: Color = accent if accent.a > 0.0 else (Color("81deff") if blocked else Color("ffd08a"))
+		_sparks.append({"position": at, "color":spark_color, "velocity": Vector3(randf_range(-2.2,2.2),randf_range(0.7,2.8),randf_range(-0.6,1.4)), "life": 0.0})
 	_sync_sparks()
 
 func _sync_sparks() -> void:
@@ -415,3 +423,52 @@ func await_contact(from_player: bool) -> void:
 	while is_instance_valid(actor) and not _finished and not actor._dead and not actor.at_contact():
 		await get_tree().process_frame
 	if is_instance_valid(actor) and not _finished: actor.prepare_contact()
+
+
+func _play_heavy_lunge(actor: Node3D, target: Node3D) -> void:
+	if AudioManager.reduced_motion: return
+	if _ability_motion and _ability_motion.is_valid(): _ability_motion.kill()
+	var origin: Vector3 = actor.position
+	var direction: Vector3 = (target.position - origin).normalized()
+	var crouch: Vector3 = origin - direction * 0.08 + Vector3.DOWN * 0.035
+	var airborne: Vector3 = origin.lerp(target.position, 0.27) + Vector3.UP * 0.18
+	_ability_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+	_ability_motion.tween_property(actor, "position", crouch, 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_ability_motion.tween_property(actor, "position", airborne, 0.20).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	_ability_motion.tween_interval(0.055)
+	_ability_motion.tween_property(actor, "position", origin, 0.32).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+
+func set_intro_hidden() -> void:
+	player.hide()
+	enemy.hide()
+
+
+func reveal_combatant(from_player: bool) -> void:
+	var actor: Node3D = player if from_player else enemy
+	var target_scale: Vector3 = actor.scale
+	actor.show()
+	_spawn_entry_ring(actor, Color("70d8e4") if from_player else Color("e08b69"))
+	if AudioManager.reduced_motion: return
+	actor.scale = target_scale * 0.82
+	var reveal := create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+	reveal.tween_property(actor, "scale", target_scale, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _spawn_entry_ring(actor: Node3D, color: Color) -> void:
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.35
+	ring.outer_radius = 0.38
+	ring.rings = 48
+	ring.ring_segments = 6
+	var material := _material(color)
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color.a = 0.75
+	var effect := _mesh(ring, actor.position + Vector3.UP * 0.015, material)
+	effect.rotation.x = PI * 0.5
+	effect.scale = Vector3.ONE * 0.35
+	var pulse := create_tween().set_parallel(true)
+	pulse.tween_property(effect, "scale", Vector3.ONE * 1.35, 0.34).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	pulse.tween_property(material, "albedo_color:a", 0.0, 0.34)
+	pulse.chain().tween_callback(effect.queue_free)

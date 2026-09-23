@@ -1,5 +1,7 @@
 class_name IllustratedActor extends Control
 ## Pose atlas with eased anticipation, strike travel, recoil and recovery.
+const HEAVY_HAMMER_PATH := "res://assets/vfx/heavy_hammer_strike.png"
+
 var atlas: Texture2D
 var facing: float = 1.0
 var target_height: float = 310.0
@@ -13,6 +15,8 @@ var _origin := Vector2.ZERO
 var _frame_bottoms: Array[float] = []
 var _pose_origin := Vector2.ZERO
 var _art_scale: float = 1.0
+var _ability_weapon: Node2D
+var _ability_weapon_motion: Tween
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -76,18 +80,54 @@ func _begin() -> void:
 	_front.rotation = 0
 	_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
 
-func attack() -> void:
+func attack(profile: Dictionary = {}) -> void:
 	_contact_ready = false
 	_begin()
+	var anticipation: float = float(profile.get("anticipation", 0.19))
+	var travel: float = float(profile.get("travel", 0.07))
+	var impact_hold: float = float(profile.get("impact_hold", 0.085))
+	var recovery: float = float(profile.get("recovery", 0.27))
+	var travel_pixels: float = float(profile.get("travel_pixels", 42.0))
+	var lift_pixels: float = float(profile.get("lift_pixels", 0.0))
+	var heavy: bool = AttackPresentation.is_heavy_hammer(profile)
 	set_pose(1)
-	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * 14.0, 0.19).set_trans(Tween.TRANS_CUBIC)
+	if heavy: _play_spectral_hammer(profile)
+	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * (22.0 if heavy else 14.0), anticipation).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_motion.parallel().tween_property(_front, "position:y", _pose_origin.y + (7.0 if heavy else 0.0), anticipation)
 	_motion.tween_callback(func() -> void: set_pose(2))
-	_motion.tween_property(_front, "position:x", _pose_origin.x + facing * 42.0, 0.07).set_trans(Tween.TRANS_EXPO)
+	_motion.tween_property(_front, "position:x", _pose_origin.x + facing * travel_pixels, travel).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	_motion.parallel().tween_property(_front, "position:y", _pose_origin.y - lift_pixels, travel).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_motion.tween_callback(func() -> void: _contact_ready = true)
-	_motion.tween_interval(0.085)
+	_motion.tween_interval(impact_hold)
 	_motion.tween_callback(func() -> void: set_pose(3))
-	_motion.tween_property(_front, "position:x", _pose_origin.x, 0.27).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_motion.tween_property(_front, "position:x", _pose_origin.x, recovery).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_motion.parallel().tween_property(_front, "position:y", _pose_origin.y, recovery).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	_motion.tween_callback(_rest)
+
+
+func _play_spectral_hammer(profile: Dictionary) -> void:
+	if is_instance_valid(_ability_weapon): _ability_weapon.queue_free()
+	_ability_weapon = Node2D.new()
+	_ability_weapon.z_index = 8
+	_ability_weapon.position = _front.size * Vector2(0.5, 0.58)
+	_ability_weapon.scale.x = facing
+	# Parenting the ability weapon to the animated pose makes it travel with the
+	# Executioner's launch instead of hovering where the idle frame began.
+	_front.add_child(_ability_weapon)
+	var weapon := Sprite2D.new()
+	weapon.texture = load(HEAVY_HAMMER_PATH)
+	weapon.scale = Vector2(0.17, 0.17)
+	# Offset the art so the tween rotates around the lower grip in the
+	# Executioner's hands instead of around the center of the image.
+	weapon.position = Vector2(0, -55)
+	_ability_weapon.add_child(weapon)
+	_ability_weapon.modulate.a = 0.0
+	_ability_weapon.rotation = -1.0 * facing
+	_ability_weapon_motion = _ability_weapon.create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	_ability_weapon_motion.tween_property(_ability_weapon, "modulate:a", 1.0, 0.10)
+	_ability_weapon_motion.tween_property(_ability_weapon, "rotation", 1.38 * facing, float(profile.get("anticipation",0.22)) + float(profile.get("travel",0.18))).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
+	_ability_weapon_motion.chain().tween_property(_ability_weapon, "modulate:a", 0.0, float(profile.get("recovery",0.34)))
+	_ability_weapon_motion.chain().tween_callback(_ability_weapon.queue_free)
 
 func hit(blocked: bool) -> void:
 	_begin()

@@ -28,11 +28,17 @@ const DECK_VIEW_SCENE_PATH := "res://scenes/deck_view.tscn"
 const SETTINGS_PANEL_SCENE_PATH := "res://scenes/settings_panel.tscn"
 const EXCESS_CELEBRATION_SCENE_PATH := "res://scenes/excess_unlock_celebration.tscn"
 const ACT_TRANSITION_SCENE_PATH := "res://scenes/act_transition_screen.tscn"
+const PRE_BATTLE_OFFER_SCENE_PATH := "res://scenes/pre_battle_offer.tscn"
+const CARD_UPGRADE_SELECTION_SCENE_PATH := "res://scenes/card_upgrade_selection.tscn"
 
 var _overlay_layer: CanvasLayer
 var _active_pause_overlay: Control = null
 var _active_deck_view_overlay: Control = null
 var _active_settings_overlay: Control = null
+var _transitioning: bool = false
+var _pending_combat_enemies: Array[EnemyData] = []
+var _pending_combat_background: String = ""
+var _pending_combat_node_id: String = ""
 
 
 func _ready() -> void:
@@ -73,32 +79,32 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func goto_title() -> void:
-	_swap_scene(load(TITLE_SCENE_PATH).instantiate())
+	_swap_scene(load(TITLE_SCENE_PATH).instantiate(), "TITLE")
 
 
 func goto_class_select() -> void:
-	_swap_scene(load(CLASS_SELECT_SCENE_PATH).instantiate())
+	_swap_scene(load(CLASS_SELECT_SCENE_PATH).instantiate(), "CHOOSE YOUR EXECUTIONER")
 
 
 func goto_map() -> void:
-	_swap_scene(load(MAP_SCENE_PATH).instantiate())
+	_swap_scene(load(MAP_SCENE_PATH).instantiate(), "THE ASCENT")
 
 
 func goto_shop() -> void:
 	var shop := preload("res://scripts/ui/clock_collection_screen.gd").new()
 	shop.mode = "shop"
-	_swap_scene(shop)
+	_swap_scene(shop, "THE CLOCKWRIGHT")
 
 
 func goto_rest_site() -> void:
-	_swap_scene(load(REST_SITE_SCENE_PATH).instantiate())
+	_swap_scene(load(REST_SITE_SCENE_PATH).instantiate(), "REST SITE")
 
 
 func goto_event(event_data: EventData) -> void:
 	var scene: PackedScene = load(EVENT_SCENE_PATH)
 	var instance := scene.instantiate()
 	instance.set_event(event_data)
-	_swap_scene(instance)
+	_swap_scene(instance, "EVENT")
 
 
 ## Accepts 1+ enemies (a "pack") - map_screen builds a 1-element array for
@@ -106,18 +112,58 @@ func goto_event(event_data: EventData) -> void:
 ## array for the rare trash-pack nodes map_generator rolls.
 func goto_combat(enemies_data: Array[EnemyData], background_id: String = "") -> void:
 	var scene: PackedScene = load(COMBAT_SCENE_PATH)
-	var instance := scene.instantiate()
+	var instance: CombatController = scene.instantiate()
 	instance.combat_won.connect(_on_combat_won)
 	instance.combat_lost.connect(_on_combat_lost)
-	_swap_scene(instance)
-	instance.start_combat(enemies_data, background_id)
+	_swap_scene(
+		instance,
+		"BATTLE",
+		func() -> void: instance.prepare_combat(enemies_data, background_id),
+		func() -> void: instance.begin_combat_intro()
+	)
+
+
+func goto_pre_battle_offer(enemies_data: Array[EnemyData], node_id: String, background_id: String = "") -> void:
+	_pending_combat_enemies.assign(enemies_data)
+	_pending_combat_background = background_id
+	_pending_combat_node_id = node_id
+	var scene: PackedScene = load(PRE_BATTLE_OFFER_SCENE_PATH)
+	var instance := scene.instantiate()
+	instance.resolved.connect(_on_pre_battle_offer_resolved)
+	_swap_scene(instance, "AN OFFER BEFORE BLOOD")
+
+
+func _on_pre_battle_offer_resolved(effect_id: String) -> void:
+	if effect_id == "upgrade_card":
+		var scene: PackedScene = load(CARD_UPGRADE_SELECTION_SCENE_PATH)
+		var selector := scene.instantiate()
+		selector.resolved.connect(_finish_pre_battle)
+		_swap_scene(selector, "REFINE A CARD")
+		return
+	_finish_pre_battle()
+
+
+func _finish_pre_battle() -> void:
+	if _pending_combat_enemies.is_empty() or _pending_combat_node_id.is_empty():
+		push_error("GameFlow: pre-battle resolution has no pending combat")
+		goto_map()
+		return
+	RunManager.mark_pre_battle_offer_seen()
+	RunManager.commit_map_node(_pending_combat_node_id)
+	SaveManager.save_run()
+	var enemies: Array[EnemyData] = _pending_combat_enemies.duplicate()
+	var background := _pending_combat_background
+	_pending_combat_enemies.clear()
+	_pending_combat_background = ""
+	_pending_combat_node_id = ""
+	goto_combat(enemies, background)
 
 
 func goto_reward_screen(reward_context: Dictionary) -> void:
 	var scene: PackedScene = load(REWARD_SCENE_PATH)
 	var instance := scene.instantiate()
 	instance.set_reward_context(reward_context)
-	_swap_scene(instance)
+	_swap_scene(instance, "REWARD")
 
 
 ## The transition beat itself doesn't know about run structure - it just
@@ -127,14 +173,14 @@ func goto_act_transition(background_path: String, label_text: String, on_complet
 	var scene: PackedScene = load(ACT_TRANSITION_SCENE_PATH)
 	var instance := scene.instantiate()
 	instance.configure(background_path, label_text, on_complete)
-	_swap_scene(instance)
+	_swap_scene(instance, label_text)
 
 
 func goto_run_summary(won: bool) -> void:
 	var scene: PackedScene = load(RUN_SUMMARY_SCENE_PATH)
 	var instance := scene.instantiate()
 	instance.set_outcome(won)
-	_swap_scene(instance)
+	_swap_scene(instance, "JOURNEY COMPLETE" if won else "JOURNEY ENDED")
 
 
 func open_pause_menu() -> void:
@@ -194,24 +240,28 @@ func abandon_run() -> void:
 	goto_title()
 
 
-func _swap_scene(new_root: Node) -> void:
+func _swap_scene(new_root: Node, destination: String = "", on_installed: Callable = Callable(), on_revealed: Callable = Callable()) -> void:
+	if _transitioning:
+		new_root.queue_free()
+		return
+	_transitioning = true
 	var tree := get_tree()
 	var old_root := tree.current_scene
+	var curtain := preload("res://scripts/ui/screen_transition.gd").new()
+	curtain.theme = ScreenDesign.build_theme()
+	_overlay_layer.add_child(curtain)
+	await curtain.play_cover(destination)
 	if new_root is Control: new_root.theme = ScreenDesign.build_theme()
 	tree.root.add_child(new_root)
 	if new_root is Control: ScreenDesign.polish(new_root)
 	tree.current_scene = new_root
 	if old_root != null:
 		old_root.queue_free()
-	# Persistent overlay fades the newly installed scene; navigation remains atomic.
-	var curtain := ColorRect.new()
-	curtain.color = Color("080d13")
-	curtain.mouse_filter = Control.MOUSE_FILTER_STOP
-	_overlay_layer.add_child(curtain)
-	curtain.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var transition := create_tween()
-	transition.tween_property(curtain, "color:a", 0.0, 0.38)
-	transition.tween_callback(curtain.queue_free)
+	if on_installed.is_valid(): on_installed.call()
+	await tree.process_frame
+	await curtain.play_reveal()
+	_transitioning = false
+	if on_revealed.is_valid(): on_revealed.call()
 
 
 func _on_combat_won(defeated_enemies_data: Array) -> void:

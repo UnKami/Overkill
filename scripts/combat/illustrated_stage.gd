@@ -3,10 +3,12 @@ extends Control
 var player: IllustratedActor
 var enemy: IllustratedActor
 var _kind: String = "stalker"
+var _shadows: Dictionary = {}
+var _last_attack_profile: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	player = _actor("res://assets/characters/executioner/executioner_combat_atlas_v2.png", 1.0, Vector2(-70, 15))
+	player = _actor("res://assets/characters/executioner/executioner_combat_atlas_v2.png", 1.0, Vector2(-110, 15))
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
@@ -26,6 +28,7 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	shadow.position = at + Vector2(230,475)
 	add_child(shadow)
 	add_child(actor)
+	_shadows[actor] = shadow
 	actor.tree_exiting.connect(shadow.queue_free)
 	return actor
 
@@ -40,14 +43,15 @@ func _replace_enemy() -> void:
 	var path := "res://assets/enemies/revenant_combat_atlas_v2.png"
 	if _kind in ["sentinel", "bulwark", "twin", "eclipse"] and ResourceLoader.exists("res://assets/enemies/sentinel_combat_atlas.png"):
 		path = "res://assets/enemies/sentinel_combat_atlas.png"
-	enemy = _actor(path, -1.0, Vector2(250, 15))
+	enemy = _actor(path, -1.0, Vector2(290, 15))
 	if _kind in ["reverse", "twin"]: enemy.modulate = Color(0.9, 0.76, 1.0)
 	if _kind == "corrosion": enemy.modulate = Color(0.78, 1.0, 0.8)
 
-func attack(from_player: bool) -> void:
-	(player if from_player else enemy).attack()
+func attack(from_player: bool, profile: Dictionary = {}) -> void:
+	_last_attack_profile = profile
+	(player if from_player else enemy).attack(profile)
 
-func impact(on_player: bool, blocked: bool) -> void:
+func impact(on_player: bool, blocked: bool, _profile: Dictionary = {}) -> void:
 	(player if on_player else enemy).hit(blocked)
 
 func finish(won: bool) -> void:
@@ -59,4 +63,25 @@ func await_contact(from_player: bool) -> void:
 		await get_tree().process_frame
 
 func recovery_delay() -> float:
-	return 0.40
+	return float(_last_attack_profile.get("recovery", 0.40))
+
+
+func set_intro_hidden() -> void:
+	for actor: IllustratedActor in [player, enemy]:
+		actor.hide()
+		var shadow: CanvasItem = _shadows.get(actor)
+		if shadow != null: shadow.hide()
+
+
+func reveal_combatant(from_player: bool) -> void:
+	var actor: IllustratedActor = player if from_player else enemy
+	var shadow: CanvasItem = _shadows.get(actor)
+	actor.show()
+	if shadow != null: shadow.show()
+	actor.modulate.a = 1.0
+	if AudioManager.reduced_motion: return
+	actor.scale = Vector2(0.82, 0.82)
+	actor.modulate.a = 0.0
+	var reveal := actor.create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	reveal.tween_property(actor, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	reveal.tween_property(actor, "modulate:a", 1.0, 0.16)

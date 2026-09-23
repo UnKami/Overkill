@@ -92,7 +92,7 @@ func _rebuild() -> void:
 		if relic == null: continue
 		var view: RelicPedestalView = Pedestal.instantiate()
 		_grid.add_child(view)
-		var action := "BOUND TO YOUR COLLECTION"
+		var action := ""
 		if mode == "upgrade":
 			action = "PREVIEW TEMPERING" if int(entry.level) == 0 else "ALREADY TEMPERED"
 			if int(entry.level) == 0:
@@ -102,7 +102,10 @@ func _rebuild() -> void:
 		elif mode == "removal": action = "DISMANTLE  /  25 OK"
 		view.bind_relic(relic, action)
 		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < 25))
-		if mode == "collection": view._slot_button.text = "TEMPERED" if int(entry.level) > 0 else "IN YOUR COLLECTION"
+		if mode == "collection":
+			# A collection card is already self-evidently owned. Removing the
+			# disabled pseudo-action gives the art and useful rules room to breathe.
+			view._slot_button.hide()
 		if mode == "removal" and RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE:
 			view._slot_button.text = "MINIMUM DECK SIZE"
 		elif mode == "removal" and OKRunState.current_ok < 25:

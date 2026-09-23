@@ -20,6 +20,7 @@ var seed_value: int = 0
 var act_number: int = 1
 var current_node_id: String = ""
 var visited_nodes: Array[String] = []
+var pre_battle_offer_acts: Array[int] = []
 
 ## Run-persistent HP (distinct from PlayerState.hp, which resets every fight)
 var current_hp: int = 0
@@ -54,6 +55,7 @@ func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicD
 	act_number = 1
 	current_node_id = ""
 	visited_nodes.clear()
+	pre_battle_offer_acts.clear()
 	seed_value = map_seed if map_seed != -1 else randi()
 	run_active = true
 	run_started.emit()
@@ -95,6 +97,7 @@ func load_from_save(data: Dictionary) -> void:
 	act_number = map_data.get("act_number", 1)
 	current_node_id = map_data.get("current_node_id", "")
 	visited_nodes.assign(map_data.get("visited_nodes", []))
+	pre_battle_offer_acts.assign(map_data.get("pre_battle_offer_acts", []))
 
 	OKRunState.load_from_save(data.get("ok_run_state", {}))
 	run_active = true
@@ -121,6 +124,7 @@ func to_save_dict() -> Dictionary:
 			"current_node_id": current_node_id,
 			"visited_nodes": visited_nodes.duplicate(),
 			"act_number": act_number,
+			"pre_battle_offer_acts": pre_battle_offer_acts.duplicate(),
 		},
 	}
 
@@ -241,6 +245,18 @@ func commit_map_node(node_id: String) -> void:
 	current_node_id = node_id
 	if not visited_nodes.has(node_id):
 		visited_nodes.append(node_id)
+
+
+func should_offer_pre_battle() -> bool:
+	# One authored offer at the first battle of each act. Keeping the trigger in
+	# run state (rather than the map UI) lets future elite/boss events opt into
+	# the same presentation without making every encounter show an offer.
+	return not pre_battle_offer_acts.has(act_number)
+
+
+func mark_pre_battle_offer_seen() -> void:
+	if not pre_battle_offer_acts.has(act_number):
+		pre_battle_offer_acts.append(act_number)
 
 
 func advance_act(new_seed: int = -1) -> void:

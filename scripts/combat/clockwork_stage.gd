@@ -80,10 +80,10 @@ func _replace_enemy() -> void:
 	enemy.position.x = 0.98
 	enemy.rotation.y = -0.52
 
-func attack(from_player: bool) -> void:
+func attack(from_player: bool, _profile: Dictionary = {}) -> void:
 	(player if from_player else enemy).attack()
 
-func impact(on_player: bool, blocked: bool) -> void:
+func impact(on_player: bool, blocked: bool, _profile: Dictionary = {}) -> void:
 	(player if on_player else enemy).hit(blocked)
 	if not AudioManager.reduced_motion:
 		if _camera_tween and _camera_tween.is_valid(): _camera_tween.kill()
@@ -93,3 +93,15 @@ func impact(on_player: bool, blocked: bool) -> void:
 
 func finish(won: bool) -> void:
 	(enemy if won else player).fall()
+
+func set_intro_hidden() -> void:
+	player.hide()
+	enemy.hide()
+
+func reveal_combatant(from_player: bool) -> void:
+	var actor: Node3D = player if from_player else enemy
+	actor.show()
+	if AudioManager.reduced_motion: return
+	var target_scale: Vector3 = actor.scale
+	actor.scale = target_scale * 0.82
+	actor.create_tween().set_speed_scale(AudioManager.animation_speed_scale()).tween_property(actor,"scale",target_scale,0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

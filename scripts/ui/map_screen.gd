@@ -359,14 +359,6 @@ func _build_node_glow(center: Vector2, node_size: Vector2, color: Color) -> Text
 
 
 func _on_node_pressed(node: MapGenerator.MapNode) -> void:
-	RunManager.commit_map_node(node.id)
-	SaveManager.save_run()
-	# Rebuild immediately, even though every branch below normally navigates
-	# away right after - if a branch silently fails to navigate (e.g. no
-	# matching enemy), the map must still reflect the committed node instead
-	# of leaving stale connector-line art (drawn against the OLD reachable
-	# set) on screen with nothing pointing at what's actually reachable now.
-	_rebuild_map()
 	match node.type:
 		MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.ELITE, MapGenerator.NodeType.BOSS:
 			var ids: Array[String] = node.enemy_ids
@@ -378,19 +370,38 @@ func _on_node_pressed(node: MapGenerator.MapNode) -> void:
 				if enemy != null:
 					enemies.append(enemy)
 			if enemies.size() == ids.size():
-				GameFlow.goto_combat(enemies)
+				# Important first battles may insert a short offer. The map node is
+				# committed only after that offer resolves, so closing the game on
+				# the offer can never skip the fight or duplicate its reward.
+				if RunManager.should_offer_pre_battle():
+					GameFlow.goto_pre_battle_offer(enemies, node.id)
+				else:
+					_commit_destination(node.id)
+					GameFlow.goto_combat(enemies)
 			else:
 				push_error("map_screen: no EnemyData found for enemy_id(s) '%s' (node %s) - cannot start combat" % [ids, node.id])
 				ModalConfirmDialog.show_dialog(self, "Couldn't start combat: enemy data '%s' is missing. This has been logged." % node.enemy_id, "OK", func() -> void: pass)
 		MapGenerator.NodeType.REST:
+			_commit_destination(node.id)
 			GameFlow.goto_rest_site()
 		MapGenerator.NodeType.SHOP:
+			_commit_destination(node.id)
 			GameFlow.goto_shop()
 		MapGenerator.NodeType.EVENT:
+			_commit_destination(node.id)
 			var events := EventCatalog.get_all_events()
 			GameFlow.goto_event(events[randi() % events.size()])
 		MapGenerator.NodeType.TREASURE:
+			_commit_destination(node.id)
 			_resolve_treasure()
+
+
+func _commit_destination(node_id: String) -> void:
+	RunManager.commit_map_node(node_id)
+	SaveManager.save_run()
+	# If a destination fails to navigate, the visible route still reflects the
+	# newly committed map state instead of retaining stale reachable lines.
+	_rebuild_map()
 
 
 func _resolve_treasure() -> void:

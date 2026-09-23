@@ -33,6 +33,17 @@ static func install(battle: Control) -> void:
 		portrait.offset_bottom = 180
 		portrait.pivot_offset = Vector2(100, 120)
 		portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var status_panel := Panel.new()
+		status_panel.name = "CharacterStatusPanel"
+		status_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		portrait.add_child(status_panel)
+		portrait.move_child(status_panel, 0)
+		var status_style := StyleBoxFlat.new()
+		status_style.bg_color = Color("08131de8")
+		status_style.border_color = Color("65bfca") if entry[0] == "PlayerPortrait" else Color("c87861")
+		status_style.border_width_top = 2
+		status_style.set_corner_radius_all(5)
+		status_panel.add_theme_stylebox_override("panel", status_style)
 		var health := ProgressBar.new()
 		health.name = "Vitality"
 		health.show_percentage = false
@@ -107,10 +118,6 @@ static func install(battle: Control) -> void:
 	subtitle.offset_left = -380
 	subtitle.offset_right = -28
 	subtitle.offset_top = 23
-	var fade := create_fade(battle)
-	var entrance := battle.create_tween()
-	entrance.tween_property(fade, "color:a", 0.0, 0.65)
-	entrance.tween_callback(fade.queue_free)
 
 static func create_fade(battle: Control) -> ColorRect:
 	var fade := ColorRect.new()
@@ -124,7 +131,7 @@ static func create_fade(battle: Control) -> ColorRect:
 static func directed_layout(battle: Control) -> void:
 	var arena: Control = battle.get_node("CombatArena")
 	arena.offset_bottom = -290
-	for entry in [["PlayerChronometer", 0.14], ["EnemyChronometer", 0.86]]:
+	for entry in [["PlayerChronometer", 0.11], ["EnemyChronometer", 0.89]]:
 		var clock: Control = arena.get_node(entry[0])
 		clock.anchor_left = entry[1]
 		clock.anchor_right = entry[1]
@@ -134,12 +141,13 @@ static func directed_layout(battle: Control) -> void:
 		clock.offset_bottom = 210
 		clock.pivot_offset = Vector2(210,210)
 	var nexus: Control = arena.get_node("ClashNexus")
-	for entry in [["PlayerPortrait", -180.0], ["EnemyPortrait", 180.0]]:
+	for entry in [["PlayerPortrait", -265.0], ["EnemyPortrait", 265.0]]:
 		var portrait: Control = nexus.get_node(entry[0])
-		portrait.offset_left = entry[1] - 105
-		portrait.offset_right = entry[1] + 105
-		portrait.offset_top = -100
-		portrait.offset_bottom = 260
+		portrait.offset_left = entry[1] - 130
+		portrait.offset_right = entry[1] + 130
+		portrait.offset_top = -160
+		portrait.offset_bottom = 210
+		portrait.pivot_offset = Vector2(130,185)
 	var dock: Control = battle.get_node("BottomDock")
 	dock.offset_top = -290
 	var row: Control = dock.get_node("PedestalRow")
@@ -160,31 +168,40 @@ static func directed_layout(battle: Control) -> void:
 	for path in ["PlayerPortrait/PlayerStatsLabel","EnemyPortrait/EnemyStatsLabel"]:
 		nexus.get_node(path).add_theme_font_size_override("font_size",24)
 
-	# Keep the clocks and telemetry above the temporary decision panel.
+	# Combat telemetry belongs to the combatant, never to the clock. The dial
+	# is reserved for relic placement and intent; each character carries its
+	# own vitality, Block and status readout directly underneath its body.
 	for pair: Array in [["PlayerChronometer", "PlayerPortrait", "PlayerStatsLabel"], ["EnemyChronometer", "EnemyPortrait", "EnemyStatsLabel"]]:
 		var dial: Control = arena.get_node(pair[0])
 		dial.anchor_top = 0.30
 		dial.anchor_bottom = 0.30
 		var portrait: Control = nexus.get_node(pair[1])
 		var stats: Label = portrait.get_node(pair[2])
-		stats.reparent(dial)
-		stats.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		stats.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		stats.grow_vertical = Control.GROW_DIRECTION_END
-		stats.position = Vector2(0,450)
-		stats.size = Vector2(420,100)
-		stats.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		stats.offset_left = 12
+		stats.offset_right = -12
+		stats.offset_top = 18
+		stats.offset_bottom = 88
+		stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		stats.add_theme_font_size_override("font_size", 26)
+		stats.add_theme_font_size_override("font_size", 22)
 		stats.add_theme_color_override("font_color", Color("e5e4df"))
 		stats.add_theme_constant_override("outline_size", 4)
 		stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var health: ProgressBar = portrait.get_node("Vitality")
-		health.reparent(dial)
 		health.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-		health.offset_left = 40
-		health.offset_right = -40
-		health.offset_top = 14
-		health.offset_bottom = 24
+		health.offset_left = 16
+		health.offset_right = -16
+		health.offset_top = 90
+		health.offset_bottom = 104
+		var status_panel: Panel = portrait.get_node("CharacterStatusPanel")
+		status_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+		status_panel.offset_left = 0
+		status_panel.offset_right = 0
+		status_panel.offset_top = 8
+		status_panel.offset_bottom = 112
 		stats.tooltip_text = "Block persists until absorbed or the battle ends."
 
 static func relay(battle: Control, source: Control, target: Control, accent: Color) -> void:
