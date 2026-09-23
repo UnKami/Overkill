@@ -2,6 +2,20 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.24.0 playtest — 2026-09-23
+
+**GitHub navigation:** repository → Releases → 0.24.0 → Assets → `OverkillSetup-0.24.0.exe`. Launch **Overkill** for the campaign; the separately labeled 3D showcase remains experimental.
+
+[Release and assets](https://github.com/UnKami/Overkill/releases/tag/v0.24.0-test) · [Detailed changes and limitations](docs/encounter-024.md)
+
+- Cleaner Executioner/relic entry screens, reusable vortex navigation, and a three-choice offer before the first battle of each act.
+- Dedicated animated card-upgrade resolution, staged `BATTLE START` and sequential player/enemy HP reveals.
+- Character-owned HP/Block/status panels, outward clocks and wider central combat space.
+- Heavy Hammer now visibly winds up, launches, strikes, triggers hit-stop/recoil, applies its unchanged 14 damage, and recovers through reusable attack profiles.
+- Campaign bosses retain the illustrated Executioner instead of silently switching to the unmatched 3D player. Save-compatible; old saves may receive the new per-act offer once. No autoplay.
+- Packaged integration/starter/guidance tests pass. Installer (241,106,934 bytes) and ZIP (269,851,786 bytes) match GitHub SHA-256 digests; all public asset URLs return HTTP 200.
+- Source: `8c4ec92152fe284e50ef15b641960bc278c44b09`, tag `v0.24.0-test`, branch `feat/yonatan-battle-arrival`.
+
 ## 0.23.0 playtest — 2026-09-19
 
 **GitHub navigation:** repository → Releases → 0.23.0 → Assets → `OverkillSetup-0.23.0.exe`. After installing, choose **Play Sentinel encounter** to inspect the armor and cloth refinements. **Play Boneghoul preview** remains available.
