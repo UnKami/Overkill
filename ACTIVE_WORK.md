@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-battle-arrival` | Screen vortex, first-battle offer, character-owned combat HUD, battle intro, Heavy Hammer presentation | `scripts/ui/class_select_screen.gd`; `scripts/ui/clock_collection_screen.gd`; `scripts/ui/card_view.gd`; `scripts/ui/screen_transition.gd` (new); `scripts/ui/pre_battle_offer.gd` (new); `scripts/ui/card_upgrade_selection.gd` (new); `scripts/autoload/game_flow.gd`; `scripts/autoload/run_manager.gd`; `scripts/ui/map_screen.gd`; `scripts/combat/combat_controller.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/battle_intro_sequence.gd` (new); `scripts/combat/attack_presentation.gd` (new); `scripts/combat/illustrated_actor.gd`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/directed_arena.gd`; `scripts/combat/rigged_combatant.gd`; `assets/shaders/screen_vortex.gdshader` (new); `assets/vfx/heavy_hammer_strike.png` (new); `scenes/pre_battle_offer.tscn` (new); `scenes/card_upgrade_selection.tscn` (new); presentation tests; `VERSION`; `project.godot`; `export_presets.cfg`; `installer/overkill.iss`; `docs/encounter-024.md` | 2026-09-23 |
 
 ---
 
