@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Lower character HUDs, object-first relic presentation, contextual pre-battle art, and full-screen numerical battlefield inspection | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `scripts/combat/clock_battle_presentation.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/clock_socket_view.gd`; `scripts/ui/pre_battle_offer.gd`; `scripts/ui/relic_art.gd`; `scripts/ui/battlefield_inspection.gd`; `scripts/combat/tactical_inspection_test.gd`; `scenes/tactical_inspection_test.tscn`; `assets/relics/active/*_object.png` | 2026-09-27 |
 
 ---
 
