@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `fix/yonatan-relic-ui-polish` | Redesign relic-facing UI and visual review fixtures into a cinematic, production-quality presentation without changing relic mechanics | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `scripts/combat/relic_color_visual_test.gd`; `scripts/ui/**`; `scenes/relic_color_visual_test.tscn`; `scenes/relic_collection.tscn`; `assets/ui/**`; `docs/encounter-028.md` | 2026-09-29 |
 
 ---
 
