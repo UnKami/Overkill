@@ -2,6 +2,22 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.25.0 playtest — 2026-09-28
+
+**GitHub navigation:** repository → Releases → 0.25.0 → Assets → `OverkillSetup-0.25.0.exe`. Launch **Overkill**; there are no separate 3D prototype shortcuts in this build.
+
+[Release and assets](https://github.com/UnKami/Overkill/releases/tag/v0.25.0-test) · [Detailed changes and limitations](docs/encounter-025.md)
+
+- Unified the playable character, enemies, battlefields, relics, clocks, event imagery and screen presentation around the supplied premium cyan/amber crystalline techno-fantasy direction.
+- Retired mismatched flat/cartoon atlases, comic/blurred environments, brass/gothic clock art and the separate rigged 3D boss pipeline. Regular encounters and bosses now use the same approved Executioner identity and illustrated system.
+- Replaced all fourteen active relic images and Hollow Coin with centered transparent object renders; enlarged relic art and added object imagery to replacement choices.
+- Lowered HP/status panels beneath the combatants; rebuilt battlefield inspection around two enlarged clocks and explicit full-cycle attack, Block and accumulated-stat totals without revealing hidden enemy intents.
+- Added contextual approved scenery to the first-battle offer and routed maps, rewards, collection and result screens through the approved screen-art family.
+- Packaged starter, non-mutating preview, combat smoke, presentation and encounter suites pass; the default exported game launches without script or resource errors. Rendered 1080p assembly, replacement, inspection and first-battle screens were visually reviewed.
+- Installer: 206,705,256 bytes, SHA-256 `7c87607be8b48e1e2e6f5d6c9566a6d86304ea4c6dbb3e26705034c2a88245e0`. ZIP: 233,800,988 bytes, SHA-256 `b49ae34a53f8ddae43282c2cfc7126e5971b9a531580aafef8faef1c6d1bebae`. All three GitHub assets match local hashes and return HTTP 200.
+- Save-compatible; a new run is recommended for visual review. No autoplay or balance/mechanics changes. Human boss balance and interactive installer-wizard testing remain open; installer is unsigned.
+- Source: `05639415e20682b2d8d152e8cf6df6ba046c3eb2`, tag `v0.25.0-test`, branch `feat/yonatan-tactical-inspection`.
+
 ## 0.24.0 playtest — 2026-09-23
 
 **GitHub navigation:** repository → Releases → 0.24.0 → Assets → `OverkillSetup-0.24.0.exe`. Launch **Overkill** for the campaign; the separately labeled 3D showcase remains experimental.
