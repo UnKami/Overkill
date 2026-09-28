@@ -8,7 +8,8 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Expands the active relic pool from 14 to 26 with newly generated transparent object art; dual-color objects always resolve both represented effects.
 - Adds direct Overkill-generating relic mechanics, blood-red combat/HUD feedback, color-aware previews, a reliquary legend, and secondary-color card edges.
 - Preserves the 12-copy starter composition and existing relic ids; renames Blood Siphon to Vital Siphon to reserve blood language for Overkill generation.
-- Source and rendered validation pass. A local Windows installer will be built and packaged, but the existing 0.25.0 links remain the current public release until explicit repository publication approval is available.
+- Source, rendered, and exported-package validation pass. Local installer: 277,067,677 bytes, SHA-256 `8e9909a5933c2b83b84bd8e57fc01dd3bd198fde9cb89fa0780298e6802fa1d9`. Local ZIP: 305,963,253 bytes, SHA-256 `187dfb5f7c523dfbc53132b50c7a186b270bcb5c6ab4ab1ce7a7232d4026bee2`. Both remain unpublished; the existing 0.25.0 links are still the current public release until explicit repository publication approval is available.
+- Source: `c25c710284a9b70395691bb28a2fc8ce6fb8c48c` on `feat/yonatan-cinematic-worlds`. Save-compatible; a new run is recommended for the expanded pool. No autoplay. Human full-run balance and interactive installer-wizard testing remain open.
 - Detailed scope: [Five Essences playtest notes](docs/encounter-027.md) · [relic color language](docs/relic-color-language.md).
 
 ## 0.25.0 playtest — 2026-09-28
