@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-cinematic-worlds` | Generate and integrate 20–40 painterly-real cinematic environment images in the approved shop/rest visual language; add restrained environmental motion and populate every art-bearing game screen | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `VERSION`; `README.md`; `UPDATE_LOG.md`; `installer/**`; `docs/cinematic-worlds.md`; `docs/encounter-026.md`; `assets/screens/**`; `assets/environments/**`; `scripts/ui/**`; `scripts/combat/**`; `scenes/**` | 2026-09-28 |
 
 ---
 
