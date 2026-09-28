@@ -24,7 +24,7 @@ The first 0.27 relic review image exposed a real presentation failure: a compact
 - `PRESENTATION_014_OK`: all 26 effects fit at normal and large text sizes; battle choices, replacement controls, 720p and ultrawide layouts remain within safe bounds.
 - `RELIC_COLOR_VISUAL_OK`: the five-essence gallery, dual-bound gallery and real Reliquary were rendered at 1920×1080 and visually inspected.
 
-The exported `Overkill.pck` independently passes `RELIC_COLOR_LANGUAGE_OK`, `BATTLE_ARRIVAL_OK`, `BATTLE_GUIDANCE_OK`, and `PRESENTATION_014_OK`. The packaged presentation test covers all 26 relics at normal and large text sizes, replacement controls, 720p and ultrawide layouts.
+The exported `Overkill.pck` independently passes `RELIC_COLOR_LANGUAGE_OK`, `BATTLE_ARRIVAL_OK`, `BATTLE_GUIDANCE_OK`, and `PRESENTATION_014_OK`. The packaged presentation test covers all 26 relics at normal and large text sizes, replacement controls, 720p and ultrawide layouts. A short headless launch of the exported default executable also exits cleanly without script or resource errors.
 
 ## Local Windows candidate
 
