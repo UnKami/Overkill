@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Lower character HUDs, object-first relic presentation, contextual pre-battle art, and full-screen numerical battlefield inspection | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `scripts/combat/clock_battle_presentation.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/clock_socket_view.gd`; `scripts/ui/pre_battle_offer.gd`; `scripts/ui/relic_art.gd`; `scripts/ui/battlefield_inspection.gd`; `scripts/combat/tactical_inspection_test.gd`; `scenes/tactical_inspection_test.tscn`; `assets/relics/active/*_object.png` | 2026-09-27 |
+| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Unify Overkill around the supplied crystalline cyan/amber techno-fantasy canon; replace incompatible combat actors, enemies, relics, backgrounds, and event art; then complete the HUD, relic-card, pre-battle, and battlefield-inspection redesign | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `VERSION`; `README.md`; `installer/README.md`; `docs/visual_canon.md`; `assets/characters/**`; `assets/enemies/**`; `assets/environments/**`; `assets/relics/**`; `assets/screens/**`; `assets/cards/**`; `assets/vfx/**`; `art_source/**`; `scripts/combat/**`; `scripts/ui/**`; `scripts/map/**`; `scenes/combat/**`; `scenes/ui/**`; `scenes/*combat*`; `scenes/*showcase*`; `tests/**` | 2026-09-28 |
 
 ---
 
