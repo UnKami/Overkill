@@ -3,12 +3,12 @@
 [ext_resource type="Script" path="res://scripts/ui/relic_pedestal_view.gd" id="1_script"]
 
 [node name="RelicPedestalView" type="Control"]
-custom_minimum_size = Vector2(260, 290)
+custom_minimum_size = Vector2(300, 440)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 260.0
-offset_bottom = 290.0
-pivot_offset = Vector2(105, 127)
+offset_right = 300.0
+offset_bottom = 440.0
+pivot_offset = Vector2(150, 220)
 script = ExtResource("1_script")
 
 [node name="CardPanel" type="Panel" parent="."]
@@ -21,59 +21,145 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
+[node name="AccentPrimary" type="ColorRect" parent="CardPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="AccentSecondary" type="ColorRect" parent="CardPanel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 0
+mouse_filter = 2
+
 [node name="Margin" type="MarginContainer" parent="CardPanel"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 15.0
+offset_right = -16.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CardPanel/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="RoleBadge" type="Label" parent="CardPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "ATTACK"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CardPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0.015, 0.025, 0.035, 1)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 25
+text = "Iron Strike"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TitleRule" type="ColorRect" parent="CardPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ArtFrame" type="Control" parent="CardPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="ArtBackdrop" type="Panel" parent="CardPanel/Margin/VBox/ArtFrame"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
+mouse_filter = 2
 
-[node name="VBox" type="VBoxContainer" parent="CardPanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="RoleBadge" type="Label" parent="CardPanel/Margin/VBox"]
+[node name="ArtGlow" type="TextureRect" parent="CardPanel/Margin/VBox/ArtFrame"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "IMPACT"
-horizontal_alignment = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = -18.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
 
-[node name="NameLabel" type="Label" parent="CardPanel/Margin/VBox"]
+[node name="ArtRect" type="TextureRect" parent="CardPanel/Margin/VBox/ArtFrame"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 18
-text = "Iron Strike"
-horizontal_alignment = 1
-
-[node name="ArtRect" type="TextureRect" parent="CardPanel/Margin/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 5.0
+offset_right = -8.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DescLabel" type="RichTextLabel" parent="CardPanel/Margin/VBox"]
+[node name="EffectFrame" type="PanelContainer" parent="CardPanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+
+[node name="EffectMargin" type="MarginContainer" parent="CardPanel/Margin/VBox/EffectFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 7
+
+[node name="DescLabel" type="RichTextLabel" parent="CardPanel/Margin/VBox/EffectFrame/EffectMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/normal_font_size = 18
 bbcode_enabled = true
-text = "Deal 6 Physical Damage."
-fit_content = true
+text = "6 DAMAGE"
+fit_content = false
 scroll_active = false
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="SlotButton" type="Button" parent="CardPanel/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 38)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 18
 text = "SLOT"
 

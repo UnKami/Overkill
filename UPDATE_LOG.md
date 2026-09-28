@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.28.0 candidate — 2026-09-29 — not yet published
+
+- Reconstructs the relic-facing UI after the 0.27 review sheet exposed stretched developer panels, dead space and missing cinematic context.
+- Adds compact illuminated artifact cards, split dual-essence rails, concise numerical effect plaques, grouped owned-copy counts and essence-aware replacement controls.
+- Rebuilds the Reliquary around the cinematic archive hall and keeps the Executioner visibly present rather than hiding the scene behind a full-width grid.
+- Replaces the debug-style relic review sheet with a cinematic five-essence and dual-binding presentation.
+- Relic mechanics, the 12-copy starter inventory, clock rules, damage, progression and battle outcomes are unchanged. Source mechanics/navigation/guidance/presentation checks and rendered 1080p inspection pass.
+- Local Windows artifacts will be recorded after export. Public 0.25.0 links remain unchanged until repository publication is explicitly authorized.
+- Detailed scope: [Reliquary interface reconstruction](docs/encounter-028.md).
+
 ## 0.27.0 candidate — 2026-09-28 — not yet published
 
 - Defines five mechanic-bound relic essences: orange Attack, blue Block, purple Buff, green Debuff, and blood-red Overkill.

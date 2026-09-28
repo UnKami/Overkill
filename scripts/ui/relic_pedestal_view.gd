@@ -6,9 +6,18 @@ signal previewed(view: RelicPedestalView)
 signal preview_ended
 
 @onready var _card_panel: Panel = %CardPanel
+@onready var _accent_primary: ColorRect = %AccentPrimary
+@onready var _accent_secondary: ColorRect = %AccentSecondary
+@onready var _margin: MarginContainer = %Margin
+@onready var _vbox: VBoxContainer = %VBox
 @onready var _role_badge: Label = %RoleBadge
 @onready var _name_label: Label = %NameLabel
+@onready var _title_rule: ColorRect = %TitleRule
+@onready var _art_frame: Control = %ArtFrame
+@onready var _art_backdrop: Panel = %ArtBackdrop
+@onready var _art_glow: TextureRect = %ArtGlow
 @onready var _art_rect: TextureRect = %ArtRect
+@onready var _effect_frame: PanelContainer = %EffectFrame
 @onready var _desc_label: RichTextLabel = %DescLabel
 @onready var _slot_button: Button = %SlotButton
 
@@ -17,21 +26,20 @@ var _hover_tween: Tween = null
 var _battle_layout: bool = false
 var _choice_style: StyleBoxFlat
 var _pulse_time: float = 0.0
-var _secondary_stripe: ColorRect
+var _presentation_mode: String = "standard"
 
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(300, 370)
-	_role_badge.add_theme_font_size_override("font_size", 19)
+	custom_minimum_size = Vector2(300, 440)
+	_role_badge.add_theme_font_size_override("font_size", 15)
 	_name_label.add_theme_font_size_override("font_size", 26)
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_art_rect.custom_minimum_size.y = 220
 	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	_desc_label.add_theme_font_size_override("normal_font_size", 24)
-	_slot_button.add_theme_font_size_override("font_size", 22)
+	_desc_label.add_theme_font_size_override("normal_font_size", 18)
+	_slot_button.add_theme_font_size_override("font_size", 18)
 	_slot_button.custom_minimum_size.y = 48
-	for display: Control in [_role_badge, _name_label, _art_rect, _desc_label]:
+	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_rect, _desc_label]:
 		display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slot_button.pressed.connect(_on_button_pressed)
 	_slot_button.mouse_entered.connect(func() -> void: previewed.emit(self))
@@ -39,47 +47,40 @@ func _ready() -> void:
 	_slot_button.focus_exited.connect(func() -> void: preview_ended.emit())
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	_card_panel.pivot_offset = Vector2(130, 145)
+	resized.connect(func() -> void:
+		pivot_offset = size * 0.5
+		_card_panel.pivot_offset = size * 0.5
+	)
 	modulate.a = 0.0
 	var arrival := create_tween()
 	arrival.tween_interval(float(get_index()) * 0.07)
 	arrival.tween_property(self, "modulate:a", 1.0, 0.28)
 	_slot_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	_secondary_stripe = ColorRect.new()
-	_secondary_stripe.name = "SecondaryEssenceStripe"
-	_secondary_stripe.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_secondary_stripe.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
-	_secondary_stripe.offset_left = -6.0
-	_secondary_stripe.z_index = 4
-	_secondary_stripe.hide()
-	_card_panel.add_child(_secondary_stripe)
 	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var button_style := StyleBoxFlat.new()
-		button_style.bg_color = Color("17232c") if state == "normal" else Color("30414a")
-		button_style.border_color = Color("8d7654") if state == "normal" else Color("ebc68a")
+		button_style.bg_color = Color("111d26ed") if state == "normal" else Color("263946f5")
+		button_style.border_color = Color("8d765499") if state == "normal" else Color("f2ce91")
 		button_style.set_border_width_all(1)
-		button_style.set_corner_radius_all(3)
+		button_style.set_corner_radius_all(5)
 		button_style.content_margin_top = 7
 		button_style.content_margin_bottom = 7
 		_slot_button.add_theme_stylebox_override(state, button_style)
 	_slot_button.add_theme_color_override("font_color", Color("efd9ad"))
 	_slot_button.add_theme_color_override("font_disabled_color", Color("b8c3cc"))
-	_card_panel.get_node("Margin").minimum_size_changed.connect(_fit_content)
 	_slot_button.mouse_exited.connect(func() -> void: preview_ended.emit())
 	_slot_button.focus_entered.connect(_on_mouse_entered)
 	_slot_button.focus_exited.connect(_on_mouse_exited)
 	_desc_label.theme_changed.connect(func() -> void: call_deferred("_fit_content"))
+	_fit_content()
 
 func _fit_content() -> void:
 	if _battle_layout:
-		# Battle choices have a deliberately fixed composition: the object art
-		# owns most of the card and text can never collapse it.
 		custom_minimum_size = Vector2(380, 420)
-		_desc_label.position = Vector2(24, 270)
-		_desc_label.size = Vector2(332, 84)
 		return
-	else:
-		custom_minimum_size.y = maxf(370, _card_panel.get_node("Margin").get_combined_minimum_size().y)
+	match _presentation_mode:
+		"collection": custom_minimum_size = Vector2(272, 370)
+		"gallery": custom_minimum_size = Vector2(280, 448)
+		_: custom_minimum_size = Vector2(300, 440)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -89,43 +90,84 @@ func _gui_input(event: InputEvent) -> void:
 
 func use_battle_layout() -> void:
 	_battle_layout = true
-	custom_minimum_size = Vector2(380,420)
-	pivot_offset = Vector2(190,210)
+	_presentation_mode = "battle"
+	custom_minimum_size = Vector2(380, 420)
+	pivot_offset = Vector2(190, 210)
 	_card_panel.pivot_offset = pivot_offset
-	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
+	for child: Control in [_role_badge, _name_label, _title_rule, _art_frame, _effect_frame, _slot_button]:
 		child.reparent(_card_panel)
 		child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_card_panel.get_node("Margin").hide()
+	_margin.hide()
 	_role_badge.hide()
-	_role_badge.position = Vector2(86,10)
-	_role_badge.size = Vector2(220,20)
-	_role_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_name_label.position = Vector2(20,10)
-	_name_label.size = Vector2(340,36)
+	_name_label.position = Vector2(20, 12)
+	_name_label.size = Vector2(340, 36)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_art_rect.custom_minimum_size = Vector2.ZERO
-	_art_rect.position = Vector2(42,48)
-	_art_rect.size = Vector2(296,220)
-	_art_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_desc_label.position = Vector2(24,270)
+	_title_rule.position = Vector2(30, 52)
+	_title_rule.size = Vector2(320, 1)
+	_art_frame.custom_minimum_size = Vector2.ZERO
+	_art_frame.position = Vector2(34, 54)
+	_art_frame.size = Vector2(312, 220)
+	_effect_frame.custom_minimum_size = Vector2.ZERO
+	_effect_frame.position = Vector2(22, 277)
+	_effect_frame.size = Vector2(336, 86)
+	var effect_margin: MarginContainer = _effect_frame.get_node("EffectMargin")
+	effect_margin.add_theme_constant_override("margin_top", 2)
+	effect_margin.add_theme_constant_override("margin_bottom", 2)
 	_desc_label.fit_content = false
-	_desc_label.size = Vector2(332,84)
 	_desc_label.text_direction = Control.TEXT_DIRECTION_AUTO
 	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_slot_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_slot_button.offset_left = 8
-	_slot_button.offset_right = -8
+	_slot_button.offset_left = 14
+	_slot_button.offset_right = -14
 	_slot_button.offset_top = -56
-	_slot_button.offset_bottom = -8
+	_slot_button.offset_bottom = -10
 	_slot_button.custom_minimum_size.y = 48
-	_name_label.add_theme_font_size_override("font_size",25)
-	_desc_label.add_theme_font_size_override("normal_font_size",24)
-	_slot_button.add_theme_font_size_override("font_size",24)
+	_name_label.add_theme_font_size_override("font_size", 25)
+	_desc_label.add_theme_font_size_override("normal_font_size", 24)
+	_slot_button.add_theme_font_size_override("font_size", 22)
 	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var style: StyleBoxFlat = _slot_button.get_theme_stylebox(state).duplicate()
 		style.content_margin_top = 2
 		style.content_margin_bottom = 2
 		_slot_button.add_theme_stylebox_override(state, style)
+
+
+func use_collection_layout() -> void:
+	_presentation_mode = "collection"
+	custom_minimum_size = Vector2(272, 370)
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_margin.offset_left = 13
+	_margin.offset_top = 13
+	_margin.offset_right = -13
+	_margin.offset_bottom = -12
+	_vbox.add_theme_constant_override("separation", 3)
+	_role_badge.custom_minimum_size.y = 17
+	_role_badge.add_theme_font_size_override("font_size", 13)
+	_name_label.custom_minimum_size.y = 29
+	_name_label.add_theme_font_size_override("font_size", 22)
+	_art_frame.custom_minimum_size.y = 177
+	_effect_frame.custom_minimum_size.y = 67
+	_desc_label.add_theme_font_size_override("normal_font_size", 16)
+	_slot_button.hide()
+
+
+func use_gallery_layout() -> void:
+	_presentation_mode = "gallery"
+	custom_minimum_size = Vector2(280, 448)
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_role_badge.add_theme_font_size_override("font_size", 15)
+	_name_label.add_theme_font_size_override("font_size", 25)
+	_art_frame.custom_minimum_size.y = 230
+	_effect_frame.custom_minimum_size.y = 82
+	_desc_label.add_theme_font_size_override("normal_font_size", 18)
+	_slot_button.hide()
+
+
+func set_stack_count(count: int) -> void:
+	if count <= 1:
+		return
+	_role_badge.text += "    ×%d OWNED" % count
+	tooltip_text += "\n\n%d copies owned." % count
 
 
 func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> void:
@@ -134,32 +176,71 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 		return
 
 	_name_label.text = relic.name
-	_role_badge.text = "[ %s ]" % relic.compact_affinity_name().to_upper()
-	_desc_label.text = ClockInventory.describe(relic)
-	if _battle_layout:
-		_desc_label.text = summary(relic)
+	_role_badge.text = relic.compact_affinity_name().to_upper().replace(" + ", "  ·  ")
+	_desc_label.text = summary(relic).to_upper()
 	_slot_button.text = action_label
 
-	var role_col := relic.primary_color()
+	var role_col: Color = relic.primary_color()
+	var secondary_col: Color = relic.secondary_color()
+	var has_secondary: bool = relic.secondary_essence >= 0
+	var blended: Color = role_col.lerp(secondary_col, 0.5) if has_secondary else role_col
 	_role_badge.add_theme_color_override("font_color", role_col)
-	_secondary_stripe.color = relic.secondary_color()
-	_secondary_stripe.visible = relic.secondary_essence >= 0
+	_title_rule.color = Color(blended, 0.56)
+	_accent_primary.color = role_col
+	_accent_secondary.color = secondary_col
+	_accent_secondary.visible = has_secondary
+	_accent_primary.anchor_right = 0.5 if has_secondary else 1.0
+	_accent_primary.offset_right = 0.0
 
 	var panel_style := StyleBoxFlat.new()
-	panel_style.set_corner_radius_all(5)
-	panel_style.bg_color = Color("#101921")
-	panel_style.border_color = role_col.darkened(0.42)
+	panel_style.set_corner_radius_all(10)
+	panel_style.bg_color = Color("08131ced")
+	panel_style.border_color = blended.darkened(0.32)
 	panel_style.set_border_width_all(1)
-	panel_style.border_width_top = 3
-	panel_style.shadow_color = Color(0, 0, 0, 0.65)
-	panel_style.shadow_size = 16
+	panel_style.shadow_color = Color(0, 0, 0, 0.82)
+	panel_style.shadow_size = 22
+	panel_style.shadow_offset = Vector2(0, 8)
 	_card_panel.add_theme_stylebox_override("panel", panel_style)
 	_choice_style = panel_style
+
+	var art_style := StyleBoxFlat.new()
+	art_style.bg_color = Color("030a10a8")
+	art_style.border_color = Color(blended, 0.34)
+	art_style.set_border_width_all(1)
+	art_style.set_corner_radius_all(7)
+	_art_backdrop.add_theme_stylebox_override("panel", art_style)
+
+	var effect_style := StyleBoxFlat.new()
+	effect_style.bg_color = Color("0d1b25df")
+	effect_style.border_color = Color(blended, 0.22)
+	effect_style.set_border_width_all(1)
+	effect_style.set_corner_radius_all(5)
+	_effect_frame.add_theme_stylebox_override("panel", effect_style)
+	_art_glow.texture = _glow_texture(role_col, secondary_col, has_secondary)
 
 	_load_art(relic.art_id)
 	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
 	ScreenDesign.apply_text_size(self)
 	call_deferred("_fit_content")
+
+
+func _glow_texture(primary: Color, secondary: Color, dual: bool) -> GradientTexture2D:
+	var glow_color: Color = primary.lerp(secondary, 0.5) if dual else primary
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.36, 1.0])
+	gradient.colors = PackedColorArray([
+		Color(glow_color, 0.34),
+		Color(glow_color, 0.12),
+		Color(glow_color, 0.0),
+	])
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.width = 256
+	texture.height = 256
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(0.95, 0.95)
+	return texture
 
 
 func _load_art(art_id: String) -> void:

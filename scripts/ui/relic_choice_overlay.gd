@@ -96,16 +96,28 @@ func present(battle: CombatController) -> void:
 			button.disabled = socket.data.is_locked or battle.current_drawn_relic == null
 			button.tooltip_text = "%s\n%s\nReplace this relic and resolve the three-hour sweep." % [relic.name if relic else "Empty slot",ClockInventory.describe(relic) if relic else ""]
 			replacements.add_child(button)
+			var relic_color: Color = relic.primary_color() if relic != null else ScreenDesign.GOLD
+			var secondary_color: Color = relic.secondary_color() if relic != null else relic_color
+			var dual: bool = relic != null and relic.secondary_essence >= 0
+			for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+				var replacement_style := StyleBoxFlat.new()
+				replacement_style.bg_color = Color("08131ce8") if state == "normal" else Color("172b38f2")
+				replacement_style.border_color = Color(relic_color.lerp(secondary_color, 0.5), 0.64 if state == "normal" else 0.95)
+				replacement_style.set_border_width_all(1)
+				replacement_style.set_corner_radius_all(8)
+				replacement_style.shadow_color = Color(0, 0, 0, 0.72)
+				replacement_style.shadow_size = 13
+				button.add_theme_stylebox_override(state, replacement_style)
 			var column: VBoxContainer = VBoxContainer.new()
 			button.add_child(column)
 			column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			column.offset_left = 10
 			column.offset_right = -10
-			column.offset_top = 10
+			column.offset_top = 14
 			column.offset_bottom = -10
 			column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			column.add_theme_constant_override("separation", 2)
-			ScreenDesign.label(column, ("LOCKED · %02d" if socket.data.is_locked else ("HOUR %02d" if battle.current_drawn_relic == null else "REPLACE · %02d")) % hour, 24, ScreenDesign.GOLD, true)
+			column.add_theme_constant_override("separation", 3)
+			ScreenDesign.label(column, ("LOCKED · %02d" if socket.data.is_locked else ("HOUR %02d" if battle.current_drawn_relic == null else "REPLACE · %02d")) % hour, 21, relic_color, true)
 			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 24)
 			title.autowrap_mode = TextServer.AUTOWRAP_OFF
 			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -124,6 +136,23 @@ func present(battle: CombatController) -> void:
 			effect.custom_minimum_size.y = 36
 			effect.text = effect.text.replace("Lasts until absorbed or battle ends.", "")
 			for label: Node in column.get_children(): label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var accent_primary := ColorRect.new()
+			accent_primary.color = relic_color
+			accent_primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			accent_primary.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+			accent_primary.anchor_right = 0.5 if dual else 1.0
+			accent_primary.offset_bottom = 4
+			accent_primary.z_index = 2
+			button.add_child(accent_primary)
+			if dual:
+				var accent_secondary := ColorRect.new()
+				accent_secondary.color = secondary_color
+				accent_secondary.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				accent_secondary.anchor_left = 0.5
+				accent_secondary.anchor_right = 1.0
+				accent_secondary.offset_bottom = 4
+				accent_secondary.z_index = 2
+				button.add_child(accent_secondary)
 			button.pressed.connect(battle._on_player_socket_pressed.bind(hour, socket))
 			button.mouse_entered.connect(battle._preview_swap.bind(socket))
 			button.focus_entered.connect(battle._preview_swap.bind(socket))
