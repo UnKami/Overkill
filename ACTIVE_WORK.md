@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Unify Overkill around the supplied crystalline cyan/amber techno-fantasy canon; replace incompatible combat actors, enemies, relics, backgrounds, and event art; then complete the HUD, relic-card, pre-battle, and battlefield-inspection redesign | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `VERSION`; `README.md`; `installer/README.md`; `docs/visual_canon.md`; `assets/characters/**`; `assets/enemies/**`; `assets/environments/**`; `assets/relics/**`; `assets/screens/**`; `assets/cards/**`; `assets/vfx/**`; `art_source/**`; `scripts/combat/**`; `scripts/ui/**`; `scripts/map/**`; `scenes/combat/**`; `scenes/ui/**`; `scenes/*combat*`; `scenes/*showcase*`; `tests/**` | 2026-09-28 |
+| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Unify Overkill around the supplied crystalline cyan/amber techno-fantasy canon; replace incompatible combat actors, enemies, relics, backgrounds, and event art; then complete the HUD, relic-card, pre-battle, and battlefield-inspection redesign | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `VERSION`; `README.md`; `installer/README.md`; `docs/visual_canon.md`; `assets/characters/**`; `assets/enemies/**`; `assets/environments/**`; `assets/relics/**`; `assets/screens/**`; `assets/cards/**`; `assets/ui/**`; `assets/vfx/**`; `art_source/**`; `scripts/combat/**`; `scripts/ui/**`; `scripts/map/**`; `scenes/combat/**`; `scenes/ui/**`; `scenes/*combat*`; `scenes/*showcase*`; `tests/**` | 2026-09-28 |
 
 ---
 
@@ -38,4 +38,4 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Map & Events** | `scenes/map_screen.tscn`, `scripts/map/`, `data/events/` | Procedural map nodes, random events, rest sites |
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
-| **Audio & SFX** | `scripts/art/build_executioner.py`, `assets/characters/rigged/executioner.glb`, `art_source/characters/executioner-production.blend`, `scripts/combat/forged_armor.gd`, `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+| **Audio & SFX** | `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
