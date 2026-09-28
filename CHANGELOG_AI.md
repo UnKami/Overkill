@@ -4,6 +4,16 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-09-28 | Yonatan / Codex — 0.25 unified crystalline visual canon
+- Branch / release: `feat/yonatan-tactical-inspection`; source `05639415e20682b2d8d152e8cf6df6ba046c3eb2`; prerelease https://github.com/UnKami/Overkill/releases/tag/v0.25.0-test.
+- Completed: established the supplied cyan/amber crystalline techno-fantasy canon; preserved the approved Executioner, enemy illustrations, combat arena, screen family and supplied relic references; generated fourteen transparent active-relic objects, Hollow Coin, a clean clock face and a new center sigil in that direction.
+- Removed: mismatched character/enemy atlases, flat Executioner portrait, comic crypt and blurred map backgrounds, brass/gothic clock art, medieval relic scenes, unused 3D models/materials/build pipeline, experimental showcase scenes and launchers.
+- UI: relic art is centered and dominant; replacement choices include relic images; HP/status panels sit lower beneath characters; pre-battle choices use contextual scenery; Inspect Battlefield is an opaque two-clock tactical view with numerical accumulated attack, Block and other full-cycle stats while concealed enemy hours remain hidden.
+- Mechanics preserved: damage, enemy AI, nine-hour clock and three-sector rules, relic effects, turn order, progression, outcomes and run rules. No autoplay.
+- Verification: clean Godot editor import; source and packaged starter, 30-case preview/hidden-intent, combat smoke, presentation and encounter suites pass; packaged default game launch passes with only the known forced-quit ObjectDB warning. 1080p assembly, replacement, inspection and pre-battle screenshots visually reviewed.
+- Delivery: installer 206,705,256 bytes (`7c87607be8b48e1e2e6f5d6c9566a6d86304ea4c6dbb3e26705034c2a88245e0`); ZIP 233,800,988 bytes (`b49ae34a53f8ddae43282c2cfc7126e5971b9a531580aafef8faef1c6d1bebae`). Public GitHub sizes/hashes and HTTP 200 verified.
+- Handoff: visual acceptance and human boss-balance review remain with the partners; installer is unsigned and the interactive wizard was not manually stepped through. Source changes remain on the feature branch pending review. Locks released.
+
 ### [2026-09-18] — Initial Collaboration Architecture & Full Game Upload
 - **Author / AI**: Yonatan & Antigravity
 - **Branch**: `main`
