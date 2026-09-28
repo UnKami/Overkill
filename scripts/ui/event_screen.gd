@@ -32,17 +32,16 @@ func _ready() -> void:
 		_choice_box.add_child(button)
 	_load_background()
 	# Arriving at an event is a small "something is happening" beat - a
-	# quick reveal punch on the panel, then it settles into idle purple
-	# embers for the mystery/read-carefully mood while the player decides.
+	# quick reveal punch on the panel, then it settles into the shared
+	# cyan/amber cinematic atmosphere while the player decides.
 	AmbientMotion.punch_scale(_panel, 1.06, 0.3)
-	AmbientMotion.spawn_embers(self, Color(0.75, 0.55, 0.95, 0.45), 10, true)
 
 
 func _load_background() -> void:
-	var path := "res://assets/screens/event_bg.jpg"
+	var path := CinematicArt.event_background(_event.id)
 	if ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
-		AmbientMotion.apply_ken_burns(_background, 45.0, 0.02)
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 48.0, 0.75)
 
 
 func _on_choice_pressed(choice: EventData.EventChoice) -> void:

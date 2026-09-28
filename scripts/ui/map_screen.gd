@@ -56,12 +56,6 @@ const CURRENT_MARKER_COLOR := Color("#EF9F27")
 const PATH_TEXTURE_PATH := "res://assets/ui/map/path_strip.png"
 const PATH_LINE_WIDTH := 20.0
 
-const BACKGROUND_ID_BY_ACT := {
-	1: "res://assets/screens/act_transition_1_2.jpg",
-	2: "res://assets/screens/act_transition_2_3.jpg",
-	3: "res://assets/screens/act_transition_3_boss.jpg",
-}
-
 @onready var _hud: CombatHUD = %HUD
 @onready var _scroll: ScrollContainer = %ScrollContainer
 @onready var _canvas: Control = %MapCanvas
@@ -119,10 +113,11 @@ func _ready() -> void:
 
 
 func _load_background_art() -> void:
-	var path: String = BACKGROUND_ID_BY_ACT.get(RunManager.act_number, "res://assets/screens/act_transition_1_2.jpg")
-	_background.modulate = Color(0.42,0.48,0.53)
+	var path: String = CinematicArt.map_background(RunManager.act_number)
+	_background.modulate = Color(0.64, 0.68, 0.72)
 	if not path.is_empty() and ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 58.0, 0.65)
 
 
 func _scroll_to_bottom() -> void:

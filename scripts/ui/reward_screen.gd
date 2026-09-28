@@ -33,7 +33,7 @@ func _ready() -> void:
 	$TitleLabel.add_theme_font_size_override("font_size", 38)
 	$TitleLabel.add_theme_color_override("font_color", Color("e8c994"))
 	var art := TextureRect.new()
-	art.texture = load("res://assets/screens/event_bg.jpg")
+	art.texture = load(CinematicArt.REWARD)
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	art.modulate = Color(0.3, 0.35, 0.4)
@@ -41,6 +41,7 @@ func _ready() -> void:
 	add_child(art)
 	move_child(art, 1)
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	AmbientMotion.apply_cinematic_backdrop(self, art, 46.0, 0.72)
 	_skip_button.pressed.connect(_on_skip_pressed)
 	_offer_cards()
 	var subtitle: Label = ScreenDesign.label(self, "Choose one relic to add to your deck. The others are left behind.", 22, ScreenDesign.MUTED)
@@ -85,7 +86,7 @@ func _continue_after_reward() -> void:
 		if _defeated_enemy.id == "act3_boss":
 			SaveManager.save_run()
 			GameFlow.goto_act_transition(
-				"res://assets/screens/act_transition_3_boss.jpg",
+				CinematicArt.transition_background(3),
 				"THE FINAL DESCENT",
 				func() -> void:
 					var final_boss := ContentDatabase.get_enemy("final_boss")
@@ -94,7 +95,7 @@ func _continue_after_reward() -> void:
 			)
 			return
 		var next_act: int = RunManager.act_number + 1
-		var art_path: String = "res://assets/screens/act_transition_%d_%d.jpg" % [RunManager.act_number, next_act]
+		var art_path: String = CinematicArt.transition_background(RunManager.act_number)
 		SaveManager.save_run()
 		GameFlow.goto_act_transition(
 			art_path,

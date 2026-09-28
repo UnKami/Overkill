@@ -26,7 +26,7 @@ func _ready() -> void:
 	if ResourceLoader.exists(_background_path):
 		_background.texture = ResourceLoader.load(_background_path)
 	_label.text = _label_text
-	AmbientMotion.apply_ken_burns(_background, 8.0, 0.03)
+	AmbientMotion.apply_cinematic_backdrop(self, _background, 14.0, 0.82)
 	AmbientMotion.punch_scale(_label, 1.1, 0.5)
 
 

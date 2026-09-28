@@ -24,6 +24,67 @@ static func apply_ken_burns(target: Control, duration: float = 26.0, zoom_amount
 	tween.tween_property(target, "scale", Vector2.ONE, duration * 0.5)
 
 
+## A single restrained treatment for full-screen environment plates: slow
+## camera drift, a breathing cyan/amber light veil, and sparse atmospheric
+## motes. The layers are inserted immediately after the background so UI
+## remains crisp above them. Reduced-motion keeps the still composition only.
+static func apply_cinematic_backdrop(parent: Control, background: TextureRect, duration: float = 42.0, intensity: float = 1.0) -> void:
+	if AudioManager.reduced_motion:
+		return
+	background.pivot_offset = background.size * 0.5
+	background.scale = Vector2.ONE * 1.018
+	var base_position: Vector2 = background.position
+	var drift := Vector2(-10.0, 6.0) * intensity
+	var camera := background.create_tween()
+	camera.set_loops()
+	camera.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	camera.set_parallel(true)
+	camera.tween_property(background, "scale", Vector2.ONE * (1.018 + 0.018 * intensity), duration * 0.5)
+	camera.tween_property(background, "position", base_position + drift, duration * 0.5)
+	camera.chain().set_parallel(true)
+	camera.tween_property(background, "scale", Vector2.ONE * 1.018, duration * 0.5)
+	camera.tween_property(background, "position", base_position, duration * 0.5)
+
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.36, 0.64, 1.0])
+	gradient.colors = PackedColorArray([
+		Color(0.10, 0.78, 0.92, 0.12 * intensity),
+		Color(0.05, 0.20, 0.28, 0.0),
+		Color(0.30, 0.12, 0.04, 0.0),
+		Color(1.0, 0.38, 0.08, 0.11 * intensity),
+	])
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.width = 1024
+	texture.height = 16
+	texture.fill_from = Vector2.ZERO
+	texture.fill_to = Vector2.RIGHT
+	var light_veil := TextureRect.new()
+	light_veil.name = "CinematicLightVeil"
+	light_veil.texture = texture
+	light_veil.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	light_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(light_veil)
+	parent.move_child(light_veil, background.get_index() + 1)
+	light_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	light_veil.modulate.a = 0.58
+	var breath := light_veil.create_tween()
+	breath.set_loops()
+	breath.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(light_veil, "modulate:a", 0.92, duration * 0.24)
+	breath.tween_property(light_veil, "modulate:a", 0.58, duration * 0.24)
+
+	var atmosphere := Control.new()
+	atmosphere.name = "CinematicAtmosphere"
+	atmosphere.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(atmosphere)
+	parent.move_child(atmosphere, light_veil.get_index() + 1)
+	atmosphere.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var half_width: float = parent.size.x * 0.5
+	spawn_embers(atmosphere, Color(0.24, 0.82, 0.95, 0.34), maxi(4, roundi(7.0 * intensity)), true, Rect2(0, 0, half_width, parent.size.y))
+	spawn_embers(atmosphere, Color(1.0, 0.42, 0.12, 0.32), maxi(4, roundi(7.0 * intensity)), true, Rect2(half_width, 0, half_width, parent.size.y))
+
+
 ## A subtle breathing scale loop - same mechanism as Ken Burns, tuned smaller
 ## and faster, for a character portrait or a "you are here" map marker.
 static func breathe(target: Control, scale_delta: float = 0.03, duration: float = 2.6) -> void:
@@ -33,6 +94,7 @@ static func breathe(target: Control, scale_delta: float = 0.03, duration: float 
 ## Alpha breathing loop - for a glow/highlight that should pulse rather than
 ## scale (e.g. a reachable-node border, a tooltip accent).
 static func pulse_alpha(target: CanvasItem, min_alpha: float = 0.55, max_alpha: float = 1.0, duration: float = 1.4) -> void:
+	if AudioManager.reduced_motion: return
 	var tween := target.create_tween()
 	tween.set_loops()
 	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -42,6 +104,7 @@ static func pulse_alpha(target: CanvasItem, min_alpha: float = 0.55, max_alpha: 
 
 ## Slow vertical bob loop - for a combat sprite's idle "breathing" motion.
 static func idle_bob(target: Control, amplitude: float = 5.0, duration: float = 2.4) -> void:
+	if AudioManager.reduced_motion: return
 	var base_position: Vector2 = target.position
 	var tween := target.create_tween()
 	tween.set_loops()
@@ -110,7 +173,7 @@ static func spawn_embers(parent: Control, color: Color, count: int = 14, upward:
 	particles.scale_amount_max = 1.3
 	particles.color = color
 	parent.add_child(particles)
-	particles.emitting = true
+	particles.emitting = not AudioManager.reduced_motion
 	return particles
 
 

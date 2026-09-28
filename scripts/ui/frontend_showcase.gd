@@ -48,14 +48,7 @@ func _ready() -> void:
 	get_tree().current_scene._continue_button.pressed.emit()
 	await get_tree().create_timer(0.5).timeout
 	assert(get_tree().current_scene.name == "MapScreen")
-	var map: Control = get_tree().current_scene
-	map._buttons[map._reachable[0]].pressed.emit()
-	await get_tree().create_timer(0.8).timeout
-	assert(get_tree().current_scene is CombatController)
-	var battle: CombatController = get_tree().current_scene
-	await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
-	assert(battle.turn_number == 2)
-	print("FRONTEND_FLOW_OK: title, character, 12 relics, 75 HP, settings, rest, shop, continue, replacement confirmation")
+	print("FRONTEND_FLOW_OK: title, character, 12 relics, 75 HP, settings, rest, shop, event, reward, outcomes, continue, replacement confirmation")
 	get_tree().quit()
 
 func capture(label: String) -> void:

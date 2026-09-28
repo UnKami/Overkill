@@ -12,7 +12,7 @@ const CHOICES: Array[Dictionary] = [
 		"body": "Choose one card from your current deck. Its upgraded form will remain with this run.",
 		"effect": "upgrade_card",
 		"action": "CHOOSE A CARD",
-		"art": "res://assets/screens/shop_bg.jpg",
+		"art": CinematicArt.UPGRADE,
 		"accent": Color("e7bd72"),
 	},
 	{
@@ -21,7 +21,7 @@ const CHOICES: Array[Dictionary] = [
 		"body": "Seal a fragment of the forge inside the chronometer before entering battle.",
 		"effect": "gain_overkill",
 		"action": "GAIN 10 OVERKILL",
-		"art": "res://assets/screens/event_bg.jpg",
+		"art": CinematicArt.RELIC_REWARD,
 		"accent": Color("79d7df"),
 	},
 	{
@@ -85,7 +85,7 @@ func _ready() -> void:
 
 func _build_background() -> void:
 	var background := TextureRect.new()
-	background.texture = load("res://assets/screens/event_bg.jpg")
+	background.texture = load(CinematicArt.PRE_BATTLE)
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.modulate = Color(0.24, 0.29, 0.34)
@@ -97,6 +97,7 @@ func _build_background() -> void:
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(veil)
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	AmbientMotion.apply_cinematic_backdrop(self, background, 52.0, 0.55)
 
 
 func _build_choice(choice: Dictionary) -> PanelContainer:

@@ -10,7 +10,7 @@ var _background: TextureRect
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_background = TextureRect.new()
-	_background.texture = load("res://assets/screens/class_select_bg.jpg" if character_view else "res://assets/screens/loading_screen_bg_2.jpg")
+	_background.texture = load(CinematicArt.CLASS_SELECT if character_view else CinematicArt.TITLE)
 	_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -21,6 +21,4 @@ func _ready() -> void:
 	tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(tint)
 	tint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	if not AudioManager.reduced_motion:
-		_background.scale = Vector2(1.025, 1.025)
-		_background.position = -size * 0.0125
+	AmbientMotion.apply_cinematic_backdrop(self, _background, 54.0, 0.8)

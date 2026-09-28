@@ -47,9 +47,6 @@ func _ready() -> void:
 	_rest_button.pressed.connect(_on_rest_pressed)
 	_upgrade_button.pressed.connect(_on_upgrade_pressed)
 	_load_background()
-	# Calmest screen in the game on purpose - slow, sparse embers, nothing
-	# urgent, matching what a rest site is for.
-	AmbientMotion.spawn_embers(self, Color(0.4, 0.7, 0.95, 0.4), 8, true)
 	_back_button.pressed.connect(func() -> void: GameFlow.goto_map())
 
 
@@ -57,7 +54,8 @@ func _load_background() -> void:
 	var path := "res://assets/screens/rest_site_bg.jpg"
 	if ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
-		AmbientMotion.apply_ken_burns(_background, 55.0, 0.015)
+		# Calmest screen in the run: minimal drift and sparse light breathing.
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 62.0, 0.52)
 
 
 func _on_rest_pressed() -> void:

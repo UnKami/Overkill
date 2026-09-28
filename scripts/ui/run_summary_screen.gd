@@ -53,11 +53,10 @@ func _ready() -> void:
 	# defeat, mirroring the win/lose key art's color balance.
 	ScreenDesign.reveal(_panel)
 	_return_button.grab_focus()
-	var ember_color: Color = Color(0.4, 0.85, 0.95, 0.5) if _won else Color(0.95, 0.55, 0.25, 0.55)
-	AmbientMotion.spawn_embers(self, ember_color, 12, true)
 
 
 func _load_background_art() -> void:
-	var path := "res://assets/screens/win_screen_bg.jpg" if _won else "res://assets/screens/lose_screen_bg.jpg"
+	var path := CinematicArt.VICTORY if _won else CinematicArt.DEFEAT
 	if ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 56.0, 0.72 if _won else 0.48)

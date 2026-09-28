@@ -274,10 +274,13 @@ func _prepare_combat(with_intro: bool) -> void:
 
 
 func _load_visual_assets(main_enemy: EnemyData, background_id: String) -> void:
-	# Dedicated Combat Arena Background
-	var arena_bg_path := "res://assets/environments/combat_arena_bg.jpg"
+	# Encounter-tier art is selected deterministically from the cinematic
+	# library. The plates stay character-free because the live illustrated
+	# Executioner and enemy are composed over them during battle.
+	var arena_bg_path := CinematicArt.combat_background(main_enemy, RunManager.act_number)
 	if ResourceLoader.exists(arena_bg_path):
 		_background.texture = ResourceLoader.load(arena_bg_path)
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 38.0, 0.48)
 	else:
 		var bg_path: String = {1: "res://assets/screens/act_transition_1_2.jpg", 2: "res://assets/screens/act_transition_2_3.jpg", 3: "res://assets/screens/act_transition_3_boss.jpg"}.get(RunManager.act_number, "res://assets/screens/loading_screen_bg.jpg")
 		if not background_id.is_empty():

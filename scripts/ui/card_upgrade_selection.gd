@@ -57,7 +57,7 @@ func _ready() -> void:
 
 func _build_background() -> void:
 	var background := TextureRect.new()
-	background.texture = load("res://assets/screens/rest_site_bg.jpg")
+	background.texture = load(CinematicArt.UPGRADE)
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.modulate = Color(0.24, 0.27, 0.30)
@@ -69,6 +69,7 @@ func _build_background() -> void:
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(veil)
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	AmbientMotion.apply_cinematic_backdrop(self, background, 52.0, 0.58)
 
 
 func _populate() -> void:
