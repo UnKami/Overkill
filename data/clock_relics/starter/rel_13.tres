@@ -7,6 +7,6 @@ name = "Blood Siphon"
 tier = 0
 role = 0
 description = "Deal 3 damage. Heal HP damage dealt."
-art_id = "bloodprice"
+art_id = "rel_13_blood_siphon"
 base_damage = 3
 lifesteal = true

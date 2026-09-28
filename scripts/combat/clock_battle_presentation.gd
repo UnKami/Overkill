@@ -181,8 +181,8 @@ static func directed_layout(battle: Control) -> void:
 		stats.grow_vertical = Control.GROW_DIRECTION_END
 		stats.offset_left = 12
 		stats.offset_right = -12
-		stats.offset_top = 18
-		stats.offset_bottom = 88
+		stats.offset_top = 130
+		stats.offset_bottom = 204
 		stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		stats.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -194,14 +194,14 @@ static func directed_layout(battle: Control) -> void:
 		health.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		health.offset_left = 16
 		health.offset_right = -16
-		health.offset_top = 90
-		health.offset_bottom = 104
+		health.offset_top = 210
+		health.offset_bottom = 226
 		var status_panel: Panel = portrait.get_node("CharacterStatusPanel")
 		status_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 		status_panel.offset_left = 0
 		status_panel.offset_right = 0
-		status_panel.offset_top = 8
-		status_panel.offset_bottom = 112
+		status_panel.offset_top = 120
+		status_panel.offset_bottom = 236
 		stats.tooltip_text = "Block persists until absorbed or the battle ends."
 
 static func relay(battle: Control, source: Control, target: Control, accent: Color) -> void:

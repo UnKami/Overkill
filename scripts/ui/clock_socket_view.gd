@@ -144,22 +144,7 @@ func _style_socket(is_enemy: bool) -> void:
 
 
 func _load_relic_art(art_id: String) -> void:
-	var candidates: Array[String] = [
-		"res://assets/relics/active/%s.jpg" % art_id,
-		"res://assets/relics/active/%s.png" % art_id,
-		"res://assets/relics/%s.png" % art_id,
-		"res://assets/relics/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.png" % art_id,
-		"res://assets/cards/excess/%s.jpg" % art_id,
-		"res://assets/cards/excess/%s.png" % art_id,
-		"res://assets/icons/ui/%s.png" % art_id,
-	]
-	for p in candidates:
-		if ResourceLoader.exists(p):
-			_icon_rect.texture = ResourceLoader.load(p)
-			return
-	_icon_rect.texture = null
+	_icon_rect.texture = RelicArt.load_texture(art_id)
 
 
 func _load_icon(icon_name: String) -> void:

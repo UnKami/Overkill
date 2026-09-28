@@ -12,6 +12,7 @@ const CHOICES: Array[Dictionary] = [
 		"body": "Choose one card from your current deck. Its upgraded form will remain with this run.",
 		"effect": "upgrade_card",
 		"action": "CHOOSE A CARD",
+		"art": "res://assets/screens/shop_bg.jpg",
 		"accent": Color("e7bd72"),
 	},
 	{
@@ -20,6 +21,7 @@ const CHOICES: Array[Dictionary] = [
 		"body": "Seal a fragment of the forge inside the chronometer before entering battle.",
 		"effect": "gain_overkill",
 		"action": "GAIN 10 OVERKILL",
+		"art": "res://assets/screens/event_bg.jpg",
 		"accent": Color("79d7df"),
 	},
 	{
@@ -28,6 +30,7 @@ const CHOICES: Array[Dictionary] = [
 		"body": "Temper the Executioner's body for the road ahead and repair it in the same stroke.",
 		"effect": "gain_vitality",
 		"action": "GAIN 3 MAX VITALITY",
+		"art": "res://assets/screens/rest_site_bg.jpg",
 		"accent": Color("d78e78"),
 	},
 ]
@@ -82,7 +85,7 @@ func _ready() -> void:
 
 func _build_background() -> void:
 	var background := TextureRect.new()
-	background.texture = load("res://assets/environments/chronoforge_arena.png")
+	background.texture = load("res://assets/screens/event_bg.jpg")
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	background.modulate = Color(0.24, 0.29, 0.34)
@@ -113,6 +116,13 @@ func _build_choice(choice: Dictionary) -> PanelContainer:
 	numeral.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var rule := ScreenDesign.rule(column, choice.accent)
 	rule.custom_minimum_size.y = 2
+	var art := TextureRect.new()
+	art.custom_minimum_size.y = 160
+	art.texture = load(String(choice.art))
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_child(art)
 	var name := ScreenDesign.label(column, choice.title, 28, ScreenDesign.TEXT, true)
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

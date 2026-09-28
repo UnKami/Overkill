@@ -20,15 +20,11 @@ func set_outcome(won: bool) -> void:
 
 func _ready() -> void:
 	theme = ScreenDesign.build_theme()
-	_background.hide()
+	_background.show()
 	get_node("ColorFallback").hide()
-	var stage := preload("res://scripts/ui/frontend_stage.gd").new()
-	add_child(stage)
-	move_child(stage,0)
-	stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	if not _won: stage.player.fall()
+	_load_background_art()
+	_background.modulate = Color(0.58, 0.62, 0.68)
 	ScreenDesign.shade(self)
-	move_child(get_child(-1),1)
 	ScreenDesign.frame(self,"JOURNEY COMPLETE" if _won else "JOURNEY ENDED")
 	_title_label.text = "The cycle is broken." if _won else "The clock falls silent."
 	_title_label.modulate = Color.WHITE

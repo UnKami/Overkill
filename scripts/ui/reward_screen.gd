@@ -33,7 +33,7 @@ func _ready() -> void:
 	$TitleLabel.add_theme_font_size_override("font_size", 38)
 	$TitleLabel.add_theme_color_override("font_color", Color("e8c994"))
 	var art := TextureRect.new()
-	art.texture = load("res://assets/environments/chronoforge_arena.png")
+	art.texture = load("res://assets/screens/event_bg.jpg")
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	art.modulate = Color(0.3, 0.35, 0.4)

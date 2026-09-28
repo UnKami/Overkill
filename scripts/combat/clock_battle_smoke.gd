@@ -66,7 +66,7 @@ func _ready() -> void:
 	battle.enemy_hp = 0
 	assert(battle._check_combat_end())
 	assert(battle._check_combat_end())
-	await get_tree().create_timer(1.6 if battle._stage is DirectedArena else 1.0).timeout
+	await get_tree().create_timer(1.0).timeout
 	assert(wins.size() == 1, "Victory must be emitted once")
 	print("CLOCK_SMOKE_OK: 9 assembly hours, double input, 3 sectors, hot swap, forward wrap, single victory signal, muted audio")
 	get_tree().quit()

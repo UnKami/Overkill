@@ -127,13 +127,14 @@ func _ready() -> void:
 	_guidance = BattleGuidance.new()
 	add_child(_guidance)
 	_guidance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_stage = ClockworkStage.new() if OS.get_cmdline_user_args().has("--3d-prototype") else preload("res://scripts/combat/illustrated_stage.gd").new()
+	# All encounters share the same supplied crystalline illustrated cast.
+	# The retired 3D prototype used unrelated knight models and is intentionally
+	# unavailable, including for bosses and command-line showcase flags.
+	_stage = preload("res://scripts/combat/illustrated_stage.gd").new()
 	_clash_nexus.add_child(_stage)
 	_clash_nexus.move_child(_stage, 0)
 	_stage.position = Vector2(-320, -235)
 	_stage.size = Vector2(640, 510)
-	if OS.get_cmdline_user_args().has("--directed"):
-		_install_directed_stage()
 	_nexus_sigil.hide()
 	_clash_nexus.get_node("NexusTitle").hide()
 	_battle_info = Label.new()
@@ -232,22 +233,6 @@ func _start_prepared_combat() -> void:
 	_phase_started = true
 	_start_phase_one()
 
-func _install_directed_stage() -> void:
-	if _stage is DirectedArena: return
-	_stage.get_parent().remove_child(_stage)
-	_stage.queue_free()
-	_stage = preload("res://scripts/combat/directed_arena.gd").new()
-	add_child(_stage)
-	move_child(_stage, 1)
-	_stage.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	_stage.offset_top = 64
-	_stage.offset_bottom = 1040
-	_choice_overlay.visibility_changed.connect(func() -> void:
-		if is_instance_valid(_stage) and _stage is DirectedArena:
-			_stage.set_decision_view(_choice_overlay.visible))
-	_stage.set_decision_view(_choice_overlay.visible)
-
-
 func _prepare_combat(with_intro: bool) -> void:
 	if _is_prepared:
 		return
@@ -264,13 +249,6 @@ func _prepare_combat(with_intro: bool) -> void:
 	player_next_attack_multiplier = 1
 
 	var main_enemy: EnemyData = enemies_data[0] if not enemies_data.is_empty() else null
-	# The directed 3D encounter remains a development showcase until its player
-	# model unmistakably matches the illustrated Executioner. Campaign navigation
-	# uses the cohesive illustrated stage for bosses as well as regular fights;
-	# direct showcase/test scenes can still exercise all authored 3D work.
-	var direct_showcase: bool = not with_intro and main_enemy != null and main_enemy.id == "act1_boss"
-	if main_enemy and (direct_showcase or (main_enemy.id == "act1_boss" and OS.get_cmdline_user_args().has("--boss-3d")) or (main_enemy.id == "act2_elite" and OS.get_cmdline_user_args().has("--custodian-3d")) or (main_enemy.id == "boneghoul" and OS.get_cmdline_user_args().has("--boneghoul-3d"))) and not OS.get_cmdline_user_args().has("--illustrated"):
-		_install_directed_stage()
 	if main_enemy != null:
 		enemy_max_hp = main_enemy.max_hp
 		enemy_hp = main_enemy.max_hp
@@ -297,13 +275,11 @@ func _prepare_combat(with_intro: bool) -> void:
 
 func _load_visual_assets(main_enemy: EnemyData, background_id: String) -> void:
 	# Dedicated Combat Arena Background
-	var arena_bg_path := "res://assets/environments/chronoforge_arena.png"
-	if not ResourceLoader.exists(arena_bg_path):
-		arena_bg_path = "res://assets/environments/combat_arena_bg.jpg"
+	var arena_bg_path := "res://assets/environments/combat_arena_bg.jpg"
 	if ResourceLoader.exists(arena_bg_path):
 		_background.texture = ResourceLoader.load(arena_bg_path)
 	else:
-		var bg_path := "res://assets/environments/act%d/map_bg.jpg" % RunManager.act_number
+		var bg_path: String = {1: "res://assets/screens/act_transition_1_2.jpg", 2: "res://assets/screens/act_transition_2_3.jpg", 3: "res://assets/screens/act_transition_3_boss.jpg"}.get(RunManager.act_number, "res://assets/screens/loading_screen_bg.jpg")
 		if not background_id.is_empty():
 			bg_path = "res://assets/environments/act%d/%s.png" % [RunManager.act_number, background_id]
 		if ResourceLoader.exists(bg_path):
@@ -609,8 +585,7 @@ func _resolve_tick(hour: int) -> void:
 		if relic.base_block > 0:
 			player_block += relic.base_block
 			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK")
-			if _stage is DirectedArena: _stage.guard_pulse(true)
-			else: CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
+			CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
 		if relic.apply_strength > 0:
 			player_strength += relic.apply_strength
 		if relic.apply_thorns > 0:
@@ -627,7 +602,7 @@ func _resolve_tick(hour: int) -> void:
 	if e_socket.intent_block > 0:
 		enemy_block += e_socket.intent_block
 		_spawn_damage_number(_enemy_portrait, e_socket.intent_block, false, Color("7bd6de"), "BLOCK")
-		if _stage is DirectedArena: _stage.guard_pulse(false)
+		CombatVFX.play_shield_pulse(self, _enemy_portrait.global_position + _enemy_portrait.size * 0.5)
 	if e_socket.intent_strength > 0:
 		enemy_strength += e_socket.intent_strength
 	player_bleed += e_socket.intent_bleed
@@ -701,14 +676,13 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
-	if not _stage is DirectedArena: Presentation.relay(self, _player_portrait, _enemy_portrait, profile.get("accent", Color("7bd6de")))
+	Presentation.relay(self, _player_portrait, _enemy_portrait, profile.get("accent", Color("7bd6de")))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if enemy_block >= amount else ("shatter" if enemy_block > 0 else "strike"))
 	_stage.impact(false, enemy_block >= amount, profile)
-	var nexus_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
-	if not _stage is DirectedArena or AttackPresentation.is_heavy_hammer(profile):
-		AttackPresentation.play_canvas_impact(self, nexus_pos, profile)
+	var nexus_pos: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
+	AttackPresentation.play_canvas_impact(self, nexus_pos, profile)
 	AmbientMotion.flash(_enemy_portrait, Color(2.0, 0.8, 0.8), 0.15)
 	if AttackPresentation.is_heavy_hammer(profile):
 		AmbientMotion.shake(self, float(profile.get("shake", 9.0)), 0.22)
@@ -764,17 +738,16 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	var swing_wait: float = _stage.swing_delay(false) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
-	if not _stage is DirectedArena: Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
+	Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(false)
 	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if player_block >= amount else ("shatter" if player_block > 0 else "strike"))
 	_stage.impact(true, player_block >= amount)
-	var p_pos: Vector2 = _stage.impact_position(true) if _stage is DirectedArena else _player_portrait.global_position + _player_portrait.size * 0.5
-	if not _stage is DirectedArena:
-		CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
-		CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
+	var p_pos: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
+	CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
+	CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
 	AmbientMotion.flash(_player_portrait, Color(1.8, 0.5, 0.5), 0.15)
-	if not _stage is DirectedArena: AmbientMotion.shake(self, 6.0, 0.2)
+	AmbientMotion.shake(self, 6.0, 0.2)
 
 	if player_block >= amount:
 		player_block -= amount
@@ -815,13 +788,13 @@ func _handle_overkill(overkill: int) -> void:
 				OKRunState.gain_ok(effect.value, passive.id)
 	TutorialCallout.trigger("first_ok")
 
-	var enemy_pos: Vector2 = _stage.impact_position(false) if _stage is DirectedArena else _enemy_portrait.global_position + _enemy_portrait.size * 0.5
+	var enemy_pos: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
 	CombatVFX.play_overkill_burst(self, enemy_pos, overkill)
 
 	var hud_ok_pos := Vector2(size.x * 0.5, 45.0)
 	CombatVFX.play_ok_essence_trail(self, enemy_pos, hud_ok_pos, clampi(int(overkill * 0.5), 3, 8))
 
-	if overkill >= 5 and not _stage is DirectedArena:
+	if overkill >= 5:
 		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 12.0), 0.25)
 
 
@@ -885,7 +858,7 @@ func _finish_presentation(won: bool) -> void:
 	var fade := Presentation.create_fade(self)
 	fade.color.a = 0.0
 	var fade_tween := create_tween()
-	fade_tween.tween_interval(_stage.finish_fade_delay() if _stage.has_method("finish_fade_delay") else (1.15 if _stage is DirectedArena else 0.5))
+	fade_tween.tween_interval(_stage.finish_fade_delay() if _stage.has_method("finish_fade_delay") else 0.5)
 	fade_tween.tween_property(fade, "color:a", 1.0, 0.28)
 
 
@@ -923,8 +896,6 @@ func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, ki
 	var num: DamageNumber = damage_number_scene.instantiate()
 	add_child(num)
 	num.position = target.global_position + target.size * 0.5 + Vector2(randf_range(-20, 20), -20)
-	if _stage is DirectedArena:
-		num.position = _stage.impact_position(target == _player_portrait) - global_position + Vector2(randf_range(-15,15),-20)
 	num.position += Vector2(-70, -float(_feedback_serial % 3) * 30.0)
 	_feedback_serial += 1
 	num.set_meta("feedback_kind", kind)

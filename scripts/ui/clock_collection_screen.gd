@@ -14,7 +14,7 @@ func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	RunManager.ensure_clock_inventory()
 	var backdrop := TextureRect.new()
-	backdrop.texture = load("res://assets/screens/shop_bg.jpg" if mode == "shop" else ("res://assets/screens/rest_site_bg.jpg" if mode == "upgrade" else "res://assets/environments/chronoforge_arena.png"))
+	backdrop.texture = load("res://assets/screens/shop_bg.jpg" if mode == "shop" else ("res://assets/screens/rest_site_bg.jpg" if mode == "upgrade" else "res://assets/screens/event_bg.jpg"))
 	backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	backdrop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	backdrop.modulate = Color(0.24, 0.29, 0.34)

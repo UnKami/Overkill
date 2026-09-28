@@ -8,7 +8,7 @@ var _last_attack_profile: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	player = _actor("res://assets/characters/executioner/executioner_combat_atlas_v2.png", 1.0, Vector2(-110, 15))
+	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-110, 15))
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
@@ -40,12 +40,21 @@ func _replace_enemy() -> void:
 	if is_instance_valid(enemy):
 		remove_child(enemy)
 		enemy.queue_free()
-	var path := "res://assets/enemies/revenant_combat_atlas_v2.png"
-	if _kind in ["sentinel", "bulwark", "twin", "eclipse"] and ResourceLoader.exists("res://assets/enemies/sentinel_combat_atlas.png"):
-		path = "res://assets/enemies/sentinel_combat_atlas.png"
+	var path := _enemy_art_path(_kind)
 	enemy = _actor(path, -1.0, Vector2(290, 15))
-	if _kind in ["reverse", "twin"]: enemy.modulate = Color(0.9, 0.76, 1.0)
-	if _kind == "corrosion": enemy.modulate = Color(0.78, 1.0, 0.8)
+
+
+func _enemy_art_path(enemy_id: String) -> String:
+	var candidates: Array[String] = []
+	for act: int in range(1, 4):
+		candidates.append("res://assets/enemies/act%d/%s_idle.png" % [act, enemy_id])
+		candidates.append("res://assets/enemies/act%d/%s.png" % [act, enemy_id])
+	candidates.append("res://assets/enemies/%s_idle.png" % enemy_id)
+	candidates.append("res://assets/enemies/%s.png" % enemy_id)
+	for candidate: String in candidates:
+		if ResourceLoader.exists(candidate):
+			return candidate
+	return "res://assets/enemies/act1/boneghoul_idle.png"
 
 func attack(from_player: bool, profile: Dictionary = {}) -> void:
 	_last_attack_profile = profile

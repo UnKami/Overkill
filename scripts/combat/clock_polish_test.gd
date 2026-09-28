@@ -70,7 +70,7 @@ func _ready() -> void:
 	battle.player_hp = 0
 	assert(battle._check_combat_end())
 	assert(battle._check_combat_end())
-	await get_tree().create_timer(1.6 if battle._stage is DirectedArena else 0.9).timeout
+	await get_tree().create_timer(0.9).timeout
 	assert(losses.size() == 1)
 	battle.queue_free()
 	await get_tree().process_frame

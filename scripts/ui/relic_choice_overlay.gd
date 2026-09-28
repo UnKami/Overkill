@@ -8,7 +8,7 @@ var _heading: Label
 var _body: HBoxContainer
 var _footer: HBoxContainer
 var _inspect: Button
-var _resume: Button
+var _battlefield_inspection: BattlefieldInspection
 var _inspecting: bool = false
 var _pulse_time: float = 0.0
 
@@ -70,25 +70,16 @@ func install(battle: CombatController) -> void:
 	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
 		dial.anchor_top = 0.66
 		dial.anchor_bottom = 0.66
-	_resume = Button.new()
-	_resume.text = "RETURN TO RELIC CHOICE  [I]"
-	_resume.z_index = 31
-	_resume.theme = theme
-	battle.add_child(_resume)
-	_resume.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_resume.offset_left = -230
-	_resume.offset_right = 230
-	_resume.offset_top = -80
-	_resume.offset_bottom = -24
-	_resume.pressed.connect(toggle_inspection)
-	_resume.hide()
+	_battlefield_inspection = BattlefieldInspection.new()
+	battle.add_child(_battlefield_inspection)
+	_battlefield_inspection.install(battle)
+	_battlefield_inspection.close_requested.connect(_close_inspection)
 	battle.resized.connect(_place)
-	visibility_changed.connect(_visibility_changed)
 	hide()
 
 func present(battle: CombatController) -> void:
 	_inspecting = false
-	_resume.hide()
+	_battlefield_inspection.close()
 	for child: Node in replacements.get_children():
 		replacements.remove_child(child)
 		child.queue_free()
@@ -101,7 +92,7 @@ func present(battle: CombatController) -> void:
 			var socket: ClockSocketView = battle._player_chrono.get_socket_view(hour)
 			var relic: ClockRelicData = socket.data.slotted_relic
 			var button: Button = Button.new()
-			button.custom_minimum_size = Vector2(250, 232)
+			button.custom_minimum_size = Vector2(250, 318)
 			button.disabled = socket.data.is_locked or battle.current_drawn_relic == null
 			button.tooltip_text = "%s\n%s\nReplace this relic and resolve the three-hour sweep." % [relic.name if relic else "Empty slot",ClockInventory.describe(relic) if relic else ""]
 			replacements.add_child(button)
@@ -119,6 +110,13 @@ func present(battle: CombatController) -> void:
 			title.autowrap_mode = TextServer.AUTOWRAP_OFF
 			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			title.clip_text = true
+			var art := TextureRect.new()
+			art.custom_minimum_size.y = 142
+			art.texture = RelicArt.load_texture(relic.art_id) if relic != null else null
+			art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			column.add_child(art)
 			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 24, ScreenDesign.MUTED)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -151,11 +149,20 @@ func toggle_inspection() -> void:
 	if _battle._resolving or _battle._combat_over: return
 	_inspecting = not _inspecting
 	visible = not _inspecting
-	_resume.visible = _inspecting
-	if not _inspecting: _place()
+	if _inspecting:
+		_battlefield_inspection.open()
+	else:
+		_battlefield_inspection.close()
+		_place()
 
-func _visibility_changed() -> void:
-	if not visible and not _inspecting: _resume.hide()
+
+func _close_inspection() -> void:
+	if not _inspecting:
+		return
+	_inspecting = false
+	_battlefield_inspection.close()
+	show()
+	_place()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_I:
@@ -170,7 +177,7 @@ func _process(delta: float) -> void:
 			button.modulate = Color.WHITE if button.disabled or AudioManager.reduced_motion else Color(1, 1, 1, 0.86 + 0.14 * sin(_pulse_time * 3.0))
 	if _inspecting and (_battle._resolving or _battle._combat_over):
 		_inspecting = false
-		_resume.hide()
+		_battlefield_inspection.close()
 
 func _style_button(button: Button) -> void:
 	button.theme = ScreenDesign.build_theme()

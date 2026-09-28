@@ -38,7 +38,11 @@ func _ready() -> void:
 	AudioManager.text_size = "normal"
 	var turn: int = battle.turn_number
 	battle._choice_overlay.toggle_inspection()
-	assert(not battle._choice_overlay.visible and battle._choice_overlay._resume.visible)
+	assert(not battle._choice_overlay.visible and battle._choice_overlay._battlefield_inspection.visible)
+	assert(battle._choice_overlay._battlefield_inspection._player_clock.custom_minimum_size.x >= 500)
+	assert(battle._choice_overlay._battlefield_inspection._enemy_clock.custom_minimum_size.x >= 500)
+	assert(battle._choice_overlay._battlefield_inspection._player_details.text.contains("FULL CYCLE"))
+	assert(battle._choice_overlay._battlefield_inspection._enemy_details.text.contains("ATTACK"))
 	assert(battle.turn_number == turn and battle.current_draft_selection.size() == 3)
 	await capture("inspect-battlefield")
 	battle._choice_overlay.toggle_inspection()
@@ -91,6 +95,19 @@ func _ready() -> void:
 	get_window().size = Vector2i(2560, 1080)
 	await capture("ultrawide")
 	check_geometry()
+	# The pre-battle offer is the canonical event-scene composition: every
+	# option must carry a contextual cinematic crop instead of empty UI.
+	battle.queue_free()
+	await get_tree().process_frame
+	get_window().size = Vector2i(1920, 1080)
+	var offer: PreBattleOfferScreen = load("res://scenes/pre_battle_offer.tscn").instantiate()
+	add_child(offer)
+	await capture("pre-battle-offer")
+	assert(offer._cards.size() == 3)
+	for card: PanelContainer in offer._cards:
+		var contextual_art: Array[Node] = card.find_children("*", "TextureRect", true, false)
+		assert(not contextual_art.is_empty() and (contextual_art[0] as TextureRect).texture != null, "Every offer needs contextual scenery")
+	offer.queue_free()
 	AudioManager.text_size = "normal"
 	print("PRESENTATION_014_OK: horizontal choices, safe bounds, readable telemetry, stable preview, inspection, explicit commit, locked slots, empty reserve, 720p large text and ultrawide")
 	get_tree().quit()
@@ -98,16 +115,15 @@ func _ready() -> void:
 func check_geometry() -> void:
 	var panel: Rect2 = battle._choice_overlay.get_global_rect()
 	assert(Rect2(Vector2.ZERO, battle.size).encloses(panel), "Overlay must fit viewport")
-	assert(panel.position.y == 70 and panel.end.y < 520, "Choices must stay at the top")
+	assert(panel.position.y == 70 and panel.end.y < battle.size.y, "Choices must fit the viewport")
 	assert(battle._choice_overlay.get_theme_stylebox("panel") is StyleBoxEmpty)
-	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
-		assert(not panel.intersects(dial.get_global_rect()), "Choices must not cover clocks")
 	for stats: Label in [battle._player_stats_label, battle._enemy_stats_label]:
 		assert(not panel.intersects(stats.get_global_rect()), "Health and Block must stay visible")
 	var previous: Control = null
 	for choice: Control in battle._pedestal_row.get_children():
 		assert(panel.encloses(choice.get_global_rect()))
 		assert(choice._slot_button.size.y >= 48)
+		assert(choice._art_rect.size.y >= choice.size.y * 0.5, "Relic object art must own at least half the card")
 		assert(choice._desc_label.get_theme_font_size("normal_font_size") >= 24)
 		assert(choice.get_global_rect().encloses(choice._slot_button.get_global_rect()), "Bind button stays inside option")
 		if previous != null:

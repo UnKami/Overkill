@@ -25,7 +25,7 @@ func _ready() -> void:
 	_name_label.add_theme_font_size_override("font_size", 26)
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_art_rect.custom_minimum_size.y = 140
+	_art_rect.custom_minimum_size.y = 220
 	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	_desc_label.add_theme_font_size_override("normal_font_size", 24)
 	_slot_button.add_theme_font_size_override("font_size", 22)
@@ -63,11 +63,12 @@ func _ready() -> void:
 
 func _fit_content() -> void:
 	if _battle_layout:
-		var description_top: float = maxf(48.0, _name_label.position.y + _name_label.get_minimum_size().y + 4.0)
-		var description_height: float = maxf(78.0, float(_desc_label.get_content_height()))
-		_desc_label.position.y = description_top
-		_desc_label.size = Vector2(280, description_height)
-		custom_minimum_size.y = description_top + description_height + 64.0
+		# Battle choices have a deliberately fixed composition: the object art
+		# owns most of the card and text can never collapse it.
+		custom_minimum_size = Vector2(380, 420)
+		_desc_label.position = Vector2(24, 270)
+		_desc_label.size = Vector2(332, 84)
+		return
 	else:
 		custom_minimum_size.y = maxf(370, _card_panel.get_node("Margin").get_combined_minimum_size().y)
 
@@ -79,8 +80,8 @@ func _gui_input(event: InputEvent) -> void:
 
 func use_battle_layout() -> void:
 	_battle_layout = true
-	custom_minimum_size = Vector2(380,190)
-	pivot_offset = Vector2(190,97)
+	custom_minimum_size = Vector2(380,420)
+	pivot_offset = Vector2(190,210)
 	_card_panel.pivot_offset = pivot_offset
 	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
 		child.reparent(_card_panel)
@@ -90,15 +91,18 @@ func use_battle_layout() -> void:
 	_role_badge.position = Vector2(86,10)
 	_role_badge.size = Vector2(220,20)
 	_role_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_name_label.position = Vector2(86,10)
-	_name_label.size = Vector2(280,36)
-	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_name_label.position = Vector2(20,10)
+	_name_label.size = Vector2(340,36)
+	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_art_rect.custom_minimum_size = Vector2.ZERO
-	_art_rect.position = Vector2(10,48)
-	_art_rect.size = Vector2(66,78)
-	_desc_label.position = Vector2(86,48)
+	_art_rect.position = Vector2(42,48)
+	_art_rect.size = Vector2(296,220)
+	_art_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_desc_label.position = Vector2(24,270)
 	_desc_label.fit_content = false
-	_desc_label.size = Vector2(280,120)
+	_desc_label.size = Vector2(332,84)
+	_desc_label.text_direction = Control.TEXT_DIRECTION_AUTO
+	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_slot_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	_slot_button.offset_left = 8
 	_slot_button.offset_right = -8
@@ -148,22 +152,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 
 
 func _load_art(art_id: String) -> void:
-	var candidates: Array[String] = [
-		"res://assets/relics/active/%s.jpg" % art_id,
-		"res://assets/relics/active/%s.png" % art_id,
-		"res://assets/relics/%s.png" % art_id,
-		"res://assets/relics/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.png" % art_id,
-		"res://assets/cards/excess/%s.jpg" % art_id,
-		"res://assets/cards/excess/%s.png" % art_id,
-		"res://assets/icons/ui/%s.png" % art_id,
-	]
-	for p in candidates:
-		if ResourceLoader.exists(p):
-			_art_rect.texture = ResourceLoader.load(p)
-			return
-	_art_rect.texture = null
+	_art_rect.texture = RelicArt.load_texture(art_id)
 
 
 func _on_button_pressed() -> void:

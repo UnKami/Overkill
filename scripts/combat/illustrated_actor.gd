@@ -1,6 +1,6 @@
 class_name IllustratedActor extends Control
-## Pose atlas with eased anticipation, strike travel, recoil and recovery.
-const HEAVY_HAMMER_PATH := "res://assets/vfx/heavy_hammer_strike.png"
+## Canon character cutout with eased anticipation, strike travel and recovery.
+const HEAVY_HAMMER_PATH := "res://assets/relics/active/rel_03_heavy_hammer_object.png"
 
 var atlas: Texture2D
 var facing: float = 1.0
@@ -32,11 +32,9 @@ func _ready() -> void:
 	_front.pivot_offset = size * Vector2(0.5, 0.85)
 	if atlas:
 		var pixels := atlas.get_image()
-		var cell_size := Vector2i(atlas.get_width() / 4, atlas.get_height() / 2)
-		for frame in range(8):
-			var bounds := _visible_bounds(pixels.get_region(Rect2i(Vector2i(frame % 4, frame / 4) * cell_size, cell_size)))
-			_frame_bottoms.append(float(bounds.end.y))
-			if frame == 0: _art_scale = target_height / maxf(1.0, float(bounds.size.y))
+		var bounds := _visible_bounds(pixels)
+		_frame_bottoms.append(float(bounds.end.y))
+		_art_scale = target_height / maxf(1.0, float(bounds.size.y))
 	set_pose(0)
 
 
@@ -53,18 +51,16 @@ func _visible_bounds(pixels: Image) -> Rect2i:
 				high.y = maxi(high.y, y + 3)
 	return Rect2i(low, high - low) if high.y > low.y else Rect2i(Vector2i.ZERO, pixels.get_size())
 
-func set_pose(frame: int) -> void:
+func set_pose(_frame: int) -> void:
 	if atlas == null: return
-	var region := AtlasTexture.new()
-	region.atlas = atlas
-	var cell := Vector2(atlas.get_width() / 4.0, atlas.get_height() / 2.0)
-	region.region = Rect2(Vector2(frame % 4, floori(float(frame) / 4.0)) * cell, cell)
-	_front.texture = region
+	var safe_frame: int = 0
+	var cell := Vector2(atlas.get_width(), atlas.get_height())
+	_front.texture = atlas
 	_front.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_front.size = cell * _art_scale
-	_pose_origin = Vector2((size.x - _front.size.x) * 0.5, size.y - 45.0 - _frame_bottoms[frame] * _art_scale)
+	_pose_origin = Vector2((size.x - _front.size.x) * 0.5, size.y - 45.0 - _frame_bottoms[safe_frame] * _art_scale)
 	_front.position = _pose_origin
-	_front.pivot_offset = Vector2(_front.size.x * 0.5, _frame_bottoms[frame] * _art_scale)
+	_front.pivot_offset = Vector2(_front.size.x * 0.5, _frame_bottoms[safe_frame] * _art_scale)
 
 func _process(delta: float) -> void:
 	_idle_time += delta

@@ -7,6 +7,6 @@ name = "Overdrive Piston"
 tier = 0
 role = 0
 description = "Deal 4 damage. Next attack ×2 damage."
-art_id = "rel_10_kinetic_battery"
+art_id = "rel_14_overdrive_piston"
 base_damage = 4
 next_attack_multiplier = 2
