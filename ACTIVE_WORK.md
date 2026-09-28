@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-cinematic-worlds` | Generate and integrate 20–40 painterly-real cinematic environment images in the approved shop/rest visual language; add restrained environmental motion and populate every art-bearing game screen | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `VERSION`; `README.md`; `UPDATE_LOG.md`; `installer/**`; `docs/cinematic-worlds.md`; `docs/encounter-026.md`; `assets/screens/**`; `assets/environments/**`; `scripts/ui/**`; `scripts/combat/**`; `scenes/**` | 2026-09-28 |
+| Yonatan / Codex | `feat/yonatan-cinematic-worlds` | Finish the cinematic-world release, then define and implement the relic color-language lineup: orange attack, blue block, purple buff, green debuff, blood-red Overkill, with mixed colors reserved for genuine dual effects | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `VERSION`; `README.md`; `UPDATE_LOG.md`; `installer/**`; `docs/cinematic-worlds.md`; `docs/encounter-026.md`; `docs/relic-color-language.md`; `assets/screens/**`; `assets/environments/**`; `assets/relics/**`; `data/clock_relics/**`; `scripts/ui/**`; `scripts/combat/**`; `scripts/data/clock_relic_data.gd`; `scenes/**` | 2026-09-28 |
 
 ---
 
