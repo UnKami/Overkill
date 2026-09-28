@@ -17,6 +17,7 @@ var _hover_tween: Tween = null
 var _battle_layout: bool = false
 var _choice_style: StyleBoxFlat
 var _pulse_time: float = 0.0
+var _secondary_stripe: ColorRect
 
 
 func _ready() -> void:
@@ -44,6 +45,14 @@ func _ready() -> void:
 	arrival.tween_interval(float(get_index()) * 0.07)
 	arrival.tween_property(self, "modulate:a", 1.0, 0.28)
 	_slot_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_secondary_stripe = ColorRect.new()
+	_secondary_stripe.name = "SecondaryEssenceStripe"
+	_secondary_stripe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_secondary_stripe.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	_secondary_stripe.offset_left = -6.0
+	_secondary_stripe.z_index = 4
+	_secondary_stripe.hide()
+	_card_panel.add_child(_secondary_stripe)
 	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var button_style := StyleBoxFlat.new()
 		button_style.bg_color = Color("17232c") if state == "normal" else Color("30414a")
@@ -125,14 +134,16 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 		return
 
 	_name_label.text = relic.name
-	_role_badge.text = "[ %s ]" % ClockRelicData.role_to_name(relic.role).to_upper()
+	_role_badge.text = "[ %s ]" % relic.compact_affinity_name().to_upper()
 	_desc_label.text = ClockInventory.describe(relic)
 	if _battle_layout:
 		_desc_label.text = summary(relic)
 	_slot_button.text = action_label
 
-	var role_col := ClockRelicData.role_to_color(relic.role)
+	var role_col := relic.primary_color()
 	_role_badge.add_theme_color_override("font_color", role_col)
+	_secondary_stripe.color = relic.secondary_color()
+	_secondary_stripe.visible = relic.secondary_essence >= 0
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.set_corner_radius_all(5)
@@ -146,7 +157,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_choice_style = panel_style
 
 	_load_art(relic.art_id)
-	tooltip_text = "%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, ClockInventory.describe(relic)]
+	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
 	ScreenDesign.apply_text_size(self)
 	call_deferred("_fit_content")
 
@@ -186,7 +197,7 @@ func _on_mouse_exited() -> void:
 
 func _process(delta: float) -> void:
 	if not _battle_layout or _choice_style == null or relic == null: return
-	var color: Color = ClockRelicData.role_to_color(relic.role)
+	var color: Color = relic.primary_color()
 	if not is_visible_in_tree() or _slot_button.disabled:
 		_choice_style.border_color = color.darkened(0.42)
 		return
@@ -201,6 +212,7 @@ static func summary(r: ClockRelicData) -> String:
 	if r.base_damage > 0: lines.append("%d damage%s" % [r.base_damage," × %d" % r.hits if r.hits > 1 else ""])
 	if r.lifesteal: lines.append("Heal HP dealt")
 	if r.base_block > 0: lines.append("%d persistent Block" % r.base_block)
+	if r.grant_overkill > 0: lines.append("Gain %d Overkill" % r.grant_overkill)
 	if r.next_attack_multiplier > 1: lines.append("Next attack: ×%d" % r.next_attack_multiplier)
 	if r.bonus_damage_next_hit > 0: lines.append("Next attack: +%d" % r.bonus_damage_next_hit)
 	for pair: Array in [[r.apply_strength,"Strength"],[r.apply_thorns,"Thorns"],[r.apply_bleed,"Bleed"],[r.apply_weak,"Weak"],[r.apply_vulnerable,"Vulnerable"]]:

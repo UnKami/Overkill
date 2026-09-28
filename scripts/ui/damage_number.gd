@@ -1,12 +1,12 @@
 class_name DamageNumber extends Label
 ## Split damage-number system (data schema doc, Part 2.3): normal and Overkill
 ## damage are NEVER a single combined number - this scene is instantiated
-## once per number, gray for base damage, amber for Overkill, so the split is
+## once per number, gray for base damage, blood red for Overkill, so the split is
 ## legible on every single kill. OK-gain animation intensity scales with the
 ## amount gained (small pop for a small kill, bigger/longer for a big one).
 
 const COLOR_BASE := Color("#D8D8D8")
-const COLOR_OVERKILL := Color("#EF9F27")
+const COLOR_OVERKILL := Color("#C41734")
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE

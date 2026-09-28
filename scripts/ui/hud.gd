@@ -23,6 +23,7 @@ var _prev_energy: int = -1
 func _ready() -> void:
 	OKRunState.ok_gained.connect(_on_ok_gained)
 	_ok_label.text = "%d Overkill" % OKRunState.current_ok
+	_ok_label.add_theme_color_override("font_color", ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.18))
 	_load_icon_if_present(_hp_icon, "icon_hp")
 	_load_icon_if_present(_block_icon, "icon_block")
 	_load_icon_if_present(_energy_icon, "icon_energy")
@@ -30,7 +31,7 @@ func _ready() -> void:
 	_hp_icon.tooltip_text = "HP - lose it all and the run ends."
 	_block_icon.tooltip_text = "Block - persists until absorbed by damage or the battle ends."
 	_energy_icon.tooltip_text = "Energy - spend it to play cards. Refills at the start of your turn."
-	_ok_icon.tooltip_text = "Overkill (OK) - excess damage beyond a kill, banked as currency between fights."
+	_ok_icon.tooltip_text = "Overkill (OK) - blood-red value condensed by lethal excess and rare relics, banked as currency between fights."
 	for icon in [_hp_icon, _block_icon, _energy_icon, _ok_icon]:
 		icon.mouse_filter = Control.MOUSE_FILTER_STOP
 

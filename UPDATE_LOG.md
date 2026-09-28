@@ -2,6 +2,15 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.27.0 candidate — 2026-09-28 — not yet published
+
+- Defines five mechanic-bound relic essences: orange Attack, blue Block, purple Buff, green Debuff, and blood-red Overkill.
+- Expands the active relic pool from 14 to 26 with newly generated transparent object art; dual-color objects always resolve both represented effects.
+- Adds direct Overkill-generating relic mechanics, blood-red combat/HUD feedback, color-aware previews, a reliquary legend, and secondary-color card edges.
+- Preserves the 12-copy starter composition and existing relic ids; renames Blood Siphon to Vital Siphon to reserve blood language for Overkill generation.
+- Source and rendered validation pass. A local Windows installer will be built and packaged, but the existing 0.25.0 links remain the current public release until explicit repository publication approval is available.
+- Detailed scope: [Five Essences playtest notes](docs/encounter-027.md) · [relic color language](docs/relic-color-language.md).
+
 ## 0.25.0 playtest — 2026-09-28
 
 **GitHub navigation:** repository → Releases → 0.25.0 → Assets → `OverkillSetup-0.25.0.exe`. Launch **Overkill**; there are no separate 3D prototype shortcuts in this build.

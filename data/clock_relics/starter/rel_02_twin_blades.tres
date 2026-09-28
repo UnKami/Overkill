@@ -8,6 +8,7 @@ id = "REL-02"
 name = "Twin Blades"
 tier = 0
 role = 0
+primary_essence = 0
 description = "Deal 4 damage twice (8 total)."
 art_id = "rel_02_twin_blades"
 base_damage = 4

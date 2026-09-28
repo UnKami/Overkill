@@ -7,7 +7,8 @@ script = ExtResource("1_script")
 id = "REL-11"
 name = "Execution Wedge"
 tier = 0
-role = 3
+role = 0
+primary_essence = 0
 description = "Deal 8 Damage. If Target HP <= 50%, deal 14."
 art_id = "rel_11_execution_wedge"
 base_damage = 8

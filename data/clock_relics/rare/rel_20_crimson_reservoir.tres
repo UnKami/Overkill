@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-20"
+name = "Crimson Reservoir"
+tier = 2
+role = 4
+primary_essence = 1
+secondary_essence = 4
+description = "Gain 5 Block and 2 Overkill."
+art_id = "rel_20_crimson_reservoir"
+base_block = 5
+grant_overkill = 2

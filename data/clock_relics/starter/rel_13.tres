@@ -3,9 +3,11 @@
 [resource]
 script = ExtResource("1_script")
 id = "REL-13"
-name = "Blood Siphon"
+name = "Vital Siphon"
 tier = 0
 role = 0
+primary_essence = 0
+secondary_essence = 2
 description = "Deal 3 damage. Heal HP damage dealt."
 art_id = "rel_13_blood_siphon"
 base_damage = 3

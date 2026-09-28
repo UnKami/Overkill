@@ -8,6 +8,7 @@ id = "REL-03"
 name = "Heavy Hammer"
 tier = 0
 role = 0
+primary_essence = 0
 description = "Deal 14 Physical Damage."
 art_id = "rel_03_heavy_hammer"
 base_damage = 14

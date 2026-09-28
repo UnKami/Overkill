@@ -16,6 +16,7 @@ static func forecast(b: CombatController, hours: Array, replace_hour: int = 0, r
 	var s: Dictionary = {}
 	for key: String in ["player_hp","player_max_hp","player_block","player_strength","player_bleed","player_weak","player_vulnerable","player_thorns","player_next_hit_bonus","player_next_attack_multiplier","enemy_hp","enemy_max_hp","enemy_block","enemy_strength","enemy_bleed","enemy_weak","enemy_vulnerable","enemy_thorns"]:
 		s[key] = b.get(key)
+	s.overkill = OKRunState.current_ok
 	var completed: int = 0
 	var uncertain: bool = false
 	for hour: int in hours:
@@ -38,7 +39,7 @@ static func forecast(b: CombatController, hours: Array, replace_hour: int = 0, r
 				_enemy_hit(s, _enemy_damage(s, echo.intent_damage))
 				s.enemy_block += echo.intent_block
 		for key: String in ["player_weak","player_vulnerable","enemy_weak","enemy_vulnerable"]: s[key] = maxi(0, int(s[key]) - 1)
-	var result: String = "You: %d HP · %d Block   |   Enemy: %d HP · %d Block" % [maxi(0,s.player_hp),s.player_block,maxi(0,s.enemy_hp),s.enemy_block]
+	var result: String = "You: %d HP · %d Block · %d Overkill   |   Enemy: %d HP · %d Block" % [maxi(0,s.player_hp),s.player_block,s.overkill,maxi(0,s.enemy_hp),s.enemy_block]
 	if completed == 0: return "Outcome unknown until the next enemy action is revealed."
 	if uncertain: return "Known hours only — " + result + "\nRemaining actions are unrevealed."
 	if int(s.player_hp) <= 0: result += " · LETHAL TO YOU"
@@ -57,6 +58,7 @@ static func _tick(s: Dictionary, p: ClockSocketData, e: ClockSocketData, r: Cloc
 		s.enemy_weak += r.apply_weak
 		s.enemy_bleed += r.apply_bleed
 		s.player_next_hit_bonus += r.bonus_damage_next_hit
+		s.overkill += r.grant_overkill
 	s.enemy_block += e.intent_block
 	s.enemy_strength += e.intent_strength
 	s.player_bleed += e.intent_bleed
@@ -74,6 +76,7 @@ static func _tick(s: Dictionary, p: ClockSocketData, e: ClockSocketData, r: Cloc
 			if p.is_hazard: s.player_hp -= floori(damage * 0.5)
 			var hp_damage: int = mini(maxi(s.enemy_hp,0), maxi(damage - int(s.enemy_block), 0))
 			var overkill: int = maxi(0, damage - int(s.enemy_block) - int(s.enemy_hp))
+			s.overkill += overkill
 			s.enemy_hp -= hp_damage
 			s.enemy_block = maxi(0,int(s.enemy_block)-damage)
 			if r.recoil_block_on_overkill: s.player_block += overkill

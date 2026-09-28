@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-17"
+name = "Withering Censer"
+tier = 1
+role = 3
+primary_essence = 3
+description = "Apply 3 Weak."
+art_id = "rel_17_withering_censer"
+apply_weak = 3

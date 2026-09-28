@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-22"
+name = "Miasma Ward"
+tier = 1
+role = 1
+primary_essence = 1
+secondary_essence = 3
+description = "Gain 5 Block. Apply 1 Weak."
+art_id = "rel_22_miasma_ward"
+base_block = 5
+apply_weak = 1

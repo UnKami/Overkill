@@ -69,23 +69,26 @@ func _style_socket(is_enemy: bool) -> void:
 
 	if not is_enemy and data.slotted_relic != null:
 		var relic := data.slotted_relic
-		border_col = ClockRelicData.role_to_color(relic.role)
+		border_col = relic.primary_color()
 		_load_relic_art(relic.art_id)
 
 		if relic.base_damage > 0:
 			val_text = "%d×%d" % [relic.base_damage, relic.hits] if relic.hits > 1 else str(relic.base_damage)
-			_value_label.add_theme_color_override("font_color", Color("#FF8C8C"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.base_block > 0:
 			val_text = str(relic.base_block)
-			_value_label.add_theme_color_override("font_color", Color("#8CE1FF"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.apply_strength > 0:
 			val_text = "+%d" % relic.apply_strength
-			_value_label.add_theme_color_override("font_color", Color("#FFD58C"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.apply_bleed > 0:
 			val_text = "%db" % relic.apply_bleed
-			_value_label.add_theme_color_override("font_color", Color("#E58CFF"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
+		elif relic.grant_overkill > 0:
+			val_text = "+%d" % relic.grant_overkill
+			_value_label.add_theme_color_override("font_color", ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.18))
 
-		tooltip_text = "[%s] %s\n%s" % [ClockRelicData.role_to_name(relic.role), relic.name, relic.description]
+		tooltip_text = "[%s] %s\n%s" % [relic.affinity_name(), relic.name, relic.description]
 	elif is_enemy and not data.intent_revealed:
 		_icon_rect.texture = null
 		val_text = "?"
@@ -103,14 +106,14 @@ func _style_socket(is_enemy: bool) -> void:
 			_value_label.add_theme_color_override("font_color", Color("#8CE1FF"))
 			_load_icon("intent_defend")
 		elif data.intent_strength > 0:
-			border_col = Color("#F39C12")
+			border_col = ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF)
 			val_text = "+%d" % data.intent_strength
-			_value_label.add_theme_color_override("font_color", Color("#FFD58C"))
+			_value_label.add_theme_color_override("font_color", border_col.lightened(0.2))
 			_load_icon("intent_buff")
 		elif data.intent_bleed > 0 or data.intent_vulnerable > 0 or data.intent_weak > 0:
-			border_col = Color("#9B59B6")
+			border_col = ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF)
 			val_text = "!"
-			_value_label.add_theme_color_override("font_color", Color("#E58CFF"))
+			_value_label.add_theme_color_override("font_color", border_col.lightened(0.2))
 			_load_icon("intent_debuff")
 		else:
 			_icon_rect.texture = null

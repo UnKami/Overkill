@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-24"
+name = "Siege Prism"
+tier = 2
+role = 0
+primary_essence = 0
+secondary_essence = 1
+description = "Deal 5 damage. Gain 5 Block."
+art_id = "rel_24_siege_prism"
+base_damage = 5
+base_block = 5

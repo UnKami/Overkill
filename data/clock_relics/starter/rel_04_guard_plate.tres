@@ -8,6 +8,7 @@ id = "REL-04"
 name = "Guard Plate"
 tier = 0
 role = 1
+primary_essence = 1
 description = "Gain 5 Block. Lasts until absorbed or battle ends."
 art_id = "rel_04_guard_plate"
 base_block = 5

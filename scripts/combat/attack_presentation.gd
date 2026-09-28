@@ -18,6 +18,8 @@ static func for_relic(relic: ClockRelicData) -> Dictionary:
 		"accent": Color("8ad5e1"),
 		"shake": 0.0,
 	}
+	if relic != null:
+		profile.accent = relic.primary_color()
 	if relic != null and relic.id == "REL-03":
 		profile = {
 			"id": HEAVY_HAMMER_ID,

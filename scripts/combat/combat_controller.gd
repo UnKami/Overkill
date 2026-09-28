@@ -567,7 +567,7 @@ func _resolve_tick(hour: int) -> void:
 	if p_view: p_view.play_tick_resolution_flash()
 	if e_view: e_view.play_tick_resolution_flash()
 	if p_view and p_socket.slotted_relic:
-		Presentation.relay(self, p_view, _player_portrait, ClockRelicData.role_to_color(p_socket.slotted_relic.role))
+		Presentation.relay(self, p_view, _player_portrait, p_socket.slotted_relic.primary_color())
 	if e_view:
 		Presentation.relay(self, e_view, _enemy_portrait, Color("e99778"))
 	await get_tree().create_timer(0.22 / AudioManager.animation_speed_scale()).timeout
@@ -575,10 +575,10 @@ func _resolve_tick(hour: int) -> void:
 	# 1. Resolve Bleed (true unblockable damage at start of tick)
 	if player_bleed > 0:
 		player_hp -= player_bleed
-		_spawn_damage_number(_player_portrait, player_bleed, false, Color("#E58CFF"), "BLEED")
+		_spawn_damage_number(_player_portrait, player_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
 	if enemy_bleed > 0:
 		enemy_hp -= enemy_bleed
-		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, Color("#E58CFF"), "BLEED")
+		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
 	_update_stats_display()
 	if _check_combat_end() or starting_enemy != _enemy_index: return
 
@@ -601,6 +601,11 @@ func _resolve_tick(hour: int) -> void:
 			enemy_bleed += relic.apply_bleed
 		if relic.bonus_damage_next_hit > 0:
 			player_next_hit_bonus += relic.bonus_damage_next_hit
+		if relic.grant_overkill > 0:
+			OKRunState.gain_ok(relic.grant_overkill, "clock_relic:%s" % relic.id)
+			_spawn_damage_number(_player_portrait, relic.grant_overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL), "OVERKILL")
+			CombatVFX.play_hit_sparks(self, _player_portrait.global_position + _player_portrait.size * 0.5, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.2), 9)
+			TutorialCallout.trigger("first_ok")
 
 	if e_socket.intent_block > 0:
 		enemy_block += e_socket.intent_block
@@ -711,14 +716,14 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 		if enemy_hp <= unblocked:
 			# OVERKILL!
 			var overkill := unblocked - enemy_hp
-			_spawn_damage_number(_enemy_portrait, hp_damage, false, Color("#E24B4A"))
+			_spawn_damage_number(_enemy_portrait, hp_damage, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 			enemy_hp = 0
 			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
 				player_block += overkill
 			_handle_overkill(overkill)
 		else:
 			enemy_hp -= unblocked
-			_spawn_damage_number(_enemy_portrait, unblocked, false, Color("#E24B4A"))
+			_spawn_damage_number(_enemy_portrait, unblocked, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.lifesteal and player_hp > 0:
 		var healed: int = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
@@ -729,7 +734,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	# Thorns check
 	if enemy_thorns > 0:
 		player_hp -= enemy_thorns
-		_spawn_damage_number(_player_portrait, enemy_thorns, false, Color("#F39C12"), "THORNS")
+		_spawn_damage_number(_player_portrait, enemy_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
@@ -773,14 +778,14 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	# Thorns check
 	if player_thorns > 0:
 		enemy_hp -= player_thorns
-		_spawn_damage_number(_enemy_portrait, player_thorns, false, Color("#F39C12"), "THORNS")
+		_spawn_damage_number(_enemy_portrait, player_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
 
 
 func _handle_overkill(overkill: int) -> void:
-	_spawn_damage_number(_enemy_portrait, overkill, true, Color("#EF9F27"))
+	_spawn_damage_number(_enemy_portrait, overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL))
 	OKRunState.record_kill(overkill, "combat:chronometer")
 	for passive in RunManager.relics_held:
 		if passive.trigger != RelicData.Trigger.ON_OVERKILL or overkill < int(passive.condition_data.get("min_ok", 1)): continue

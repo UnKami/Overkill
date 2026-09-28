@@ -41,6 +41,13 @@ func _ready() -> void:
 	_summary.add_theme_font_size_override("font_size", 20)
 	_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(_summary)
+	var affinity_legend := RichTextLabel.new()
+	affinity_legend.bbcode_enabled = true
+	affinity_legend.fit_content = true
+	affinity_legend.scroll_active = false
+	affinity_legend.add_theme_font_size_override("normal_font_size", 17)
+	affinity_legend.text = "[color=#FF8A1F]ORANGE  Attack[/color]   •   [color=#4FB8FF]BLUE  Block[/color]   •   [color=#B76CFF]PURPLE  Buff[/color]   •   [color=#58D66B]GREEN  Debuff[/color]   •   [color=#C41734]BLOOD RED  Overkill[/color]"
+	column.add_child(affinity_legend)
 	if mode == "shop":
 		var space := Control.new()
 		space.custom_minimum_size.y = 40
