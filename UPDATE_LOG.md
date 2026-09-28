@@ -8,8 +8,9 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Adds compact illuminated artifact cards, split dual-essence rails, concise numerical effect plaques, grouped owned-copy counts and essence-aware replacement controls.
 - Rebuilds the Reliquary around the cinematic archive hall and keeps the Executioner visibly present rather than hiding the scene behind a full-width grid.
 - Replaces the debug-style relic review sheet with a cinematic five-essence and dual-binding presentation.
-- Relic mechanics, the 12-copy starter inventory, clock rules, damage, progression and battle outcomes are unchanged. Source mechanics/navigation/guidance/presentation checks and rendered 1080p inspection pass.
-- Local Windows artifacts will be recorded after export. Public 0.25.0 links remain unchanged until repository publication is explicitly authorized.
+- Relic mechanics, the 12-copy starter inventory, clock rules, damage, progression and battle outcomes are unchanged. Source and exported-package relic-language, battle-arrival, guidance and responsive-presentation checks pass; rendered 1080p gallery and real Reliquary inspection pass.
+- Local installer: 277,075,828 bytes, SHA-256 `94fd0bed6309246bee2e1fc8d0e7a865da13f0703f13a3e734a967cf326dd462`. Local ZIP: 305,972,073 bytes, SHA-256 `89f0b6f7993c2d4c337b370a3203882726c1a09ce70c16474414a70dab854e38`. All five ZIP entries match the tested build payload.
+- Source: `d87fe7522e882e6a2b0974f68f0e289f193bc366` on `fix/yonatan-relic-ui-polish`. Save-compatible; no mechanics changes. Installer is unsigned and its interactive wizard remains untested. Public 0.25.0 links remain unchanged until repository publication is explicitly authorized.
 - Detailed scope: [Reliquary interface reconstruction](docs/encounter-028.md).
 
 ## 0.27.0 candidate — 2026-09-28 — not yet published
