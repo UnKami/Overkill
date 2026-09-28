@@ -10,7 +10,6 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-tactical-inspection` | Unify Overkill around the supplied crystalline cyan/amber techno-fantasy canon; replace incompatible combat actors, enemies, relics, backgrounds, and event art; then complete the HUD, relic-card, pre-battle, and battlefield-inspection redesign | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `VERSION`; `README.md`; `project.godot`; `export_presets.cfg`; `installer/README.md`; `installer/overkill.iss`; `docs/visual_canon.md`; `docs/encounter-025.md`; `assets/characters/**`; `assets/enemies/**`; `assets/environments/**`; `assets/relics/**`; `assets/screens/**`; `assets/cards/**`; `assets/ui/**`; `assets/vfx/**`; `art_source/**`; `scripts/combat/**`; `scripts/ui/**`; `scripts/map/**`; `scripts/release/**`; `scenes/combat/**`; `scenes/ui/**`; `scenes/*combat*`; `scenes/*showcase*`; `tests/**` | 2026-09-28 |
 
 ---
 
