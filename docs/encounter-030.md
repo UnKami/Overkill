@@ -17,7 +17,7 @@ No changes are intended to damage values, enemy AI, clock mechanics, relic effec
 
 ## Verification
 
-Godot 4.5.1 imported the changed assets and exported the Windows resource pack. Eleven self-terminating source suites passed with explicit success markers: clock combat, starter relics, battle arrival and guidance, enemy intent, 54 live forecast comparisons, responsive presentation, 26-relic color language, upgrade integration, 30 cinematic routes, and deterministic encounter playthroughs. The presentation suite checked all 26 relic descriptions in normal and large text, plus bounds at 720p, 1080p and ultrawide. The same eleven suites then passed from the standalone exported Windows executable and PCK; the packaged default game also launched with exit code 0. The installer compiled successfully, and all five portable-ZIP entries match their build-payload SHA-256 values. Remote release-asset verification is the final delivery gate.
+Godot 4.5.1 imported the changed assets and exported the Windows resource pack. Eleven self-terminating source suites passed with explicit success markers: clock combat, starter relics, battle arrival and guidance, enemy intent, 54 live forecast comparisons, responsive presentation, 26-relic color language, upgrade integration, 30 cinematic routes, and deterministic encounter playthroughs. The presentation suite checked all 26 relic descriptions in normal and large text, plus bounds at 720p, 1080p and ultrawide. The same eleven suites then passed from the standalone exported Windows executable and PCK; the packaged default game also launched with exit code 0. The silent current-user installer was tested end to end: its five installed files matched the exported payload, the installed game launched successfully, and its own uninstaller removed the temporary test installation. All five portable-ZIP entries match the build payload. GitHub reports exact sizes and SHA-256 digests for the installer, ZIP and checksum manifest; all three public asset URLs return HTTP 200.
 
 The deterministic encounter fixture wins its trash and elite examples but loses its Act I, Act II, Act III and final-boss examples using a low-variety starter setup. That is a useful warning, not a human full-run balance assessment; this presentation release does not alter enemy or relic balance. The restricted headless runner reports a Windows certificate-store read error and some Godot ObjectDB shutdown notices, but the self-terminating suites return success and produce no script/assertion errors.
 
@@ -27,7 +27,7 @@ The 26 relic illustrations and new loading scene are included. The previously di
 
 ## Source and downloads
 
-- Source branch: `fix/yonatan-full-ui-polish`; the prerelease tag pins the exact game-source commit.
+- Source commit: `cc0fab397663f04c8e67825a597b86c225d73d16`, branch `fix/yonatan-full-ui-polish`; tag `v0.30.0-test` pins the exact game-source commit.
 - Playtest tag: `v0.30.0-test`.
 - [Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.30.0-test/OverkillSetup-0.30.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.30.0-test/Overkill-0.30.0-Windows.zip) · [GitHub release and checksum manifest](https://github.com/UnKami/Overkill/releases/tag/v0.30.0-test).
 - This is a prerelease for partner testing. Gameplay remains on the feature branch, separate from the default branch's source state.
