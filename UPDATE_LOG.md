@@ -2,6 +2,19 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.30.0 playtest — 2026-09-29
+
+**[GitHub prerelease, installer, portable ZIP and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.30.0-test)** · [Detailed changes, verification and limitations](docs/encounter-030.md)
+
+- Unifies regular, elite and boss encounters around one illustrated stage and character-free cinematic environments; centers route-node art and removes redundant battle HUD elements.
+- Moves Combat Log and How to Play under Esc; **I** opens two enlarged clocks with numeric full-cycle attack, Block, Strength, Thorns, status and relic carryover forecasts while hidden enemy hours remain hidden.
+- Slows normal combat impacts and reactions by about 2×; adds the 1.5-second relic Upgrade transformation. Adds 26 transparent relic objects using the agreed orange Attack, blue Block, purple Buff, green Debuff and blood-red Overkill color roles.
+- Adds an Executioner-led bell-foundry loading scene. The requested broader 20–40 cinematic-background expansion is not included in this build.
+- No gameplay rules or save format changes intended; existing saves remain compatible. Start a new run for visual review. No autoplay.
+- Verification: eleven self-terminating source suites and the same eleven exported-runtime suites pass; default packaged launch passes. Silent current-user install, installed game launch and uninstall pass. GitHub asset sizes/digests match local files; all three public URLs return HTTP 200. The low-variety scripted starter setup loses its four boss examples, so human full-run balance remains unverified. Installer is unsigned and interactive wizard was not manually exercised.
+- Installer: 306,152,783 bytes, SHA-256 `dc6fad00a570dc190315b71c333b0aa41eeeccaa54fcb5144e58bf8ffcf0c131`. ZIP: 333,244,009 bytes, SHA-256 `60e8080ed29224eff614412168d87fb3ed7b8b932253784bd0324ba27e71c93e`. See the release checksum manifest for both.
+- Source: `cc0fab397663f04c8e67825a597b86c225d73d16`, tag `v0.30.0-test`, branch `fix/yonatan-full-ui-polish`. Gameplay remains on the feature branch, separate from main.
+
 ## 0.25.0 playtest — 2026-09-28
 
 **GitHub navigation:** repository → Releases → 0.25.0 → Assets → `OverkillSetup-0.25.0.exe`. Launch **Overkill**; there are no separate 3D prototype shortcuts in this build.
