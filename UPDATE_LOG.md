@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.29.0 candidate — 2026-09-29 — not yet published
+
+- Completes a screen-by-screen interface reconstruction around the approved painterly-real cyan/amber world, including map, pause, settings, confirmation, tutorial, battle reference, inspection, reward, event, rest, outcome and transition states.
+- Enlarges and stabilizes battle relic art, keeps character vitality plates low and centered, and makes battlefield inspection an explicit two-clock full-cycle forecast.
+- Consolidates repetitive upgrade/tempering copies by design, fixes shared card-frame text safety, adds authored completion states and preserves the Executioner in cinematic context.
+- Keeps all combat, clock, relic, progression and outcome rules unchanged; no autoplay. Source/editor and exported-runtime coverage pass at 1080p, 720p large text and ultrawide, including 54 live-resolution forecasts, 30 enemy-intent sweeps, all 26 relics and all 30 cinematic routes.
+- Local installer: 277,101,700 bytes, SHA-256 `7ff170a71e94867559aee75e44d31136bdbd3e2164886ecd5a0d6883f90c2c8c`. Local ZIP: 305,998,018 bytes, SHA-256 `57ab8ee0592a8dce6c92ab70fdfb1ab238af9bb19e7e159721c19f0047773746`. All five ZIP entries match the tested build payload; the packaged executable also passed a responsive launch smoke test.
+- Source implementation: `02f014d` on `fix/yonatan-full-ui-polish`. Save-compatible; a new run is recommended for visual review. Public 0.25.0 links remain unchanged until repository publication is explicitly approved.
+- Detailed scope: [Full interface polish candidate](docs/encounter-029.md).
+
 ## 0.28.0 candidate — 2026-09-29 — not yet published
 
 - Reconstructs the relic-facing UI after the 0.27 review sheet exposed stretched developer panels, dead space and missing cinematic context.
