@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan's Codex | `fix/yonatan-full-ui-polish` | Map navigation, treasure screen, relic selection hit targets, transition presentation, distinct enemy art, release verification | `ACTIVE_WORK.md`; `scenes/map_screen.tscn`; `scripts/ui/map_screen.gd`; `scenes/relic_pedestal_view.tscn`; `scripts/ui/relic_pedestal_view.gd`; `scenes/reward_screen.tscn`; `scripts/ui/reward_screen.gd`; `scenes/treasure_screen.tscn`; `scripts/ui/treasure_screen.gd`; `scripts/autoload/game_flow.gd`; `scripts/ui/screen_transition.gd`; `scripts/combat/illustrated_stage.gd`; `assets/enemies/act1/`; `scripts/ui/map_ux_test.gd`; `scenes/map_ux_test.tscn`; `VERSION`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `README.md`; `installer/README.md` | 2026-09-30 |
 
 ---
 
