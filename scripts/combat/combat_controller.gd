@@ -68,6 +68,7 @@ var _choice_overlay: PanelContainer
 var _resolution_hour: int = 1
 var _combat_history: Array[String] = []
 var _history_button: Button
+var _help_button: Button
 var _intent_readout: Label
 var _intent_clock_label: Label
 var _intent_panel: PanelContainer
@@ -139,18 +140,33 @@ func _ready() -> void:
 	_clash_nexus.get_node("NexusTitle").hide()
 	_battle_info = Label.new()
 	add_child(_battle_info)
-	_battle_info.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_battle_info.offset_top = -28
-	_battle_info.offset_bottom = 0
+	_battle_info.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_battle_info.offset_left = -380
+	_battle_info.offset_right = 380
+	_battle_info.offset_top = -42
+	_battle_info.offset_bottom = -6
 	_battle_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_battle_info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_battle_info.add_theme_font_size_override("font_size", 18)
 	_battle_info.add_theme_color_override("font_color", Color("c4b899"))
+	_battle_info.add_theme_color_override("font_outline_color", Color("02070bd9"))
+	_battle_info.add_theme_constant_override("outline_size", 4)
 	_battle_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_turn_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_turn_banner.offset_left = -600
-	_turn_banner.offset_right = 600
-	_turn_banner.offset_top = -140
-	_turn_banner.offset_bottom = -100
+	_turn_banner.offset_left = -360
+	_turn_banner.offset_right = 360
+	_turn_banner.offset_top = -242
+	_turn_banner.offset_bottom = -188
+	_turn_banner.add_theme_font_size_override("font_size", 24)
+	var banner_style := StyleBoxFlat.new()
+	banner_style.bg_color = Color("07121cdd")
+	banner_style.border_color = Color("c9aa7688")
+	banner_style.border_width_top = 1
+	banner_style.border_width_bottom = 1
+	banner_style.set_corner_radius_all(5)
+	banner_style.content_margin_left = 20
+	banner_style.content_margin_right = 20
+	_turn_banner.add_theme_stylebox_override("normal", banner_style)
 	_skip_button.pressed.connect(_on_skip_button_pressed)
 	_skip_button.mouse_entered.connect(_preview_sweep)
 	_skip_button.focus_entered.connect(_preview_sweep)
@@ -166,38 +182,20 @@ func _ready() -> void:
 	_history_button.offset_top = 10
 	_history_button.offset_bottom = 54
 	_history_button.pressed.connect(func() -> void:
-		var history: AcceptDialog = AcceptDialog.new()
-		history.title = "Recent combat · newest first"
-		history.dialog_text = "No actions resolved yet." if _combat_history.is_empty() else "\n".join(_combat_history)
-		history.theme = ScreenDesign.build_theme()
-		add_child(history)
-		history.confirmed.connect(history.queue_free)
-		history.canceled.connect(history.queue_free)
-		history.popup_centered(Vector2i(850,650)))
-	var help := Button.new()
-	help.text = "HOW TO PLAY"
-	help.add_theme_font_size_override("font_size", 16)
-	add_child(help)
-	help.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	help.offset_left = -230
-	help.offset_right = -30
-	help.offset_top = 10
-	help.offset_bottom = 54
-	help.pressed.connect(func() -> void:
-		var guide := AcceptDialog.new()
-		guide.title = "Your clock, one decision at a time"
-		guide.dialog_text = "1. BUILD YOUR CLOCK\nChoose one of three relics. The first goes to 1 o'clock, then 2, up to 9.\nAfter each placement, your relic and the enemy's matching tick resolve.\nHover a relic to see its destination before committing.\n\n2. SWEEP YOUR CLOCK\nEach turn covers three hours: 1–3, 4–6, then 7–9.\nHover a glowing socket to preview replacing it with the offered reserve.\nClick the socket to replace AND resolve the three-hour sweep.\nKEEP & SWEEP discards the offered reserve and activates your current relics.\n\nThe enemy may rotate backward or use a second hand. Read its lit intents.\n\nKEYWORDS\nBlock persists until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: return damage when attacked.\nBleed: lose HP at tick start. Weak: deal 25% less attack damage.\nVulnerable: take 50% more attack damage.\nLifesteal heals actual HP damage dealt, up to missing HP.\nOverdrive empowers your next attacking relic, including every hit."
-		var help_text: RichTextLabel = RichTextLabel.new()
-		help_text.text = guide.dialog_text
-		guide.dialog_text = ""
-		help_text.custom_minimum_size = Vector2(900,450)
-		help_text.add_theme_font_size_override("normal_font_size",24)
-		guide.add_child(help_text)
-		guide.theme = ScreenDesign.build_theme()
-		add_child(guide)
-		guide.confirmed.connect(guide.queue_free)
-		guide.canceled.connect(guide.queue_free)
-		guide.popup_centered(Vector2i(1000,580)))
+		var history_text: String = "[center][font_size=34][color=#80c8d1]◇[/color][/font_size]\n\n[color=#efc780][b]THE CHRONICLE IS UNWRITTEN[/b][/color]\n\n[color=#92a7b4]No mechanisms have resolved yet.\nEach clash, block, status and excess strike will be recorded here as the clock advances.[/color][/center]" if _combat_history.is_empty() else "\n\n".join(_combat_history)
+		BattleReferenceOverlay.show_overlay(self, "RECENT COMBAT", "THE CHRONICLE  /  NEWEST FIRST", history_text, ScreenDesign.CYAN))
+	_help_button = Button.new()
+	_help_button.text = "HOW TO PLAY"
+	_help_button.add_theme_font_size_override("font_size", 16)
+	add_child(_help_button)
+	_help_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_help_button.offset_left = -230
+	_help_button.offset_right = -30
+	_help_button.offset_top = 10
+	_help_button.offset_bottom = 54
+	_help_button.pressed.connect(func() -> void:
+		var guide_text := "[color=#80c8d1][b]01  /  BUILD YOUR CLOCK[/b][/color]\nChoose one of three relics. The first binds to 1 o'clock, then 2, up to 9. After each placement, your relic and the enemy's matching tick resolve. Hover a relic to preview its destination before committing.\n\n[color=#efb85c][b]02  /  SWEEP THREE HOURS[/b][/color]\nEach turn covers 1–3, 4–6, then 7–9. Hover a glowing socket to preview replacing it with the offered reserve. Click the socket to replace and resolve the sweep. KEEP & SWEEP discards the offer and activates your current relics.\n\n[color=#80c8d1][b]03  /  READ THE ENEMY[/b][/color]\nThe enemy may rotate backward or use a second hand. Its illuminated intents show what resolves next.\n\n[color=#efb85c][b]KEYWORDS[/b][/color]\n[b]Block[/b] persists until absorbed or battle ends.  [b]Strength[/b] adds damage per hit.  [b]Thorns[/b] return damage when attacked.\n[b]Bleed[/b] removes HP at tick start.  [b]Weak[/b] reduces attack damage by 25%.  [b]Vulnerable[/b] increases damage taken by 50%.\n[b]Lifesteal[/b] heals actual HP damage dealt.  [b]Overdrive[/b] empowers the next attacking relic, including every hit."
+		BattleReferenceOverlay.show_overlay(self, "READING THE CLOCK", "EXECUTIONER FIELD MANUAL", guide_text, ScreenDesign.CYAN))
 	_player_chrono.socket_pressed.connect(_on_player_socket_pressed)
 	if not _is_prepared and not _pending_enemies.is_empty():
 		_prepare_combat(_pending_intro)
@@ -377,6 +375,7 @@ func _prompt_phase_one_draft() -> void:
 	if EnemyClockPattern.has_twin(_active_enemy()) and turn_number % 3 == 0:
 		_reveal_enemy_hour(((EnemyClockPattern.hour_for(turn_number, _active_enemy()) + 3) % 9) + 1)
 	_refresh_guidance()
+	TutorialCallout.trigger("first_intent")
 	_skip_button.hide()
 	_clear_pedestals()
 

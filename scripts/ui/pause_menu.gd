@@ -13,7 +13,37 @@ extends Control
 
 func _ready() -> void:
 	ScreenDesign.polish(self)
-	get_node("CenterContainer/Panel").custom_minimum_size.x = 540
+	var panel: PanelContainer = get_node("CenterContainer/Panel")
+	panel.custom_minimum_size.x = 620
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color("091520f2")
+	panel_style.border_color = Color("c9aa768c")
+	panel_style.set_border_width_all(1)
+	panel_style.set_corner_radius_all(8)
+	panel_style.shadow_color = Color("000000d6")
+	panel_style.shadow_size = 30
+	panel_style.shadow_offset = Vector2(0, 12)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	var stack: VBoxContainer = _resume_button.get_parent()
+	var title: Label = stack.get_node("TitleLabel")
+	title.text = "JOURNEY PAUSED"
+	title.add_theme_font_size_override("font_size", 38)
+	var kicker := ScreenDesign.label(stack, "THE CLOCK WAITS", 14, ScreenDesign.CYAN)
+	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stack.move_child(kicker, 0)
+	var subtitle := ScreenDesign.label(stack, "Your current run is safe.", 17, ScreenDesign.MUTED)
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stack.move_child(subtitle, title.get_index() + 1)
+	var rule := ScreenDesign.rule(stack, ScreenDesign.GOLD)
+	stack.move_child(rule, subtitle.get_index() + 1)
+	_resume_button.text = "RESUME JOURNEY"
+	_settings_button.text = "SETTINGS"
+	_view_deck_button.text = "VIEW RELIQUARY"
+	_main_menu_button.text = "RETURN TO TITLE"
+	_abandon_button.text = "ABANDON RUN"
+	for button: Button in [_resume_button, _settings_button, _view_deck_button, _main_menu_button, _abandon_button]:
+		button.custom_minimum_size.y = 58
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_resume_button.grab_focus()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_resume_button.pressed.connect(func() -> void: GameFlow.close_pause_menu())
@@ -26,8 +56,8 @@ func _ready() -> void:
 func _on_abandon_pressed() -> void:
 	ModalConfirmDialog.show_dialog(
 		self,
-		"Abandon this run? Your deck, relics, and progress this run will be lost. This cannot be undone.",
-		"Abandon Run",
+		"Abandon this run? Your current path, bound relics, cards, and unbanked Overkill will be lost. This cannot be undone.",
+		"ABANDON RUN",
 		func() -> void: GameFlow.abandon_run(),
 		true
 	)

@@ -32,7 +32,7 @@ const CATALOG := {
 		"dismiss_on": "input",
 	},
 	"first_rest_upgrade": {
-		"text": "Upgrades cost OK earned from combat kills.",
+		"text": "Tempering permanently improves one relic for the rest of this run.",
 		"accent_color": "#EF9F27",
 		"icon_id": "anvil_icon",
 		"dismiss_seconds": -1.0,  # no auto-fade, dismiss_on governs

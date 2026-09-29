@@ -6,7 +6,7 @@ var _grid: GridContainer
 var _summary: Label
 var _committed: bool = false
 var _offers: Array = []
-var _upgrade_preview: ConfirmationDialog
+var _upgrade_preview: Control
 const Pedestal := preload("res://scenes/relic_pedestal_view.tscn")
 
 func _ready() -> void:
@@ -25,7 +25,8 @@ func _ready() -> void:
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	AmbientMotion.apply_cinematic_backdrop(self, backdrop, 42.0, 0.55)
 	ScreenDesign.shade(self)
-	var breadcrumb := ScreenDesign.label(self, "O V E R K I L L     /     THE ARCHIVE  /  RELIQUARY", 18, ScreenDesign.GOLD)
+	var breadcrumb_text: String = {"collection":"O V E R K I L L     /     THE ARCHIVE  /  RELIQUARY", "shop":"O V E R K I L L     /     THE CLOCKWRIGHT", "upgrade":"O V E R K I L L     /     THE FORGE", "removal":"O V E R K I L L     /     DISMANTLING"}.get(mode, "O V E R K I L L     /     THE ARCHIVE")
+	var breadcrumb := ScreenDesign.label(self, breadcrumb_text, 18, ScreenDesign.GOLD)
 	breadcrumb.position = Vector2(64, 38)
 
 	var margin := MarginContainer.new()
@@ -37,7 +38,7 @@ func _ready() -> void:
 	margin.add_theme_constant_override("margin_bottom", 54)
 
 	var stage := HBoxContainer.new()
-	stage.add_theme_constant_override("separation", 38)
+	stage.add_theme_constant_override("separation", 30)
 	margin.add_child(stage)
 	var column := VBoxContainer.new()
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -45,7 +46,7 @@ func _ready() -> void:
 	stage.add_child(column)
 
 	var kicker := Label.new()
-	kicker.text = "ACTIVE CHRONOMETER INVENTORY"
+	kicker.text = {"collection":"ACTIVE CHRONOMETER INVENTORY", "shop":"FIVE OBJECTS  ·  ONE PRICE", "upgrade":"ONE RELIC MAY BE TEMPERED", "removal":"BREAK ONE BINDING"}.get(mode, "ACTIVE CHRONOMETER INVENTORY")
 	kicker.add_theme_font_size_override("font_size", 16)
 	kicker.add_theme_color_override("font_color", ScreenDesign.CYAN)
 	column.add_child(kicker)
@@ -70,31 +71,33 @@ func _ready() -> void:
 	_add_legend_token(legend, "BUFF", ClockRelicData.Essence.BUFF)
 	_add_legend_token(legend, "DEBUFF", ClockRelicData.Essence.DEBUFF)
 	_add_legend_token(legend, "OVERKILL", ClockRelicData.Essence.OVERKILL)
-	if mode == "shop":
-		var space := Control.new()
-		space.custom_minimum_size.y = 18
-		column.add_child(space)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER if get_viewport_rect().size.x >= 1500.0 else ScrollContainer.SCROLL_MODE_AUTO
 	scroll.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	column.add_child(scroll)
 	_grid = GridContainer.new()
-	_grid.columns = 4
+	_grid.columns = 5 if mode == "shop" else 4
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_grid.add_theme_constant_override("h_separation", 16)
+	_grid.add_theme_constant_override("h_separation", 12 if mode == "shop" else 16)
 	_grid.add_theme_constant_override("v_separation", 18)
 	scroll.add_child(_grid)
-	scroll.resized.connect(func() -> void: _grid.columns = maxi(1, mini(4, int((scroll.size.x + 16) / 288))))
+	scroll.resized.connect(func() -> void:
+		var card_width: float = 258.0 if mode == "shop" else 288.0
+		var maximum: int = 5 if mode == "shop" else 4
+		_grid.columns = maxi(1, mini(maximum, int((scroll.size.x + 12.0) / card_width))))
 	var back := Button.new()
-	back.text = "RETURN"
+	back.text = "RETURN TO MAP"
 	back.custom_minimum_size = Vector2(220, 50)
 	back.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	back.pressed.connect(_close)
 	column.add_child(back)
 
 	var presence := Control.new()
-	presence.custom_minimum_size.x = 430 if mode == "collection" else 300
+	var presence_width: float = 430.0 if mode == "collection" else (330.0 if get_viewport_rect().size.x >= 1500.0 else 0.0)
+	presence.custom_minimum_size = Vector2(presence_width, 0)
+	presence.visible = presence_width > 0.0
 	stage.add_child(presence)
 	var witness := VBoxContainer.new()
 	witness.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
@@ -105,10 +108,16 @@ func _ready() -> void:
 	presence.add_child(witness)
 	var witness_kicker := ScreenDesign.label(witness, "THE EXECUTIONER", 14, ScreenDesign.CYAN)
 	witness_kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	var witness_title := ScreenDesign.label(witness, "Warden of the bound hours", 25, Color("f0d4a0"), true)
+	var witness_title_text: String = "Dealer in forbidden hours" if mode == "shop" else "Warden of the bound hours"
+	var witness_title := ScreenDesign.label(witness, witness_title_text, 25, Color("f0d4a0"), true)
 	witness_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	var witness_copy := ScreenDesign.label(witness, "Every object is a command.\nEvery color is a promise.", 16, Color("b7c4cc"))
+	witness_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	witness_title.custom_minimum_size.y = 66
+	var witness_copy_text: String = "A price is another kind of sacrifice.\nChoose what the clock will remember." if mode == "shop" else "Every object is a command.\nEvery color is a promise."
+	var witness_copy := ScreenDesign.label(witness, witness_copy_text, 16, Color("b7c4cc"))
 	witness_copy.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	witness_copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	witness_copy.custom_minimum_size.y = 70
 	_offers = ContentDatabase.all_clock_relics().duplicate()
 	_offers.shuffle()
 	_offers = _offers.slice(0, 5)
@@ -143,6 +152,7 @@ func _rebuild() -> void:
 		_grid.remove_child(child)
 		child.queue_free()
 	_summary.text = "%d relics  /  9 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
+	if mode == "shop": _summary.text = "%d OVERKILL AVAILABLE     ·     EACH RELIC COSTS 15     ·     PURCHASES JOIN YOUR CHRONOMETER" % OKRunState.current_ok
 	if mode == "upgrade": _summary.text += "     •     One free upgrade this visit."
 	if mode == "removal": _summary.text += "     •     Keep at least 10 relics."
 	if mode == "collection":
@@ -168,16 +178,60 @@ func _rebuild() -> void:
 			view.bind_relic(relic, "")
 			view.set_stack_count(int(group.count))
 		return
+	if mode == "upgrade":
+		# Tempering is a decision between relic designs, not a wall of identical
+		# inventory copies. Group owned copies by design and target one eligible
+		# copy from the chosen group. This keeps the forge legible even when the
+		# chronometer contains many starter duplicates.
+		var upgrade_groups: Dictionary = {}
+		var upgrade_order: Array[String] = []
+		for entry: Dictionary in RunManager.clock_inventory:
+			var relic_id: String = str(entry.get("id", ""))
+			if not upgrade_groups.has(relic_id):
+				upgrade_groups[relic_id] = []
+				upgrade_order.append(relic_id)
+			var entries: Array = upgrade_groups[relic_id]
+			entries.append(entry)
+			upgrade_groups[relic_id] = entries
+		_summary.text = "%d relics  /  %d designs  /  9 clock sockets  /  %d reserves     •     One free tempering this visit." % [RunManager.clock_inventory.size(), upgrade_groups.size(), maxi(0, RunManager.clock_inventory.size() - 9)]
+		for relic_id: String in upgrade_order:
+			var entries: Array = upgrade_groups[relic_id]
+			var target_entry: Dictionary = {}
+			var ready_count: int = 0
+			for candidate: Dictionary in entries:
+				if int(candidate.get("level", 0)) == 0:
+					ready_count += 1
+					if target_entry.is_empty():
+						target_entry = candidate
+			if target_entry.is_empty():
+				target_entry = entries[0]
+			var relic: ClockRelicData = ClockInventory.resolve(target_entry)
+			if relic == null:
+				continue
+			var view: RelicPedestalView = Pedestal.instantiate()
+			_grid.add_child(view)
+			var action: String = "PREVIEW TEMPERING  ·  %d READY" % ready_count if ready_count > 0 else "ALL COPIES TEMPERED"
+			view.bind_relic(relic, action)
+			view.set_stack_count(entries.size())
+			view._slot_button.disabled = ready_count == 0
+			if ready_count > 0:
+				var upgraded: Dictionary = target_entry.duplicate()
+				upgraded.level = 1
+				var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
+				view.tooltip_text = "%d copies owned; %d may still be tempered.\n\nCURRENT\n%s\n\nAFTER TEMPERING\n%s" % [entries.size(), ready_count, relic.description, tempered.description]
+				var target_uid: int = int(target_entry.get("uid", -1))
+				view.selected.connect(func(_r: ClockRelicData) -> void: _choose(target_uid))
+		return
 	if mode == "shop":
 		for relic: ClockRelicData in _offers:
 			var price := RunManager.price_for("clock_relic", 15)
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
+			view.use_shop_layout()
 			view.bind_relic(relic, "Buy · %d Overkill" % price)
 			view._slot_button.disabled = OKRunState.current_ok < price
 			if view._slot_button.disabled:
-				view._slot_button.text = "Need %d more Overkill" % (price - OKRunState.current_ok)
-			view._desc_label.text += "\nPrice: %d Overkill" % price
+				view._slot_button.text = "Need %d more" % (price - OKRunState.current_ok)
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
 		return
 	for entry in RunManager.clock_inventory:
@@ -224,13 +278,9 @@ func _choose(uid: int) -> void:
 			var current := ClockInventory.resolve(entry)
 			var upgraded := entry.duplicate()
 			upgraded.level = 1
-			_upgrade_preview = ConfirmationDialog.new()
-			_upgrade_preview.title = "Temper " + current.name
-			_upgrade_preview.dialog_text = "CURRENT\n%s\n\nTEMPERED\n%s\n\nFree. Uses your one upgrade at this rest site." % [current.description, ClockInventory.resolve(upgraded).description]
-			_upgrade_preview.ok_button_text = "TEMPER RELIC"
-			add_child(_upgrade_preview)
-			_upgrade_preview.confirmed.connect(func() -> void: _commit_upgrade(uid))
-			_upgrade_preview.popup_centered(Vector2i(640, 320))
+			var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
+			UpgradePreviewDialog.show_relic_dialog(self, current, tempered, func() -> void: _commit_upgrade(uid))
+			_upgrade_preview = get_child(get_child_count() - 1) as Control
 			return
 	elif mode == "removal" and OKRunState.current_ok >= 25:
 		if RunManager.remove_clock_relic(uid):

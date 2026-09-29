@@ -25,8 +25,34 @@ func configure(background_path: String, label_text: String, on_complete: Callabl
 func _ready() -> void:
 	if ResourceLoader.exists(_background_path):
 		_background.texture = ResourceLoader.load(_background_path)
-	_label.text = _label_text
-	AmbientMotion.apply_cinematic_backdrop(self, _background, 14.0, 0.82)
+	_label.text = _label_text.to_upper()
+	_label.add_theme_font_override("font", ScreenDesign.display_font())
+	_label.add_theme_font_size_override("font_size", 68 if get_viewport_rect().size.x >= 1500.0 else 54)
+	_label.add_theme_color_override("font_color", Color("f2dfbd"))
+	_label.add_theme_color_override("font_outline_color", Color("071019d9"))
+	_label.add_theme_constant_override("outline_size", 4)
+	_label.add_theme_color_override("font_shadow_color", Color("000000b8"))
+	_label.add_theme_constant_override("shadow_offset_x", 0)
+	_label.add_theme_constant_override("shadow_offset_y", 5)
+	_label.add_theme_constant_override("shadow_outline_size", 8)
+	var kicker := ScreenDesign.label(self, "THE MECHANISM DESCENDS", 16, ScreenDesign.CYAN)
+	kicker.add_theme_color_override("font_outline_color", Color("071019d9"))
+	kicker.add_theme_constant_override("outline_size", 3)
+	kicker.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	kicker.position += Vector2(-150, -76)
+	kicker.size = Vector2(300, 30)
+	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var rule := ColorRect.new()
+	rule.color = Color(ScreenDesign.GOLD, 0.72)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rule.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	rule.position += Vector2(-190, 66)
+	rule.size = Vector2(380, 1)
+	add_child(rule)
+	var hint: Label = get_node("HintLabel")
+	hint.text = "CLICK OR PRESS ANY KEY TO CONTINUE"
+	hint.add_theme_font_size_override("font_size", 15)
+	AmbientMotion.apply_cinematic_backdrop(self, _background, 18.0, 0.72)
 	AmbientMotion.punch_scale(_label, 1.1, 0.5)
 
 

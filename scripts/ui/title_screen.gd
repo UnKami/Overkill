@@ -1,7 +1,7 @@
 extends Control
 var _new_run_button: Button
 var _continue_button: Button
-var _replace_confirmation: ConfirmationDialog
+var _replace_confirmation: ModalConfirmDialog
 
 func _ready() -> void:
 	theme = ScreenDesign.build_theme()
@@ -25,18 +25,20 @@ func _ready() -> void:
 	if _continue_button.visible:
 		var data := SaveManager.load_run()
 		ScreenDesign.label(column,"JOURNEY IN PROGRESS  /  ACT %d" % int(data.get("act_number",1)),16,ScreenDesign.MUTED)
-	_replace_confirmation = ConfirmationDialog.new()
-	_replace_confirmation.title = "Begin a new journey?"
-	_replace_confirmation.dialog_text = "Your current journey will be replaced when you begin the new run."
-	_replace_confirmation.ok_button_text = "Choose character"
-	_replace_confirmation.confirmed.connect(func() -> void: GameFlow.goto_class_select())
+	var confirm_scene: PackedScene = load(ModalConfirmDialog.SCENE_PATH)
+	_replace_confirmation = confirm_scene.instantiate() as ModalConfirmDialog
+	_replace_confirmation.hide()
 	add_child(_replace_confirmation)
+	_replace_confirmation.set_message("Begin a new journey? Your saved route, bound relics, card deck, and unbanked Overkill will be replaced when you choose an Executioner.")
+	_replace_confirmation.set_confirm_label("CHOOSE EXECUTIONER")
+	_replace_confirmation.confirmed.connect(func() -> void: GameFlow.goto_class_select())
+	_replace_confirmation.cancelled.connect(_replace_confirmation.hide)
 	(_continue_button if _continue_button.visible else _new_run_button).grab_focus()
 	ScreenDesign.reveal(column)
 	ScreenDesign.apply_text_size(self)
 
 func _new_journey() -> void:
-	if SaveManager.has_run_save(): _replace_confirmation.popup_centered(Vector2i(620,210))
+	if SaveManager.has_run_save(): _replace_confirmation.show()
 	else: GameFlow.goto_class_select()
 
 func _on_continue_pressed() -> void:

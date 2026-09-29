@@ -118,7 +118,10 @@ func _build_choice(choice: Dictionary) -> PanelContainer:
 	var rule := ScreenDesign.rule(column, choice.accent)
 	rule.custom_minimum_size.y = 2
 	var art := TextureRect.new()
-	art.custom_minimum_size.y = 160
+	# The scene plate is part of the choice, not a thumbnail decoration. A
+	# taller crop gives the Executioner and location enough presence while the
+	# responsive canvas still keeps all three actions above the fold at 720p.
+	art.custom_minimum_size.y = 220
 	art.texture = load(String(choice.art))
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED

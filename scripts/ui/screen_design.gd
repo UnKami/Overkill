@@ -31,14 +31,19 @@ static func build_theme() -> Theme:
 	_theme.default_font_size = 22
 	_theme.set_color("font_color", "Label", TEXT)
 	for type in ["Button", "SecondaryButton", "DangerButton", "OptionButton"]:
-		var accent := Color("b66d64") if type == "DangerButton" else GOLD
-		_theme.set_stylebox("normal",type,box(Color("101b26e8"),Color("655a4380")))
-		_theme.set_stylebox("hover",type,box(Color("213440f5"),accent))
-		_theme.set_stylebox("pressed",type,box(Color("30404d"),CYAN))
+		var is_danger: bool = type == "DangerButton"
+		var accent := Color("b66d64") if is_danger else GOLD
+		var normal_fill := Color("271419f2") if is_danger else Color("101b26e8")
+		var normal_line := Color("b66d64b8") if is_danger else Color("655a4380")
+		var hover_fill := Color("402027f5") if is_danger else Color("213440f5")
+		var pressed_fill := Color("5a2328") if is_danger else Color("30404d")
+		_theme.set_stylebox("normal",type,box(normal_fill,normal_line,2 if is_danger else 1))
+		_theme.set_stylebox("hover",type,box(hover_fill,accent,2 if is_danger else 1))
+		_theme.set_stylebox("pressed",type,box(pressed_fill,accent,2 if is_danger else 1))
 		_theme.set_stylebox("disabled",type,box(Color("0c141aa0"),Color("35414a")))
-		_theme.set_stylebox("focus",type,box(Color(0,0,0,0),CYAN,2))
-		_theme.set_color("font_color",type,TEXT)
-		_theme.set_color("font_hover_color",type,Color("fff1d3"))
+		_theme.set_stylebox("focus",type,box(Color(0,0,0,0),accent if is_danger else CYAN,2))
+		_theme.set_color("font_color",type,Color("ffdcd6") if is_danger else TEXT)
+		_theme.set_color("font_hover_color",type,Color("fff1ed") if is_danger else Color("fff1d3"))
 		_theme.set_color("font_disabled_color",type,Color("75818a"))
 		_theme.set_font_size("font_size",type,22)
 	for type in ["Panel", "PanelContainer", "PopupPanel", "PopupMenu"]:

@@ -22,14 +22,53 @@ func _ready() -> void:
 	if _event == null:
 		GameFlow.goto_map()
 		return
+	theme = ScreenDesign.build_theme()
+	ScreenDesign.frame(self, "A FRACTURE IN THE HOUR")
+	get_node("Dim").color = Color("07101942")
+	_panel.reparent(self)
+	_panel.anchor_left = 0.085
+	_panel.anchor_right = 0.51
+	_panel.anchor_top = 0.22
+	_panel.anchor_bottom = 0.22
+	_panel.offset_left = 0
+	_panel.offset_right = 0
+	_panel.offset_top = 0
+	_panel.offset_bottom = 0
+	_panel.custom_minimum_size = Vector2(0, 0)
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color("091520e8")
+	panel_style.border_color = Color("9d845caa")
+	panel_style.set_border_width_all(1)
+	panel_style.set_corner_radius_all(8)
+	panel_style.shadow_color = Color("000000b8")
+	panel_style.shadow_size = 24
+	panel_style.shadow_offset = Vector2(0, 10)
+	_panel.add_theme_stylebox_override("panel", panel_style)
+	var stack: VBoxContainer = _title_label.get_parent()
+	var kicker := ScreenDesign.label(stack, "UNSCRIPTED ENCOUNTER", 15, ScreenDesign.CYAN)
+	stack.move_child(kicker, 0)
 	_title_label.text = _event.title
+	_title_label.add_theme_font_override("font", ScreenDesign.display_font())
+	_title_label.add_theme_font_size_override("font_size", 36)
+	_title_label.add_theme_color_override("font_color", Color("efd09a"))
+	var rule := ScreenDesign.rule(stack, ScreenDesign.GOLD)
+	stack.move_child(rule, _title_label.get_index() + 1)
 	_body_label.text = _event.body_text
+	_body_label.add_theme_font_size_override("normal_font_size", 21)
+	_body_label.add_theme_color_override("default_color", ScreenDesign.TEXT)
 	for choice in _event.choices:
 		var button := Button.new()
-		button.text = "%s\n[%s]" % [choice.label, choice.consequence_summary]
+		button.text = "%s\n›  %s" % [choice.label.to_upper(), choice.consequence_summary]
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size.y = 86
+		button.add_theme_font_size_override("font_size", 20)
 		button.disabled = RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost
+		if button.disabled:
+			button.tooltip_text = "You cannot currently pay this consequence."
 		button.pressed.connect(func() -> void: _on_choice_pressed(choice))
 		_choice_box.add_child(button)
+	var footer := ScreenDesign.label(stack, "THE CLOCK REMEMBERS WHAT YOU CHOOSE", 13, ScreenDesign.MUTED)
+	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_load_background()
 	# Arriving at an event is a small "something is happening" beat - a
 	# quick reveal punch on the panel, then it settles into the shared
@@ -41,6 +80,7 @@ func _load_background() -> void:
 	var path := CinematicArt.event_background(_event.id)
 	if ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
+		_background.modulate = Color(0.78, 0.80, 0.82)
 		AmbientMotion.apply_cinematic_backdrop(self, _background, 48.0, 0.75)
 
 

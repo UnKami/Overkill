@@ -19,7 +19,7 @@ func _ready() -> void:
 	var class_text: PackedStringArray = []
 	for node: Node in class_select.find_children("*", "Label", true, false): class_text.append(node.text)
 	for node: Node in class_select.find_children("*", "Button", true, false): class_text.append(node.text)
-	assert(class_text.has("STANDART BATTLE   ›"))
+	assert(class_text.has("BEGIN THE ASCENT   ›"))
 	assert(not "75" in class_text and not "VITALITY" in class_text and not "CLOCK SLOTS" in class_text and not "RESERVES" in class_text)
 	assert(not "BIND THE HOURS. BREAK THE CYCLE." in class_text)
 	class_select.queue_free()

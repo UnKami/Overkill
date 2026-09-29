@@ -75,10 +75,11 @@ func _ready() -> void:
 
 func _fit_content() -> void:
 	if _battle_layout:
-		custom_minimum_size = Vector2(380, 420)
+		custom_minimum_size = Vector2(380, 440)
 		return
 	match _presentation_mode:
 		"collection": custom_minimum_size = Vector2(272, 370)
+		"shop": custom_minimum_size = Vector2(246, 402)
 		"gallery": custom_minimum_size = Vector2(280, 448)
 		_: custom_minimum_size = Vector2(300, 440)
 
@@ -91,36 +92,30 @@ func _gui_input(event: InputEvent) -> void:
 func use_battle_layout() -> void:
 	_battle_layout = true
 	_presentation_mode = "battle"
-	custom_minimum_size = Vector2(380, 420)
-	pivot_offset = Vector2(190, 210)
+	custom_minimum_size = Vector2(380, 440)
+	pivot_offset = Vector2(190, 220)
 	_card_panel.pivot_offset = pivot_offset
-	for child: Control in [_role_badge, _name_label, _title_rule, _art_frame, _effect_frame, _slot_button]:
-		child.reparent(_card_panel)
-		child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_margin.hide()
+	# Keep the battle card in the same deterministic vertical container as every
+	# other relic presentation. Reparenting these controls into absolute
+	# positions allowed their old container transforms to survive for a frame,
+	# leaving the title behind the artwork on some resolutions.
+	_margin.offset_left = 14
+	_margin.offset_top = 12
+	_margin.offset_right = -14
+	_margin.offset_bottom = -10
+	_vbox.add_theme_constant_override("separation", 3)
 	_role_badge.hide()
-	_name_label.position = Vector2(20, 12)
-	_name_label.size = Vector2(340, 36)
+	_name_label.custom_minimum_size.y = 36
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_rule.position = Vector2(30, 52)
-	_title_rule.size = Vector2(320, 1)
-	_art_frame.custom_minimum_size = Vector2.ZERO
-	_art_frame.position = Vector2(34, 54)
-	_art_frame.size = Vector2(312, 220)
-	_effect_frame.custom_minimum_size = Vector2.ZERO
-	_effect_frame.position = Vector2(22, 277)
-	_effect_frame.size = Vector2(336, 86)
+	_art_frame.custom_minimum_size.y = 230
+	_art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_effect_frame.custom_minimum_size.y = 88
 	var effect_margin: MarginContainer = _effect_frame.get_node("EffectMargin")
 	effect_margin.add_theme_constant_override("margin_top", 2)
 	effect_margin.add_theme_constant_override("margin_bottom", 2)
 	_desc_label.fit_content = false
 	_desc_label.text_direction = Control.TEXT_DIRECTION_AUTO
 	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_slot_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_slot_button.offset_left = 14
-	_slot_button.offset_right = -14
-	_slot_button.offset_top = -56
-	_slot_button.offset_bottom = -10
 	_slot_button.custom_minimum_size.y = 48
 	_name_label.add_theme_font_size_override("font_size", 25)
 	_desc_label.add_theme_font_size_override("normal_font_size", 24)
@@ -149,6 +144,26 @@ func use_collection_layout() -> void:
 	_effect_frame.custom_minimum_size.y = 67
 	_desc_label.add_theme_font_size_override("normal_font_size", 16)
 	_slot_button.hide()
+
+
+func use_shop_layout() -> void:
+	_presentation_mode = "shop"
+	custom_minimum_size = Vector2(246, 402)
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_margin.offset_left = 13
+	_margin.offset_top = 13
+	_margin.offset_right = -13
+	_margin.offset_bottom = -12
+	_vbox.add_theme_constant_override("separation", 4)
+	_role_badge.custom_minimum_size.y = 18
+	_role_badge.add_theme_font_size_override("font_size", 13)
+	_name_label.custom_minimum_size.y = 30
+	_name_label.add_theme_font_size_override("font_size", 22)
+	_art_frame.custom_minimum_size.y = 184
+	_effect_frame.custom_minimum_size.y = 66
+	_desc_label.add_theme_font_size_override("normal_font_size", 16)
+	_slot_button.custom_minimum_size.y = 46
+	_slot_button.add_theme_font_size_override("font_size", 16)
 
 
 func use_gallery_layout() -> void:

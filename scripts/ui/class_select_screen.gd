@@ -26,7 +26,7 @@ func _ready() -> void:
 	ScreenDesign.spacer(column,18)
 	ScreenDesign.rule(column)
 	ScreenDesign.spacer(column,18)
-	_start_button = ScreenDesign.button(column,"STANDART BATTLE   ›",_on_start_pressed,true)
+	_start_button = ScreenDesign.button(column,"BEGIN THE ASCENT   ›",_on_start_pressed,true)
 	ScreenDesign.button(column,"‹   BACK",func() -> void: GameFlow.goto_title())
 	_start_button.grab_focus()
 	ScreenDesign.reveal(column)

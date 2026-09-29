@@ -288,16 +288,8 @@ func _on_combat_lost() -> void:
 
 
 func _on_excess_threshold_crossed(threshold: int) -> void:
-	var toast := Label.new()
-	toast.text = "OVERKILL MILESTONE  /  %d" % threshold
-	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	toast.add_theme_font_size_override("font_size", 26)
-	toast.add_theme_color_override("font_color", Color("edc783"))
-	toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_overlay_layer.add_child(toast)
-	toast.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	toast.offset_top = 108
-	var reveal := toast.create_tween()
-	reveal.tween_interval(1.2)
-	reveal.tween_property(toast, "modulate:a", 0.0, 0.35)
-	reveal.tween_callback(toast.queue_free)
+	var scene: PackedScene = load(EXCESS_CELEBRATION_SCENE_PATH)
+	var celebration: Control = scene.instantiate() as Control
+	celebration.call("set_threshold", threshold)
+	celebration.theme = ScreenDesign.build_theme()
+	_overlay_layer.add_child(celebration)

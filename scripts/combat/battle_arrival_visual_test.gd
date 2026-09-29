@@ -67,6 +67,25 @@ func _ready() -> void:
 	await _capture("battle-player-reveal")
 	await get_tree().create_timer(0.80).timeout
 	await _capture("battle-ready-1080")
+	var tutorial: TutorialCalloutView = battle.get_node("TutorialCalloutView")
+	tutorial._on_requested("first_intent", TutorialCallout.CATALOG["first_intent"])
+	await get_tree().create_timer(0.24).timeout
+	await _capture("battle-intent-callout")
+	tutorial.dismiss_now()
+	await get_tree().create_timer(0.22).timeout
+	battle._choice_overlay.toggle_inspection()
+	await get_tree().create_timer(0.32).timeout
+	await _capture("battlefield-inspection")
+	battle._choice_overlay.toggle_inspection()
+	await get_tree().create_timer(0.18).timeout
+	battle._help_button.pressed.emit()
+	await get_tree().create_timer(0.65).timeout
+	await _capture("battle-field-manual")
+	_close_reference_overlay(battle)
+	battle._history_button.pressed.emit()
+	await get_tree().create_timer(0.65).timeout
+	await _capture("battle-combat-log")
+	_close_reference_overlay(battle)
 	get_window().size = Vector2i(1280, 720)
 	await get_tree().create_timer(0.25).timeout
 	await _capture("battle-ready-720")
@@ -102,3 +121,10 @@ func _capture(label: String) -> void:
 	await RenderingServer.frame_post_draw
 	DirAccess.make_dir_recursive_absolute("user://battle-arrival-visual")
 	get_viewport().get_texture().get_image().save_png("user://battle-arrival-visual/%s.png" % label)
+
+
+func _close_reference_overlay(battle: CombatController) -> void:
+	for child: Node in battle.get_children():
+		if child is BattleReferenceOverlay:
+			child.queue_free()
+	await get_tree().process_frame

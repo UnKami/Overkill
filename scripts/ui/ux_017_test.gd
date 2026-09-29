@@ -43,7 +43,7 @@ func _ready() -> void:
 			var forecast: String = DecisionPreview.forecast(battle,[1])
 			assert(battle.player_hp == before,"Preview mutated live combat")
 			await battle._resolve_tick(1)
-			var result: String = "You: %d HP · %d Block   |   Enemy: %d HP · %d Block" % [battle.player_hp,battle.player_block,battle.enemy_hp,battle.enemy_block]
+			var result: String = "You: %d HP · %d Block · %d Overkill   |   Enemy: %d HP · %d Block" % [battle.player_hp,battle.player_block,OKRunState.current_ok,battle.enemy_hp,battle.enemy_block]
 			assert(forecast.contains(result),"Preview mismatch for %s: %s vs %s" % [relic.id,forecast,result])
 			count += 1
 	# Carry a charge through a guard and preview a replacement over a full sweep.
@@ -60,7 +60,7 @@ func _ready() -> void:
 		assert(battle.player_sockets[1].slotted_relic.id == "REL-04")
 		if replacement: battle.player_sockets[1].slotted_relic = chosen
 		for hour: int in [1,2,3]: await battle._resolve_tick(hour)
-		var actual: String = "You: %d HP · %d Block   |   Enemy: %d HP · %d Block" % [battle.player_hp,battle.player_block,battle.enemy_hp,battle.enemy_block]
+		var actual: String = "You: %d HP · %d Block · %d Overkill   |   Enemy: %d HP · %d Block" % [battle.player_hp,battle.player_block,OKRunState.current_ok,battle.enemy_hp,battle.enemy_block]
 		assert(expected.contains(actual),"Sweep preview mismatch: " + expected + " vs " + actual)
 		count += 1
 	var hidden: ClockSocketData = battle.enemy_sockets[EnemyClockPattern.hour_for(1,battle._active_enemy())-1]

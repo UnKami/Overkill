@@ -41,13 +41,13 @@ const TYPE_COLORS := {
 	MapGenerator.NodeType.BOSS: Color("#ffffff"),
 }
 
-const ROW_HEIGHT := 150.0
-const TOP_MARGIN := 80.0
-const BOTTOM_MARGIN := 90.0
-const SIDE_MARGIN := 110.0
-const CANVAS_WIDTH := 900.0
-const NODE_SIZE := Vector2(80, 80)
-const BOSS_NODE_SIZE := Vector2(104, 104)
+const ROW_HEIGHT := 138.0
+const TOP_MARGIN := 70.0
+const BOTTOM_MARGIN := 78.0
+const SIDE_MARGIN := 96.0
+const CANVAS_WIDTH := 820.0
+const NODE_SIZE := Vector2(68, 68)
+const BOSS_NODE_SIZE := Vector2(92, 92)
 const GLOW_SIZE_MULT := 1.8
 
 const PATH_COLOR_BRIGHT := Color(0.94, 0.62, 0.15, 0.9)
@@ -84,30 +84,37 @@ func _process(delta: float) -> void:
 
 func _ready() -> void:
 	_hud.bind_run_state()
+	_hud.hide()
 	_act_label.hide()
 	_load_background_art()
-	_scroll.anchor_left = 0.40
-	_scroll.anchor_right = 0.98
-	_scroll.offset_top = 108
-	_scroll.offset_bottom = -96
+	_scroll.anchor_left = 0.43
+	_scroll.anchor_right = 0.97
+	_scroll.offset_top = 118
+	_scroll.offset_bottom = -58
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 	ScreenDesign.frame(self,"THE ASCENT")
-	var column := ScreenDesign.column(self,0.23,0.34)
+	var column := ScreenDesign.column(self,0.20,0.35)
 	ScreenDesign.label(column,"ACT  %02d" % RunManager.act_number,18,ScreenDesign.CYAN)
 	var chapter: String = {1:"The Crypt\nBastion",2:"The\nRefinery",3:"The\nAbyss"}.get(RunManager.act_number,"The Final\nDescent")
 	ScreenDesign.label(column,chapter,44,ScreenDesign.GOLD,true)
-	ScreenDesign.spacer(column,18)
+	var run_state := ScreenDesign.label(column,"VITALITY  %d / %d     ·     OVERKILL  %d" % [RunManager.current_hp, RunManager.max_hp, OKRunState.current_ok],18,ScreenDesign.TEXT)
+	run_state.add_theme_color_override("font_shadow_color", Color("000000cc"))
+	run_state.add_theme_constant_override("shadow_offset_x", 2)
+	run_state.add_theme_constant_override("shadow_offset_y", 2)
+	ScreenDesign.spacer(column,12)
 	ScreenDesign.rule(column)
-	var instructions := ScreenDesign.label(column,"Choose an illuminated destination.\nYour route climbs toward the boss.",22,ScreenDesign.MUTED)
+	var instructions := ScreenDesign.label(column,"Choose one illuminated path.\nThe route above is only a possibility.",21,ScreenDesign.MUTED)
 	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ScreenDesign.label(column,"Gold: available · ✓: completed",24,ScreenDesign.GOLD)
-	_route_hint = ScreenDesign.label(column,"Hover or focus a destination\nto inspect your next encounter.",24,ScreenDesign.MUTED)
+	var key := ScreenDesign.label(column,"GOLD  available     ·     DIM  uncharted",16,ScreenDesign.GOLD)
+	key.add_theme_constant_override("outline_size", 4)
+	_route_hint = ScreenDesign.label(column,"Hover or focus an illuminated sigil\nto inspect the encounter.",22,ScreenDesign.TEXT)
 	_route_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_route_hint.custom_minimum_size.y = 84
-	ScreenDesign.spacer(column,20)
+	ScreenDesign.spacer(column,12)
 	ScreenDesign.button(column,"VIEW YOUR RELICS",func() -> void: GameFlow.open_deck_view(GameFlow.DeckViewMode.REFERENCE))
 	ScreenDesign.button(column,"PAUSE JOURNEY",func() -> void: GameFlow.open_pause_menu())
-	ScreenDesign.spacer(column,12)
-	ScreenDesign.label(column,"SCROLL TO SURVEY THE ROUTE",15,ScreenDesign.MUTED)
+	ScreenDesign.spacer(column,8)
+	ScreenDesign.label(column,"SCROLL TO SURVEY THE ASCENT",14,ScreenDesign.MUTED)
 	_rebuild_map()
 	call_deferred("_scroll_to_bottom")
 
@@ -203,13 +210,13 @@ func _rebuild_map() -> void:
 		_canvas.add_child(button)
 		_buttons[node_id] = button
 		var caption: Label = Label.new()
-		caption.text = ("YOU ARE HERE · " if is_current else ("✓ " if RunManager.visited_nodes.has(node_id) else "")) + TYPE_LABELS.get(node.type, "")
-		caption.position = _positions[node.id] + Vector2(-95,43)
-		caption.size = Vector2(190,32)
+		caption.text = "YOU ARE HERE" if is_current else (TYPE_LABELS.get(node.type, "").to_upper() if is_reachable else "")
+		caption.position = _positions[node.id] + Vector2(-88,37)
+		caption.size = Vector2(176,30)
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		caption.add_theme_font_size_override("font_size",24)
-		caption.add_theme_constant_override("outline_size",6)
-		caption.modulate = ScreenDesign.GOLD if is_reachable or is_current else Color("b1bcc5")
+		caption.add_theme_font_size_override("font_size",16)
+		caption.add_theme_constant_override("outline_size",5)
+		caption.modulate = ScreenDesign.GOLD if is_reachable or is_current else Color.TRANSPARENT
 		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_canvas.add_child(caption)
 
@@ -244,15 +251,22 @@ func _draw_connectors(line_layer: Control) -> void:
 				line_layer.draw_line(from_pos, to_pos, PATH_COLOR_BRIGHT, 5.0)
 				_draw_traveling_pulse(line_layer, from_pos, to_pos)
 			else:
-				line_layer.draw_line(from_pos, to_pos, Color(0.8,0.75,0.55,0.7) if hovered else Color(0.6,0.7,0.75,0.20), 3.0 if hovered else 2.0)
+				var traversed: bool = RunManager.visited_nodes.has(node_id) and RunManager.visited_nodes.has(next_id)
+				var dim_color := Color(0.82,0.72,0.52,0.48) if traversed else Color(0.58,0.70,0.76,0.07)
+				line_layer.draw_line(from_pos, to_pos, Color(0.82,0.75,0.56,0.62) if hovered else dim_color, 2.5 if hovered else (2.0 if traversed else 1.0))
 
 
 	# Draw all node bases after all routes so no route crosses a node icon.
 	for node_id: String in nodes:
 		var at: Vector2 = _positions[node_id]
 		var available: bool = _reachable.has(node_id)
-		line_layer.draw_circle(at, 42, Color("111c28"))
-		line_layer.draw_arc(at, 42, 0, TAU, 48, ScreenDesign.GOLD if available else Color("53606b"), 2, true)
+		var current: bool = node_id == RunManager.current_node_id
+		var visited: bool = RunManager.visited_nodes.has(node_id)
+		var radius: float = 39.0 if current else 34.0
+		var fill := Color("111c28e8") if available or current else Color("09121a7a")
+		var line := ScreenDesign.GOLD if available or current else (Color("58646d66") if not visited else Color("7d8a9255"))
+		line_layer.draw_circle(at, radius, fill)
+		line_layer.draw_arc(at, radius, 0, TAU, 48, line, 2.0 if available or current else 1.0, true)
 
 ## A small bright dot sliding from the current node toward what's next -
 ## the one piece of motion on this screen that reads as "action," not idle
@@ -301,7 +315,7 @@ func _build_node_button(node: MapGenerator.MapNode, is_current: bool, is_reachab
 	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
 		button.icon = ResourceLoader.load(icon_path)
 		button.expand_icon = true
-		button.add_theme_constant_override("icon_max_width", int(node_size.x * 0.75))
+		button.add_theme_constant_override("icon_max_width", int(node_size.x * 0.68))
 	else:
 		button.text = TYPE_LABELS.get(node.type, "?")
 		button.add_theme_color_override("font_color", TYPE_COLORS.get(node.type, Color.WHITE))
@@ -320,7 +334,7 @@ func _build_node_button(node: MapGenerator.MapNode, is_current: bool, is_reachab
 		button.modulate = Color(1, 1, 1, 1.0)
 		button.pressed.connect(_on_node_pressed.bind(node))
 	else:
-		button.modulate = Color(1, 1, 1, 0.6)
+		button.modulate = Color(1, 1, 1, 0.34)
 		button.disabled = true
 
 	button.mouse_entered.connect(_inspect_node.bind(node))

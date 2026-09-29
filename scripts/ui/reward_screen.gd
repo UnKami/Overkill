@@ -44,7 +44,7 @@ func _ready() -> void:
 	AmbientMotion.apply_cinematic_backdrop(self, art, 46.0, 0.72)
 	_skip_button.pressed.connect(_on_skip_pressed)
 	_offer_cards()
-	var subtitle: Label = ScreenDesign.label(self, "Choose one relic to add to your deck. The others are left behind.", 22, ScreenDesign.MUTED)
+	var subtitle: Label = ScreenDesign.label(self, "Choose one relic to bind into your chronometer. The others are left behind.", 22, ScreenDesign.MUTED)
 	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	subtitle.offset_top = 106
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
