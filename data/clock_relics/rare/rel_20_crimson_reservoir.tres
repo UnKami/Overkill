@@ -11,6 +11,6 @@ role = 4
 primary_essence = 1
 secondary_essence = 4
 description = "Gain 5 Block and 2 Overkill."
-art_id = "rel_20_crimson_reservoir"
+art_id = "rel_20_crimson_reservoir_v2"
 base_block = 5
 grant_overkill = 2

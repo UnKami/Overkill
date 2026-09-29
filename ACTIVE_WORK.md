@@ -10,6 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `fix/yonatan-full-ui-polish` | 0.30.0 Windows playtest build, package QA, GitHub prerelease and documentation PR | `VERSION`; `docs/encounter-030.md`; `UPDATE_LOG.md`; `README.md`; `installer/README.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md`; `scripts/ui/relic_pedestal_view.gd`; `scripts/combat/clock_polish_test.gd`; `installer/OverkillSetup-0.30.0.*`; `installer/Overkill-0.30.0-Windows.zip` | 2026-09-29 |
 
 ---
 

@@ -29,15 +29,11 @@ func prime(battle: CombatController, stage: Control) -> void:
 		else: _enemy_target_hp = health.value
 		health.value = 0.0
 	_battle._choice_overlay.hide()
-	_battle._intent_panel.hide()
 	_battle._battle_info.hide()
-	_battle._history_button.hide()
-	for child: Node in _battle.get_children():
-		if child is Button and child.text == "HOW TO PLAY": child.hide()
 
 
 func play() -> void:
-	var speed: float = AudioManager.animation_speed_scale()
+	var speed: float = AudioManager.combat_animation_speed_scale()
 	await get_tree().create_timer(0.08 / speed).timeout
 	await _play_title(speed)
 	var clock_reveal := create_tween().set_parallel(true).set_speed_scale(speed)
@@ -51,11 +47,7 @@ func play() -> void:
 	_spawn_ground_burst(_battle._enemy_portrait, Color("e08b69"))
 	await get_tree().create_timer(0.14 / speed).timeout
 	await _reveal_status(_battle._enemy_portrait, _enemy_target_hp, speed)
-	_battle._intent_panel.show()
 	_battle._battle_info.show()
-	_battle._history_button.show()
-	for child: Node in _battle.get_children():
-		if child is Button and child.text == "HOW TO PLAY": child.show()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	queue_free()
 
@@ -100,7 +92,7 @@ func _play_title(speed: float) -> void:
 	impact.tween_property(glow, "modulate:a", 0.82, 0.12)
 	impact.tween_property(glow, "scale", Vector2(1.25, 1.25), 0.26).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	await impact.finished
-	AmbientMotion.shake(_battle, 4.0, 0.14)
+	AmbientMotion.shake(_battle, 4.0, 0.28)
 	var settle := create_tween().set_speed_scale(speed)
 	settle.tween_property(title, "scale", Vector2.ONE, 0.09).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	settle.tween_interval(0.18)
@@ -135,7 +127,7 @@ func _spawn_ground_burst(portrait: Control, color: Color) -> void:
 	burst.position = portrait.global_position - _battle.global_position + Vector2((portrait.size.x - burst.size.x) * 0.5, portrait.size.y * 0.72)
 	burst.pivot_offset = burst.size * 0.5
 	burst.scale = Vector2(0.18, 0.35)
-	var pulse := burst.create_tween().set_parallel(true)
+	var pulse := burst.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	pulse.tween_property(burst, "scale", Vector2(1.35, 1.0), 0.28).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	pulse.tween_property(burst, "modulate:a", 0.0, 0.30).set_delay(0.06)
 	pulse.chain().tween_callback(burst.queue_free)

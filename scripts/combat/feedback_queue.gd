@@ -26,4 +26,4 @@ func fire_batch(entries: Array) -> void:
 	for i in sorted.size():
 		sorted[i].action.call()
 		if i < sorted.size() - 1:
-			await get_tree().create_timer(STAGGER_SECONDS).timeout
+			await get_tree().create_timer(STAGGER_SECONDS / AudioManager.combat_animation_speed_scale()).timeout

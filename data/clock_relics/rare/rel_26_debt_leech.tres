@@ -11,6 +11,6 @@ role = 4
 primary_essence = 3
 secondary_essence = 4
 description = "Apply 2 Vulnerable. Gain 2 Overkill."
-art_id = "rel_26_debt_leech"
+art_id = "rel_26_debt_leech_v2"
 apply_vulnerable = 2
 grant_overkill = 2

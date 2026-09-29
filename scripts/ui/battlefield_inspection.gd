@@ -12,6 +12,11 @@ var _enemy_clock: ChronometerView
 var _player_details: RichTextLabel
 var _enemy_details: RichTextLabel
 var _subtitle: Label
+var _margin: MarginContainer
+var _root: VBoxContainer
+var _sides: HBoxContainer
+var _heading: Label
+var _close_button: Button
 
 
 func install(battle: CombatController) -> void:
@@ -28,42 +33,42 @@ func install(battle: CombatController) -> void:
 	add_child(backdrop)
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var margin := MarginContainer.new()
-	add_child(margin)
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 52)
-	margin.add_theme_constant_override("margin_right", 52)
-	margin.add_theme_constant_override("margin_top", 28)
-	margin.add_theme_constant_override("margin_bottom", 30)
+	_margin = MarginContainer.new()
+	add_child(_margin)
+	_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 8)
-	margin.add_child(root)
+	_root = VBoxContainer.new()
+	_root.add_theme_constant_override("separation", 8)
+	_margin.add_child(_root)
 	var header := HBoxContainer.new()
-	root.add_child(header)
-	var heading := ScreenDesign.label(header, "BATTLEFIELD ANALYSIS", 34, ScreenDesign.TEXT, true)
-	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var close := ScreenDesign.button(header, "RETURN TO RELIC CHOICE  [I]", func() -> void: close_requested.emit())
-	close.custom_minimum_size.x = 360
-	_subtitle = ScreenDesign.label(root, "A complete turn of both mechanisms, calculated from the current battle state.", 20, ScreenDesign.MUTED)
+	_root.add_child(header)
+	_heading = ScreenDesign.label(header, "BATTLEFIELD ANALYSIS", 34, ScreenDesign.TEXT, true)
+	_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_close_button = ScreenDesign.button(header, "RETURN TO RELIC CHOICE  [I]", func() -> void: close_requested.emit())
+	_close_button.custom_minimum_size.x = 360
+	_subtitle = ScreenDesign.label(_root, "A complete turn of both mechanisms, calculated from the current battle state.", 20, ScreenDesign.MUTED)
 	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
-	var sides := HBoxContainer.new()
-	sides.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	sides.add_theme_constant_override("separation", 44)
-	root.add_child(sides)
+	_sides = HBoxContainer.new()
+	_sides.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_sides.add_theme_constant_override("separation", 44)
+	_root.add_child(_sides)
 	var player_side := _build_side(false)
 	var enemy_side := _build_side(true)
-	sides.add_child(player_side)
-	sides.add_child(enemy_side)
+	_sides.add_child(player_side)
+	_sides.add_child(enemy_side)
 
 	ScreenDesign.apply_text_size(self)
+	battle.resized.connect(_refresh_responsive_layout)
+	call_deferred("_refresh_responsive_layout")
 	hide()
 
 
 func _build_side(enemy: bool) -> VBoxContainer:
 	var side := VBoxContainer.new()
 	side.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	side.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	side.add_theme_constant_override("separation", 4)
 	var clock: ChronometerView = CLOCK_SCENE.instantiate()
 	clock.custom_minimum_size = Vector2(500, 500)
@@ -93,6 +98,28 @@ func _build_side(enemy: bool) -> VBoxContainer:
 		_player_clock = clock
 		_player_details = details
 	return side
+
+
+func _refresh_responsive_layout() -> void:
+	var compact: bool = size.y <= 800.0
+	var clock_size: float = 310.0 if compact else 500.0
+	var details_height: float = 210.0 if compact else 270.0
+	_margin.add_theme_constant_override("margin_left", 28 if compact else 52)
+	_margin.add_theme_constant_override("margin_right", 28 if compact else 52)
+	_margin.add_theme_constant_override("margin_top", 12 if compact else 28)
+	_margin.add_theme_constant_override("margin_bottom", 12 if compact else 30)
+	_root.add_theme_constant_override("separation", 5 if compact else 8)
+	_sides.add_theme_constant_override("separation", 22 if compact else 44)
+	_heading.add_theme_font_size_override("font_size", 28 if compact else 34)
+	_close_button.custom_minimum_size.x = 270 if compact else 360
+	_close_button.custom_minimum_size.y = 46 if compact else 56
+	_subtitle.add_theme_font_size_override("font_size", 16 if compact else 20)
+	for clock: ChronometerView in [_player_clock, _enemy_clock]:
+		clock.custom_minimum_size = Vector2(clock_size, clock_size)
+	for details: RichTextLabel in [_player_details, _enemy_details]:
+		details.custom_minimum_size.y = details_height
+		details.add_theme_font_size_override("normal_font_size", 16 if compact else 20)
+		details.scroll_active = compact
 
 
 func _details_style(accent: Color) -> StyleBoxFlat:
@@ -139,7 +166,7 @@ func refresh() -> void:
 
 	_player_details.text = _player_forecast()
 	_enemy_details.text = _enemy_forecast(enemy)
-	_subtitle.text = "Nine-hour deterministic forecast from the current state  ·  next player hour %d  ·  next enemy hour %d" % [_battle.turn_number, enemy_hour]
+	_subtitle.text = "THEORETICAL FULL-CYCLE PROJECTION  ·  Attack is before enemy Block  ·  Lifesteal is a ceiling  ·  a kill may end combat early  ·  player %d  ·  enemy %d" % [_battle.turn_number, enemy_hour]
 
 
 func _player_forecast() -> String:
@@ -150,6 +177,11 @@ func _player_forecast() -> String:
 	var bleed_applied: int = 0
 	var weak_applied: int = 0
 	var vulnerable_applied: int = 0
+	var scheduled_overkill: int = 0
+	var lifesteal_ceiling: int = 0
+	var next_hit_bonus_spent: int = 0
+	var recoil_can_become_block: bool = false
+	var empowered_attacks: PackedStringArray = []
 	var enemy_vulnerable: int = _battle.enemy_vulnerable
 	var player_weak: int = _battle.player_weak
 	var next_bonus: int = _battle.player_next_hit_bonus
@@ -164,11 +196,14 @@ func _player_forecast() -> String:
 		bleed_applied += relic.apply_bleed
 		weak_applied += relic.apply_weak
 		vulnerable_applied += relic.apply_vulnerable
+		scheduled_overkill += relic.grant_overkill
+		recoil_can_become_block = recoil_can_become_block or relic.recoil_block_on_overkill
 		enemy_vulnerable += relic.apply_vulnerable
 		if relic.bonus_damage_next_hit > 0:
 			next_bonus += relic.bonus_damage_next_hit
 		if relic.base_damage > 0:
 			var damage: int = relic.base_damage + strength + next_bonus
+			next_hit_bonus_spent += next_bonus
 			next_bonus = 0
 			if relic.conditional_hp_threshold_pct > 0.0 and float(_battle.enemy_hp) / maxf(float(_battle.enemy_max_hp), 1.0) <= relic.conditional_hp_threshold_pct:
 				damage = relic.conditional_damage + strength
@@ -177,7 +212,12 @@ func _player_forecast() -> String:
 			if player_weak > 0:
 				damage = int(floor(damage * 0.75))
 			damage = int(floor(damage * socket.multiplier)) * next_multiplier
+			if next_multiplier > 1:
+				var multiplier_note: String = "Next attack ×%d applied" % next_multiplier
+				if not empowered_attacks.has(multiplier_note): empowered_attacks.append(multiplier_note)
 			attack += damage * relic.hits
+			if relic.lifesteal:
+				lifesteal_ceiling += damage * relic.hits
 			next_multiplier = maxi(1, relic.next_attack_multiplier)
 		if enemy_vulnerable > 0:
 			enemy_vulnerable -= 1
@@ -197,7 +237,8 @@ func _player_forecast() -> String:
 		vulnerable_applied,
 		_battle._status_text(_battle.player_strength, _battle.player_bleed, _battle.player_thorns, _battle.player_weak, _battle.player_vulnerable),
 		_player_sequence(),
-		0
+		0,
+		_player_effect_notes(scheduled_overkill, lifesteal_ceiling, next_hit_bonus_spent, next_bonus, next_multiplier, empowered_attacks, recoil_can_become_block)
 	)
 
 
@@ -262,7 +303,8 @@ func _enemy_forecast(enemy: EnemyData) -> String:
 		vulnerable_applied,
 		_battle._status_text(_battle.enemy_strength, _battle.enemy_bleed, _battle.enemy_thorns, _battle.enemy_weak, _battle.enemy_vulnerable),
 		_enemy_sequence(enemy),
-		hidden_hours
+		hidden_hours,
+		PackedStringArray()
 	)
 
 
@@ -291,13 +333,28 @@ func _enemy_sequence(enemy: EnemyData) -> String:
 	return "\n".join(sectors)
 
 
-func _format_forecast(title: String, hp: int, max_hp: int, current_block: int, attack: int, block_gain: int, strength_gain: int, thorns_gain: int, bleed_applied: int, weak_applied: int, vulnerable_applied: int, statuses: String, sequence: String, hidden_hours: int) -> String:
+func _player_effect_notes(scheduled_overkill: int, lifesteal_ceiling: int, next_hit_bonus_spent: int, next_hit_bonus_pending: int, next_attack_multiplier_pending: int, empowered_attacks: PackedStringArray, recoil_can_become_block: bool) -> PackedStringArray:
+	var notes: PackedStringArray = []
+	if scheduled_overkill > 0: notes.append("+%d scheduled Overkill" % scheduled_overkill)
+	var missing_hp: int = maxi(_battle.player_max_hp - _battle.player_hp, 0)
+	var capped_lifesteal: int = mini(lifesteal_ceiling, missing_hp)
+	if capped_lifesteal > 0: notes.append("up to +%d HP from Lifesteal" % capped_lifesteal)
+	if next_hit_bonus_spent > 0: notes.append("+%d next-hit damage applied" % next_hit_bonus_spent)
+	if next_hit_bonus_pending > 0: notes.append("+%d next-hit damage carried forward" % next_hit_bonus_pending)
+	for note: String in empowered_attacks: notes.append(note)
+	if next_attack_multiplier_pending > 1: notes.append("Next attack ×%d carried forward" % next_attack_multiplier_pending)
+	if recoil_can_become_block: notes.append("Overkill excess can convert to Block")
+	return notes
+
+
+func _format_forecast(title: String, hp: int, max_hp: int, current_block: int, attack: int, block_gain: int, strength_gain: int, thorns_gain: int, bleed_applied: int, weak_applied: int, vulnerable_applied: int, statuses: String, sequence: String, hidden_hours: int, extra_effects: PackedStringArray) -> String:
 	var accumulations: PackedStringArray = []
 	for entry: Array in [[strength_gain, "Strength"], [thorns_gain, "Thorns"], [bleed_applied, "Bleed"], [weak_applied, "Weak"], [vulnerable_applied, "Vulnerable"]]:
 		if int(entry[0]) > 0:
 			accumulations.append("+%d %s" % [entry[0], entry[1]])
 	if accumulations.is_empty():
 		accumulations.append("No additional statuses")
+	accumulations.append_array(extra_effects)
 	var current_status: String = statuses if not statuses.is_empty() else "none"
 	var cycle_name: String = "REVEALED CYCLE" if hidden_hours > 0 else "FULL CYCLE"
 	var concealment: String = "  ·  %d HOURS HIDDEN" % hidden_hours if hidden_hours > 0 else ""

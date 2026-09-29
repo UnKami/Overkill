@@ -40,6 +40,7 @@ func setup_generic(value: int, color: Color, prefix: String = "", kind: String =
 
 func _animate_base() -> void:
 	var tween := create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(self, "position:y", position.y - (12.0 if AudioManager.reduced_motion else 55.0), 0.9).set_trans(Tween.TRANS_CUBIC)
 	tween.tween_property(self, "modulate:a", 0.0, 0.5).set_delay(0.4)
@@ -56,6 +57,7 @@ func _animate_overkill(value: int) -> void:
 
 	scale = Vector2.ZERO
 	var tween := create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.tween_property(self, "scale", Vector2.ONE * punch_scale, 0.12).set_trans(Tween.TRANS_BACK)
 	tween.tween_property(self, "scale", Vector2.ONE, 0.1)
 	tween.parallel().tween_property(self, "position:y", position.y - float_distance, duration).set_trans(Tween.TRANS_CUBIC)

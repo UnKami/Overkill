@@ -10,5 +10,5 @@ tier = 1
 role = 3
 primary_essence = 3
 description = "Apply 3 Weak."
-art_id = "rel_17_withering_censer"
+art_id = "rel_17_withering_censer_v2"
 apply_weak = 3

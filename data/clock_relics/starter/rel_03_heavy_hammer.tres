@@ -10,6 +10,6 @@ tier = 0
 role = 0
 primary_essence = 0
 description = "Deal 14 Physical Damage."
-art_id = "rel_03_heavy_hammer"
+art_id = "rel_03_heavy_hammer_v2"
 base_damage = 14
 hits = 1

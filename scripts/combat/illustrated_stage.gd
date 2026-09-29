@@ -91,6 +91,6 @@ func reveal_combatant(from_player: bool) -> void:
 	if AudioManager.reduced_motion: return
 	actor.scale = Vector2(0.82, 0.82)
 	actor.modulate.a = 0.0
-	var reveal := actor.create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	var reveal := actor.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	reveal.tween_property(actor, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	reveal.tween_property(actor, "modulate:a", 1.0, 0.16)

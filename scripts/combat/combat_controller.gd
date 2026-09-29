@@ -67,16 +67,11 @@ var _feedback_serial: int = 0
 var _choice_overlay: PanelContainer
 var _resolution_hour: int = 1
 var _combat_history: Array[String] = []
-var _history_button: Button
-var _help_button: Button
-var _intent_readout: Label
 var _intent_clock_label: Label
-var _intent_panel: PanelContainer
 var _guidance: BattleGuidance
 
 
 var _pending_enemies: Array[EnemyData] = []
-var _pending_background_id: String = ""
 var _is_prepared: bool = false
 var _phase_started: bool = false
 var _pending_intro: bool = false
@@ -90,37 +85,13 @@ func _ready() -> void:
 	_choice_overlay = preload("res://scripts/ui/relic_choice_overlay.gd").new()
 	add_child(_choice_overlay)
 	_choice_overlay.install(self)
-	_intent_readout = Label.new()
-	_intent_panel = PanelContainer.new()
-	_intent_panel.name = "EnemyIntentPanel"
-	_intent_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_intent_panel.z_index = 29
-	add_child(_intent_panel)
-	_intent_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_intent_panel.offset_left = -350
-	_intent_panel.offset_right = -20
-	_intent_panel.offset_top = 86
-	var intent_style: StyleBoxFlat = StyleBoxFlat.new()
-	intent_style.bg_color = Color(0.035,0.045,0.055,0.94)
-	intent_style.border_color = Color("8e6650")
-	intent_style.border_width_left = 2
-	intent_style.content_margin_left = 14
-	intent_style.content_margin_right = 14
-	intent_style.content_margin_top = 12
-	intent_style.content_margin_bottom = 12
-	_intent_panel.add_theme_stylebox_override("panel",intent_style)
-	_intent_panel.add_child(_intent_readout)
-	_intent_readout.custom_minimum_size.x = 302
-	_intent_readout.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_intent_readout.add_theme_font_size_override("font_size",24)
-	_intent_readout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_intent_clock_label = Label.new()
 	_enemy_chrono.add_child(_intent_clock_label)
 	_intent_clock_label.position = Vector2(105,135)
 	_intent_clock_label.size = Vector2(210,150)
 	_intent_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_intent_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_intent_clock_label.add_theme_font_size_override("font_size",24)
+	_intent_clock_label.add_theme_font_size_override("font_size",22)
 	_intent_clock_label.add_theme_constant_override("outline_size",6)
 	_intent_clock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	AudioManager.settings_changed.connect(_refresh_intent_text_size)
@@ -172,48 +143,32 @@ func _ready() -> void:
 	_skip_button.focus_entered.connect(_preview_sweep)
 	_skip_button.mouse_exited.connect(_refresh_guidance)
 	_skip_button.focus_exited.connect(_refresh_guidance)
-	_history_button = Button.new()
-	_history_button.text = "COMBAT LOG"
-	_history_button.add_theme_font_size_override("font_size",22)
-	add_child(_history_button)
-	_history_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_history_button.offset_left = -440
-	_history_button.offset_right = -240
-	_history_button.offset_top = 10
-	_history_button.offset_bottom = 54
-	_history_button.pressed.connect(func() -> void:
-		var history_text: String = "[center][font_size=34][color=#80c8d1]◇[/color][/font_size]\n\n[color=#efc780][b]THE CHRONICLE IS UNWRITTEN[/b][/color]\n\n[color=#92a7b4]No mechanisms have resolved yet.\nEach clash, block, status and excess strike will be recorded here as the clock advances.[/color][/center]" if _combat_history.is_empty() else "\n\n".join(_combat_history)
-		BattleReferenceOverlay.show_overlay(self, "RECENT COMBAT", "THE CHRONICLE  /  NEWEST FIRST", history_text, ScreenDesign.CYAN))
-	_help_button = Button.new()
-	_help_button.text = "HOW TO PLAY"
-	_help_button.add_theme_font_size_override("font_size", 16)
-	add_child(_help_button)
-	_help_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_help_button.offset_left = -230
-	_help_button.offset_right = -30
-	_help_button.offset_top = 10
-	_help_button.offset_bottom = 54
-	_help_button.pressed.connect(func() -> void:
-		var guide_text := "[color=#80c8d1][b]01  /  BUILD YOUR CLOCK[/b][/color]\nChoose one of three relics. The first binds to 1 o'clock, then 2, up to 9. After each placement, your relic and the enemy's matching tick resolve. Hover a relic to preview its destination before committing.\n\n[color=#efb85c][b]02  /  SWEEP THREE HOURS[/b][/color]\nEach turn covers 1–3, 4–6, then 7–9. Hover a glowing socket to preview replacing it with the offered reserve. Click the socket to replace and resolve the sweep. KEEP & SWEEP discards the offer and activates your current relics.\n\n[color=#80c8d1][b]03  /  READ THE ENEMY[/b][/color]\nThe enemy may rotate backward or use a second hand. Its illuminated intents show what resolves next.\n\n[color=#efb85c][b]KEYWORDS[/b][/color]\n[b]Block[/b] persists until absorbed or battle ends.  [b]Strength[/b] adds damage per hit.  [b]Thorns[/b] return damage when attacked.\n[b]Bleed[/b] removes HP at tick start.  [b]Weak[/b] reduces attack damage by 25%.  [b]Vulnerable[/b] increases damage taken by 50%.\n[b]Lifesteal[/b] heals actual HP damage dealt.  [b]Overdrive[/b] empowers the next attacking relic, including every hit."
-		BattleReferenceOverlay.show_overlay(self, "READING THE CLOCK", "EXECUTIONER FIELD MANUAL", guide_text, ScreenDesign.CYAN))
 	_player_chrono.socket_pressed.connect(_on_player_socket_pressed)
 	if not _is_prepared and not _pending_enemies.is_empty():
 		_prepare_combat(_pending_intro)
 		if not _pending_intro: _start_prepared_combat()
 
 
-func start_combat(incoming_enemies: Array[EnemyData], background_id: String = "") -> void:
+func show_combat_log() -> void:
+	var history_text: String = "[center][font_size=34][color=#80c8d1]◇[/color][/font_size]\n\n[color=#efc780][b]THE CHRONICLE IS UNWRITTEN[/b][/color]\n\n[color=#92a7b4]No mechanisms have resolved yet.\nEach clash, block, status and excess strike will be recorded here as the clock advances.[/color][/center]" if _combat_history.is_empty() else "\n\n".join(_combat_history)
+	BattleReferenceOverlay.show_overlay(self, "RECENT COMBAT", "THE CHRONICLE  /  NEWEST FIRST", history_text, ScreenDesign.CYAN)
+
+
+func show_combat_manual() -> void:
+	var guide_text := "[color=#80c8d1][b]01  /  BUILD YOUR CLOCK[/b][/color]\nChoose one of three relics. The first binds to 1 o'clock, then 2, up to 9. After each placement, your relic and the enemy's matching tick resolve. Hover a relic to preview its destination before committing.\n\n[color=#efb85c][b]02  /  SWEEP THREE HOURS[/b][/color]\nEach turn covers 1–3, 4–6, then 7–9. Hover a glowing socket to preview replacing it with the offered reserve. Click the socket to replace and resolve the sweep. KEEP & SWEEP discards the offer and activates your current relics.\n\n[color=#80c8d1][b]03  /  READ THE ENEMY[/b][/color]\nThe enemy may rotate backward or use a second hand. Its illuminated intents show what resolves next.\n\n[color=#efb85c][b]KEYWORDS[/b][/color]\n[b]Block[/b] persists until absorbed or battle ends.  [b]Strength[/b] adds damage per hit.  [b]Thorns[/b] return damage when attacked.\n[b]Bleed[/b] removes HP at tick start.  [b]Weak[/b] reduces attack damage by 25%.  [b]Vulnerable[/b] increases damage taken by 50%.\n[b]Lifesteal[/b] heals actual HP damage dealt.  [b]Overdrive[/b] empowers the next attacking relic, including every hit."
+	BattleReferenceOverlay.show_overlay(self, "READING THE CLOCK", "EXECUTIONER FIELD MANUAL", guide_text, ScreenDesign.CYAN)
+
+
+func start_combat(incoming_enemies: Array[EnemyData], _background_id: String = "") -> void:
 	_pending_enemies = incoming_enemies
-	_pending_background_id = background_id
 	_pending_intro = false
 	if is_node_ready():
 		_prepare_combat(false)
 		_start_prepared_combat()
 
 
-func prepare_combat(incoming_enemies: Array[EnemyData], background_id: String = "") -> void:
+func prepare_combat(incoming_enemies: Array[EnemyData], _background_id: String = "") -> void:
 	_pending_enemies = incoming_enemies
-	_pending_background_id = background_id
 	_pending_intro = true
 	if is_node_ready(): _prepare_combat(true)
 
@@ -236,7 +191,6 @@ func _prepare_combat(with_intro: bool) -> void:
 		return
 	_is_prepared = true
 	enemies_data = _pending_enemies
-	var background_id := _pending_background_id
 	_combat_over = false
 
 	# Setup HP & stats
@@ -255,7 +209,7 @@ func _prepare_combat(with_intro: bool) -> void:
 		enemy_hp = 50
 	enemy_block = 0
 
-	_load_visual_assets(main_enemy, background_id)
+	_load_visual_assets(main_enemy)
 	_player_portrait.texture = null
 	_enemy_portrait.texture = null
 	_init_player_deck()
@@ -271,7 +225,7 @@ func _prepare_combat(with_intro: bool) -> void:
 		_battle_intro.prime(self, _stage)
 
 
-func _load_visual_assets(main_enemy: EnemyData, background_id: String) -> void:
+func _load_visual_assets(main_enemy: EnemyData) -> void:
 	# Encounter-tier art is selected deterministically from the cinematic
 	# library. The plates stay character-free because the live illustrated
 	# Executioner and enemy are composed over them during battle.
@@ -280,11 +234,10 @@ func _load_visual_assets(main_enemy: EnemyData, background_id: String) -> void:
 		_background.texture = ResourceLoader.load(arena_bg_path)
 		AmbientMotion.apply_cinematic_backdrop(self, _background, 38.0, 0.48)
 	else:
-		var bg_path: String = {1: "res://assets/screens/act_transition_1_2.jpg", 2: "res://assets/screens/act_transition_2_3.jpg", 3: "res://assets/screens/act_transition_3_boss.jpg"}.get(RunManager.act_number, "res://assets/screens/loading_screen_bg.jpg")
-		if not background_id.is_empty():
-			bg_path = "res://assets/environments/act%d/%s.png" % [RunManager.act_number, background_id]
-		if ResourceLoader.exists(bg_path):
-			_background.texture = ResourceLoader.load(bg_path)
+		# Keep the fallback inside the same character-free environment family;
+		# never resurrect the retired arena plate with two baked-in fighters.
+		_background.texture = ResourceLoader.load(CinematicArt.map_background(RunManager.act_number))
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 38.0, 0.48)
 
 	# Player Portrait
 	var char_img_path := "res://assets/characters/executioner/combat_sprite.png"
@@ -437,7 +390,7 @@ func _transition_to_phase_two() -> void:
 	_show_turn_banner("QUADRANT ENGINE ENGAGED")
 	AmbientMotion.punch_scale(_nexus_sigil, 1.18, 0.5)
 	CombatVFX.play_shield_pulse(self, _nexus_sigil.global_position + _nexus_sigil.size * 0.5)
-	await get_tree().create_timer(0.4).timeout
+	await get_tree().create_timer(0.4 / AudioManager.combat_animation_speed_scale()).timeout
 	_prompt_phase_two_turn()
 
 
@@ -569,7 +522,7 @@ func _resolve_tick(hour: int) -> void:
 		Presentation.relay(self, p_view, _player_portrait, p_socket.slotted_relic.primary_color())
 	if e_view:
 		Presentation.relay(self, e_view, _enemy_portrait, Color("e99778"))
-	await get_tree().create_timer(0.22 / AudioManager.animation_speed_scale()).timeout
+	await get_tree().create_timer(0.22 / AudioManager.combat_animation_speed_scale()).timeout
 
 	# 1. Resolve Bleed (true unblockable damage at start of tick)
 	if player_bleed > 0:
@@ -673,7 +626,7 @@ func _resolve_tick(hour: int) -> void:
 	if enemy_weak > 0: enemy_weak -= 1
 
 	_update_stats_display()
-	await get_tree().create_timer(0.25).timeout
+	await get_tree().create_timer(0.5 / AudioManager.combat_animation_speed_scale()).timeout
 
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
@@ -681,19 +634,19 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
 	_stage.attack(true, profile)
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
-	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
+	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
 	Presentation.relay(self, _player_portrait, _enemy_portrait, profile.get("accent", Color("7bd6de")))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
-	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
+	else: await get_tree().create_timer(0.16 / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if enemy_block >= amount else ("shatter" if enemy_block > 0 else "strike"))
 	_stage.impact(false, enemy_block >= amount, profile)
 	var nexus_pos: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
 	AttackPresentation.play_canvas_impact(self, nexus_pos, profile)
-	AmbientMotion.flash(_enemy_portrait, Color(2.0, 0.8, 0.8), 0.15)
+	AmbientMotion.flash(_enemy_portrait, Color(2.0, 0.8, 0.8), 0.30)
 	if AttackPresentation.is_heavy_hammer(profile):
-		AmbientMotion.shake(self, float(profile.get("shake", 9.0)), 0.22)
-		await get_tree().create_timer(float(profile.get("impact_hold", 0.055)) / AudioManager.animation_speed_scale()).timeout
+		AmbientMotion.shake(self, float(profile.get("shake", 9.0)), 0.44)
+		await get_tree().create_timer(float(profile.get("impact_hold", 0.055)) / AudioManager.combat_animation_speed_scale()).timeout
 
 	# Hazard modifier check (recoil)
 	if p_socket.is_hazard:
@@ -736,25 +689,25 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 		_spawn_damage_number(_player_portrait, enemy_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
 	_update_stats_display()
-	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
+	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.combat_animation_speed_scale()).timeout
 
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(true, player_block >= amount)
 	_stage.attack(false)
 	var swing_wait: float = _stage.swing_delay(false) if _stage.has_method("swing_delay") else 0.0
-	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.animation_speed_scale()).timeout
+	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
 	Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
 	if _stage.has_method("await_contact"): await _stage.await_contact(false)
-	else: await get_tree().create_timer(0.16 / AudioManager.animation_speed_scale()).timeout
+	else: await get_tree().create_timer(0.16 / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if player_block >= amount else ("shatter" if player_block > 0 else "strike"))
 	_stage.impact(true, player_block >= amount)
 	var p_pos: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
 	CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
 	CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
-	AmbientMotion.flash(_player_portrait, Color(1.8, 0.5, 0.5), 0.15)
-	AmbientMotion.shake(self, 6.0, 0.2)
+	AmbientMotion.flash(_player_portrait, Color(1.8, 0.5, 0.5), 0.30)
+	AmbientMotion.shake(self, 6.0, 0.4)
 
 	if player_block >= amount:
 		player_block -= amount
@@ -780,7 +733,7 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 		_spawn_damage_number(_enemy_portrait, player_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
 	_update_stats_display()
-	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.animation_speed_scale()).timeout
+	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.combat_animation_speed_scale()).timeout
 
 
 func _handle_overkill(overkill: int) -> void:
@@ -802,7 +755,7 @@ func _handle_overkill(overkill: int) -> void:
 	CombatVFX.play_ok_essence_trail(self, enemy_pos, hud_ok_pos, clampi(int(overkill * 0.5), 3, 8))
 
 	if overkill >= 5:
-		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 12.0), 0.25)
+		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 12.0), 0.5)
 
 
 func _check_combat_end() -> bool:
@@ -832,7 +785,7 @@ func _check_combat_end() -> bool:
 		_show_turn_banner("VICTORY")
 		_finish_presentation(true)
 		RunManager.sync_hp_from_combat(player_hp)
-		get_tree().create_timer(_stage.finish_delay() if _stage.has_method("finish_delay") else 0.8).timeout.connect(func() -> void: combat_won.emit(enemies_data))
+		get_tree().create_timer((_stage.finish_delay() if _stage.has_method("finish_delay") else 0.8) / AudioManager.combat_animation_speed_scale()).timeout.connect(func() -> void: combat_won.emit(enemies_data))
 		return true
 
 	if player_hp <= 0:
@@ -840,7 +793,7 @@ func _check_combat_end() -> bool:
 		_show_turn_banner("DEFEAT")
 		_finish_presentation(false)
 		RunManager.sync_hp_from_combat(0)
-		get_tree().create_timer(_stage.finish_delay() if _stage.has_method("finish_delay") else 0.8).timeout.connect(func() -> void: combat_lost.emit())
+		get_tree().create_timer((_stage.finish_delay() if _stage.has_method("finish_delay") else 0.8) / AudioManager.combat_animation_speed_scale()).timeout.connect(func() -> void: combat_lost.emit())
 		return true
 
 	return false
@@ -861,10 +814,12 @@ func _finish_presentation(won: bool) -> void:
 	_phase_label.text = "ENEMY MECHANISM SHATTERED" if won else "YOUR MECHANISM FALLS SILENT"
 	var fallen: Control = _enemy_portrait if won else _player_portrait
 	var exit_tween := create_tween()
+	exit_tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	exit_tween.tween_property(fallen, "modulate", Color(0.25, 0.25, 0.3, 0.0), 0.45)
 	var fade := Presentation.create_fade(self)
 	fade.color.a = 0.0
 	var fade_tween := create_tween()
+	fade_tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	fade_tween.tween_interval(_stage.finish_fade_delay() if _stage.has_method("finish_fade_delay") else 0.5)
 	fade_tween.tween_property(fade, "color:a", 1.0, 0.28)
 
@@ -931,37 +886,22 @@ func _refresh_guidance() -> void:
 func _refresh_intent_readout() -> void:
 	_enemy_chrono.set_readout_clearance(true)
 	if _combat_over:
-		_intent_readout.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
-		_intent_clock_label.text = _intent_readout.text
-		_intent_panel.call_deferred("reset_size")
+		_intent_clock_label.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
 		return
 	if enemy_sockets.is_empty(): return
 	var hours: Array = [turn_number] if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
-	var lines: Array[String] = []
 	var clock_hours: PackedStringArray = []
-	var has_siphon: bool = false
 	for hour: int in hours:
 		var index: int = EnemyClockPattern.hour_for(hour,_active_enemy())
 		clock_hours.append(str(index))
-		var socket: ClockSocketData = enemy_sockets[index-1]
-		has_siphon = has_siphon or (socket.intent_revealed and socket.is_siphon)
-		var description: String = DecisionPreview.intent(socket).replace("On HP damage: drain 25% Overkill","Siphon").replace("Attack ","").replace(" base"," damage")
-		lines.append("%d: %s" % [index,description])
 	if EnemyClockPattern.has_twin(_active_enemy()) and int(hours.back()) % 3 == 0:
 		var last_hour: int = EnemyClockPattern.hour_for(int(hours.back()),_active_enemy())
 		var echo_index: int = (last_hour + 3) % 9
-		var echo: ClockSocketData = enemy_sockets[echo_index]
-		var echo_text: String = "No strike" if echo.intent_revealed and echo.intent_damage == 0 else DecisionPreview.intent(echo)
-		lines.append("Second hand · %d: %s" % [echo_index+1,echo_text])
-	_intent_clock_label.text = "ENEMY NEXT\n" + " → ".join(clock_hours)
-	_intent_readout.text = "ENEMY NEXT\nBase damage shown\n" + "\n".join(lines)
-	if has_siphon: _intent_readout.text += "\nSiphon: lose 25% Overkill on HP damage."
-	_intent_panel.call_deferred("reset_size")
+		clock_hours.append("echo %d" % (echo_index + 1))
+	_intent_clock_label.text = " → ".join(clock_hours)
 
 func _refresh_intent_text_size(_settings: Dictionary = {}) -> void:
-	ScreenDesign.apply_text_size(_intent_panel)
 	ScreenDesign.apply_text_size(_intent_clock_label)
-	_intent_panel.call_deferred("reset_size")
 
 func _preview_allocation(view: RelicPedestalView) -> void:
 	if _resolving or _combat_over or phase != Phase.ASSEMBLY: return
@@ -1004,7 +944,7 @@ func _animate_placement(relic: ClockRelicData, hour: int) -> void:
 	var finish := socket.global_position + socket.size*0.5 - global_position - Vector2(28,28)
 	_phase_label.text = "BINDING  /  %s → %d O'CLOCK\nThe relic will activate after it reaches the clock." % [relic.name,hour]
 	var motion := create_tween().set_parallel(true)
-	var duration := 0.12 if AudioManager.reduced_motion else 0.38 / AudioManager.animation_speed_scale()
+	var duration := 0.12 if AudioManager.reduced_motion else 0.38 / AudioManager.combat_animation_speed_scale()
 	if AudioManager.reduced_motion: flight.position = finish
 	motion.tween_property(flight,"position",finish,duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	motion.tween_property(flight,"size",Vector2(56,56),duration)
@@ -1017,7 +957,7 @@ func _show_turn_banner(text_content: String) -> void:
 	_turn_banner.text = text_content
 	if _banner_tween and _banner_tween.is_valid():
 		_banner_tween.kill()
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	_banner_tween = tween
 	tween.tween_property(_turn_banner, "modulate:a", 1.0, 0.2)
 	tween.tween_interval(0.6)
@@ -1061,4 +1001,4 @@ func _reveal_enemy_hour(hour: int) -> void:
 	view.bind_socket(socket, true)
 	if not AudioManager.reduced_motion:
 		view.modulate.a = 0.3
-		view.create_tween().tween_property(view, "modulate:a", 1.0, 0.28)
+		view.create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale()).tween_property(view, "modulate:a", 1.0, 0.28)

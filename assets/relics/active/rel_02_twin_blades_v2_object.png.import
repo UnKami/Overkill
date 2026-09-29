@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cdusslf6alptm"
-path="res://.godot/imported/loading_shard_corridor.jpg-edd131a1bb2af3cbfeb838916eaec9c2.ctex"
+uid="uid://c5ma5ko3cx4w1"
+path="res://.godot/imported/rel_02_twin_blades_v2_object.png-e0b24405e0ff802b27a71905fddc29f7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/screens/cinematic/loading_shard_corridor.jpg"
-dest_files=["res://.godot/imported/loading_shard_corridor.jpg-edd131a1bb2af3cbfeb838916eaec9c2.ctex"]
+source_file="res://assets/relics/active/rel_02_twin_blades_v2_object.png"
+dest_files=["res://.godot/imported/rel_02_twin_blades_v2_object.png-e0b24405e0ff802b27a71905fddc29f7.ctex"]
 
 [params]
 

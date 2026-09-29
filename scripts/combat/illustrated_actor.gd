@@ -74,7 +74,7 @@ func _begin() -> void:
 	_front.position = _pose_origin
 	_front.scale = Vector2.ONE
 	_front.rotation = 0
-	_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+	_motion = create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 
 func attack(profile: Dictionary = {}) -> void:
 	_contact_ready = false
@@ -119,7 +119,7 @@ func _play_spectral_hammer(profile: Dictionary) -> void:
 	_ability_weapon.add_child(weapon)
 	_ability_weapon.modulate.a = 0.0
 	_ability_weapon.rotation = -1.0 * facing
-	_ability_weapon_motion = _ability_weapon.create_tween().set_parallel(true).set_speed_scale(AudioManager.animation_speed_scale())
+	_ability_weapon_motion = _ability_weapon.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	_ability_weapon_motion.tween_property(_ability_weapon, "modulate:a", 1.0, 0.10)
 	_ability_weapon_motion.tween_property(_ability_weapon, "rotation", 1.38 * facing, float(profile.get("anticipation",0.22)) + float(profile.get("travel",0.18))).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_IN)
 	_ability_weapon_motion.chain().tween_property(_ability_weapon, "modulate:a", 0.0, float(profile.get("recovery",0.34)))

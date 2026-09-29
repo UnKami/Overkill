@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4wgdik1vpg8f"
-path="res://.godot/imported/loading_shard_corridor.png-0c002b3aaa943f208d243eed9e835ab3.ctex"
+uid="uid://dubiuy2d7drty"
+path="res://.godot/imported/rel_05_spiked_buckler_v2_object.png-df268ad3500db946fc8bc9704b5602cf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/screens/cinematic/loading_shard_corridor.png"
-dest_files=["res://.godot/imported/loading_shard_corridor.png-0c002b3aaa943f208d243eed9e835ab3.ctex"]
+source_file="res://assets/relics/active/rel_05_spiked_buckler_v2_object.png"
+dest_files=["res://.godot/imported/rel_05_spiked_buckler_v2_object.png-df268ad3500db946fc8bc9704b5602cf.ctex"]
 
 [params]
 

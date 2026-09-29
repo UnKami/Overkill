@@ -46,11 +46,26 @@ func _ready() -> void:
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_resume_button.grab_focus()
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	var combat := get_tree().current_scene as CombatController
+	if combat != null:
+		_add_combat_reference_button(stack, "COMBAT LOG", combat.show_combat_log)
+		_add_combat_reference_button(stack, "HOW TO PLAY", combat.show_combat_manual)
 	_resume_button.pressed.connect(func() -> void: GameFlow.close_pause_menu())
 	_settings_button.pressed.connect(func() -> void: GameFlow.open_settings())
 	_view_deck_button.pressed.connect(func() -> void: GameFlow.open_deck_view(GameFlow.DeckViewMode.REFERENCE))
 	_abandon_button.pressed.connect(_on_abandon_pressed)
 	_main_menu_button.pressed.connect(_on_main_menu_pressed)
+
+
+func _add_combat_reference_button(stack: VBoxContainer, label_text: String, action: Callable) -> void:
+	var button := Button.new()
+	button.text = label_text
+	button.theme_type_variation = &"SecondaryButton"
+	button.custom_minimum_size.y = 58
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	button.pressed.connect(action)
+	stack.add_child(button)
+	stack.move_child(button, _view_deck_button.get_index())
 
 
 func _on_abandon_pressed() -> void:

@@ -88,7 +88,7 @@ func impact(on_player: bool, blocked: bool, _profile: Dictionary = {}) -> void:
 	if not AudioManager.reduced_motion:
 		if _camera_tween and _camera_tween.is_valid(): _camera_tween.kill()
 		_camera.h_offset = -0.045 if on_player else 0.045
-		_camera_tween = create_tween()
+		_camera_tween = create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 		_camera_tween.tween_property(_camera, "h_offset", 0.0, 0.16)
 
 func finish(won: bool) -> void:
@@ -104,4 +104,4 @@ func reveal_combatant(from_player: bool) -> void:
 	if AudioManager.reduced_motion: return
 	var target_scale: Vector3 = actor.scale
 	actor.scale = target_scale * 0.82
-	actor.create_tween().set_speed_scale(AudioManager.animation_speed_scale()).tween_property(actor,"scale",target_scale,0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	actor.create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale()).tween_property(actor,"scale",target_scale,0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)

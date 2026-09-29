@@ -313,9 +313,22 @@ func _build_node_button(node: MapGenerator.MapNode, is_current: bool, is_reachab
 
 	var icon_path: String = TYPE_ICON_PATHS.get(node.type, "")
 	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-		button.icon = ResourceLoader.load(icon_path)
-		button.expand_icon = true
-		button.add_theme_constant_override("icon_max_width", int(node_size.x * 0.68))
+		var icon := TextureRect.new()
+		icon.name = "CenteredNodeIcon"
+		icon.texture = ResourceLoader.load(icon_path)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.anchor_left = 0.5
+		icon.anchor_top = 0.5
+		icon.anchor_right = 0.5
+		icon.anchor_bottom = 0.5
+		var icon_size: float = node_size.x * 0.68
+		icon.offset_left = -icon_size * 0.5
+		icon.offset_top = -icon_size * 0.5
+		icon.offset_right = icon_size * 0.5
+		icon.offset_bottom = icon_size * 0.5
+		button.add_child(icon)
 	else:
 		button.text = TYPE_LABELS.get(node.type, "?")
 		button.add_theme_color_override("font_color", TYPE_COLORS.get(node.type, Color.WHITE))

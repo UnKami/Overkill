@@ -10,5 +10,5 @@ tier = 0
 role = 3
 primary_essence = 3
 description = "Apply 3 Bleed (deals true damage at tick start)."
-art_id = "rel_09_corrosive_oil"
+art_id = "rel_09_corrosive_oil_v2"
 apply_bleed = 3

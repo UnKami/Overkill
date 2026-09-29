@@ -70,7 +70,7 @@ func _ready() -> void:
 	battle.player_hp = 0
 	assert(battle._check_combat_end())
 	assert(battle._check_combat_end())
-	await get_tree().create_timer(0.9).timeout
+	await get_tree().create_timer(1.8).timeout
 	assert(losses.size() == 1)
 	battle.queue_free()
 	await get_tree().process_frame
@@ -83,9 +83,13 @@ func _ready() -> void:
 	assert(forge._upgrade_preview != null)
 	assert(not rest._resolved, "Preview must not spend the rest-site upgrade")
 	forge._commit_upgrade(int(RunManager.clock_inventory[0].uid))
+	# Relic upgrades now resolve only after the 1.5-second old-to-new animation.
+	await get_tree().create_timer(1.65).timeout
 	assert(rest._resolved and rest._upgrade_button.disabled)
 	rest._on_upgrade_pressed()
-	assert(GameFlow._active_deck_view_overlay == null, "Rest grants only one upgrade")
+	assert(GameFlow._active_deck_view_overlay == forge and forge._committed, "Resolved rest site must not open a second upgrade")
+	forge._upgrade_preview._on_confirm_pressed()
+	assert(GameFlow._active_deck_view_overlay == null, "Completed upgrade returns to the journey")
 	rest.queue_free()
 	await get_tree().process_frame
 	print("POLISH_INTEGRATION_OK: reserve deck, persistent upgrade, legacy migration, minimum reserve, shop affordability and duplicate purchase, ten enemy profiles, debuff, reinforcement, reverse hand, defeat once, one rest upgrade")

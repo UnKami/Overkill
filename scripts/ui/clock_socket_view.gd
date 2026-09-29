@@ -169,7 +169,7 @@ func set_quadrant_highlight(active: bool, highlight_color: Color = Color("#EF9F2
 
 func play_tick_resolution_flash() -> void:
 	pivot_offset = size * 0.5
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(self, "scale", Vector2(1.28, 1.28), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_glow_ring, "modulate:a", 1.8, 0.08)

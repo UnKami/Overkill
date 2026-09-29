@@ -11,6 +11,6 @@ role = 0
 primary_essence = 0
 secondary_essence = 1
 description = "Deal 5 damage. Gain 5 Block."
-art_id = "rel_24_siege_prism"
+art_id = "rel_24_siege_prism_v2"
 base_damage = 5
 base_block = 5

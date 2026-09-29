@@ -44,7 +44,7 @@ func _ready() -> void:
 	var rule := ScreenDesign.rule(content, ScreenDesign.GOLD)
 	content.move_child(rule, state.get_index() + 1)
 	_rest_button.text = "REST\nRecover up to %d vitality" % int(round(RunManager.max_hp*REST_HEAL_FRACTION))
-	_upgrade_button.text = "TEMPER A RELIC\nStrengthen one bound relic for the rest of this run"
+	_upgrade_button.text = "UPGRADE A RELIC\nStrengthen one bound relic for the rest of this run"
 	_back_button.text = "RETURN TO MAP"
 	for button in [_rest_button,_upgrade_button,_back_button]:
 		button.custom_minimum_size.y = 78 if button != _back_button else 56
@@ -91,7 +91,7 @@ func _on_upgrade_pressed() -> void:
 
 func _on_clock_upgraded() -> void:
 	SaveManager.save_run()
-	_mark_resolved("Relic tempered. Its improvement lasts for the rest of this run.")
+	_mark_resolved("Relic upgraded. Its improvement lasts for the rest of this run.")
 	TutorialCallout.trigger("first_rest_upgrade")
 
 

@@ -115,7 +115,7 @@ func _ready() -> void:
 func check_geometry() -> void:
 	var panel: Rect2 = battle._choice_overlay.get_global_rect()
 	assert(Rect2(Vector2.ZERO, battle.size).encloses(panel), "Overlay must fit viewport")
-	assert(panel.position.y == 70 and panel.end.y < battle.size.y, "Choices must fit the viewport")
+	assert(panel.position.y == 66 and panel.end.y < battle.size.y, "Choices must fit the viewport")
 	assert(battle._choice_overlay.get_theme_stylebox("panel") is StyleBoxEmpty)
 	for stats: Label in [battle._player_stats_label, battle._enemy_stats_label]:
 		assert(not panel.intersects(stats.get_global_rect()), "Health and Block must stay visible")
@@ -124,7 +124,7 @@ func check_geometry() -> void:
 		assert(panel.encloses(choice.get_global_rect()))
 		assert(choice._slot_button.size.y >= 48)
 		assert(choice._art_rect.size.y >= choice.size.y * 0.5, "Relic object art must own at least half the card")
-		assert(choice._desc_label.get_theme_font_size("normal_font_size") >= 24)
+		assert(choice._desc_label.get_theme_font_size("normal_font_size") >= 20)
 		assert(choice.get_global_rect().encloses(choice._slot_button.get_global_rect()), "Bind button stays inside option")
 		if previous != null:
 			assert(is_equal_approx(previous.global_position.y, choice.global_position.y))

@@ -2,6 +2,17 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.30.0 playtest — 2026-09-29 — installer and portable package verified; GitHub publication in progress
+
+- Unifies battle composition around character-free cinematic environments and the same illustrated combatants across regular fights, elites and bosses; recenters route-node art and removes duplicate battle HUD/readouts.
+- Moves Combat Log and How to Play into the Esc pause menu; retains `I` for battlefield inspection. Inspection expands both clocks and reports full-cycle attack, Block, status and relic-derived carryover values without exposing hidden enemy intents.
+- Slows combat attack, contact, hit, damage-number and Overkill presentation to roughly twice the prior duration. Adds the 1.5-second relic Upgrade transformation before effects commit; card Temper remains a separate card-upgrade system.
+- Adds 26 transparent relic objects following the orange Attack, blue Block, purple Buff, green Debuff and blood-red Overkill palette, and a character-led loading scene. The larger request for 20–40 additional cinematic backgrounds remains separate and unfinished.
+- Mechanics/save compatibility: no changes intended to damage, enemy AI, clock rules, relic effects, turn order, progression or run rules; existing saves remain compatible. A new run is recommended for visual review.
+- Verification: all eleven self-terminating Godot suites pass from source and again from the exported Windows executable/PCK; the default packaged game exits cleanly. The silent current-user installer created an install whose five files match the exported payload; the installed game launched successfully and the installer uninstalled it cleanly. The portable ZIP entries match the payload SHA-256 values. The deterministic low-variety starter fixture loses its four boss examples; full-run balance remains unverified. Headless Windows certificate-store/ObjectDB shutdown notices are recorded in the player notes.
+- Local installer: `OverkillSetup-0.30.0.exe`, 306,152,783 bytes, SHA-256 `dc6fad00a570dc190315b71c333b0aa41eeeccaa54fcb5144e58bf8ffcf0c131`. Portable ZIP: `Overkill-0.30.0-Windows.zip`, 333,244,009 bytes, SHA-256 `60e8080ed29224eff614412168d87fb3ed7b8b932253784bd0324ba27e71c93e`. Checksum manifest: `installer/OverkillSetup-0.30.0.sha256`.
+- Source: `fix/yonatan-full-ui-polish`; source commit, public asset sizes/hashes and release URL will be added after publication. Installer is unsigned; the interactive wizard was not manually stepped through.
+
 ## 0.29.0 candidate — 2026-09-29 — not yet published
 
 - Completes a screen-by-screen interface reconstruction around the approved painterly-real cyan/amber world, including map, pause, settings, confirmation, tutorial, battle reference, inspection, reward, event, rest, outcome and transition states.

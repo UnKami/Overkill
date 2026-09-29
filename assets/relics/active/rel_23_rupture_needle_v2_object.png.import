@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyy0m4lxhr4d2"
-path="res://.godot/imported/combat_arena_bg.jpg-9350f6ffdcc5225d5a88f3eb5e239d0b.ctex"
+uid="uid://dyps7bkmht3gt"
+path="res://.godot/imported/rel_23_rupture_needle_v2_object.png-a00d77243b7396d3c26e1cc9da55ebe1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/environments/combat_arena_bg.jpg"
-dest_files=["res://.godot/imported/combat_arena_bg.jpg-9350f6ffdcc5225d5a88f3eb5e239d0b.ctex"]
+source_file="res://assets/relics/active/rel_23_rupture_needle_v2_object.png"
+dest_files=["res://.godot/imported/rel_23_rupture_needle_v2_object.png-a00d77243b7396d3c26e1cc9da55ebe1.ctex"]
 
 [params]
 

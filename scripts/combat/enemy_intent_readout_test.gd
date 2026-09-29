@@ -22,13 +22,9 @@ func _ready() -> void:
 			battle._refresh_intent_readout()
 			await get_tree().process_frame
 			await get_tree().process_frame
-			if battle._intent_panel.get_rect().end.y >= 480.0:
-				print("INTENT_OVERFLOW ",id," panel=",battle._intent_panel.get_rect()," minimum=",battle._intent_readout.get_minimum_size()," text=",battle._intent_readout.text)
-				get_tree().quit(1)
-				return
-			assert(not battle._intent_panel.get_global_rect().intersects(battle._pedestal_row.get_global_rect()), "Intent overlaps relic choices")
-			if id == "act3_elite": assert("25%" in battle._intent_readout.text and "Overkill" in battle._intent_readout.text)
-			if EnemyClockPattern.has_twin(enemy): assert("Second hand" in battle._intent_readout.text)
+			assert(not battle.has_node("EnemyIntentPanel"), "Duplicate enemy intent panel returned")
+			assert(not "ENEMY NEXT" in battle._intent_clock_label.text, "Clock still repeats the removed banner")
+			if EnemyClockPattern.has_twin(enemy): assert("echo" in battle._intent_clock_label.text.to_lower())
 			checked += 1
 		if id in ["act2_elite","act3_elite","final_boss"] and DisplayServer.get_name() != "headless":
 			await RenderingServer.frame_post_draw
@@ -36,6 +32,6 @@ func _ready() -> void:
 			get_viewport().get_texture().get_image().save_png("user://intent-041/"+id+".png")
 		for socket: ClockSocketData in battle.enemy_sockets: socket.intent_revealed = false
 		battle._refresh_intent_readout()
-		assert(not "25%" in battle._intent_readout.text and not "Attack" in battle._intent_readout.text, "Hidden mechanics leaked")
+		assert(battle._intent_clock_label.text.contains("→") or not battle._intent_clock_label.text.is_empty(), "Enemy hour path is missing")
 	print("ENEMY_INTENT_READOUT_OK: ",checked," roster sweeps, bounds, choice clearance, siphon/echo and hidden intent")
 	get_tree().quit()

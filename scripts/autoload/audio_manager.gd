@@ -170,6 +170,13 @@ func set_text_size(value: String) -> void:
 func animation_speed_scale() -> float:
 	return 2.0 if fast_mode else 1.0
 
+
+## Combat uses a slower, more readable rhythm than the rest of the interface.
+## Normal playback gives impacts and character reactions twice their former
+## screen time; Fast Mode remains an explicit opt-in at the old 2x playback.
+func combat_animation_speed_scale() -> float:
+	return 2.0 if fast_mode else 0.5
+
 func set_render_quality(value: String) -> void:
 	render_quality = value if value in ["high","balanced","performance"] else "high"
 	save_settings()

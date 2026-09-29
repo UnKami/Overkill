@@ -9,6 +9,6 @@ role = 0
 primary_essence = 0
 secondary_essence = 2
 description = "Deal 3 damage. Heal HP damage dealt."
-art_id = "rel_13_blood_siphon"
+art_id = "rel_13_blood_siphon_v2"
 base_damage = 3
 lifesteal = true

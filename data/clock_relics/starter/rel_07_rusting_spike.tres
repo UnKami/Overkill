@@ -11,6 +11,6 @@ role = 3
 primary_essence = 0
 secondary_essence = 3
 description = "Deal 3 Damage; apply 2 Vulnerable."
-art_id = "rel_07_rusting_spike"
+art_id = "rel_07_rusting_spike_v2"
 base_damage = 3
 apply_vulnerable = 2

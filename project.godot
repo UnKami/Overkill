@@ -11,10 +11,10 @@ config_version=5
 [application]
 
 config/name="Overkill"
-config/version="0.29.0"
+config/version="0.30.0"
 run/main_scene="res://scenes/title_screen.tscn"
 config/features=PackedStringArray("4.5", "Mobile")
-boot_splash/image="res://assets/screens/cinematic/loading_shard_corridor.png"
+boot_splash/image="res://assets/screens/cinematic/loading_executioner_bell_foundry.png"
 boot_splash/fullsize=true
 boot_splash/use_filter=true
 boot_splash/bg_color=Color(0.012, 0.018, 0.028, 1)

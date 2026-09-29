@@ -13,7 +13,7 @@ const REWARD := SCREEN_ROOT + "reward_victory_cache.jpg"
 const RELIC_REWARD := SCREEN_ROOT + "reward_relic_vault.jpg"
 const COLLECTION := SCREEN_ROOT + "collection_archive_hall.jpg"
 const UPGRADE := SCREEN_ROOT + "upgrade_memory_forge.jpg"
-const LOADING := SCREEN_ROOT + "loading_shard_corridor.jpg"
+const LOADING := SCREEN_ROOT + "loading_executioner_bell_foundry.png"
 const VICTORY := SCREEN_ROOT + "victory_balanced_clock.jpg"
 const DEFEAT := SCREEN_ROOT + "defeat_extinguished_clock.jpg"
 

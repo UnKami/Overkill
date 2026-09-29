@@ -43,9 +43,9 @@ The 30-scene library is centrally routed by `scripts/ui/cinematic_art.gd`.
 | Act III → final | `assets/screens/cinematic/transition_act3_final.jpg` |
 | Victory | `assets/screens/cinematic/victory_balanced_clock.jpg` |
 | Defeat | `assets/screens/cinematic/defeat_extinguished_clock.jpg` |
-| Loading corridor | `assets/screens/cinematic/loading_shard_corridor.jpg` |
+| Bell foundry loading scene | `assets/screens/cinematic/loading_executioner_bell_foundry.png` |
 
-`loading_shard_corridor.png` is a lossless boot-splash derivative of the same authored loading scene because Godot accepts only PNG for project boot art.
+The loading scene now features the Executioner beneath the monumental bell foundry, giving the pause between runs a distinct character-led establishing shot instead of another shard-only abstract image. The same PNG is used for the Godot boot splash, so there is no separate duplicate derivative to drift out of sync.
 
 ### Character-free battle plates (12)
 

@@ -10,5 +10,5 @@ tier = 0
 role = 1
 primary_essence = 1
 description = "Gain 8 Block. Lasts until absorbed or battle ends."
-art_id = "rel_06_reinforced_wall"
+art_id = "rel_06_reinforced_wall_v2"
 base_block = 8

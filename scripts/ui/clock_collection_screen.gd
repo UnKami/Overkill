@@ -6,7 +6,7 @@ var _grid: GridContainer
 var _summary: Label
 var _committed: bool = false
 var _offers: Array = []
-var _upgrade_preview: Control
+var _upgrade_preview: UpgradePreviewDialog
 const Pedestal := preload("res://scenes/relic_pedestal_view.tscn")
 
 func _ready() -> void:
@@ -46,12 +46,12 @@ func _ready() -> void:
 	stage.add_child(column)
 
 	var kicker := Label.new()
-	kicker.text = {"collection":"ACTIVE CHRONOMETER INVENTORY", "shop":"FIVE OBJECTS  ·  ONE PRICE", "upgrade":"ONE RELIC MAY BE TEMPERED", "removal":"BREAK ONE BINDING"}.get(mode, "ACTIVE CHRONOMETER INVENTORY")
+	kicker.text = {"collection":"ACTIVE CHRONOMETER INVENTORY", "shop":"FIVE OBJECTS  ·  ONE PRICE", "upgrade":"ONE RELIC MAY BE UPGRADED", "removal":"BREAK ONE BINDING"}.get(mode, "ACTIVE CHRONOMETER INVENTORY")
 	kicker.add_theme_font_size_override("font_size", 16)
 	kicker.add_theme_color_override("font_color", ScreenDesign.CYAN)
 	column.add_child(kicker)
 	var title := Label.new()
-	title.text = {"collection": "THE RELIQUARY", "shop": "THE CLOCKWRIGHT", "upgrade": "TEMPER A RELIC", "removal": "DISMANTLE A RELIC"}.get(mode, "THE RELIQUARY")
+	title.text = {"collection": "THE RELIQUARY", "shop": "THE CLOCKWRIGHT", "upgrade": "UPGRADE A RELIC", "removal": "DISMANTLE A RELIC"}.get(mode, "THE RELIQUARY")
 	title.add_theme_font_size_override("font_size", 48)
 	title.add_theme_font_override("font",ScreenDesign.display_font())
 	title.add_theme_color_override("font_color", Color("e8c994"))
@@ -179,7 +179,7 @@ func _rebuild() -> void:
 			view.set_stack_count(int(group.count))
 		return
 	if mode == "upgrade":
-		# Tempering is a decision between relic designs, not a wall of identical
+		# Upgrading is a decision between relic designs, not a wall of identical
 		# inventory copies. Group owned copies by design and target one eligible
 		# copy from the chosen group. This keeps the forge legible even when the
 		# chronometer contains many starter duplicates.
@@ -193,7 +193,7 @@ func _rebuild() -> void:
 			var entries: Array = upgrade_groups[relic_id]
 			entries.append(entry)
 			upgrade_groups[relic_id] = entries
-		_summary.text = "%d relics  /  %d designs  /  9 clock sockets  /  %d reserves     •     One free tempering this visit." % [RunManager.clock_inventory.size(), upgrade_groups.size(), maxi(0, RunManager.clock_inventory.size() - 9)]
+		_summary.text = "%d relics  /  %d designs  /  9 clock sockets  /  %d reserves     •     One free upgrade this visit." % [RunManager.clock_inventory.size(), upgrade_groups.size(), maxi(0, RunManager.clock_inventory.size() - 9)]
 		for relic_id: String in upgrade_order:
 			var entries: Array = upgrade_groups[relic_id]
 			var target_entry: Dictionary = {}
@@ -210,7 +210,7 @@ func _rebuild() -> void:
 				continue
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
-			var action: String = "PREVIEW TEMPERING  ·  %d READY" % ready_count if ready_count > 0 else "ALL COPIES TEMPERED"
+			var action: String = "PREVIEW UPGRADE  ·  %d READY" % ready_count if ready_count > 0 else "ALL COPIES UPGRADED"
 			view.bind_relic(relic, action)
 			view.set_stack_count(entries.size())
 			view._slot_button.disabled = ready_count == 0
@@ -218,7 +218,7 @@ func _rebuild() -> void:
 				var upgraded: Dictionary = target_entry.duplicate()
 				upgraded.level = 1
 				var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
-				view.tooltip_text = "%d copies owned; %d may still be tempered.\n\nCURRENT\n%s\n\nAFTER TEMPERING\n%s" % [entries.size(), ready_count, relic.description, tempered.description]
+				view.tooltip_text = "%d copies owned; %d may still be upgraded.\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [entries.size(), ready_count, relic.description, tempered.description]
 				var target_uid: int = int(target_entry.get("uid", -1))
 				view.selected.connect(func(_r: ClockRelicData) -> void: _choose(target_uid))
 		return
@@ -243,11 +243,11 @@ func _rebuild() -> void:
 			view.use_collection_layout()
 		var action := ""
 		if mode == "upgrade":
-			action = "PREVIEW TEMPERING" if int(entry.level) == 0 else "ALREADY TEMPERED"
+			action = "PREVIEW UPGRADE" if int(entry.level) == 0 else "ALREADY UPGRADED"
 			if int(entry.level) == 0:
 				var upgraded := entry.duplicate()
 				upgraded.level = 1
-				view.tooltip_text = "CURRENT\n%s\n\nAFTER TEMPERING\n%s" % [relic.description, ClockInventory.resolve(upgraded).description]
+				view.tooltip_text = "CURRENT\n%s\n\nAFTER UPGRADE\n%s" % [relic.description, ClockInventory.resolve(upgraded).description]
 		elif mode == "removal": action = "DISMANTLE  /  25 OK"
 		view.bind_relic(relic, action)
 		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < 25))
@@ -280,7 +280,8 @@ func _choose(uid: int) -> void:
 			upgraded.level = 1
 			var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
 			UpgradePreviewDialog.show_relic_dialog(self, current, tempered, func() -> void: _commit_upgrade(uid))
-			_upgrade_preview = get_child(get_child_count() - 1) as Control
+			_upgrade_preview = get_child(get_child_count() - 1) as UpgradePreviewDialog
+			_upgrade_preview.completed.connect(_close)
 			return
 	elif mode == "removal" and OKRunState.current_ok >= 25:
 		if RunManager.remove_clock_relic(uid):
@@ -293,8 +294,10 @@ func _commit_upgrade(uid: int) -> void:
 	_committed = true
 	if RunManager.upgrade_clock_relic(uid):
 		SaveManager.save_run()
-		_close()
-	else: _committed = false
+		if is_instance_valid(_upgrade_preview): _upgrade_preview.show_relic_success()
+	else:
+		_committed = false
+		if is_instance_valid(_upgrade_preview): _upgrade_preview.show_relic_failure()
 
 func _close() -> void:
 	if overlay: GameFlow.close_deck_view()

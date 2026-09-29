@@ -54,7 +54,7 @@ static func play_canvas_impact(parent: Control, at: Vector2, profile: Dictionary
 	shockwave.scale = Vector2(0.18, 0.18)
 	shockwave.z_index = 54
 	parent.add_child(shockwave)
-	var burst := shockwave.create_tween().set_parallel(true)
+	var burst := shockwave.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	burst.tween_property(shockwave, "scale", Vector2(1.85, 1.85), 0.24).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	burst.tween_property(shockwave, "modulate:a", 0.0, 0.22).set_delay(0.04)
 	burst.chain().tween_callback(shockwave.queue_free)

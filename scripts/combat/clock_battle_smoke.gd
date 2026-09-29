@@ -6,6 +6,9 @@ func _ready() -> void:
 	get_window().mode = Window.MODE_WINDOWED
 	get_window().size = Vector2i(1920, 1080)
 	seed(42)
+	# Keep this input-flow smoke deterministic and quick; the human-facing
+	# default cadence is intentionally slower for impact readability.
+	AudioManager.fast_mode = true
 	AudioManager.set_master_volume(0.0)
 	AudioManager.play_clock_sound("tick")
 	assert(AudioManager._clock_sounds.is_empty(), "Muted audio must not allocate a voice")

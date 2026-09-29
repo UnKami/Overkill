@@ -48,6 +48,7 @@ static func play_slash(parent: CanvasItem, target_center: Vector2, angle_deg: fl
 
 	slash.scale = Vector2(0.2, scale_factor * 1.3)
 	var tween := slash.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(slash, "scale", Vector2(scale_factor * 1.2, scale_factor), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(slash, "position", slash.position + Vector2(randf_range(-15, 15), randf_range(-10, 10)), 0.18)
@@ -79,6 +80,7 @@ static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: C
 	parent.add_child(flare)
 
 	var tween := flare.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(flare, "scale", Vector2(1.6, 1.6), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(flare, "modulate:a", 0.0, 0.16).set_delay(0.06)
@@ -101,6 +103,7 @@ static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: C
 		var dist := randf_range(50, 110)
 		var dest := speck.position + Vector2(cos(ang), sin(ang)) * dist
 		var sp_tween := speck.create_tween()
+		sp_tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 		sp_tween.set_parallel(true)
 		sp_tween.tween_property(speck, "position", dest, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		sp_tween.tween_property(speck, "scale", Vector2.ZERO, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -130,6 +133,7 @@ static func play_shield_pulse(parent: CanvasItem, target_center: Vector2) -> voi
 	parent.add_child(shield)
 
 	var tween := shield.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(shield, "scale", Vector2(1.25, 1.25), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(shield, "modulate:a", 1.0, 0.1)
@@ -164,6 +168,7 @@ static func play_overkill_burst(parent: CanvasItem, target_center: Vector2, over
 
 	var scale_target: float = clampf(1.8 + overkill * 0.04, 2.0, 3.2)
 	var tween := burst.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(burst, "scale", Vector2(scale_target, scale_target), 0.28).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	tween.tween_property(burst, "rotation", burst.rotation + 0.5, 0.3)
@@ -198,6 +203,7 @@ static func play_ok_essence_trail(parent: CanvasItem, from_pos: Vector2, to_pos:
 		var mid_pos := (from_pos + to_pos) * 0.5 + mid_offset
 
 		var tween := orb.create_tween()
+		tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 		tween.tween_property(orb, "scale", Vector2(1.2, 1.2), 0.12).set_delay(delay)
 		tween.parallel().tween_property(orb, "modulate:a", 1.0, 0.08).set_delay(delay)
 		tween.tween_property(orb, "position", mid_pos, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

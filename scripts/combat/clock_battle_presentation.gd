@@ -216,6 +216,7 @@ static func relay(battle: Control, source: Control, target: Control, accent: Col
 	line.points = PackedVector2Array([start, start])
 	battle.add_child(line)
 	var tween := line.create_tween()
-	tween.tween_method(func(progress: float) -> void: line.set_point_position(1, start.lerp(finish, progress)), 0.0, 1.0, 0.16 / AudioManager.animation_speed_scale())
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
+	tween.tween_method(func(progress: float) -> void: line.set_point_position(1, start.lerp(finish, progress)), 0.0, 1.0, 0.16)
 	tween.tween_property(line, "modulate:a", 0.0, 0.2)
 	tween.tween_callback(line.queue_free)

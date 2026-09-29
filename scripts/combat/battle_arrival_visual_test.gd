@@ -63,9 +63,9 @@ func _ready() -> void:
 	battle.begin_combat_intro()
 	await get_tree().create_timer(0.22).timeout
 	await _capture("battle-start-title")
-	await get_tree().create_timer(0.78).timeout
+	await get_tree().create_timer(1.55).timeout
 	await _capture("battle-player-reveal")
-	await get_tree().create_timer(0.80).timeout
+	await get_tree().create_timer(1.60).timeout
 	await _capture("battle-ready-1080")
 	var tutorial: TutorialCalloutView = battle.get_node("TutorialCalloutView")
 	tutorial._on_requested("first_intent", TutorialCallout.CATALOG["first_intent"])
@@ -78,11 +78,11 @@ func _ready() -> void:
 	await _capture("battlefield-inspection")
 	battle._choice_overlay.toggle_inspection()
 	await get_tree().create_timer(0.18).timeout
-	battle._help_button.pressed.emit()
+	battle.show_combat_manual()
 	await get_tree().create_timer(0.65).timeout
 	await _capture("battle-field-manual")
 	_close_reference_overlay(battle)
-	battle._history_button.pressed.emit()
+	battle.show_combat_log()
 	await get_tree().create_timer(0.65).timeout
 	await _capture("battle-combat-log")
 	_close_reference_overlay(battle)
@@ -98,11 +98,11 @@ func _ready() -> void:
 	hammer_socket.hour_index = 1
 	hammer_socket.slotted_relic = ContentDatabase.get_clock_relic("REL-03")
 	battle._apply_damage_to_enemy(14, hammer_socket)
-	await get_tree().create_timer(0.12).timeout
+	await get_tree().create_timer(0.24).timeout
 	await _capture("heavy-hammer-windup")
-	await get_tree().create_timer(0.16).timeout
+	await get_tree().create_timer(0.32).timeout
 	await _capture("heavy-hammer-flight")
-	await get_tree().create_timer(0.15).timeout
+	await get_tree().create_timer(0.30).timeout
 	await _capture("heavy-hammer-impact")
 	print("BATTLE_ARRIVAL_VISUAL_OK")
 	get_tree().quit()

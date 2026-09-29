@@ -10,5 +10,5 @@ tier = 1
 role = 4
 primary_essence = 4
 description = "Gain 3 Overkill."
-art_id = "rel_18_blood_tithe"
+art_id = "rel_18_blood_tithe_v2"
 grant_overkill = 3

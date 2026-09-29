@@ -7,7 +7,6 @@ var _battle: CombatController
 var _heading: Label
 var _body: HBoxContainer
 var _footer: HBoxContainer
-var _inspect: Button
 var _battlefield_inspection: BattlefieldInspection
 var _inspecting: bool = false
 var _pulse_time: float = 0.0
@@ -28,26 +27,21 @@ func install(battle: CombatController) -> void:
 	header.show()
 	_heading = ScreenDesign.label(header, "BIND A RELIC", 24, ScreenDesign.GOLD, true)
 	_heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_inspect = Button.new()
-	_inspect.text = "INSPECT BATTLEFIELD  [I]"
-	_inspect.add_theme_font_size_override("font_size", 22)
-	header.add_child(_inspect)
-	_inspect.pressed.connect(toggle_inspection)
 	battle._phase_label.reparent(choices)
-	battle._phase_label.custom_minimum_size = Vector2(1180, 110)
+	battle._phase_label.custom_minimum_size = Vector2(1080, 64)
 	battle._phase_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	battle._phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	battle._phase_label.add_theme_font_size_override("font_size", 24)
+	battle._phase_label.add_theme_font_size_override("font_size", 19)
 	battle._phase_label.add_theme_color_override("font_color", Color("e4e8e9"))
 	battle._phase_label.add_theme_color_override("font_outline_color",Color("080d12"))
 	battle._phase_label.add_theme_constant_override("outline_size",6)
 	battle._phase_label.clip_text = false
 	battle._phase_label.show()
 	_body = HBoxContainer.new()
-	_body.add_theme_constant_override("separation", 20)
+	_body.add_theme_constant_override("separation", 14)
 	choices.add_child(_body)
 	battle._pedestal_row.reparent(_body)
-	battle._pedestal_row.add_theme_constant_override("separation", 20)
+	battle._pedestal_row.add_theme_constant_override("separation", 14)
 	replacements = HBoxContainer.new()
 	replacements.add_theme_constant_override("separation", 12)
 	_body.add_child(replacements)
@@ -92,7 +86,7 @@ func present(battle: CombatController) -> void:
 			var socket: ClockSocketView = battle._player_chrono.get_socket_view(hour)
 			var relic: ClockRelicData = socket.data.slotted_relic
 			var button: Button = Button.new()
-			button.custom_minimum_size = Vector2(250, 318)
+			button.custom_minimum_size = Vector2(230, 292)
 			button.disabled = socket.data.is_locked or battle.current_drawn_relic == null
 			button.tooltip_text = "%s\n%s\nReplace this relic and resolve the three-hour sweep." % [relic.name if relic else "Empty slot",ClockInventory.describe(relic) if relic else ""]
 			replacements.add_child(button)
@@ -123,13 +117,13 @@ func present(battle: CombatController) -> void:
 			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			title.clip_text = true
 			var art := TextureRect.new()
-			art.custom_minimum_size.y = 142
+			art.custom_minimum_size.y = 163
 			art.texture = RelicArt.load_texture(relic.art_id) if relic != null else null
 			art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			column.add_child(art)
-			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 24, ScreenDesign.MUTED)
+			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 19, ScreenDesign.MUTED)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			effect.clip_text = false
@@ -170,9 +164,9 @@ func present(battle: CombatController) -> void:
 func _place() -> void:
 	if not is_instance_valid(_battle): return
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	size = Vector2(1180, 0)
+	size = Vector2(1120, 0)
 	reset_size()
-	position = Vector2((_battle.size.x - size.x) * 0.5, 70)
+	position = Vector2((_battle.size.x - size.x) * 0.5, 66)
 
 func toggle_inspection() -> void:
 	if _battle._resolving or _battle._combat_over: return
