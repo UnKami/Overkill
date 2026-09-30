@@ -41,22 +41,39 @@ if($Mode -in @('publish','verify')){
  if($Mode -eq 'publish'){
   $branchHead=Api ("/git/ref/heads/"+$sourceBranch.Replace('/','%2F'))
   if($branchHead.object.sha -ne $Source){throw "Source SHA is not the current remote $sourceBranch head"}
-  $existing=@(Api '/releases?per_page=100' | Where-Object tag_name -eq $tag)
-  if($existing.Count){throw 'Release already exists; never overwrite a published build'}
   if (!(Test-Path -LiteralPath $verificationPath)) { throw "Version-specific verification report is missing: $verificationPath" }
-  $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Crystalline playtest";body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw));draft=$true;prerelease=$true}
-  if((Get-TagCommit $tag) -ne $Source){throw 'Created release tag does not resolve to the tested source commit'}
+  $body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw))
+  $tagRef="refs/tags/$tag"
+  $matchingRefs=@(Api ("/git/matching-refs/tags/"+[uri]::EscapeDataString($tag)) | Where-Object ref -eq $tagRef)
+  if($matchingRefs.Count -eq 0){$null=Api '/git/refs' 'Post' @{ref=$tagRef;sha=$Source}}
+  elseif($matchingRefs.Count -ne 1 -or (Get-TagCommit $tag) -ne $Source){throw 'Release tag already exists but does not identify the tested source commit'}
+  if((Get-TagCommit $tag) -ne $Source){throw 'Release tag does not resolve to the tested source commit'}
+  $existing=@(Api '/releases?per_page=100' | Where-Object tag_name -eq $tag)
+  if($existing.Count -gt 1 -or ($existing.Count -eq 1 -and !$existing[0].draft)){throw 'A non-draft release already exists; refusing to overwrite it'}
+  if($existing.Count -eq 1){
+   $release=Api ("/releases/"+$existing[0].id) 'Patch' @{target_commitish=$sourceBranch;body=$body;prerelease=$true}
+  }else{
+   $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Crystalline playtest";body=$body;draft=$true;prerelease=$true}
+  }
   foreach($path in $assets){
    $file=Get-Item -LiteralPath $path
-   $upload="https://uploads.github.com/repos/UnKami/Overkill/releases/$($release.id)/assets?name="+[uri]::EscapeDataString($file.Name)
-   $asset=Invoke-RestMethod -Uri $upload -Headers $headers -Method Post -InFile $file.FullName -ContentType 'application/octet-stream' -TimeoutSec 1800
-   if($asset.size -ne $file.Length){throw "Upload size mismatch: $path"}
    $hash=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
-   if($asset.digest -ne "sha256:$hash"){throw "Upload digest mismatch: $path"}
-   Write-Output "UPLOADED_AND_HASHED $($file.Name)"
+   $release=Api ("/releases/"+$release.id)
+   $prior=@($release.assets | Where-Object name -eq $file.Name)
+   if($prior.Count){
+    if($prior.Count -ne 1 -or $prior[0].size -ne $file.Length -or $prior[0].digest -ne "sha256:$hash"){throw "Existing draft asset differs from local candidate: $path"}
+    Write-Output "ALREADY_UPLOADED_AND_HASHED $($file.Name)"
+   }else{
+    $upload="https://uploads.github.com/repos/UnKami/Overkill/releases/$($release.id)/assets?name="+[uri]::EscapeDataString($file.Name)
+    $asset=Invoke-RestMethod -Uri $upload -Headers $headers -Method Post -InFile $file.FullName -ContentType 'application/octet-stream' -TimeoutSec 1800
+    if($asset.size -ne $file.Length -or $asset.digest -ne "sha256:$hash"){throw "Upload size or digest mismatch: $path"}
+    Write-Output "UPLOADED_AND_HASHED $($file.Name)"
+   }
   }
   $release=Api "/releases/$($release.id)"
   if(@($release.assets).Count -ne 3 -or (Get-TagCommit $tag) -ne $Source){throw 'Draft metadata or exact source tag mismatch'}
+  $branchHead=Api ("/git/ref/heads/"+$sourceBranch.Replace('/','%2F'))
+  if($branchHead.object.sha -ne $Source){throw 'Source branch moved during release preparation; leaving release as draft'}
   $release=Api "/releases/$($release.id)" 'Patch' @{draft=$false}
  }
  $release=Api "/releases/tags/$tag"
