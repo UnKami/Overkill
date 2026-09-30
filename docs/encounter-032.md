@@ -13,8 +13,8 @@
 
 No damage values, enemy behavior, relic mechanics, turn order, progression rules or save schema were changed. Start or continue a run as normal; existing saves remain compatible.
 
-Source checks: `map_ux_test.tscn`, `presentation_polish_test.tscn`, `clock_battle_smoke.tscn`, `crystalline_consistency_test.tscn`, and `crystalline_visual_test.tscn`. Rendered UI review covered map, treasure reveal, relic replacement/assembly, pre-battle offers and abandon confirmation. The exported Windows executable launched headlessly from `build/windows` with its exported PCK. The 294,056,097-byte installer compiled successfully. An isolated silent-install smoke attempt did not yield a reliable installer exit status or installed payload, so installation through the wizard remains unverified.
+Source checks: `map_ux_test.tscn`, `presentation_polish_test.tscn`, `clock_battle_smoke.tscn`, `crystalline_consistency_test.tscn`, and `crystalline_visual_test.tscn`. Rendered UI review covered map, treasure reveal, relic replacement/assembly, pre-battle offers and abandon confirmation. The exported Windows executable launched headlessly from `build/windows` with its exported PCK. The Windows installer compiled successfully. An isolated silent-install smoke attempt did not yield a reliable installer exit status or installed payload, so installation through the wizard remains unverified.
 
 ## Delivery status
 
-This is a local playtest candidate. GitHub publication is pending renewed repository authentication; do not treat this file as evidence that a public download exists. The latest published, tested download remains 0.31.0 until a 0.32.0 release is verified. No public release, tag, or download URL was created for this candidate.
+This is an unsigned Windows playtest prerelease. Install or extract the full package before starting Overkill. The isolated installer run did not establish that the setup wizard and installed application work correctly; if setup fails, use the portable ZIP and report the failure with the log. Existing saves are schema-compatible, though a fresh run is recommended for reviewing the updated map flow and replacement screen.
