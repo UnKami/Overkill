@@ -15,9 +15,7 @@ func _ready() -> void:
 		assert(ContentDatabase.get_clock_relic(id) != null, "Zenith relic must resolve by ID")
 		assert(not ContentDatabase.all_clock_relics().has(ContentDatabase.get_clock_relic(id)), "Zenith relic must not enter generic rewards or shop")
 		assert(ContentDatabase.all_clock_relics(true).has(ContentDatabase.get_clock_relic(id)), "Full catalog must include Zenith relic")
-	await RenderingServer.frame_post_draw
-	DirAccess.make_dir_recursive_absolute("res://trailer/captures")
-	get_viewport().get_texture().get_image().save_png("res://trailer/captures/altar-before.png")
+	await _capture("altar-before")
 	assert(altar._offer_buttons.size() == 3, "All three Zenith offers must load")
 	assert(RunManager.clock_inventory.size() == 12, "The starter inventory fills the clock")
 	altar._open_purchase("REL-28")
@@ -34,7 +32,14 @@ func _ready() -> void:
 	altar._open_purchase("REL-29")
 	assert(OKRunState.current_ok == 55, "Only one purchase is allowed at this altar")
 	await get_tree().create_timer(0.25).timeout
-	await RenderingServer.frame_post_draw
-	get_viewport().get_texture().get_image().save_png("res://trailer/captures/altar-after.png")
+	await _capture("altar-after")
 	print("BOSS_ALTAR_OK: three offers, 12-copy replacement, exact currency debit, one purchase")
 	get_tree().quit()
+
+
+func _capture(label: String) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	DirAccess.make_dir_recursive_absolute("user://boss-altar-test")
+	get_viewport().get_texture().get_image().save_png("user://boss-altar-test/%s.png" % label)
