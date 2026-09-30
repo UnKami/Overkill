@@ -2,6 +2,15 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.34.0 playtest — 2026-09-30
+
+- Separates crisp clock-hand travel from deliberately weighty combat impacts. Player attacks now distinguish measured strikes, quick multi-hit combos, and heavy blows; the Executioner's hammer keeps its signature slam. Enemy single-hit danger gets a stronger tell and impact while multi-hit intents use a distinct flurry cadence. Defender recoil and accents track the incoming attack profile.
+- Mechanics/save compatibility: presentation only; damage values, enemy decisions, hit counts, turn order, clock rules, relic effects, progression and save schema are unchanged. Existing saves remain compatible. No autoplay.
+- Verified: Godot 4.5.1 source clock-combat, presentation, crystalline consistency and battle-arrival suites passed. Isolated installer install, five-file hash comparison, 8-second installed-app startup and uninstall passed. Portable ZIP has exactly five entries matching export sizes. Headless tests emit a root certificate-store warning and ObjectDB/CanvasItem shutdown leaks; pixel-level visual acceptance and a human full campaign remain open.
+- Installer: 294,061,660 bytes, SHA-256 `564f18bc009521ed2b4a82a9b53e08e3a4a8e02ab59f41678b7c2c56fa96c981`. Portable ZIP: 321,146,370 bytes, SHA-256 `8416dd2ac00e94659422adbd604dbe47e820060e0eadae204465ce32e8cfda79`. [Release and checksum manifest](https://github.com/UnKami/Overkill/releases/tag/v0.34.0-test).
+- Installer: [Download OverkillSetup-0.34.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.34.0-test/OverkillSetup-0.34.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.34.0-test/Overkill-0.34.0-Windows.zip) · [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.34.0-test/OverkillSetup-0.34.0.sha256). All three remote assets match local sizes/SHA-256 and returned HTTP 200.
+- Exact source: `3b343d3679ed5748f8aeeb8e8f83344db89acdbd`, tag `v0.34.0-test`, feature branch `fix/yonatan-full-ui-polish`. [GitHub prerelease](https://github.com/UnKami/Overkill/releases/tag/v0.34.0-test). Gameplay remains on its feature branch; main receives download links through a documentation-only PR.
+
 ## 0.33.0 playtest — 2026-09-30
 
 - Aligns the new-journey confirmation to the title content column and removes the menu behind it while open. Map tiers gain substantially more vertical breathing room and scroll when needed. Pre-battle choices regain distinct, context-relevant paintings for relic upgrade, Overkill and Vitality. Relic display drops the hazy radial square treatment for sharper essence-colored light lines behind each floating object.
