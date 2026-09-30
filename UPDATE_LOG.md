@@ -2,6 +2,15 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.32.0 playtest — 2026-09-30
+
+- Promotes the approved threat-scaled enemy-family hues over the obsidian-and-ivory base; replaces framed relic choices with floating object art and colored light strokes; emphasizes Keep & Sweep; adds restrained actionable-button contours and idle motion; routes reachable map nodes directly; fixes the abandon confirmation and simplifies pre-battle offers; slightly shortens clock-pointer transitions without changing combat-impact pacing.
+- Mechanics/save compatibility: no damage, enemy behavior, relic effects, turn order, clock rules, progression or save schema changed. Existing saves remain compatible; a fresh run is recommended for review. No autoplay.
+- Verified: Godot map UX, presentation, combat-smoke, crystalline consistency and rendered visual suites pass. The exported game launched from the final extracted portable ZIP with exit code 0. ZIP contains exactly five files whose hashes match the exported payload. GitHub release assets were checked for exact remote size/SHA-256 and public HTTP 200 download URLs.
+- Known limits: unsigned prerelease; the Windows installer compiled but its setup wizard and installed app were not verified. Use the portable ZIP if setup fails. Full human campaign and final visual acceptance remain open. The restricted runner emits a Windows certificate-store warning and an ObjectDB shutdown notice during headless launch.
+- Installer: 294,056,249 bytes, SHA-256 `03d5aef1395f48d06d004bec3a63090315b06545545c724b08edc6a5b5ce723b`. ZIP: 321,141,315 bytes, SHA-256 `11fd6161feaf49fa7c2e7a336949df98212726637b178a37ee799df523f16e71`. [Release, downloads and checksum manifest](https://github.com/UnKami/Overkill/releases/tag/v0.32.0-test).
+- Exact source: `211e7d96862ac6aa19c58ce5a59cffc12181fbe6`, tag `v0.32.0-test`, feature branch `fix/yonatan-full-ui-polish`. Gameplay remains on the feature branch; main contains the reviewed download-documentation update only.
+
 ## 0.31.0 playtest — 2026-09-30
 
 - Restores all 26 approved crystalline relic objects and consistent effect colors. Completes ten distinct crystalline enemy silhouettes, retaining the Executioner in every battle. Removes duplicate static fighters hiding actor animation; separates combatants from relic choices and centers HP beneath them.
