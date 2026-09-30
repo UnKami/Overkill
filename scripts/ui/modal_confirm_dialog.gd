@@ -25,7 +25,7 @@ var _danger: bool = false
 ## actions (abandon run) - most uses of this dialog (upgrade/removal spends,
 ## informational continues) are NOT that, so it defaults to false rather
 ## than red-flagging everything that merely asks for confirmation.
-static func show_dialog(parent: Node, message: String, confirm_label: String, on_confirm: Callable, danger: bool = false) -> void:
+static func show_dialog(parent: Node, message: String, confirm_label: String, on_confirm: Callable, danger: bool = false) -> ModalConfirmDialog:
 	var scene: PackedScene = load(SCENE_PATH)
 	var instance: ModalConfirmDialog = scene.instantiate()
 	instance._danger = danger
@@ -35,6 +35,7 @@ static func show_dialog(parent: Node, message: String, confirm_label: String, on
 	instance.confirmed.connect(on_confirm)
 	instance.confirmed.connect(instance.queue_free)
 	instance.cancelled.connect(instance.queue_free)
+	return instance
 
 
 func _ready() -> void:

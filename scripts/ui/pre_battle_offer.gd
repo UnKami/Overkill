@@ -7,30 +7,21 @@ signal resolved(effect_id: String)
 
 const CHOICES: Array[Dictionary] = [
 	{
-		"number": "I",
 		"title": "UPGRADE A RELIC",
-		"body": "Choose one bound relic. Upgrade a single copy for free and carry its new power through this run.",
 		"effect": "upgrade_relic",
 		"action": "CHOOSE A RELIC",
-		"art": CinematicArt.UPGRADE,
 		"accent": Color("e7bd72"),
 	},
 	{
-		"number": "II",
 		"title": "BANK THE SPARK",
-		"body": "Seal a fragment of the forge inside the chronometer before entering battle.",
 		"effect": "gain_overkill",
 		"action": "GAIN 10 OVERKILL",
-		"art": CinematicArt.RELIC_REWARD,
 		"accent": Color("79d7df"),
 	},
 	{
-		"number": "III",
 		"title": "REINFORCE THE FRAME",
-		"body": "Temper the Executioner's body for the road ahead and repair it in the same stroke.",
 		"effect": "gain_vitality",
 		"action": "GAIN 3 MAX VITALITY",
-		"art": "res://assets/screens/rest_site_bg.jpg",
 		"accent": Color("d78e78"),
 	},
 ]
@@ -66,7 +57,8 @@ func _ready() -> void:
 	ScreenDesign.spacer(column, 10)
 	var row := HBoxContainer.new()
 	row.name = "ChoiceRow"
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.custom_minimum_size.y = 340
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_theme_constant_override("separation", 28)
 	column.add_child(row)
@@ -102,7 +94,7 @@ func _build_background() -> void:
 
 func _build_choice(choice: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(390, 460)
+	card.custom_minimum_size = Vector2(390, 330)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	card.size_flags_stretch_ratio = 1.0
 	var style := ScreenDesign.box(Color("0d1824f2"), choice.accent, 2)
@@ -111,29 +103,12 @@ func _build_choice(choice: Dictionary) -> PanelContainer:
 	style.shadow_size = 22
 	card.add_theme_stylebox_override("panel", style)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 18)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
+	column.add_theme_constant_override("separation", 28)
 	card.add_child(column)
-	var numeral := ScreenDesign.label(column, choice.number, 58, choice.accent, true)
-	numeral.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var rule := ScreenDesign.rule(column, choice.accent)
-	rule.custom_minimum_size.y = 2
-	var art := TextureRect.new()
-	# The scene plate is part of the choice, not a thumbnail decoration. A
-	# taller crop gives the Executioner and location enough presence while the
-	# responsive canvas still keeps all three actions above the fold at 720p.
-	art.custom_minimum_size.y = 220
-	art.texture = load(String(choice.art))
-	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	column.add_child(art)
 	var name := ScreenDesign.label(column, choice.title, 28, ScreenDesign.TEXT, true)
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var body := ScreenDesign.label(column, choice.body, 20, ScreenDesign.MUTED)
-	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var action := ScreenDesign.button(column, choice.action, _choose.bind(choice.effect, card), true)
 	action.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	action.mouse_entered.connect(_hover_card.bind(card, true))

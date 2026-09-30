@@ -21,6 +21,7 @@ function Api([string]$Path,[string]$Method='Get',$Body=$null) {
 }
 $assets=@("installer/OverkillSetup-$version.exe","build/Overkill-$version-Windows.zip","installer/OverkillSetup-$version.sha256")
 $notesPath='docs/encounter-{0:000}.md' -f ([version]$version).Minor
+$verificationPath='.test-artifacts/verification-{0:000}.md' -f ([version]$version).Minor
 $docPaths=@('README.md','installer/README.md','UPDATE_LOG.md',$notesPath)
 if($Mode -eq 'inspect'){
  $repo=Api ''
@@ -33,7 +34,8 @@ if($Mode -in @('publish','verify')){
  if($Mode -eq 'publish'){
   $existing=@(Api '/releases?per_page=100' | Where-Object tag_name -eq $tag)
   if($existing.Count){throw 'Release already exists; never overwrite a published build'}
-  $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$Source;name="Overkill $version - Crystalline continuity";body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content '.test-artifacts/verification-031.md' -Raw));draft=$true;prerelease=$true}
+  if (!(Test-Path -LiteralPath $verificationPath)) { throw "Version-specific verification report is missing: $verificationPath" }
+  $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$Source;name="Overkill $version - Crystalline playtest";body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw));draft=$true;prerelease=$true}
   foreach($path in $assets){
    $file=Get-Item -LiteralPath $path
    $upload="https://uploads.github.com/repos/UnKami/Overkill/releases/$($release.id)/assets?name="+[uri]::EscapeDataString($file.Name)
@@ -74,7 +76,7 @@ if($Mode -eq 'docs'){
  }
  $newTree=Api '/git/trees' 'Post' @{base_tree=$mainCommit.tree.sha;tree=$tree}
  $commit=Api '/git/commits' 'Post' @{message="docs: publish verified $version playtest downloads";tree=$newTree.sha;parents=@($main.object.sha)}
- $branch="fix/yonatan-031-downloads"
+ $branch="fix/yonatan-{0:000}-downloads" -f ([version]$version).Minor
  $null=Api '/git/refs' 'Post' @{ref="refs/heads/$branch";sha=$commit.sha}
  $pr=Api '/pulls' 'Post' @{title="Publish verified $version crystalline playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on fix/yonatan-full-ui-polish. No gameplay merge is included."}
  Write-Output "DOCS_PR $($pr.number) $($pr.html_url) $($commit.sha)"

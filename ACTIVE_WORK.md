@@ -11,7 +11,10 @@
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
 
-No active file locks. Yonatan's crystalline continuity pass was released as `v0.31.0-test` on 2026-09-30; see `CHANGELOG_AI.md` for exact source, verification and handoff. Gameplay remains on `fix/yonatan-full-ui-polish`; docs-only PR #16 updated main's download links.
+| Yonatan's Codex | `fix/yonatan-full-ui-polish` | Package and publish the verified local 0.32.0 playtest candidate; publish only the exact feature-branch source and accurately disclose unverified installer wizard | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `README.md`; `installer/README.md`; `scripts/release/publish_crystalline_release.ps1`; `docs/encounter-032.md`; `.test-artifacts/verification-032.md`; `installer/OverkillSetup-0.32.0.sha256`; `build/Overkill-0.32.0-Windows.zip`; `installer/OverkillSetup-0.32.0.exe` | 2026-09-30 |
+
+
+Published baseline: `v0.31.0-test`. Local `0.32.0` candidate details and release blockers are recorded in `CHANGELOG_AI.md`; production changes have been validated locally but are not yet published.
 
 ---
 

@@ -27,16 +27,26 @@ var _battle_layout: bool = false
 var _choice_style: StyleBoxFlat
 var _pulse_time: float = 0.0
 var _presentation_mode: String = "standard"
+var _light_strokes: RelicLightStrokes
 
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(300, 440)
 	_card_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_accent_primary.hide()
+	_accent_secondary.hide()
+	_title_rule.hide()
 	_role_badge.add_theme_font_size_override("font_size", 15)
 	_name_label.add_theme_font_size_override("font_size", 26)
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_light_strokes = preload("res://scripts/ui/relic_light_strokes.gd").new() as RelicLightStrokes
+	_light_strokes.name = "RelicLightStrokes"
+	_art_frame.add_child(_light_strokes)
+	_art_frame.move_child(_light_strokes, 0)
+	AmbientMotion.idle_bob(_art_rect, 3.0, 3.2)
 	_desc_label.add_theme_font_size_override("normal_font_size", 18)
 	_slot_button.add_theme_font_size_override("font_size", 18)
 	_slot_button.custom_minimum_size.y = 48
@@ -207,6 +217,7 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	var has_secondary: bool = relic.secondary_essence >= 0
 	var blended: Color = role_col.lerp(secondary_col, 0.5) if has_secondary else role_col
 	_role_badge.add_theme_color_override("font_color", role_col)
+	ScreenDesign.add_actionable_fx(_slot_button, role_col, true)
 	_title_rule.color = Color(blended, 0.56)
 	_accent_primary.color = role_col
 	_accent_secondary.color = secondary_col
@@ -214,31 +225,24 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_accent_primary.anchor_right = 0.5 if has_secondary else 1.0
 	_accent_primary.offset_right = 0.0
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.set_corner_radius_all(4)
-	panel_style.bg_color = Color("08131cb8")
-	panel_style.border_color = Color(blended, 0.3)
-	panel_style.set_border_width_all(1 if _battle_layout else 0)
-	panel_style.shadow_color = Color(0, 0, 0, 0.4)
-	panel_style.shadow_size = 10 if _battle_layout else 0
-	panel_style.shadow_offset = Vector2(0, 5)
-	_card_panel.add_theme_stylebox_override("panel", panel_style)
-	_choice_style = panel_style
+	_card_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_choice_style = null
 
 	var art_style := StyleBoxFlat.new()
 	art_style.bg_color = Color("030a1020")
 	art_style.border_color = Color(blended, 0.0)
 	art_style.set_border_width_all(0)
 	art_style.set_corner_radius_all(0)
-	_art_backdrop.add_theme_stylebox_override("panel", art_style)
+	_art_backdrop.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 
 	var effect_style := StyleBoxFlat.new()
 	effect_style.bg_color = Color("0d1b2555")
 	effect_style.border_color = Color(blended, 0.0)
 	effect_style.set_border_width_all(0)
 	effect_style.set_corner_radius_all(0)
-	_effect_frame.add_theme_stylebox_override("panel", effect_style)
+	_effect_frame.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	_art_glow.texture = _glow_texture(role_col, secondary_col, has_secondary)
+	_light_strokes.set_essences(role_col, secondary_col, has_secondary)
 
 	_load_art(relic.art_id)
 	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
@@ -299,16 +303,7 @@ func _on_mouse_exited() -> void:
 	_hover_tween.tween_property(_art_rect, "modulate", Color.WHITE, 0.16)
 
 func _process(delta: float) -> void:
-	if not _battle_layout or _choice_style == null or relic == null: return
-	var color: Color = relic.primary_color()
-	if not is_visible_in_tree() or _slot_button.disabled:
-		_choice_style.border_color = color.darkened(0.42)
-		return
-	if not AudioManager.reduced_motion: _pulse_time += delta
-	var pulse: float = 0.45 if AudioManager.reduced_motion else (sin(_pulse_time * 3.0) + 1.0) * 0.5
-	_choice_style.border_color = color.lerp(Color("fff0c4"), 0.15 + pulse * 0.35)
-	_choice_style.shadow_color = Color(color, 0.12 + pulse * 0.2)
-	_choice_style.shadow_size = 8 + int(pulse * 5)
+	if _battle_layout and relic != null and not AudioManager.reduced_motion: _pulse_time += delta
 
 static func summary(r: ClockRelicData) -> String:
 	var lines: Array[String] = []

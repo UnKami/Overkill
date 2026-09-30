@@ -69,12 +69,17 @@ func _add_combat_reference_button(stack: VBoxContainer, label_text: String, acti
 
 
 func _on_abandon_pressed() -> void:
-	ModalConfirmDialog.show_dialog(
+	var panel: Control = get_node("CenterContainer/Panel")
+	panel.hide()
+	var dialog: ModalConfirmDialog = ModalConfirmDialog.show_dialog(
 		self,
 		"Abandon this run? Your current path, bound relics, cards, and unbanked Overkill will be lost. This cannot be undone.",
 		"ABANDON RUN",
 		func() -> void: GameFlow.abandon_run(),
 		true
+	)
+	dialog.cancelled.connect(func() -> void:
+		if is_instance_valid(panel): panel.show()
 	)
 
 

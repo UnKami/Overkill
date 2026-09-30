@@ -84,7 +84,17 @@ static func button(parent: Node, text: String, action: Callable, primary: bool =
 	result.pressed.connect(action)
 	result.mouse_entered.connect(func() -> void: AudioManager.play_clock_sound("tick"))
 	result.focus_entered.connect(func() -> void: AudioManager.play_clock_sound("tick"))
+	add_actionable_fx(result, GOLD, primary)
 	return result
+
+static func add_actionable_fx(button: Button, accent: Color = GOLD, primary: bool = false) -> void:
+	if button.has_node("ActionableButtonFX"): return
+	button.set_meta("action_fx_primary", primary)
+	var fx := preload("res://scripts/ui/actionable_button_fx.gd").new() as ActionableButtonFX
+	fx.name = "ActionableButtonFX"
+	fx.button = button
+	fx.accent = accent
+	button.add_child(fx)
 
 static func rule(parent: Node, color: Color = GOLD) -> ColorRect:
 	var line := ColorRect.new()
@@ -146,6 +156,9 @@ static func polish(root: Control) -> void:
 	for node in root.find_children("*","Button",true,false):
 		if not root is CombatController: node.custom_minimum_size.y = maxf(node.custom_minimum_size.y,48)
 		if not node.mouse_entered.is_connected(_hover): node.mouse_entered.connect(_hover)
+		if not node is Button or node.has_node("ActionableButtonFX"): continue
+		var primary: bool = node.theme_type_variation == &"DangerButton"
+		add_actionable_fx(node, Color("df8076") if node.theme_type_variation == &"DangerButton" else GOLD, primary)
 	apply_text_size(root)
 
 static func apply_text_size(root: Node) -> void:

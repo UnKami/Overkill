@@ -38,7 +38,9 @@ The Executioner is one identity in every fight, including bosses: the hooded cya
 
 ### Enemies
 
-Enemy art is a high-detail isolated figure with a transparent background. It should share the Executioner's crystalline fracture language while retaining a unique silhouette and faction read. A boss can be more elaborate or larger, but is not allowed to switch the whole game into a separate 3D visual language.
+Enemy art is a high-detail isolated figure with a transparent background. It shares the Executioner's crystalline fracture language while retaining a distinct silhouette and faction read. Its base palette is obsidian and ivory, not the player's cyan and amber, so combatants stay immediately distinguishable. Give each faction one restrained signature hue: jade for feral/decay, amethyst for arcane guardians, spectral rose for apparitions, and blood red for Excess. Keep the unique hue a thin ambient accent on ordinary foes; increase its area and brightness with encounter danger (common < elite < boss), while preserving the monochrome foundation. The tint identifies a family; stronger saturation/coverage warns of threat. A boss can be more elaborate or larger, but must not switch the game into another visual language.
+
+Current family assignments: Boneghoul, Rustlurker, and Shattered Husk — jade; Gorged Sentinel, Hollow Custodian, and Cracked Reliquary — amethyst; Chained Wraith and Overflowing Choir — spectral rose; Excess Warden and The Undying Excess — blood red. Accent strength follows `EnemyData.tier`; final bosses remain the most conspicuous.
 
 ### Relics
 

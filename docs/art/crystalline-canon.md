@@ -24,7 +24,7 @@ Original user-selected concept art, Executioner images, original final-boss refe
 ## Verification
 
 - `crystalline_consistency_test.tscn`: live resource routing, object alpha, distinct enemy assets, matching hammer, loading consistency, relic-only compatibility upgrade.
-- `map_ux_test.tscn`: circle / hit target / visible artwork centers, preview without travel, compact viewport, whole-object selection, dedicated treasure reveal.
+- `map_ux_test.tscn`: circle / hit target / visible artwork centers, direct reachable-path entry, unobstructed abandon confirmation, whole-object relic selection, dedicated treasure reveal.
 - `presentation_polish_test.tscn`: all 26 relic effects at normal/large text, replacement states, inspection, 720p and ultrawide.
 - `crystalline_visual_test.tscn`: rendered production screens, three maps and act transitions, all ten enemies, no duplicate actors, fighter/choice separation and centered HP.
 - `battle_arrival_visual_test.tscn`: arrival choreography, loading transition, upgrade before/after, inspection/manual/log, hammer motion.

@@ -104,8 +104,8 @@ func _ready() -> void:
 	get_window().size = Vector2i(2560, 1080)
 	await capture("ultrawide")
 	check_geometry()
-	# The pre-battle offer is the canonical event-scene composition: every
-	# option must carry a contextual cinematic crop instead of empty UI.
+	# The pre-battle offer keeps its cinematic page backdrop, while its choice
+	# panels stay focused on only the decision title and action.
 	battle.queue_free()
 	await get_tree().process_frame
 	get_window().size = Vector2i(1920, 1080)
@@ -114,8 +114,10 @@ func _ready() -> void:
 	await capture("pre-battle-offer")
 	assert(offer._cards.size() == 3)
 	for card: PanelContainer in offer._cards:
-		var contextual_art: Array[Node] = card.find_children("*", "TextureRect", true, false)
-		assert(not contextual_art.is_empty() and (contextual_art[0] as TextureRect).texture != null, "Every offer needs contextual scenery")
+		var card_art: Array[Node] = card.find_children("*", "TextureRect", true, false)
+		assert(card_art.is_empty(), "Offer panels should not repeat scenery thumbnails")
+		assert(not card.find_children("*", "Button", true, false).is_empty(), "Each offer keeps a clear action")
+		assert(not card.find_children("*", "Label", true, false).is_empty(), "Each offer keeps its title")
 	offer.queue_free()
 	AudioManager.text_size = "normal"
 	print("PRESENTATION_014_OK: horizontal choices, safe bounds, readable telemetry, stable preview, inspection, explicit commit, locked slots, empty reserve, 720p large text and ultrawide")
@@ -146,6 +148,6 @@ func capture(label: String) -> void:
 	await get_tree().create_timer(0.7).timeout
 	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
-	var folder: String = "user://presentation-0141"
+	var folder: String = ProjectSettings.globalize_path("res://.test-artifacts/ui-polish-audit")
 	DirAccess.make_dir_recursive_absolute(folder)
-	get_viewport().get_texture().get_image().save_png(folder + "/" + label + ".png")
+	get_viewport().get_texture().get_image().save_png(folder.path_join(label + ".png"))

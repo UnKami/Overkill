@@ -1,5 +1,5 @@
 extends Node
-## Structural interaction check for the route preview, relic-object hit target,
+## Structural interaction check for direct route selection, relic-object hit target,
 ## authored enemy art lookup, and dedicated cache-reveal screen.
 
 
@@ -13,7 +13,6 @@ func _ready() -> void:
 	add_child(map)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	assert(not map._preview_panel.visible, "A destination should not be preselected on arrival")
 	assert(map._buttons.size() > 10, "The map must show the generated ascent route")
 	for node_button: Button in map._buttons.values():
 		var icon: TextureRect = node_button.get_node("CenteredNodeIcon")
@@ -27,26 +26,12 @@ func _ready() -> void:
 	assert(header_buttons.size() == 2, "Map utilities should be limited to relics and pause")
 	assert(map._header_stats.text.contains("VITALITY") and map._header_stats.text.contains("OVERKILL"), "The map header must show the live run resources")
 	assert(map.get_global_rect().encloses(map._route_hint.get_global_rect()), "The route guidance must remain fully on-screen")
-	for candidate: MapGenerator.MapNode in map._map_data.nodes.values():
-		if map._reachable.has(candidate.id):
-			map._select_destination(candidate)
-			break
-	await get_tree().process_frame
-	await get_tree().process_frame
-	assert(map._selected_node != null and map._preview_panel.visible, "Clicking a reachable waypoint must open its destination preview")
-	assert(RunManager.current_node_id.is_empty(), "Previewing a waypoint must not commit travel")
-	assert(not map._preview_title.text.is_empty() and not map._preview_description.text.is_empty())
-	assert(map.get_global_rect().encloses(map._preview_panel.get_global_rect()), "The destination preview must remain fully on-screen")
-	await _capture_visual("map-destination-preview")
-	get_window().size = Vector2i(1280, 720)
-	await get_tree().process_frame
-	await get_tree().process_frame
-	assert(map.get_global_rect().encloses(map._preview_panel.get_global_rect()), "The destination preview must fit the compact viewport")
-	await _capture_visual("map-destination-preview-720")
-	get_window().size = Vector2i(1920, 1080)
-	await get_tree().process_frame
-	map._clear_destination_preview()
-	assert(not map._preview_panel.visible)
+	await _capture_visual("map-direct-destination")
+	assert(map.get_node_or_null("DestinationPreview") == null, "The map must not contain a destination confirmation panel")
+	for node_id: String in map._reachable:
+		var target: Button = map._buttons[node_id]
+		assert(not target.disabled and target.focus_mode != Control.FOCUS_NONE, "Every reachable map path must be clearly actionable")
+		assert(target.pressed.get_connections().size() > 0, "A reachable map path must route directly on selection")
 
 	var relic_view: RelicPedestalView = load("res://scenes/relic_pedestal_view.tscn").instantiate()
 	add_child(relic_view)
@@ -75,15 +60,36 @@ func _ready() -> void:
 	assert((treasure.get_node("TreasureRevealRelicName") as Label).text == recovered_relic.display_name)
 	await _capture_visual("treasure-reveal")
 
+	var pause: Control = load("res://scenes/pause_menu.tscn").instantiate()
+	add_child(pause)
+	pause._on_abandon_pressed()
+	var menu_panel: Control = pause.get_node("CenterContainer/Panel")
+	assert(not menu_panel.visible, "Abandon consequences must not overlap the pause-menu choices")
+	var dialog: ModalConfirmDialog = pause.get_child(pause.get_child_count() - 1) as ModalConfirmDialog
+	assert(dialog != null and dialog.visible, "Abandon action must show the confirmation modal")
+	await _capture_visual("abandon-confirmation")
+	dialog._on_cancel()
+	assert(menu_panel.visible, "Cancelling abandon must restore the menu")
+	pause.queue_free()
+
 	var final_enemy: EnemyData = ContentDatabase.get_enemy("final_boss")
 	var stage := IllustratedStage.new()
 	assert(stage._enemy_art_path(final_enemy.art_id).ends_with("final_boss_crystal_warden.png"), "Final boss must be distinct from the Executioner while preserving the crystalline visual direction")
 	assert(stage._enemy_art_path(final_enemy.art_id) != stage._enemy_art_path("boneghoul_idle"))
 	stage.free()
-	map.queue_free()
-	treasure.queue_free()
-	await get_tree().process_frame
-	print("MAP_UX_OK: focused route preview, explicit travel gate, relic art selection, cache reward reveal, unique final enemy art")
+	var selected_id: String = map._reachable[0]
+	var route_node: MapGenerator.MapNode = map._map_data.nodes[selected_id]
+	route_node.type = MapGenerator.NodeType.REST
+	# Keep this test harness alive while GameFlow completes the same screen swap
+	# a real map click uses; the destination scene becomes current independently.
+	get_tree().current_scene = null
+	map._select_destination(route_node)
+	assert(RunManager.current_node_id == selected_id, "Selecting a reachable path must commit and enter it immediately")
+	var deadline: int = Time.get_ticks_msec() + 4000
+	while GameFlow._transitioning and Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	assert(not GameFlow._transitioning and get_tree().current_scene != null, "The selected destination screen must finish opening")
+	print("MAP_UX_OK: direct waypoint routing, relic art selection, cache reward reveal, abandon confirmation, unique final enemy art")
 	get_tree().quit()
 
 
@@ -91,6 +97,6 @@ func _capture_visual(label: String) -> void:
 	if DisplayServer.get_name() == "headless":
 		return
 	await RenderingServer.frame_post_draw
-	var folder: String = ProjectSettings.globalize_path("user://visual-audit")
+	var folder: String = ProjectSettings.globalize_path("res://.test-artifacts/ui-polish-audit")
 	DirAccess.make_dir_recursive_absolute(folder)
 	get_viewport().get_texture().get_image().save_png(folder.path_join(label + ".png"))

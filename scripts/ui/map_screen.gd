@@ -1,7 +1,6 @@
 extends Control
-## The ascent map is the primary focus of this screen. A reachable waypoint
-## first opens a destination preview; only the preview's travel action commits
-## the route, so the player can inspect the next step without accidental travel.
+## The ascent map is the primary focus. Selecting a reachable waypoint enters
+## its destination directly; the destination screen handles any next decision.
 
 const TYPE_LABELS := {
 	MapGenerator.NodeType.COMBAT: "Battle",
@@ -72,11 +71,6 @@ var _hovered_node: String = ""
 var _map_width: float = 900.0
 var _route_hint: Label
 var _header_stats: Label
-var _preview_panel: PanelContainer
-var _preview_title: Label
-var _preview_description: Label
-var _travel_button: Button
-var _selected_node: MapGenerator.MapNode
 
 
 func _ready() -> void:
@@ -154,7 +148,7 @@ func _build_screen_ui() -> void:
 	pause_button.custom_minimum_size = Vector2(96.0, 42.0)
 	header_row.add_child(pause_button)
 
-	_route_hint = ScreenDesign.label(self, "SELECT A LIT WAYSTONE TO PREVIEW THE DESTINATION", 15, Color("d9d0bf"))
+	_route_hint = ScreenDesign.label(self, "CHOOSE A LIT WAYSTONE TO CONTINUE THE ASCENT", 15, Color("d9d0bf"))
 	_route_hint.anchor_left = 0.0
 	_route_hint.anchor_right = 1.0
 	_route_hint.anchor_top = 0.0
@@ -167,47 +161,6 @@ func _build_screen_ui() -> void:
 	_route_hint.add_theme_color_override("font_shadow_color", Color("071019dd"))
 	_route_hint.add_theme_constant_override("shadow_offset_y", 2)
 	_route_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	_preview_panel = PanelContainer.new()
-	_preview_panel.name = "DestinationPreview"
-	_preview_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_preview_panel.offset_left = -365.0
-	_preview_panel.offset_top = -190.0
-	_preview_panel.offset_right = 365.0
-	_preview_panel.offset_bottom = -24.0
-	_preview_panel.custom_minimum_size = Vector2(730, 166)
-	_preview_panel.add_theme_stylebox_override("panel", _panel_style(Color("09141fea"), Color("c9aa76c2"), 1, 5))
-	_preview_panel.visible = false
-	add_child(_preview_panel)
-	var preview_margin := MarginContainer.new()
-	preview_margin.add_theme_constant_override("margin_left", 18)
-	preview_margin.add_theme_constant_override("margin_right", 18)
-	preview_margin.add_theme_constant_override("margin_top", 10)
-	preview_margin.add_theme_constant_override("margin_bottom", 10)
-	_preview_panel.add_child(preview_margin)
-	var preview_row := HBoxContainer.new()
-	preview_row.add_theme_constant_override("separation", 14)
-	preview_margin.add_child(preview_row)
-	var copy := VBoxContainer.new()
-	copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	copy.add_theme_constant_override("separation", 2)
-	preview_row.add_child(copy)
-	_preview_title = ScreenDesign.label(copy, "", 22, ScreenDesign.GOLD, true)
-	_preview_description = ScreenDesign.label(copy, "", 15, ScreenDesign.MUTED)
-	_preview_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_preview_description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_preview_description.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	var actions := VBoxContainer.new()
-	actions.add_theme_constant_override("separation", 4)
-	preview_row.add_child(actions)
-	_travel_button = _header_button("TRAVEL", _travel_to_selected)
-	_travel_button.custom_minimum_size = Vector2(150.0, 42.0)
-	_travel_button.add_theme_stylebox_override("normal", ScreenDesign.box(Color("493e2bd9"), ScreenDesign.GOLD))
-	actions.add_child(_travel_button)
-	var cancel_button := _header_button("CANCEL", _clear_destination_preview)
-	cancel_button.custom_minimum_size = Vector2(150.0, 30.0)
-	cancel_button.add_theme_font_size_override("font_size", 14)
-	actions.add_child(cancel_button)
 
 	var footer := ScreenDesign.label(self, "FOLLOW THE GOLD LINE  ·  ESC OPENS PAUSE", 13, Color("c7c4bc"))
 	footer.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
@@ -235,16 +188,6 @@ func _layout_screen() -> void:
 		_map_width = width
 		if not _map_data.is_empty():
 			_rebuild_map()
-	if is_instance_valid(_preview_panel):
-		var preview_width: float = minf(730.0, maxf(560.0, viewport_size.x - 32.0))
-		_preview_panel.custom_minimum_size.x = preview_width
-		_preview_panel.offset_left = -preview_width * 0.5
-		_preview_panel.offset_right = preview_width * 0.5
-		if viewport_size.x < 700.0:
-			_preview_panel.offset_top = -182.0
-			_preview_panel.offset_bottom = -24.0
-
-
 func _header_button(text_value: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = text_value
@@ -255,6 +198,7 @@ func _header_button(text_value: String, action: Callable) -> Button:
 	button.add_theme_stylebox_override("hover", ScreenDesign.box(Color("213440f0"), ScreenDesign.GOLD, 1))
 	button.add_theme_stylebox_override("pressed", ScreenDesign.box(Color("30404df0"), ScreenDesign.GOLD, 1))
 	button.pressed.connect(action)
+	ScreenDesign.add_actionable_fx(button, ScreenDesign.GOLD, false)
 	return button
 
 
@@ -352,15 +296,6 @@ func _rebuild_map() -> void:
 			_canvas.add_child(caption)
 		if glow != null:
 			AmbientMotion.pulse_alpha(glow, 0.38, 0.72, 1.8 if is_current else 1.4)
-
-	if _selected_node != null:
-		var refreshed: MapGenerator.MapNode = nodes.get(_selected_node.id)
-		if refreshed == null or not _reachable.has(refreshed.id):
-			_clear_destination_preview()
-		else:
-			_selected_node = refreshed
-			_show_destination_preview(refreshed)
-
 
 func _draw_connectors(line_layer: Control) -> void:
 	var nodes: Dictionary = _map_data.nodes
@@ -472,9 +407,7 @@ func _build_node_button(node: MapGenerator.MapNode, is_current: bool, is_reachab
 
 func _inspect_node(node: MapGenerator.MapNode) -> void:
 	_hovered_node = node.id
-	if _selected_node != null:
-		return
-	_route_hint.text = "%s  ·  SELECT TO PREVIEW" % TYPE_LABELS.get(node.type, "DESTINATION").to_upper() if _reachable.has(node.id) else TYPE_LABELS.get(node.type, "WAYPOINT").to_upper()
+	_route_hint.text = "%s  ·  CLICK TO ENTER" % TYPE_LABELS.get(node.type, "DESTINATION").to_upper() if _reachable.has(node.id) else TYPE_LABELS.get(node.type, "WAYPOINT").to_upper()
 
 
 func _build_node_glow(center: Vector2, node_size: Vector2, color: Color) -> TextureRect:
@@ -492,68 +425,7 @@ func _build_node_glow(center: Vector2, node_size: Vector2, color: Color) -> Text
 func _select_destination(node: MapGenerator.MapNode) -> void:
 	if not _reachable.has(node.id):
 		return
-	_selected_node = node
-	_show_destination_preview(node)
-
-
-func _show_destination_preview(node: MapGenerator.MapNode) -> void:
-	var heading: String = TYPE_LABELS.get(node.type, "DESTINATION").to_upper()
-	var description: String = ""
-	var action_text: String = "TRAVEL"
-	match node.type:
-		MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.ELITE, MapGenerator.NodeType.BOSS:
-			var enemy_ids := PackedStringArray(node.enemy_ids)
-			if enemy_ids.is_empty():
-				enemy_ids.append(node.enemy_id)
-			var enemy_names := PackedStringArray()
-			for enemy_id in enemy_ids:
-				var enemy: EnemyData = ContentDatabase.get_enemy(enemy_id)
-				if enemy != null:
-					enemy_names.append(enemy.display_name)
-			if not enemy_names.is_empty():
-				heading = ("%s  /  %s" % [heading, " + ".join(enemy_names)]).to_upper()
-			description = "Read the enemy intent and prepare your chronometer before battle."
-			action_text = "ENTER BATTLE"
-		MapGenerator.NodeType.REST:
-			description = "Recover vitality or refine one of the relics bound to your clock."
-			action_text = "REST HERE"
-		MapGenerator.NodeType.SHOP:
-			description = "Trade Overkill for new relics and improvements from the Clockwright."
-			action_text = "VISIT SHOP"
-		MapGenerator.NodeType.EVENT:
-			description = "A story choice waits ahead. Read the offer before you commit."
-			action_text = "ENTER EVENT"
-		MapGenerator.NodeType.TREASURE:
-			description = "Open a sealed cache for Overkill and a chance to recover a relic."
-			action_text = "OPEN CACHE"
-	_preview_title.text = heading
-	_preview_description.text = description
-	_travel_button.text = action_text
-	_route_hint.text = "DESTINATION IN VIEW  ·  TRAVEL WHEN READY"
-	_preview_panel.visible = true
-	if not AudioManager.reduced_motion:
-		_preview_panel.modulate.a = 0.0
-		var reveal := _preview_panel.create_tween()
-		reveal.tween_property(_preview_panel, "modulate:a", 1.0, 0.18)
-	else:
-		_preview_panel.modulate.a = 1.0
-
-
-func _clear_destination_preview() -> void:
-	_selected_node = null
-	if is_instance_valid(_preview_panel):
-		_preview_panel.hide()
-	if is_instance_valid(_route_hint):
-		_route_hint.text = "SELECT A LIT WAYSTONE TO PREVIEW THE DESTINATION"
-
-
-func _travel_to_selected() -> void:
-	if _selected_node == null:
-		return
-	var destination: MapGenerator.MapNode = _selected_node
-	_selected_node = null
-	_preview_panel.hide()
-	_on_node_pressed(destination)
+	_on_node_pressed(node)
 
 
 func _on_node_pressed(node: MapGenerator.MapNode) -> void:

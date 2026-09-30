@@ -53,12 +53,15 @@ func install(battle: CombatController) -> void:
 	header.move_child(battle._skip_button,1)
 	battle._skip_button.z_index = 31
 	battle._skip_button.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	battle._skip_button.offset_left = -180
-	battle._skip_button.offset_right = 180
-	battle._skip_button.offset_top = -76
-	battle._skip_button.offset_bottom = -28
-	battle._skip_button.custom_minimum_size = Vector2(285, 48)
-	battle._skip_button.add_theme_font_size_override("font_size", 24)
+	battle._skip_button.offset_left = -205
+	battle._skip_button.offset_right = 205
+	battle._skip_button.offset_top = -88
+	battle._skip_button.offset_bottom = -20
+	battle._skip_button.custom_minimum_size = Vector2(370, 68)
+	battle._skip_button.add_theme_font_size_override("font_size", 25)
+	battle._skip_button.add_theme_stylebox_override("normal", ScreenDesign.box(Color("5a3020f2"), Color("f0bd69"), 2))
+	battle._skip_button.add_theme_stylebox_override("hover", ScreenDesign.box(Color("75402af5"), Color("ffe0a1"), 2))
+	ScreenDesign.add_actionable_fx(battle._skip_button, Color("f0bd69"), true)
 	battle.get_node("BottomDock").hide()
 	battle.get_node("CombatArena").offset_bottom = -24
 	for dial: Control in [battle._player_chrono, battle._enemy_chrono]:
@@ -78,7 +81,7 @@ func present(battle: CombatController) -> void:
 		replacements.remove_child(child)
 		child.queue_free()
 	var quadrant: bool = battle.phase == CombatController.Phase.QUADRANT
-	_heading.text = "REPLACE · SECTOR %d" % battle.active_quadrant if quadrant else "BIND A RELIC · HOUR %02d" % battle.turn_number
+	_heading.text = "REPLACE OR KEEP · SECTOR %d" % battle.active_quadrant if quadrant else "BIND A RELIC · HOUR %02d" % battle.turn_number
 	_footer.hide()
 	replacements.visible = quadrant
 	if quadrant:
@@ -95,12 +98,12 @@ func present(battle: CombatController) -> void:
 			var dual: bool = relic != null and relic.secondary_essence >= 0
 			for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
 				var replacement_style := StyleBoxFlat.new()
-				replacement_style.bg_color = Color("08131ce8") if state == "normal" else Color("172b38f2")
-				replacement_style.border_color = Color(relic_color.lerp(secondary_color, 0.5), 0.64 if state == "normal" else 0.95)
-				replacement_style.set_border_width_all(1)
-				replacement_style.set_corner_radius_all(8)
-				replacement_style.shadow_color = Color(0, 0, 0, 0.72)
-				replacement_style.shadow_size = 13
+				replacement_style.bg_color = Color(0, 0, 0, 0) if state == "normal" else Color("18293699")
+				replacement_style.border_color = Color(0, 0, 0, 0)
+				replacement_style.set_border_width_all(0)
+				replacement_style.set_corner_radius_all(0)
+				replacement_style.shadow_color = Color(0, 0, 0, 0)
+				replacement_style.shadow_size = 0
 				button.add_theme_stylebox_override(state, replacement_style)
 			var column: VBoxContainer = VBoxContainer.new()
 			button.add_child(column)
@@ -117,12 +120,18 @@ func present(battle: CombatController) -> void:
 			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			title.clip_text = true
 			var art := TextureRect.new()
-			art.custom_minimum_size.y = 163
+			art.custom_minimum_size.y = 176
 			art.texture = RelicArt.load_texture(relic.art_id) if relic != null else null
 			art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			column.add_child(art)
+			var strokes := preload("res://scripts/ui/relic_light_strokes.gd").new() as RelicLightStrokes
+			strokes.set_essences(relic_color, secondary_color, dual)
+			strokes.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			strokes.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			button.add_child(strokes)
+			button.move_child(strokes, 0)
 			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 19, ScreenDesign.MUTED)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -133,11 +142,7 @@ func present(battle: CombatController) -> void:
 			var accent_primary := ColorRect.new()
 			accent_primary.color = relic_color
 			accent_primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			accent_primary.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-			accent_primary.anchor_right = 0.5 if dual else 1.0
-			accent_primary.offset_bottom = 4
-			accent_primary.z_index = 2
-			button.add_child(accent_primary)
+			accent_primary.hide()
 			if dual:
 				var accent_secondary := ColorRect.new()
 				accent_secondary.color = secondary_color
@@ -146,7 +151,8 @@ func present(battle: CombatController) -> void:
 				accent_secondary.anchor_right = 1.0
 				accent_secondary.offset_bottom = 4
 				accent_secondary.z_index = 2
-				button.add_child(accent_secondary)
+				accent_secondary.hide()
+			ScreenDesign.add_actionable_fx(button, relic_color, false)
 			button.pressed.connect(battle._on_player_socket_pressed.bind(hour, socket))
 			button.mouse_entered.connect(battle._preview_swap.bind(socket))
 			button.focus_entered.connect(battle._preview_swap.bind(socket))
