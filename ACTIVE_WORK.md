@@ -10,11 +10,11 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| — | — | No active locks | — | — |
+| Yonatan's Codex | fix/yonatan-full-ui-polish | 0.34 battle pacing and attack choreography | `scripts/autoload/audio_manager.gd`, `scripts/ui/chronometer_view.gd`, `scripts/combat/attack_presentation.gd`, `scripts/combat/illustrated_actor.gd`, `scripts/combat/illustrated_stage.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/clock_battle_smoke.gd`, `ACTIVE_WORK.md`, focused release notes | 2026-09-30 |
 
 
 
-Published baseline: `v0.32.0-test`. Gameplay remains on `fix/yonatan-full-ui-polish`; the latest download links are on `main` through reviewed documentation PR #17.
+Published baseline: `v0.33.0-test` (gameplay source `39d28619a9d929fc17cabb15bea311482de373a2`). Gameplay remains on `fix/yonatan-full-ui-polish`; the latest download links are on `main` through reviewed documentation PR #18.
 
 ---
 
