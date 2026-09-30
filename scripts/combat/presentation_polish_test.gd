@@ -47,12 +47,21 @@ func _ready() -> void:
 	await capture("inspect-battlefield")
 	battle._choice_overlay.toggle_inspection()
 	assert(battle._choice_overlay.visible)
-	var view: RelicPedestalView = battle._pedestal_row.get_child(0)
+	var view: RelicPedestalView = load("res://scenes/relic_pedestal_view.tscn").instantiate()
+	battle.add_child(view)
+	view.bind_relic(ContentDatabase.all_clock_relics()[0], "BIND TO 1 O’CLOCK")
+	var selected_from_art: Array[ClockRelicData] = []
+	view.selected.connect(func(relic: ClockRelicData) -> void: selected_from_art.append(relic))
 	var click: InputEventMouseButton = InputEventMouseButton.new()
 	click.button_index = MOUSE_BUTTON_LEFT
 	click.pressed = true
 	view._gui_input(click)
-	assert(battle.turn_number == turn, "Clicking artwork must not commit")
+	assert(selected_from_art.size() == 1, "Clicking a relic object must perform the same selection as its action button")
+	view._slot_button.disabled = true
+	view._gui_input(click)
+	assert(selected_from_art.size() == 1, "Unavailable relic choices must not select from artwork")
+	view.queue_free()
+	assert(battle.turn_number == turn, "A detached interaction fixture must not alter the active battle")
 	# A legal, filled quadrant fixture isolates layout from combat balance.
 	battle.current_draft_selection.clear()
 	for hour: int in range(1, 10):

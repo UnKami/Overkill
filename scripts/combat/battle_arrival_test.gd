@@ -42,20 +42,21 @@ func _ready() -> void:
 	var selector: CardUpgradeSelection = load("res://scenes/card_upgrade_selection.tscn").instantiate()
 	add_child(selector)
 	await get_tree().process_frame
-	assert(selector._views.size() == 1)
-	var card_view: CardView = selector._views[0]
-	var base_card: CardData = card_view.get_card()
-	selector._select(base_card, card_view, base_card)
-	await get_tree().create_timer(0.65).timeout
-	assert(RunManager.deck[0].upgrade_level == 1)
-	assert(card_view.get_card().upgrade_level == 1)
-	assert(card_view._background_style.border_width_left == 3)
+	assert(selector.mode == "upgrade" and selector.pre_battle)
+	assert(selector.find_children("*", "CardView", true, false).is_empty())
+	var relic_uid: int = int(RunManager.clock_inventory[0].uid)
+	selector._choose(relic_uid)
+	assert(is_instance_valid(selector._upgrade_preview))
+	selector._commit_upgrade(relic_uid)
+	await get_tree().create_timer(1.65).timeout
+	assert(int(RunManager.clock_inventory[0].level) == 1)
+	assert(RunManager.deck[0].upgrade_level == 0, "The offer upgrades a combat relic, not the unused legacy deck")
 	selector.queue_free()
 
 	var transition: ScreenTransition = ScreenTransition.new()
 	add_child(transition)
 	await transition.play_cover("BATTLE")
-	assert(float(transition._material.get_shader_parameter("progress")) > 1.0)
+	assert(transition._progress >= 0.99, "The chronometer curtain should cover the outgoing scene")
 	await transition.play_reveal()
 
 	var battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
@@ -91,8 +92,21 @@ func _ready() -> void:
 	battle.queue_free()
 	var campaign_boss: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(campaign_boss)
-	campaign_boss.prepare_combat([ContentDatabase.get_enemy("act1_boss")])
+	var final_boss: EnemyData = ContentDatabase.get_enemy("final_boss")
+	campaign_boss.prepare_combat([final_boss])
+	await campaign_boss.begin_combat_intro()
 	assert(campaign_boss._stage.get_script().resource_path == "res://scripts/combat/illustrated_stage.gd", "Campaign bosses must preserve the player's illustrated identity")
+	var expected_final_art: String = "res://assets/enemies/final_boss_crystal_warden.png"
+	assert((campaign_boss._stage as IllustratedStage).enemy.atlas.resource_path == expected_final_art, "Final-boss battlefield art must use the distinct non-humanoid enemy")
+	assert(campaign_boss._enemy_portrait.texture == null and campaign_boss._player_portrait.texture == null, "The animated stage is the only fighter rendering layer")
+	assert(campaign_boss._background.texture.resource_path == "res://assets/environments/cinematic/act3_final_convergence.jpg", "Final boss combat must use the matching crystalline convergence arena")
+	var final_boss_image: Image = (campaign_boss._stage as IllustratedStage).enemy.atlas.get_image()
+	assert(final_boss_image != null and final_boss_image.get_pixel(0, 0).a < 0.05, "The final-boss sprite must remain a clean transparent cutout")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		var audit_folder: String = ProjectSettings.globalize_path("user://visual-audit")
+		DirAccess.make_dir_recursive_absolute(audit_folder)
+		get_viewport().get_texture().get_image().save_png(audit_folder.path_join("final-boss-battle.png"))
 	campaign_boss.queue_free()
-	print("BATTLE_ARRIVAL_OK: clean entry screens, three-choice offer, card transform, vortex, character HUD, cohesive 2D campaign bosses, gated intro and 14-damage hammer presentation")
+	print("BATTLE_ARRIVAL_OK: relic-only offer and upgrade, illustrated transition, character HUD, cohesive 2D campaign bosses, gated intro and unchanged 14-damage hammer")
 	get_tree().quit()

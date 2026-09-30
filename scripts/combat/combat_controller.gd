@@ -209,9 +209,9 @@ func _prepare_combat(with_intro: bool) -> void:
 		enemy_hp = 50
 	enemy_block = 0
 
-	_load_visual_assets(main_enemy)
 	_player_portrait.texture = null
 	_enemy_portrait.texture = null
+	_load_visual_assets(main_enemy)
 	_init_player_deck()
 	_init_chronometers(main_enemy)
 	for hour in range(1,10):
@@ -239,27 +239,11 @@ func _load_visual_assets(main_enemy: EnemyData) -> void:
 		_background.texture = ResourceLoader.load(CinematicArt.map_background(RunManager.act_number))
 		AmbientMotion.apply_cinematic_backdrop(self, _background, 38.0, 0.48)
 
-	# Player Portrait
-	var char_img_path := "res://assets/characters/executioner/combat_sprite.png"
-	if ResourceLoader.exists(char_img_path):
-		_player_portrait.texture = ResourceLoader.load(char_img_path)
-
-	# Enemy Portrait
-	_enemy_portrait.flip_h = true
-	if main_enemy != null:
-		var e_art_path := "res://assets/enemies/act%d/%s_idle.png" % [RunManager.act_number, main_enemy.id]
-		if not ResourceLoader.exists(e_art_path):
-			e_art_path = "res://assets/enemies/%s_idle.png" % main_enemy.id
-		if not ResourceLoader.exists(e_art_path):
-			e_art_path = "res://assets/enemies/act%d/%s.png" % [RunManager.act_number, main_enemy.id]
-		if not ResourceLoader.exists(e_art_path):
-			e_art_path = "res://assets/enemies/%s.png" % main_enemy.id
-		if ResourceLoader.exists(e_art_path):
-			_enemy_portrait.texture = ResourceLoader.load(e_art_path)
-
-	# Idle bobbing on portraits & pulse on sigil
-	AmbientMotion.idle_bob(_player_portrait, 4.0, 3.0)
-	AmbientMotion.idle_bob(_enemy_portrait, 4.0, 2.7)
+	# These legacy portrait controls anchor telemetry and combat VFX only.
+	# Drawing their textures duplicated the animated stage actors at a different
+	# scale, covering their animation and intruding into the relic choices.
+	_player_portrait.texture = null
+	_enemy_portrait.texture = null
 	if _nexus_sigil:
 		AmbientMotion.breathe(_nexus_sigil, 0.04, 3.0)
 
@@ -301,7 +285,10 @@ func _configure_enemy_clock() -> void:
 	_enemy_chrono.rotation_direction = -1 if EnemyClockPattern.profile(enemy) in ["reverse", "eclipse"] else 1
 	_enemy_chrono.set_twin_hand(EnemyClockPattern.has_twin(enemy))
 	_battle_info.text = EnemyClockPattern.description(enemy)
-	_stage.configure_enemy(EnemyClockPattern.profile(enemy))
+	if _stage is IllustratedStage:
+		(_stage as IllustratedStage).configure_enemy(EnemyClockPattern.profile(enemy), enemy.art_id if enemy != null else "")
+	else:
+		_stage.configure_enemy(EnemyClockPattern.profile(enemy))
 	if enemies_data.size() > 1:
 		_battle_info.text += "   •   OPPONENT %d / %d" % [_enemy_index + 1, enemies_data.size()]
 

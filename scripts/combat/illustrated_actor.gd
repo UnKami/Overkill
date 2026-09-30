@@ -5,6 +5,8 @@ const HEAVY_HAMMER_PATH := "res://assets/relics/active/rel_03_heavy_hammer_objec
 var atlas: Texture2D
 var facing: float = 1.0
 var target_height: float = 310.0
+var target_width: float = 460.0
+var _visible_center_x: float = 0.0
 var _front: TextureRect
 var _back: TextureRect
 var _motion: Tween
@@ -34,7 +36,8 @@ func _ready() -> void:
 		var pixels := atlas.get_image()
 		var bounds := _visible_bounds(pixels)
 		_frame_bottoms.append(float(bounds.end.y))
-		_art_scale = target_height / maxf(1.0, float(bounds.size.y))
+		_art_scale = minf(target_height / maxf(1.0, float(bounds.size.y)), target_width / maxf(1.0, float(bounds.size.x)))
+		_visible_center_x = bounds.position.x + bounds.size.x * 0.5
 	set_pose(0)
 
 
@@ -58,7 +61,7 @@ func set_pose(_frame: int) -> void:
 	_front.texture = atlas
 	_front.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	_front.size = cell * _art_scale
-	_pose_origin = Vector2((size.x - _front.size.x) * 0.5, size.y - 45.0 - _frame_bottoms[safe_frame] * _art_scale)
+	_pose_origin = Vector2(size.x * 0.5 - _visible_center_x * _art_scale, size.y - 45.0 - _frame_bottoms[safe_frame] * _art_scale)
 	_front.position = _pose_origin
 	_front.pivot_offset = Vector2(_front.size.x * 0.5, _frame_bottoms[safe_frame] * _art_scale)
 

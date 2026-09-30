@@ -43,7 +43,7 @@ The 30-scene library is centrally routed by `scripts/ui/cinematic_art.gd`.
 | Act III → final | `assets/screens/cinematic/transition_act3_final.jpg` |
 | Victory | `assets/screens/cinematic/victory_balanced_clock.jpg` |
 | Defeat | `assets/screens/cinematic/defeat_extinguished_clock.jpg` |
-| Bell foundry loading scene | `assets/screens/cinematic/loading_executioner_bell_foundry.png` |
+| Crystalline passage loading scene (startup and scene changes) | `assets/screens/cinematic/loading_crystalline_passage.png` |
 
 The loading scene now features the Executioner beneath the monumental bell foundry, giving the pause between runs a distinct character-led establishing shot instead of another shard-only abstract image. The same PNG is used for the Godot boot splash, so there is no separate duplicate derivative to drift out of sync.
 

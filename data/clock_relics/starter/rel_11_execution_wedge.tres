@@ -10,7 +10,7 @@ tier = 0
 role = 0
 primary_essence = 0
 description = "Deal 8 Damage. If Target HP <= 50%, deal 14."
-art_id = "rel_11_execution_wedge_v2"
+art_id = "rel_11_execution_wedge"
 base_damage = 8
 conditional_damage = 14
 conditional_hp_threshold_pct = 0.5

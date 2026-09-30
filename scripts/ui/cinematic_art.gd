@@ -5,6 +5,7 @@ class_name CinematicArt extends RefCounted
 
 const ENVIRONMENT_ROOT := "res://assets/environments/cinematic/"
 const SCREEN_ROOT := "res://assets/screens/cinematic/"
+const FINAL_BOSS_ARENA := ENVIRONMENT_ROOT + "act3_final_convergence.jpg"
 
 const TITLE := SCREEN_ROOT + "title_last_bell.jpg"
 const CLASS_SELECT := SCREEN_ROOT + "class_executioner_altar.jpg"
@@ -13,7 +14,7 @@ const REWARD := SCREEN_ROOT + "reward_victory_cache.jpg"
 const RELIC_REWARD := SCREEN_ROOT + "reward_relic_vault.jpg"
 const COLLECTION := SCREEN_ROOT + "collection_archive_hall.jpg"
 const UPGRADE := SCREEN_ROOT + "upgrade_memory_forge.jpg"
-const LOADING := SCREEN_ROOT + "loading_executioner_bell_foundry.png"
+const LOADING := SCREEN_ROOT + "loading_crystalline_passage.png"
 const VICTORY := SCREEN_ROOT + "victory_balanced_clock.jpg"
 const DEFEAT := SCREEN_ROOT + "defeat_extinguished_clock.jpg"
 
@@ -78,7 +79,7 @@ static func combat_background(enemy: EnemyData, act_number: int) -> String:
 	if enemy == null:
 		return ENVIRONMENT_ROOT + "act1_fallen_nave.jpg"
 	if enemy.id == "final_boss":
-		return ENVIRONMENT_ROOT + "act3_final_convergence.jpg"
+		return FINAL_BOSS_ARENA
 	var act_catalog: Dictionary = BATTLE_BY_ACT.get(act_number, BATTLE_BY_ACT[1])
 	match enemy.tier:
 		EnemyData.Tier.BOSS:

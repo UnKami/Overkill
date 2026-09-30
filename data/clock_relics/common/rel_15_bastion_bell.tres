@@ -10,5 +10,5 @@ tier = 1
 role = 1
 primary_essence = 1
 description = "Gain 10 Block. Lasts until absorbed or battle ends."
-art_id = "rel_15_bastion_bell_v2"
+art_id = "rel_15_bastion_bell"
 base_block = 10

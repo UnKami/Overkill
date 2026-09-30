@@ -25,10 +25,10 @@ These files define the approved direction and must remain visually authoritative
 - `assets/characters/executioner/executioner_portrait.png`
 - `assets/relics/relic_cracked_lens.png`
 - `assets/relics/relic_greed_battery.png`
-- The isolated transparent relic objects in `assets/relics/active/*_v2_object.png`; their element-coded palettes, distinct silhouettes and material variety are the current active lineup reference.
-- The crystalline enemy illustrations under `assets/enemies/act1`, `assets/enemies/act2` and `assets/enemies/act3`, plus `assets/enemies/final_boss.png`.
+- The original isolated crystalline relic objects in `assets/relics/active/*_object.png` (not the retired `_v2` set). Their mechanic-coded colors and faceted materials are authoritative.
+- The ten live enemy resources route to `*_crystalline.png` and `final_boss_crystal_warden.png`. The original `final_boss.png` is preserved as an art reference only, not a combatant resembling the player.
 - The cinematic screen art under `assets/screens`, including act transitions, class select, event, loading, rest, shop, win and loss screens.
-- Card illustrations may continue to use contextual scenes, provided their palette, material language and rendering quality match this canon.
+- Scenery illustrations belong to event and story pages. No active relic selection, shop or upgrade interface may show scenery cards.
 
 ## Asset rules by category
 
@@ -46,9 +46,9 @@ A relic is one collectible physical object. It is centered, large, readable and 
 
 Relic color is a gameplay promise, not decorative rainbow lighting: attacks are orange, block is blue, buffs are purple, debuffs are green, and relics that directly grant Overkill are blood red. Mixed-color relics are reserved for genuinely mixed effects; a neutral metal base may support the essence color, but must not erase it. Art direction also varies by object material and silhouette so a relic lineup does not read as the same crystalline device repeated with different glows.
 
-### Events and cards
+### Events and story pages
 
-Events and cards may use full cinematic scenes because their job is to communicate a place, story beat or action. This is where scenery artwork belongs. Choice cards should add a contextual crop rather than an unrelated symbol floating in empty UI.
+Events and story pages use full cinematic scenes to communicate a place, story beat or action. This is where scenery artwork belongs. Event options should add a contextual crop rather than an unrelated symbol floating in empty UI. Legacy card resources remain only for save compatibility and engine tests; they are not a UI design template.
 
 ### Backgrounds and transitions
 

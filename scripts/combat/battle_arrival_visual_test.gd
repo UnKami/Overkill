@@ -24,7 +24,7 @@ func _ready() -> void:
 	transition_layer.add_child(transition)
 	transition.play_cover("BATTLE")
 	await get_tree().create_timer(0.30).timeout
-	await _capture("screen-vortex-mid")
+	await _capture("screen-transition-mid")
 	await get_tree().create_timer(0.24).timeout
 	await transition.play_reveal()
 	transition_layer.queue_free()
@@ -46,18 +46,17 @@ func _ready() -> void:
 	get_window().size = Vector2i(1920, 1080)
 	var selector: CardUpgradeSelection = load("res://scenes/card_upgrade_selection.tscn").instantiate()
 	await _show(selector)
-	await _capture("card-upgrade-selection")
-	var selected: CardView = selector._views[0]
-	var selected_card: CardData = selected.get_card()
-	selector._select(selected_card, selected, selected_card)
-	await get_tree().create_timer(0.62).timeout
-	await _capture("card-upgrade-complete")
+	await _capture("relic-upgrade-selection")
+	var relic_uid: int = int(RunManager.clock_inventory[0].uid)
+	selector._choose(relic_uid)
+	await _capture("relic-upgrade-preview")
+	selector._commit_upgrade(relic_uid)
+	await get_tree().create_timer(1.7).timeout
+	await _capture("relic-upgrade-complete")
 
 	var battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
 	await _show(battle)
-	var enemy := EnemyData.new()
-	enemy.id = "boneghoul"
-	enemy.display_name = "The Hollow Warden"
+	var enemy: EnemyData = ContentDatabase.get_enemy("boneghoul").duplicate()
 	enemy.max_hp = 200
 	battle.prepare_combat([enemy])
 	battle.begin_combat_intro()
@@ -105,6 +104,8 @@ func _ready() -> void:
 	await get_tree().create_timer(0.30).timeout
 	await _capture("heavy-hammer-impact")
 	print("BATTLE_ARRIVAL_VISUAL_OK")
+	battle.queue_free()
+	await get_tree().process_frame
 	get_tree().quit()
 
 

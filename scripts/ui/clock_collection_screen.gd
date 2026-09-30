@@ -1,7 +1,10 @@
 extends Control
 ## Shared inventory, merchant and forge. All actions mutate the same saved copies.
+signal resolved
+
 var mode: String = "collection"
 var overlay: bool = false
+var pre_battle: bool = false
 var _grid: GridContainer
 var _summary: Label
 var _committed: bool = false
@@ -88,7 +91,7 @@ func _ready() -> void:
 		var maximum: int = 5 if mode == "shop" else 4
 		_grid.columns = maxi(1, mini(maximum, int((scroll.size.x + 12.0) / card_width))))
 	var back := Button.new()
-	back.text = "RETURN TO MAP"
+	back.text = "ENTER BATTLE  ›" if pre_battle else ("CLOSE RELIQUARY" if overlay else "RETURN TO MAP")
 	back.custom_minimum_size = Vector2(220, 50)
 	back.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	back.pressed.connect(_close)
@@ -300,5 +303,6 @@ func _commit_upgrade(uid: int) -> void:
 		if is_instance_valid(_upgrade_preview): _upgrade_preview.show_relic_failure()
 
 func _close() -> void:
-	if overlay: GameFlow.close_deck_view()
+	if pre_battle: resolved.emit()
+	elif overlay: GameFlow.close_deck_view()
 	else: GameFlow.goto_map()

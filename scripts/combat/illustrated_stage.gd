@@ -1,21 +1,23 @@
-extends Control
+class_name IllustratedStage extends Control
 ## Authored high-detail pose animation, matching the illustrated environment.
 var player: IllustratedActor
 var enemy: IllustratedActor
 var _kind: String = "stalker"
+var _art_id: String = ""
 var _shadows: Dictionary = {}
 var _last_attack_profile: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-110, 15))
+	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-175, 65))
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	var actor := IllustratedActor.new()
-	if ResourceLoader.exists(path): actor.atlas = load(path)
+	if ResourceLoader.exists(path):
+		actor.atlas = load(path)
+		actor.target_height = 300.0
 	actor.facing = facing
-	actor.target_height = 380.0
 	actor.position = at
 	actor.size = Vector2(460, 520)
 	var shadow: Polygon2D = Polygon2D.new()
@@ -32,29 +34,30 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	actor.tree_exiting.connect(shadow.queue_free)
 	return actor
 
-func configure_enemy(kind: String) -> void:
+func configure_enemy(kind: String, art_id: String = "") -> void:
 	_kind = kind
+	_art_id = art_id
 	if is_node_ready(): _replace_enemy()
 
 func _replace_enemy() -> void:
 	if is_instance_valid(enemy):
 		remove_child(enemy)
 		enemy.queue_free()
-	var path := _enemy_art_path(_kind)
-	enemy = _actor(path, -1.0, Vector2(290, 15))
+	var path := _enemy_art_path(_art_id if not _art_id.is_empty() else _kind)
+	enemy = _actor(path, -1.0, Vector2(355, 65))
 
 
 func _enemy_art_path(enemy_id: String) -> String:
 	var candidates: Array[String] = []
 	for act: int in range(1, 4):
-		candidates.append("res://assets/enemies/act%d/%s_idle.png" % [act, enemy_id])
 		candidates.append("res://assets/enemies/act%d/%s.png" % [act, enemy_id])
-	candidates.append("res://assets/enemies/%s_idle.png" % enemy_id)
+		candidates.append("res://assets/enemies/act%d/%s_idle.png" % [act, enemy_id])
 	candidates.append("res://assets/enemies/%s.png" % enemy_id)
+	candidates.append("res://assets/enemies/%s_idle.png" % enemy_id)
 	for candidate: String in candidates:
 		if ResourceLoader.exists(candidate):
 			return candidate
-	return "res://assets/enemies/act1/boneghoul_idle.png"
+	return "res://assets/enemies/act1/boneghoul_crystalline.png"
 
 func attack(from_player: bool, profile: Dictionary = {}) -> void:
 	_last_attack_profile = profile

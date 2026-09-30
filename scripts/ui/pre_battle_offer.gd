@@ -8,10 +8,10 @@ signal resolved(effect_id: String)
 const CHOICES: Array[Dictionary] = [
 	{
 		"number": "I",
-		"title": "REFINE A MEMORY",
-		"body": "Choose one card from your current deck. Its upgraded form will remain with this run.",
-		"effect": "upgrade_card",
-		"action": "CHOOSE A CARD",
+		"title": "UPGRADE A RELIC",
+		"body": "Choose one bound relic. Upgrade a single copy for free and carry its new power through this run.",
+		"effect": "upgrade_relic",
+		"action": "CHOOSE A RELIC",
 		"art": CinematicArt.UPGRADE,
 		"accent": Color("e7bd72"),
 	},
@@ -170,8 +170,8 @@ func _choose(effect_id: String, selected: PanelContainer) -> void:
 	await focus.finished
 	await get_tree().create_timer(0.18).timeout
 	match effect_id:
-		"upgrade_card":
-			_result.text = "Choose the card that will carry the new edge."
+		"upgrade_relic":
+			_result.text = "Choose the relic that will carry the new edge."
 			await get_tree().create_timer(0.42).timeout
 			resolved.emit(effect_id)
 		"gain_overkill":

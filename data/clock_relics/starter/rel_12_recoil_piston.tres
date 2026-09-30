@@ -11,6 +11,6 @@ role = 0
 primary_essence = 0
 secondary_essence = 1
 description = "Deal 5 Damage. Gain Block equal to Overkill dealt."
-art_id = "rel_12_recoil_piston_v2"
+art_id = "rel_12_recoil_piston"
 base_damage = 5
 recoil_block_on_overkill = true

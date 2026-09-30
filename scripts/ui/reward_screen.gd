@@ -1,5 +1,5 @@
 extends Control
-## Card reward (screen composition doc 4.3): "read carefully once" screen,
+## Relic reward (screen composition doc 4.3): "read carefully once" screen,
 ## never priced - no OK cost or currency icon anywhere here, deliberate
 ## contrast with the shop. Uses the mutually-exclusive-choice confirmation
 ## pattern: the full card is already visible (no separate preview step
@@ -9,12 +9,6 @@ extends Control
 ## actually autosaves (per RunManager/SaveManager's wiring design), and where
 ## an act-boss kill advances to the next act's map, or the third act boss
 ## leads straight into the final boss fight.
-
-const CardViewScene := preload("res://scenes/card_view.tscn")
-const CARD_CHOICE_COUNT := 3
-const COMMON_WEIGHT := 4
-const UNCOMMON_WEIGHT := 2
-const RARE_WEIGHT := 1
 
 @onready var _choice_row: HBoxContainer = %ChoiceRow
 @onready var _skip_button: Button = %SkipButton
@@ -43,7 +37,7 @@ func _ready() -> void:
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	AmbientMotion.apply_cinematic_backdrop(self, art, 46.0, 0.72)
 	_skip_button.pressed.connect(_on_skip_pressed)
-	_offer_cards()
+	_offer_relics()
 	var subtitle: Label = ScreenDesign.label(self, "Choose one relic to bind into your chronometer. The others are left behind.", 22, ScreenDesign.MUTED)
 	subtitle.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	subtitle.offset_top = 106
@@ -58,7 +52,7 @@ func _ready() -> void:
 	ScreenDesign.polish(self)
 
 
-func _offer_cards() -> void:
+func _offer_relics() -> void:
 	var pool := ContentDatabase.all_clock_relics().duplicate()
 	pool.shuffle()
 	for relic: ClockRelicData in pool.slice(0, 3):

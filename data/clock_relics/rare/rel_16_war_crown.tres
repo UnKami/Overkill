@@ -10,5 +10,5 @@ tier = 2
 role = 2
 primary_essence = 2
 description = "Gain 3 Strength."
-art_id = "rel_16_war_crown_v2"
+art_id = "rel_16_war_crown"
 apply_strength = 3

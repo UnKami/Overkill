@@ -21,6 +21,7 @@ const SHOP_SCENE_PATH := "res://scenes/shop_screen.tscn"
 const REST_SITE_SCENE_PATH := "res://scenes/rest_site_screen.tscn"
 const EVENT_SCENE_PATH := "res://scenes/event_screen.tscn"
 const REWARD_SCENE_PATH := "res://scenes/reward_screen.tscn"
+const TREASURE_SCENE_PATH := "res://scenes/treasure_screen.tscn"
 const RUN_SUMMARY_SCENE_PATH := "res://scenes/run_summary_screen.tscn"
 const COMBAT_SCENE_PATH := "res://scenes/combat_scene.tscn"
 const PAUSE_MENU_SCENE_PATH := "res://scenes/pause_menu.tscn"
@@ -29,7 +30,6 @@ const SETTINGS_PANEL_SCENE_PATH := "res://scenes/settings_panel.tscn"
 const EXCESS_CELEBRATION_SCENE_PATH := "res://scenes/excess_unlock_celebration.tscn"
 const ACT_TRANSITION_SCENE_PATH := "res://scenes/act_transition_screen.tscn"
 const PRE_BATTLE_OFFER_SCENE_PATH := "res://scenes/pre_battle_offer.tscn"
-const CARD_UPGRADE_SELECTION_SCENE_PATH := "res://scenes/card_upgrade_selection.tscn"
 
 var _overlay_layer: CanvasLayer
 var _active_pause_overlay: Control = null
@@ -134,11 +134,12 @@ func goto_pre_battle_offer(enemies_data: Array[EnemyData], node_id: String, back
 
 
 func _on_pre_battle_offer_resolved(effect_id: String) -> void:
-	if effect_id == "upgrade_card":
-		var scene: PackedScene = load(CARD_UPGRADE_SELECTION_SCENE_PATH)
-		var selector := scene.instantiate()
+	if effect_id == "upgrade_relic":
+		var selector := preload("res://scripts/ui/clock_collection_screen.gd").new()
+		selector.mode = "upgrade"
+		selector.pre_battle = true
 		selector.resolved.connect(_finish_pre_battle)
-		_swap_scene(selector, "REFINE A CARD")
+		_swap_scene(selector, "UPGRADE A RELIC")
 		return
 	_finish_pre_battle()
 
@@ -164,6 +165,13 @@ func goto_reward_screen(reward_context: Dictionary) -> void:
 	var instance := scene.instantiate()
 	instance.set_reward_context(reward_context)
 	_swap_scene(instance, "REWARD")
+
+
+func goto_treasure(ok_gain: int, found_relic: RelicData) -> void:
+	var scene: PackedScene = load(TREASURE_SCENE_PATH)
+	var instance: TreasureScreen = scene.instantiate()
+	instance.set_reward_context({"ok_gain": ok_gain, "relic": found_relic})
+	_swap_scene(instance, "SEALED CACHE")
 
 
 ## The transition beat itself doesn't know about run structure - it just

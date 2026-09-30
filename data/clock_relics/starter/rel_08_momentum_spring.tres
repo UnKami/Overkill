@@ -10,5 +10,5 @@ tier = 0
 role = 2
 primary_essence = 2
 description = "Gain +2 Strength for the remainder of this sweep."
-art_id = "rel_08_momentum_spring_v2"
+art_id = "rel_08_momentum_spring"
 apply_strength = 2

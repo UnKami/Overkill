@@ -1,78 +1,69 @@
 class_name ScreenTransition extends Control
-## Reusable navigation curtain. It covers the outgoing scene before the swap,
-## then unwinds over the installed destination. The gameplay scene never owns
-## the transition, so map, shop, event and combat navigation share one cadence.
-
-var _veil: ColorRect
-var _material: ShaderMaterial
+## A brief illustrated passage, never a second gameplay screen.
+static var _plate_cache: Texture2D
+var _progress: float = 0.0
 var _label: Label
-
+var _plate: TextureRect
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_veil = ColorRect.new()
-	_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_veil)
-	_veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_material = ShaderMaterial.new()
-	_material.shader = preload("res://assets/shaders/screen_vortex.gdshader")
-	_veil.material = _material
-	_veil.color = Color.WHITE
-	_label = Label.new()
-	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.add_theme_font_override("font", ScreenDesign.display_font())
-	_label.add_theme_font_size_override("font_size", 20)
-	_label.add_theme_color_override("font_color", ScreenDesign.GOLD)
-	_label.add_theme_constant_override("outline_size", 6)
-	_label.modulate.a = 0.0
-	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_label)
-	_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_label.offset_left = -360
-	_label.offset_right = 360
-	_label.offset_top = 90
-	_label.offset_bottom = 134
-
+	if _plate_cache == null:
+		_plate_cache = load(CinematicArt.LOADING)
+	_plate = TextureRect.new()
+	_plate.texture = _plate_cache
+	_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_plate.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_plate)
+	_plate.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color("040b1000"), Color("040b10ee")])
+	var shade_texture := GradientTexture2D.new()
+	shade_texture.gradient = gradient
+	shade_texture.fill_from = Vector2(0.5, 0.35)
+	shade_texture.fill_to = Vector2(0.5, 1.0)
+	var shade := TextureRect.new()
+	shade.texture = shade_texture
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_plate.add_child(shade)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_label = ScreenDesign.label(_plate, "", 40, ScreenDesign.TEXT, true)
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_label.offset_left = -850
+	_label.offset_right = -86
+	_label.offset_top = -174
+	_label.offset_bottom = -106
+	var caption := ScreenDesign.label(_plate, "T H E   H O U R S   C A R R Y   Y O U   O N", 14, ScreenDesign.GOLD)
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	caption.offset_left = -850
+	caption.offset_right = -90
+	caption.offset_top = -99
+	caption.offset_bottom = -64
+	_set_progress(0.0)
 
 func play_cover(destination: String = "") -> void:
 	_label.text = destination.to_upper()
-	if AudioManager.reduced_motion:
-		_material.set_shader_parameter("progress", 1.5)
-		_veil.modulate.a = 0.0
-		var fade := create_tween().set_parallel(true)
-		fade.tween_property(_veil, "modulate:a", 1.0, 0.18)
-		if not destination.is_empty(): fade.tween_property(_label, "modulate:a", 1.0, 0.12)
-		await fade.finished
-		return
-	var motion := create_tween().set_parallel(true)
-	motion.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_IN_OUT)
-	motion.tween_method(_set_progress, -0.10, 1.52, 0.48)
-	motion.tween_method(_set_spin, 0.0, 4.8, 0.48)
-	if not destination.is_empty():
-		motion.tween_property(_label, "modulate:a", 1.0, 0.18).set_delay(0.24)
+	_set_progress(0.0)
+	var motion := create_tween()
+	motion.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	motion.tween_method(_set_progress, 0.0, 1.0, 0.14 if AudioManager.reduced_motion else 0.42)
 	await motion.finished
 
-
 func play_reveal() -> void:
-	var motion := create_tween().set_parallel(true)
-	if AudioManager.reduced_motion:
-		motion.tween_property(_veil, "modulate:a", 0.0, 0.20)
-		motion.tween_property(_label, "modulate:a", 0.0, 0.10)
-	else:
-		motion.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-		motion.tween_method(_set_progress, 1.52, -0.10, 0.40)
-		motion.tween_method(_set_spin, 4.8, 8.2, 0.40)
-		motion.tween_property(_label, "modulate:a", 0.0, 0.12)
+	var motion := create_tween()
+	# A readable beat without a fake loading percentage or forced long wait.
+	if not AudioManager.reduced_motion:
+		motion.tween_interval(0.20)
+	motion.tween_method(_set_progress, 1.0, 0.0, 0.16 if AudioManager.reduced_motion else 0.42)
 	await motion.finished
 	queue_free()
 
-
 func _set_progress(value: float) -> void:
-	_material.set_shader_parameter("progress", value)
-
-
-func _set_spin(value: float) -> void:
-	_material.set_shader_parameter("spin", value)
+	_progress = clampf(value, 0.0, 1.0)
+	_plate.modulate.a = _progress
+	_plate.pivot_offset = size * 0.5
+	_plate.scale = Vector2.ONE if AudioManager.reduced_motion else Vector2.ONE * (1.015 + (1.0 - _progress) * 0.025)

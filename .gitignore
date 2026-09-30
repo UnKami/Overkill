@@ -34,4 +34,7 @@ firebase-debug.log
 
 .tools/
 artifacts/
+/.test-artifacts/
+/installer/Overkill-*-Windows.zip
+/installer/*.sha256
 

@@ -10,6 +10,6 @@ tier = 0
 role = 0
 primary_essence = 0
 description = "Deal 6 Physical Damage."
-art_id = "rel_01_iron_strike_v2"
+art_id = "rel_01_iron_strike"
 base_damage = 6
 hits = 1

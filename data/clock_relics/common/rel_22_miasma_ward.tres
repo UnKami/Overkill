@@ -11,6 +11,6 @@ role = 1
 primary_essence = 1
 secondary_essence = 3
 description = "Gain 5 Block. Apply 1 Weak."
-art_id = "rel_22_miasma_ward_v2"
+art_id = "rel_22_miasma_ward"
 base_block = 5
 apply_weak = 1

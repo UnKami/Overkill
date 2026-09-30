@@ -31,6 +31,7 @@ var _presentation_mode: String = "standard"
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(300, 440)
+	_card_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_role_badge.add_theme_font_size_override("font_size", 15)
 	_name_label.add_theme_font_size_override("font_size", 26)
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
@@ -39,7 +40,7 @@ func _ready() -> void:
 	_desc_label.add_theme_font_size_override("normal_font_size", 18)
 	_slot_button.add_theme_font_size_override("font_size", 18)
 	_slot_button.custom_minimum_size.y = 48
-	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_rect, _desc_label]:
+	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_backdrop, _art_rect, _effect_frame, _desc_label]:
 		display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slot_button.pressed.connect(_on_button_pressed)
 	_slot_button.mouse_entered.connect(func() -> void: previewed.emit(self))
@@ -75,7 +76,7 @@ func _ready() -> void:
 
 func _fit_content() -> void:
 	if _battle_layout:
-		custom_minimum_size = Vector2(320, 390)
+		custom_minimum_size = Vector2(320, 370)
 		return
 	match _presentation_mode:
 		"collection": custom_minimum_size = Vector2(272, 370)
@@ -85,15 +86,19 @@ func _fit_content() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	# Only the explicit action button commits; inspecting art must be harmless.
+	# The relic object is the choice itself: clicking its art/body performs the
+	# same explicit action as the button. The action button remains for clarity,
+	# keyboard/controller access, and collection-only views remain non-selectable.
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and _slot_button.visible and not _slot_button.disabled:
+			_on_button_pressed()
 		accept_event()
 
 func use_battle_layout() -> void:
 	_battle_layout = true
 	_presentation_mode = "battle"
-	custom_minimum_size = Vector2(320, 390)
-	pivot_offset = Vector2(160, 195)
+	custom_minimum_size = Vector2(320, 370)
+	pivot_offset = Vector2(160, 185)
 	_card_panel.pivot_offset = pivot_offset
 	# Keep the battle card in the same deterministic vertical container as every
 	# other relic presentation. Reparenting these controls into absolute
@@ -107,7 +112,7 @@ func use_battle_layout() -> void:
 	_role_badge.hide()
 	_name_label.custom_minimum_size.y = 28
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_art_frame.custom_minimum_size.y = 216
+	_art_frame.custom_minimum_size.y = 200
 	_art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# Two-line dual-effect relics need a little more breathing room at the
 	# battle text size; otherwise their second line is clipped beneath the art.
@@ -210,28 +215,28 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_accent_primary.offset_right = 0.0
 
 	var panel_style := StyleBoxFlat.new()
-	panel_style.set_corner_radius_all(10)
-	panel_style.bg_color = Color("08131ced")
-	panel_style.border_color = blended.darkened(0.32)
-	panel_style.set_border_width_all(1)
-	panel_style.shadow_color = Color(0, 0, 0, 0.82)
-	panel_style.shadow_size = 22
-	panel_style.shadow_offset = Vector2(0, 8)
+	panel_style.set_corner_radius_all(4)
+	panel_style.bg_color = Color("08131cb8")
+	panel_style.border_color = Color(blended, 0.3)
+	panel_style.set_border_width_all(1 if _battle_layout else 0)
+	panel_style.shadow_color = Color(0, 0, 0, 0.4)
+	panel_style.shadow_size = 10 if _battle_layout else 0
+	panel_style.shadow_offset = Vector2(0, 5)
 	_card_panel.add_theme_stylebox_override("panel", panel_style)
 	_choice_style = panel_style
 
 	var art_style := StyleBoxFlat.new()
-	art_style.bg_color = Color("030a10a8")
-	art_style.border_color = Color(blended, 0.34)
-	art_style.set_border_width_all(1)
-	art_style.set_corner_radius_all(7)
+	art_style.bg_color = Color("030a1020")
+	art_style.border_color = Color(blended, 0.0)
+	art_style.set_border_width_all(0)
+	art_style.set_corner_radius_all(0)
 	_art_backdrop.add_theme_stylebox_override("panel", art_style)
 
 	var effect_style := StyleBoxFlat.new()
-	effect_style.bg_color = Color("0d1b25df")
-	effect_style.border_color = Color(blended, 0.22)
-	effect_style.set_border_width_all(1)
-	effect_style.set_corner_radius_all(5)
+	effect_style.bg_color = Color("0d1b2555")
+	effect_style.border_color = Color(blended, 0.0)
+	effect_style.set_border_width_all(0)
+	effect_style.set_corner_radius_all(0)
 	_effect_frame.add_theme_stylebox_override("panel", effect_style)
 	_art_glow.texture = _glow_texture(role_col, secondary_col, has_secondary)
 
