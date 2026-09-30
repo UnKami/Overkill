@@ -2,6 +2,18 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.35.0 playtest — 2026-10-01
+
+- The 12-copy chronometer cap now asks which exact relic to replace when a battle reward is claimed at capacity. Shop and event grants respect the cap; new runs have 500 Vitality, existing saves migrate proportionally, bosses have 100 HP, and combatant stats use compact icon/value chips.
+- Act guardians now open **The Overkill Altar**. Banked Overkill can buy one boss-exclusive Zenith relic: The Last Bell (25 OK), The Debt Crown (35 OK), or Zenith Prism (45 OK). A full clock requires a specific replacement; leaving preserves the bank. The three relics use existing combat effects, and ordinary rewards and Clockwright stock exclude them.
+- [Watch the cinematic gameplay trailer (44-second MP4)](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4). It uses actual Godot-rendered screens and motion, with staged combat/currency values for the edit rather than a continuous human run.
+- **Installer:** [OverkillSetup-0.35.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/OverkillSetup-0.35.0.exe), 297,771,633 bytes, SHA-256 `76ce81ce9a8e25c1f192bee7edd03fb6884f72c73ae949ae9bd16dafd9433c9c`.
+- **Portable ZIP:** [Overkill-0.35.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill-0.35.0-Windows.zip), 324,844,930 bytes, SHA-256 `4c4c8689b85d58496bcafc86e65aa0968335911344bdf4823098053a616826f0`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/OverkillSetup-0.35.0.sha256).
+- **Trailer:** 20,215,872 bytes, SHA-256 `0e290a3efed8370a776125bba266f2ccbcbe850fa89077c5da333b79c141d91b`.
+- **Source:** `268873940b5fc96e261d1549686a6e25553bdaf1`, tag [`v0.35.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.35.0-test), feature branch `feat/yonatan-overkill-altar`. Gameplay remains separate from main's source.
+- **Verification:** Godot 4.5.1 source, exported payload, extracted ZIP and installed executable passed `BOSS_ALTAR_OK`; source/export also passed `POLISH_INTEGRATION_OK`. The ZIP's five files and a silent per-user install matched the export by SHA-256, and the test install was removed. The MP4 decoded cleanly at 1920×1080, 30 fps, H.264/AAC; representative frames were reviewed. Remote asset sizes/digests matched and all four public URLs returned HTTP 200.
+- **Compatibility and limits:** Existing run saves remain loadable with proportional Vitality migration; new runs are recommended for balance review. The installer is unsigned. The full human campaign, interactive installer wizard, and final visual acceptance remain open; 500 player HP against 100-HP bosses is intentionally generous for this playtest. Restricted Windows runs emit a certificate-store warning and occasional Godot shutdown-leak notices.
+
 ## 0.34.0 playtest — 2026-09-30
 
 - Separates crisp clock-hand travel from deliberately weighty combat impacts. Player attacks now distinguish measured strikes, quick multi-hit combos, and heavy blows; the Executioner's hammer keeps its signature slam. Enemy single-hit danger gets a stronger tell and impact while multi-hit intents use a distinct flurry cadence. Defender recoil and accents track the incoming attack profile.
