@@ -8,6 +8,7 @@ $repoRoot = (Resolve-Path "$PSScriptRoot/../..").Path
 Set-Location $repoRoot
 $version=(Get-Content VERSION -Raw).Trim()
 $tag="v$version-test"
+$sourceBranch='fix/yonatan-full-ui-polish'
 $base='https://api.github.com/repos/UnKami/Overkill'
 $credentialLines="protocol=https`nhost=github.com`n`n" | git credential fill
 $credential=@{}
@@ -18,6 +19,12 @@ function Api([string]$Path,[string]$Method='Get',$Body=$null) {
  $params=@{Uri=("$base"+$Path);Headers=$headers;Method=$Method}
  if($null -ne $Body){$params.Body=($Body | ConvertTo-Json -Depth 12 -Compress);$params.ContentType='application/json; charset=utf-8'}
  Invoke-RestMethod @params
+}
+function Get-TagCommit([string]$Name) {
+ $ref=Api ("/git/ref/tags/"+[uri]::EscapeDataString($Name))
+ $target=$ref.object
+ if($target.type -eq 'tag'){$target=Api ("/git/tags/"+$target.sha)}
+ $target.sha
 }
 $assets=@("installer/OverkillSetup-$version.exe","build/Overkill-$version-Windows.zip","installer/OverkillSetup-$version.sha256")
 $notesPath='docs/encounter-{0:000}.md' -f ([version]$version).Minor
@@ -32,10 +39,13 @@ if($Mode -eq 'inspect'){
 if($Mode -in @('publish','verify')){
  if($Source -notmatch '^[a-f0-9]{40}$'){throw 'Exact source SHA required'}
  if($Mode -eq 'publish'){
+  $branchHead=Api ("/git/ref/heads/"+$sourceBranch.Replace('/','%2F'))
+  if($branchHead.object.sha -ne $Source){throw "Source SHA is not the current remote $sourceBranch head"}
   $existing=@(Api '/releases?per_page=100' | Where-Object tag_name -eq $tag)
   if($existing.Count){throw 'Release already exists; never overwrite a published build'}
   if (!(Test-Path -LiteralPath $verificationPath)) { throw "Version-specific verification report is missing: $verificationPath" }
-  $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$Source;name="Overkill $version - Crystalline playtest";body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw));draft=$true;prerelease=$true}
+  $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Crystalline playtest";body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw));draft=$true;prerelease=$true}
+  if((Get-TagCommit $tag) -ne $Source){throw 'Created release tag does not resolve to the tested source commit'}
   foreach($path in $assets){
    $file=Get-Item -LiteralPath $path
    $upload="https://uploads.github.com/repos/UnKami/Overkill/releases/$($release.id)/assets?name="+[uri]::EscapeDataString($file.Name)
@@ -46,11 +56,11 @@ if($Mode -in @('publish','verify')){
    Write-Output "UPLOADED_AND_HASHED $($file.Name)"
   }
   $release=Api "/releases/$($release.id)"
-  if(@($release.assets).Count -ne 3 -or $release.target_commitish -ne $Source){throw 'Draft metadata mismatch'}
+  if(@($release.assets).Count -ne 3 -or (Get-TagCommit $tag) -ne $Source){throw 'Draft metadata or exact source tag mismatch'}
   $release=Api "/releases/$($release.id)" 'Patch' @{draft=$false}
  }
  $release=Api "/releases/tags/$tag"
- if($release.draft -or !$release.prerelease -or $release.target_commitish -ne $Source){throw 'Published source or release-state mismatch'}
+ if($release.draft -or !$release.prerelease -or (Get-TagCommit $tag) -ne $Source){throw 'Published source or release-state mismatch'}
  if(@($release.assets).Count -ne 3){throw 'Wrong asset count'}
  foreach($asset in $release.assets){
   $path=$assets | Where-Object {(Split-Path $_ -Leaf) -eq $asset.name} | Select-Object -First 1
