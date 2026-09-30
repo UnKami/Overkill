@@ -23,8 +23,14 @@ func get_clock_relic(relic_id: String) -> ClockRelicData:
 	return _clock_relics_by_id.get(relic_id, null)
 
 
-func all_clock_relics() -> Array:
-	return _clock_relics_by_id.values()
+func all_clock_relics(include_zenith: bool = false) -> Array:
+	# Generic rewards and the Clockwright share this pool. Zenith relics are
+	# reserved for the act-boss Overkill altar, which looks them up by ID.
+	var result: Array = []
+	for relic: ClockRelicData in _clock_relics_by_id.values():
+		if include_zenith or relic.tier != ClockRelicData.Tier.ZENITH:
+			result.append(relic)
+	return result
 
 
 func get_card(card_id: String) -> CardData:

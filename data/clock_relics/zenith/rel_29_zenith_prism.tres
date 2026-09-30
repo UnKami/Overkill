@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-29"
+name = "Zenith Prism"
+tier = 3
+role = 2
+primary_essence = 0
+secondary_essence = 2
+description = "Deal 7 damage. Your next attack deals triple damage. Gain 2 Strength."
+art_id = "rel_29_zenith_prism"
+base_damage = 7
+apply_strength = 2
+next_attack_multiplier = 3

@@ -21,6 +21,7 @@ const SHOP_SCENE_PATH := "res://scenes/shop_screen.tscn"
 const REST_SITE_SCENE_PATH := "res://scenes/rest_site_screen.tscn"
 const EVENT_SCENE_PATH := "res://scenes/event_screen.tscn"
 const REWARD_SCENE_PATH := "res://scenes/reward_screen.tscn"
+const BOSS_ALTAR_SCENE_PATH := "res://scenes/boss_overkill_altar.tscn"
 const TREASURE_SCENE_PATH := "res://scenes/treasure_screen.tscn"
 const RUN_SUMMARY_SCENE_PATH := "res://scenes/run_summary_screen.tscn"
 const COMBAT_SCENE_PATH := "res://scenes/combat_scene.tscn"
@@ -167,6 +168,13 @@ func goto_reward_screen(reward_context: Dictionary) -> void:
 	_swap_scene(instance, "REWARD")
 
 
+func goto_boss_overkill_altar(enemy_data: EnemyData) -> void:
+	var scene: PackedScene = load(BOSS_ALTAR_SCENE_PATH)
+	var instance: BossOverkillAltar = scene.instantiate() as BossOverkillAltar
+	instance.set_boss_context(enemy_data)
+	_swap_scene(instance, "THE OVERKILL ALTAR")
+
+
 func goto_treasure(ok_gain: int, found_relic: RelicData) -> void:
 	var scene: PackedScene = load(TREASURE_SCENE_PATH)
 	var instance: TreasureScreen = scene.instantiate()
@@ -281,11 +289,9 @@ func _on_combat_won(defeated_enemies_data: Array) -> void:
 		SaveManager.delete_run_save()
 		RunManager.end_run()
 		goto_run_summary(true)
+	elif enemy_data.tier == EnemyData.Tier.BOSS:
+		goto_boss_overkill_altar(enemy_data)
 	else:
-		# Act bosses (tier BOSS, id != final_boss) also route through the
-		# reward screen like any other kill - reward_screen.gd checks
-		# enemy_data.tier itself and calls RunManager.advance_act() before
-		# returning to the map when it was an act boss.
 		goto_reward_screen({"enemy_data": enemy_data})
 
 

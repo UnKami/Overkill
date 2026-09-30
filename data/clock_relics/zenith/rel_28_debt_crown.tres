@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-28"
+name = "The Debt Crown"
+tier = 3
+role = 0
+primary_essence = 0
+secondary_essence = 3
+description = "Apply 2 Vulnerable. Deal 10 damage twice. Heal HP damage dealt."
+art_id = "rel_28_debt_crown"
+base_damage = 10
+hits = 2
+apply_vulnerable = 2
+lifesteal = true

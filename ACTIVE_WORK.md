@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Codex | fix/yonatan-full-ui-polish | Boss Overkill altar and cinematic trailer | `scripts/autoload/game_flow.gd`, `scripts/ui/boss_overkill_altar.gd`, `scenes/boss_overkill_altar.tscn`, `data/clock_relics/zenith/`, `assets/screens/cinematic/boss_overkill_altar.jpg`, `assets/relics/active/rel_27_*_object.png`, `assets/relics/active/rel_28_*_object.png`, `assets/relics/active/rel_29_*_object.png`, `docs/trailer-2026-09-30.md`, `trailer/` | 2026-09-30 |
+| Codex | fix/yonatan-full-ui-polish | Boss Overkill altar and cinematic trailer | `scripts/autoload/game_flow.gd`, `scripts/autoload/content_database.gd`, `scripts/ui/boss_overkill_altar.gd`, `scenes/boss_overkill_altar.tscn`, `data/clock_relics/zenith/`, `assets/screens/cinematic/boss_overkill_altar.jpg`, `assets/relics/active/rel_27_*_object.png`, `assets/relics/active/rel_28_*_object.png`, `assets/relics/active/rel_29_*_object.png`, `docs/trailer-2026-09-30.md`, `trailer/` | 2026-09-30 |
 | Codex | fix/yonatan-full-ui-polish | Generate and integrate essence-matched relic selection sunbursts | `assets/relics/essence_sunbursts/`, `scripts/ui/relic_pedestal_view.gd`, `scripts/combat/crystalline_visual_test.gd`, `docs/visual-art-canon.md`, `CHANGELOG_AI.md` | 2026-09-30 |
 
 
