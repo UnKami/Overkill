@@ -680,21 +680,21 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
+	var profile: Dictionary = AttackPresentation.for_enemy(e_socket)
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(true, player_block >= amount)
-	_stage.attack(false)
+	_stage.attack(false, profile)
 	var swing_wait: float = _stage.swing_delay(false) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
-	Presentation.relay(self, _enemy_portrait, _player_portrait, Color("e99778"))
+	Presentation.relay(self, _enemy_portrait, _player_portrait, profile.accent)
 	if _stage.has_method("await_contact"): await _stage.await_contact(false)
 	else: await get_tree().create_timer(0.16 / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("guard" if player_block >= amount else ("shatter" if player_block > 0 else "strike"))
-	_stage.impact(true, player_block >= amount)
+	_stage.impact(true, player_block >= amount, profile)
 	var p_pos: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
-	CombatVFX.play_slash(self, p_pos, randf_range(30, 60), Color(2.0, 0.4, 0.4), 1.2)
-	CombatVFX.play_hit_sparks(self, p_pos, Color(2.0, 0.6, 0.6), 5)
+	AttackPresentation.play_canvas_impact(self, p_pos, profile)
 	AmbientMotion.flash(_player_portrait, Color(1.8, 0.5, 0.5), 0.30)
-	AmbientMotion.shake(self, 6.0, 0.4)
+	AmbientMotion.shake(self, float(profile.shake), 0.4 if profile.id != "enemy_heavy" else 0.52)
 
 	if player_block >= amount:
 		player_block -= amount

@@ -128,14 +128,19 @@ func _play_spectral_hammer(profile: Dictionary) -> void:
 	_ability_weapon_motion.chain().tween_property(_ability_weapon, "modulate:a", 0.0, float(profile.get("recovery",0.34)))
 	_ability_weapon_motion.chain().tween_callback(_ability_weapon.queue_free)
 
-func hit(blocked: bool) -> void:
+func hit(blocked: bool, profile: Dictionary = {}) -> void:
 	_begin()
 	set_pose(4 if blocked else 5)
 	_front.modulate = Color(1.4, 1.4, 1.4)
 	_motion.set_parallel(true)
-	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * (6 if blocked else 17), 0.065)
-	_motion.tween_property(_front, "modulate", Color.WHITE, 0.16)
-	_motion.chain().tween_property(_front, "position:x", _pose_origin.x, 0.2)
+	var recoil: float = float(profile.get("hit_recoil", 0.065))
+	var hold: float = float(profile.get("impact_hold", 0.045))
+	var settle: float = float(profile.get("hit_settle", 0.225))
+	var recoil_pixels: float = 6.0 if blocked else float(profile.get("hit_recoil_pixels", 17.0))
+	_motion.tween_property(_front, "position:x", _pose_origin.x - facing * recoil_pixels, recoil).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_motion.parallel().tween_property(_front, "modulate", Color.WHITE, recoil)
+	_motion.chain().tween_interval(hold)
+	_motion.chain().tween_property(_front, "position:x", _pose_origin.x, settle).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_motion.tween_callback(_rest)
 
 func fall() -> void:

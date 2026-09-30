@@ -177,6 +177,12 @@ func animation_speed_scale() -> float:
 func combat_animation_speed_scale() -> float:
 	return 2.0 if fast_mode else 0.5
 
+
+## Clock-hand travel is a connective beat, not an impact beat: keep the normal
+## pointer sweep crisp while preserving its full easing and turn information.
+func clock_animation_speed_scale() -> float:
+	return 2.0 if fast_mode else 1.0
+
 func set_render_quality(value: String) -> void:
 	render_quality = value if value in ["high","balanced","performance"] else "high"
 	save_settings()

@@ -151,7 +151,7 @@ func snap_hand_to_hour(hour: int, duration: float = 0.25) -> Signal:
 		_hand_tween.kill()
 
 	_hand_tween = create_tween()
-	_hand_tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
+	_hand_tween.set_speed_scale(AudioManager.clock_animation_speed_scale())
 	_hand_tween.tween_property(_center_hand_pivot, "rotation", target_rad, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	return _hand_tween.finished
 

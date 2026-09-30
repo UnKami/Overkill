@@ -64,7 +64,7 @@ func attack(from_player: bool, profile: Dictionary = {}) -> void:
 	(player if from_player else enemy).attack(profile)
 
 func impact(on_player: bool, blocked: bool, _profile: Dictionary = {}) -> void:
-	(player if on_player else enemy).hit(blocked)
+	(player if on_player else enemy).hit(blocked, _profile)
 
 func finish(won: bool) -> void:
 	(enemy if won else player).fall()

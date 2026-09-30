@@ -10,6 +10,36 @@ func _ready() -> void:
 	# default cadence is intentionally slower for impact readability.
 	AudioManager.fast_mode = true
 	AudioManager.set_master_volume(0.0)
+	assert(is_equal_approx(AudioManager.clock_animation_speed_scale(), 2.0), "Fast Mode must preserve accelerated hand travel")
+	assert(is_equal_approx(AudioManager.combat_animation_speed_scale(), 2.0), "Fast Mode must accelerate combat feedback")
+	AudioManager.fast_mode = false
+	assert(is_equal_approx(AudioManager.clock_animation_speed_scale(), 1.0), "Normal hand travel must remain crisp")
+	assert(is_equal_approx(AudioManager.combat_animation_speed_scale(), 0.5), "Normal impacts must retain deliberate pacing")
+	AudioManager.fast_mode = true
+	var standard_relic := ClockRelicData.new()
+	standard_relic.base_damage = 6
+	var standard_profile := AttackPresentation.for_relic(standard_relic)
+	var combo_relic := ClockRelicData.new()
+	combo_relic.base_damage = 4
+	combo_relic.hits = 2
+	var combo_profile := AttackPresentation.for_relic(combo_relic)
+	assert(combo_profile.anticipation < standard_profile.anticipation and combo_profile.recovery < standard_profile.recovery, "Multi-hit attacks need a quicker, clearly separate rhythm")
+	var heavy_relic := ClockRelicData.new()
+	heavy_relic.base_damage = 12
+	var heavy_profile := AttackPresentation.for_relic(heavy_relic)
+	assert(heavy_profile.anticipation > standard_profile.anticipation and heavy_profile.travel_pixels > standard_profile.travel_pixels, "Heavy strikes need more wind-up and travel")
+	var light_intent := ClockSocketData.new()
+	light_intent.intent_damage = 4
+	var heavy_intent := ClockSocketData.new()
+	heavy_intent.intent_damage = 12
+	var flurry_intent := ClockSocketData.new()
+	flurry_intent.intent_damage = 12
+	flurry_intent.intent_hits = 2
+	var enemy_fast_profile := AttackPresentation.for_enemy(light_intent)
+	var enemy_heavy_profile := AttackPresentation.for_enemy(heavy_intent)
+	var enemy_flurry_profile := AttackPresentation.for_enemy(flurry_intent)
+	assert(enemy_heavy_profile.anticipation > enemy_fast_profile.anticipation and enemy_heavy_profile.shake > enemy_fast_profile.shake, "Dangerous enemy blows need a stronger tell and impact")
+	assert(enemy_flurry_profile.id == "enemy_flurry" and enemy_flurry_profile.recovery < enemy_fast_profile.recovery, "Enemy multi-hit intents need a distinct quicker rhythm")
 	AudioManager.play_clock_sound("tick")
 	assert(AudioManager._clock_sounds.is_empty(), "Muted audio must not allocate a voice")
 	RunManager.start_new_run([], [], 80, 42)
@@ -57,6 +87,15 @@ func _ready() -> void:
 	await battle._on_skip_button_pressed()
 	assert(battle.active_quadrant == 1)
 	var previous_rotation := battle._player_chrono._center_hand_pivot.rotation
+	AudioManager.fast_mode = false
+	var normal_start_usec: int = Time.get_ticks_usec()
+	await battle._player_chrono.snap_hand_to_hour(2)
+	var normal_snap_usec: int = Time.get_ticks_usec() - normal_start_usec
+	AudioManager.fast_mode = true
+	var fast_start_usec: int = Time.get_ticks_usec()
+	await battle._player_chrono.snap_hand_to_hour(3)
+	var fast_snap_usec: int = Time.get_ticks_usec() - fast_start_usec
+	assert(fast_snap_usec < normal_snap_usec * 0.8, "Clock travel in Fast Mode should be perceptibly quicker")
 	await battle._player_chrono.snap_hand_to_hour(1)
 	assert(battle._player_chrono._center_hand_pivot.rotation > previous_rotation)
 	get_window().size = Vector2i(1280, 720)

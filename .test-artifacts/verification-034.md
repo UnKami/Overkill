@@ -1,0 +1,11 @@
+# 0.34.0 local verification report — 2026-09-30
+
+- Source branch: `fix/yonatan-full-ui-polish`; release workflow pins the exact source commit and tag.
+- Godot 4.5.1 source suites passed with explicit success sentinels: `CLOCK_SMOKE_OK`, `PRESENTATION_014_OK`, `CRYSTALLINE_CONSISTENCY_OK`, and `BATTLE_ARRIVAL_OK`.
+- Coverage includes separated pointer/impact speed lanes in Normal and Fast Mode, measurable faster pointer travel in Fast Mode, standard/combo/heavy player profiles, standard/heavy/flurry enemy profiles, all nine assembly hours, three combat sectors, relic replacement, victory flow, presentation layouts, crystalline art consistency, and battle arrival/intro.
+- Tests ran headlessly with isolated project-local Godot user/config/cache directories; installed saves were not read or modified. The engine emitted its root-certificate-store warning and test-process ObjectDB/CanvasItem leak warnings despite each suite's successful sentinel. The visual suite was headless; no pixel-level desktop acceptance or full campaign playthrough is claimed.
+- No damage, enemy decisions, hit counts, turn order, clock rules, relic effects, progression or save schema changed.
+- Exported Windows payload: `Overkill.exe` 163,358,216 bytes; `Overkill.pck` 245,941,428 bytes.
+- Installer: `OverkillSetup-0.34.0.exe`, 294,061,660 bytes, SHA-256 `564f18bc009521ed2b4a82a9b53e08e3a4a8e02ab59f41678b7c2c56fa96c981`. The setup was run in current-user silent mode to the scoped `.tools/ui-polish-isolated/install/Overkill-0.34.0` directory; all five installed payload files hash-match the export. The installed app remained running after an 8-second startup observation, then the scoped copy was uninstalled successfully. No existing game install or save was touched.
+- Portable ZIP: `Overkill-0.34.0-Windows.zip`, 321,146,370 bytes, SHA-256 `8416dd2ac00e94659422adbd604dbe47e820060e0eadae204465ce32e8cfda79`. It contains exactly `Overkill.exe`, `Overkill.pck`, `GODOT-LICENSE.txt`, `DELIVERY.md`, and `Play Overkill.cmd`; each entry's size matches its export payload.
+- Package evidence covers installation, payload hashes, and default app startup. It does not claim exported test-scene execution or pixel screenshot acceptance.
