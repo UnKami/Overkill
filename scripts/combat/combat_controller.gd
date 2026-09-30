@@ -76,10 +76,15 @@ var _is_prepared: bool = false
 var _phase_started: bool = false
 var _pending_intro: bool = false
 var _battle_intro: BattleIntroSequence
+var _player_status_strip: HBoxContainer
+var _enemy_status_strip: HBoxContainer
+var _player_core_strip: HBoxContainer
+var _enemy_core_strip: HBoxContainer
 
 
 func _ready() -> void:
 	theme = ScreenDesign.build_theme()
+	_build_combatant_stat_ui()
 	Presentation.install(self)
 	Presentation.directed_layout(self)
 	_choice_overlay = preload("res://scripts/ui/relic_choice_overlay.gd").new()
@@ -194,8 +199,8 @@ func _prepare_combat(with_intro: bool) -> void:
 	_combat_over = false
 
 	# Setup HP & stats
-	player_hp = RunManager.current_hp if RunManager.current_hp > 0 else 80
-	player_max_hp = RunManager.max_hp if RunManager.max_hp > 0 else 80
+	player_hp = RunManager.current_hp if RunManager.current_hp > 0 else PlayerState.MAX_HP
+	player_max_hp = RunManager.max_hp if RunManager.max_hp > 0 else PlayerState.MAX_HP
 	player_block = 0
 	player_next_hit_bonus = 0
 	player_next_attack_multiplier = 1
@@ -812,10 +817,14 @@ func _finish_presentation(won: bool) -> void:
 
 
 func _update_stats_display() -> void:
-	_player_stats_label.text = _combatant_stats_text(maxi(player_hp, 0), player_max_hp, player_block, _status_text(player_strength, player_bleed, player_thorns, player_weak, player_vulnerable))
-	if player_next_attack_multiplier > 1:
-		_player_stats_label.text += "  ·  NEXT ATTACK ×%d" % player_next_attack_multiplier
-	_enemy_stats_label.text = _combatant_stats_text(maxi(enemy_hp, 0), enemy_max_hp, enemy_block, _status_text(enemy_strength, enemy_bleed, enemy_thorns, enemy_weak, enemy_vulnerable))
+	_player_stats_label.text = "%d / %d  ·  %d" % [maxi(player_hp, 0), player_max_hp, player_block]
+	_player_stats_label.tooltip_text = "Vitality: %d / %d\nBlock: %d" % [maxi(player_hp, 0), player_max_hp, player_block]
+	_enemy_stats_label.text = "%d / %d  ·  %d" % [maxi(enemy_hp, 0), enemy_max_hp, enemy_block]
+	_enemy_stats_label.tooltip_text = "Vitality: %d / %d\nBlock: %d" % [maxi(enemy_hp, 0), enemy_max_hp, enemy_block]
+	_update_core_strip(_player_core_strip, maxi(player_hp, 0), player_max_hp, player_block, player_next_attack_multiplier)
+	_update_core_strip(_enemy_core_strip, maxi(enemy_hp, 0), enemy_max_hp, enemy_block, 1)
+	_update_status_strip(_player_status_strip, player_strength, player_bleed, player_thorns, player_weak, player_vulnerable)
+	_update_status_strip(_enemy_status_strip, enemy_strength, enemy_bleed, enemy_thorns, enemy_weak, enemy_vulnerable)
 	_hud.bind_clock_state(player_hp, player_max_hp)
 	for entry in [[_player_portrait, player_hp, player_max_hp], [_enemy_portrait, enemy_hp, enemy_max_hp]]:
 		var bar: ProgressBar = entry[0].get_node("Vitality")
@@ -823,11 +832,109 @@ func _update_stats_display() -> void:
 		bar.value = maxi(entry[1], 0)
 
 
-func _combatant_stats_text(hp: int, max_hp: int, block: int, statuses: String) -> String:
-	var text := "%d / %d HP\nBLOCK  %d" % [hp, max_hp, block]
-	if not statuses.is_empty():
-		text += "  ·  " + statuses
-	return text
+func _build_combatant_stat_ui() -> void:
+	_player_core_strip = _make_stat_row(_player_portrait, "CoreStatStrip", -95.0, 4.0, 190.0, 26.0)
+	_enemy_core_strip = _make_stat_row(_enemy_portrait, "CoreStatStrip", -95.0, 4.0, 190.0, 26.0)
+	_player_status_strip = _make_stat_row(_player_portrait, "StatusIconStrip", -112.0, 32.0, 224.0, 26.0)
+	_enemy_status_strip = _make_stat_row(_enemy_portrait, "StatusIconStrip", -112.0, 32.0, 224.0, 26.0)
+	_player_stats_label.visible = false
+	_enemy_stats_label.visible = false
+
+
+func _make_stat_row(parent: Control, row_name: String, left: float, top: float, width: float, height: float) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.name = row_name
+	row.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	row.offset_left = left
+	row.offset_top = top
+	row.offset_right = left + width
+	row.offset_bottom = top + height
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 5)
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
+	parent.add_child(row)
+	return row
+
+
+func _update_core_strip(row: HBoxContainer, hp: int, max_hp: int, block: int, next_attack_multiplier: int) -> void:
+	for child: Node in row.get_children():
+		row.remove_child(child)
+		child.queue_free()
+	_add_stat_chip(row, "res://assets/icons/ui/icon_hp.png", "♥", "%d/%d" % [hp, max_hp], "Vitality: %d of %d" % [hp, max_hp], Color("f08a83"))
+	_add_stat_chip(row, "res://assets/icons/ui/icon_block.png", "◇", str(block), "Block absorbs incoming damage before Vitality.", Color("76d9ee"))
+	if next_attack_multiplier > 1:
+		_add_stat_chip(row, "res://assets/icons/ui/icon_overkill.png", "×", "×%d" % next_attack_multiplier, "Your next attack deals %d times damage." % next_attack_multiplier, Color("f0b765"))
+
+
+func _update_status_strip(row: HBoxContainer, strength: int, bleed: int, thorns: int, weak: int, vulnerable: int) -> void:
+	for child: Node in row.get_children():
+		row.remove_child(child)
+		child.queue_free()
+	if strength > 0: _add_status_chip(row, "res://assets/icons/status/status_strength.png", "✦", strength, "Strength adds damage to each attack.")
+	if bleed > 0: _add_status_chip(row, "", "⌁", bleed, "Bleed deals Vitality damage at the end of each hour.")
+	if thorns > 0: _add_status_chip(row, "", "❖", thorns, "Thorns return damage when struck.")
+	if weak > 0: _add_status_chip(row, "res://assets/icons/status/status_weak.png", "↓", weak, "Weak reduces outgoing attack damage.")
+	if vulnerable > 0: _add_status_chip(row, "res://assets/icons/status/status_vulnerable.png", "⌖", vulnerable, "Vulnerable increases incoming damage.")
+
+
+func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: String, value: String, explanation: String, tint: Color) -> void:
+	var chip := HBoxContainer.new()
+	chip.add_theme_constant_override("separation", 3)
+	chip.tooltip_text = explanation
+	chip.mouse_filter = Control.MOUSE_FILTER_PASS
+	var icon := TextureRect.new()
+	if ResourceLoader.exists(icon_path): icon.texture = load(icon_path)
+	if icon.texture == null:
+		var glyph := Label.new()
+		glyph.text = fallback_glyph
+		glyph.add_theme_color_override("font_color", tint)
+		glyph.add_theme_font_size_override("font_size", 16)
+		glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(glyph)
+	else:
+		icon.custom_minimum_size = Vector2(18, 18)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(icon)
+	var label := Label.new()
+	label.text = value
+	label.add_theme_color_override("font_color", Color("f1eadb"))
+	label.add_theme_font_size_override("font_size", 12)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(label)
+	row.add_child(chip)
+
+
+func _add_status_chip(row: HBoxContainer, icon_path: String, glyph: String, stack: int, explanation: String) -> void:
+	var tint: Color = Color("b6d9ef")
+	var chip := HBoxContainer.new()
+	chip.add_theme_constant_override("separation", 2)
+	chip.tooltip_text = "%s\nStack: %d" % [explanation, stack]
+	chip.mouse_filter = Control.MOUSE_FILTER_PASS
+	var icon := TextureRect.new()
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path): icon.texture = load(icon_path)
+	if icon.texture != null:
+		icon.custom_minimum_size = Vector2(18, 18)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(icon)
+	else:
+		var symbol := Label.new()
+		symbol.text = glyph
+		symbol.add_theme_color_override("font_color", tint)
+		symbol.add_theme_font_size_override("font_size", 14)
+		symbol.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		chip.add_child(symbol)
+	var amount := Label.new()
+	amount.text = str(stack)
+	amount.add_theme_font_size_override("font_size", 12)
+	amount.add_theme_color_override("font_color", tint)
+	amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_child(amount)
+	row.add_child(chip)
 
 
 func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable: int) -> String:

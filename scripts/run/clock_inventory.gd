@@ -2,6 +2,7 @@ class_name ClockInventory extends RefCounted
 ## Each entry is a physical copy. Resource copies are isolated for combat/upgrades.
 const STARTER_COUNTS: Dictionary = {"REL-01": 5, "REL-04": 5, "REL-13": 1, "REL-14": 1}
 const MINIMUM_SIZE := 10
+const MAX_SIZE := 12
 
 static func starter() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
@@ -46,3 +47,7 @@ static func describe(relic: ClockRelicData) -> String:
 	if relic.conditional_damage > 0: parts.append("%d damage below %d%% enemy HP." % [relic.conditional_damage, int(relic.conditional_hp_threshold_pct * 100)])
 	if relic.recoil_block_on_overkill: parts.append("Overkill becomes guard.")
 	return " ".join(parts)
+
+static func instance_identity(entry: Dictionary) -> String:
+	var level_text: String = "UPGRADED" if int(entry.get("level", 0)) > 0 else "BASE FORM"
+	return "%s  ·  COPY #%04d  ·  %s" % [str(entry.get("id", "UNKNOWN")), int(entry.get("uid", -1)) + 1, level_text]

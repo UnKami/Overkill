@@ -205,6 +205,15 @@ func set_stack_count(count: int) -> void:
 	tooltip_text += "\n\n%d copies owned." % count
 
 
+func set_instance_identities(entries: Array[Dictionary]) -> void:
+	if entries.is_empty():
+		return
+	var identities := PackedStringArray()
+	for entry: Dictionary in entries:
+		identities.append(ClockInventory.instance_identity(entry))
+	tooltip_text += "\n\nINSTANCE IDENTITIES\n" + "\n".join(identities)
+
+
 func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> void:
 	relic = relic_data
 	if relic == null:

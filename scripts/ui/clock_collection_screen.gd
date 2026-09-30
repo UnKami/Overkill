@@ -180,6 +180,11 @@ func _rebuild() -> void:
 			view.use_collection_layout()
 			view.bind_relic(relic, "")
 			view.set_stack_count(int(group.count))
+			var grouped_entries: Array[Dictionary] = []
+			for owned_entry: Dictionary in RunManager.clock_inventory:
+				if "%s:%d" % [str(owned_entry.get("id", "")), int(owned_entry.get("level", 0))] == key:
+					grouped_entries.append(owned_entry)
+			view.set_instance_identities(grouped_entries)
 		return
 	if mode == "upgrade":
 		# Upgrading is a decision between relic designs, not a wall of identical
@@ -221,7 +226,7 @@ func _rebuild() -> void:
 				var upgraded: Dictionary = target_entry.duplicate()
 				upgraded.level = 1
 				var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
-				view.tooltip_text = "%d copies owned; %d may still be upgraded.\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [entries.size(), ready_count, relic.description, tempered.description]
+				view.tooltip_text = "%d copies owned; %d may still be upgraded.\n\nTARGET INSTANCE\n%s\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [entries.size(), ready_count, ClockInventory.instance_identity(target_entry), relic.description, tempered.description]
 				var target_uid: int = int(target_entry.get("uid", -1))
 				view.selected.connect(func(_r: ClockRelicData) -> void: _choose(target_uid))
 		return
@@ -232,9 +237,10 @@ func _rebuild() -> void:
 			_grid.add_child(view)
 			view.use_shop_layout()
 			view.bind_relic(relic, "Buy · %d Overkill" % price)
-			view._slot_button.disabled = OKRunState.current_ok < price
+			view._slot_button.disabled = OKRunState.current_ok < price or RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
 			if view._slot_button.disabled:
-				view._slot_button.text = "Need %d more" % (price - OKRunState.current_ok)
+				view._slot_button.text = "CHRONOMETER FULL" if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Need %d more" % (price - OKRunState.current_ok)
+				view._slot_button.tooltip_text = "Dismantle or replace a relic before adding another." if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Not enough Overkill."
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
 		return
 	for entry in RunManager.clock_inventory:
@@ -250,7 +256,7 @@ func _rebuild() -> void:
 			if int(entry.level) == 0:
 				var upgraded := entry.duplicate()
 				upgraded.level = 1
-				view.tooltip_text = "CURRENT\n%s\n\nAFTER UPGRADE\n%s" % [relic.description, ClockInventory.resolve(upgraded).description]
+				view.tooltip_text = "TARGET INSTANCE\n%s\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [ClockInventory.instance_identity(entry), relic.description, ClockInventory.resolve(upgraded).description]
 		elif mode == "removal": action = "DISMANTLE  /  25 OK"
 		view.bind_relic(relic, action)
 		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < 25))
@@ -265,8 +271,9 @@ func _rebuild() -> void:
 		view.selected.connect(func(_r: ClockRelicData) -> void: _choose(int(entry.uid)))
 
 func _buy(relic: ClockRelicData, price: int) -> void:
+	if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE: return
 	if not _offers.has(relic) or not OKRunState.spend_ok(price, "clock_relic"): return
-	RunManager.add_clock_relic(relic.id)
+	if not RunManager.add_clock_relic(relic.id): return
 	RunManager.record_purchase("clock_relic")
 	_offers.erase(relic)
 	SaveManager.save_run()

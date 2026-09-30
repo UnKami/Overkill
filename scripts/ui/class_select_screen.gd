@@ -1,7 +1,7 @@
 extends Control
 const STARTING_CARD_COUNTS := {"strike":5,"defend":4,"split_strike":1}
 const STARTING_RELIC_IDS := ["relic_greed_battery"]
-const STARTING_MAX_HP := 75
+const STARTING_MAX_HP := 500
 var _start_button: Button
 var _starting := false
 

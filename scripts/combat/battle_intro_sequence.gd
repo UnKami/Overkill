@@ -25,6 +25,9 @@ func prime(battle: CombatController, stage: Control) -> void:
 		panel.modulate.a = 0.0
 		stats.modulate.a = 0.0
 		health.modulate.a = 0.0
+		for strip_name: String in ["CoreStatStrip", "StatusIconStrip"]:
+			var strip: Control = portrait.get_node(strip_name)
+			strip.modulate.a = 0.0
 		if portrait == _battle._player_portrait: _player_target_hp = health.value
 		else: _enemy_target_hp = health.value
 		health.value = 0.0
@@ -112,6 +115,8 @@ func _reveal_status(portrait: Control, target_hp: float, speed: float) -> void:
 	reveal.tween_property(panel, "modulate:a", 1.0, 0.16)
 	reveal.tween_property(stats, "modulate:a", 1.0, 0.16)
 	reveal.tween_property(health, "modulate:a", 1.0, 0.12)
+	reveal.tween_property(portrait.get_node("CoreStatStrip"), "modulate:a", 1.0, 0.16)
+	reveal.tween_property(portrait.get_node("StatusIconStrip"), "modulate:a", 1.0, 0.16)
 	reveal.tween_property(health, "value", target_hp, 0.30).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	await reveal.finished
 

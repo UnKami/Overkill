@@ -58,13 +58,15 @@ func _ready() -> void:
 	_body_label.add_theme_color_override("default_color", ScreenDesign.TEXT)
 	for choice in _event.choices:
 		var button := Button.new()
-		button.text = "%s\n›  %s" % [choice.label.to_upper(), choice.consequence_summary]
+		button.text = choice.label.to_upper()
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size.y = 86
+		button.custom_minimum_size.y = 66
 		button.add_theme_font_size_override("font_size", 20)
-		button.disabled = RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost
+		button.tooltip_text = choice.consequence_summary
+		var full_clock: bool = choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
+		button.disabled = RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost or full_clock
 		if button.disabled:
-			button.tooltip_text = "You cannot currently pay this consequence."
+			button.tooltip_text = "Chronometer full. Dismantle or replace a relic first." if full_clock else "You cannot currently pay this consequence.\n" + choice.consequence_summary
 		button.pressed.connect(func() -> void: _on_choice_pressed(choice))
 		_choice_box.add_child(button)
 	var footer := ScreenDesign.label(stack, "THE CLOCK REMEMBERS WHAT YOU CHOOSE", 13, ScreenDesign.MUTED)
@@ -86,12 +88,15 @@ func _load_background() -> void:
 
 func _on_choice_pressed(choice: EventData.EventChoice) -> void:
 	if _resolved or RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost: return
+	if choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE: return
 	_resolved = true
 	if choice.hp_cost > 0: RunManager.apply_run_hp_change(-choice.hp_cost)
 	if choice.ok_cost > 0: OKRunState.spend_ok(choice.ok_cost, "event:%s" % _event.id)
 	match choice.effect_type:
 		EventData.ChoiceEffectType.GRANT_CLOCK_RELIC:
-			RunManager.add_clock_relic(choice.relic_id)
+			if not RunManager.add_clock_relic(choice.relic_id):
+				_resolved = false
+				return
 		EventData.ChoiceEffectType.HP_DELTA:
 			RunManager.apply_run_hp_change(choice.value)
 		EventData.ChoiceEffectType.OK_DELTA:
