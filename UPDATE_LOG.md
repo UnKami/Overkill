@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.36.0 playtest — 2026-10-01
+
+- Added 15 transparent crystalline radial sunbursts for relic presentation: five single essence hues and all ten dual-essence combinations.
+- The shared relic pedestal automatically places the matching halo behind relics in selection, reward, archive, shop, upgrade and battle views. No mechanics, balance or save data changed.
+- **Installer:** [OverkillSetup-0.36.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.36.0-test/OverkillSetup-0.36.0.exe), 319,084,700 bytes, SHA-256 `c4c94278b335201077ae183d203906b064d8f29c8f1d0f99016d4df3fe70f5ae`.
+- **Portable ZIP:** [Overkill-0.36.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.36.0-test/Overkill-0.36.0-Windows.zip), 346,173,706 bytes, SHA-256 `637d972a3cd837ef027f0e48c4c537a7dbd23715c89a1967ea09002c652c7cee`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.36.0-test/OverkillSetup-0.36.0.sha256).
+- **Source:** exact branch commit and tag are identified in the release notes. Save-compatible.
+- **Verification:** Godot 4.5.1 source and portable exported payload pass the crystalline visual fixture. Silent per-user installer, installed payload fixture, and uninstall passed. See [verification-036.md](.test-artifacts/verification-036.md); remote asset hashes/URLs are verified during publication.
+- **Known limits:** unsigned Windows installer; automated checks are not a full human campaign or manual installer-wizard acceptance.
+
 ## 0.35.0 playtest — 2026-10-01
 
 - The 12-copy chronometer cap now asks which exact relic to replace when a battle reward is claimed at capacity. Shop and event grants respect the cap; new runs have 500 Vitality, existing saves migrate proportionally, bosses have 100 HP, and combatant stats use compact icon/value chips.
