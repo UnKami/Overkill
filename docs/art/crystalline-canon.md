@@ -5,6 +5,7 @@ The approved Executioner, shop and sanctuary references remain authoritative. Th
 ## Live asset contracts
 
 - 26 clock relics use their original transparent crystalline object art. Orange = attack, blue = block, purple = buff, green = debuff, blood red = direct Overkill. Dual colors require dual mechanical effects.
+- Relic selection, archive, shop and upgrade views pair the floating relic with one transparent radial crystal sunburst per essence signature: five single hues plus all ten dual-essence pairs. The artwork stays behind the object with a quiet alpha so the relic silhouette and colored rays remain distinct.
 - Heavy Hammer's inventory object and thrown weapon use the same image.
 - All ten enemies have distinct non-player silhouettes and share one illustrated combat pipeline. Nine new transparent images complete the roster; the corrected final crystalline beast is retained.
 - Seven new crystalline map symbols are centered on their visible alpha bounds. Their button centers are explicitly aligned to the drawn waypoint circles even when the project theme changes minimum button size.

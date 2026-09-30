@@ -8,6 +8,19 @@ func _ready() -> void:
 	AudioManager.set_master_volume(0.0)
 	AudioManager.reduced_motion = true
 	RunManager.start_new_run([], [], 75, 19031)
+	var relic_view: RelicPedestalView = load("res://scenes/relic_pedestal_view.tscn").instantiate()
+	await _show(relic_view)
+	var tested_sunbursts: Dictionary = {}
+	for relic: ClockRelicData in ContentDatabase.all_clock_relics(true):
+		var sunburst_path: String = RelicPedestalView.essence_sunburst_path(relic)
+		assert(not sunburst_path.is_empty() and ResourceLoader.exists(sunburst_path), "Missing essence sunburst for %s" % relic.affinity_name())
+		relic_view.bind_relic(relic)
+		var sunburst: TextureRect = relic_view.get_node("CardPanel/Margin/VBox/ArtFrame/EssenceSunburst") as TextureRect
+		assert(sunburst.visible and sunburst.texture != null and sunburst.texture.resource_path == sunburst_path, "Selection art must match %s" % relic.affinity_name())
+		assert(sunburst.texture.get_image().detect_alpha() != Image.ALPHA_NONE, "Essence sunburst must preserve transparency")
+		tested_sunbursts[sunburst_path] = true
+	assert(tested_sunbursts.size() == 15, "All five single essences and ten dual pairings must have distinct halos")
+	await _capture("relic-sunbursts")
 	for scene_name: String in ["title_screen", "class_select_screen", "pre_battle_offer", "rest_site_screen", "reward_screen"]:
 		var screen: Control = load("res://scenes/%s.tscn" % scene_name).instantiate()
 		await _show(screen)

@@ -28,6 +28,10 @@ var _choice_style: StyleBoxFlat
 var _pulse_time: float = 0.0
 var _presentation_mode: String = "standard"
 var _light_strokes: RelicLightStrokes
+var _essence_sunburst: TextureRect
+
+const ESSENCE_SUNBURST_NAMES: Array[String] = ["orange", "blue", "purple", "green", "blood_red"]
+const ESSENCE_PAIR_KEYS: Array[String] = ["attack", "block", "buff", "debuff", "overkill"]
 
 
 func _ready() -> void:
@@ -49,11 +53,21 @@ func _ready() -> void:
 	_light_strokes.name = "RelicLightStrokes"
 	_art_frame.add_child(_light_strokes)
 	_art_frame.move_child(_light_strokes, 0)
+	_essence_sunburst = TextureRect.new()
+	_essence_sunburst.name = "EssenceSunburst"
+	_essence_sunburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_essence_sunburst.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_essence_sunburst.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_essence_sunburst.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_essence_sunburst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_essence_sunburst.modulate = Color(1.0, 1.0, 1.0, 0.34)
+	_art_frame.add_child(_essence_sunburst)
+	_art_frame.move_child(_essence_sunburst, 0)
 	AmbientMotion.idle_bob(_art_rect, 3.0, 3.2)
 	_desc_label.add_theme_font_size_override("normal_font_size", 18)
 	_slot_button.add_theme_font_size_override("font_size", 18)
 	_slot_button.custom_minimum_size.y = 48
-	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_backdrop, _art_rect, _effect_frame, _desc_label]:
+	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_backdrop, _art_rect, _essence_sunburst, _effect_frame, _desc_label]:
 		display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slot_button.pressed.connect(_on_button_pressed)
 	_slot_button.mouse_entered.connect(func() -> void: previewed.emit(self))
@@ -236,6 +250,9 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	_accent_secondary.visible = has_secondary
 	_accent_primary.anchor_right = 0.5 if has_secondary else 1.0
 	_accent_primary.offset_right = 0.0
+	var sunburst_path: String = essence_sunburst_path(relic)
+	_essence_sunburst.texture = load(sunburst_path) as Texture2D if not sunburst_path.is_empty() else null
+	_essence_sunburst.visible = _essence_sunburst.texture != null
 
 	_card_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	_choice_style = null
@@ -263,6 +280,19 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 
 func _load_art(art_id: String) -> void:
 	_art_rect.texture = RelicArt.load_texture(art_id)
+
+
+static func essence_sunburst_path(relic_data: ClockRelicData) -> String:
+	if relic_data == null:
+		return ""
+	var primary_index: int = clampi(int(relic_data.primary_essence), 0, ESSENCE_SUNBURST_NAMES.size() - 1)
+	var filename: String = ESSENCE_SUNBURST_NAMES[primary_index]
+	if relic_data.secondary_essence >= 0:
+		var first_index: int = mini(primary_index, int(relic_data.secondary_essence))
+		var second_index: int = maxi(primary_index, int(relic_data.secondary_essence))
+		filename = "%s_%s" % [ESSENCE_PAIR_KEYS[first_index], ESSENCE_PAIR_KEYS[second_index]]
+	var path: String = "res://assets/relics/essence_sunbursts/%s.png" % filename
+	return path if ResourceLoader.exists(path) else ""
 
 
 func _on_button_pressed() -> void:
