@@ -41,9 +41,11 @@ static func show_dialog(parent: Node, message: String, confirm_label: String, on
 func _ready() -> void:
 	ScreenDesign.polish(self)
 	var panel: PanelContainer = get_node("CenterContainer/Panel")
-	panel.custom_minimum_size.x = 620
+	panel.custom_minimum_size.x = minf(560.0, get_viewport_rect().size.x - 48.0)
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("091520fa")
+	# Keep underlying controls from ghosting through the panel and clashing
+	# with the confirmation's own layout.
+	panel_style.bg_color = Color("07111bf7")
 	panel_style.border_color = Color("b66d64aa") if _danger else Color("c9aa768c")
 	panel_style.set_border_width_all(2 if _danger else 1)
 	panel_style.set_corner_radius_all(8)
@@ -79,6 +81,14 @@ func set_message(text: String) -> void:
 
 func set_confirm_label(text: String) -> void:
 	_confirm_button.text = text
+
+
+func align_to_horizontal_region(left_ratio: float, right_ratio: float) -> void:
+	# Main-menu confirmation belongs to the same left-hand content column as
+	# its journey actions, rather than floating over the character artwork.
+	var center: CenterContainer = get_node("CenterContainer")
+	center.anchor_left = clampf(left_ratio, 0.0, 1.0)
+	center.anchor_right = clampf(right_ratio, center.anchor_left, 1.0)
 
 
 func _on_cancel() -> void:

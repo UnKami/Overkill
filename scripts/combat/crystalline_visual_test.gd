@@ -9,7 +9,18 @@ func _ready() -> void:
 	AudioManager.reduced_motion = true
 	RunManager.start_new_run([], [], 75, 19031)
 	for scene_name: String in ["title_screen", "class_select_screen", "pre_battle_offer", "rest_site_screen", "reward_screen"]:
-		await _show(load("res://scenes/%s.tscn" % scene_name).instantiate())
+		var screen: Control = load("res://scenes/%s.tscn" % scene_name).instantiate()
+		await _show(screen)
+		if scene_name == "title_screen":
+			var confirmation: ModalConfirmDialog = screen.get("_replace_confirmation") as ModalConfirmDialog
+			var menu_column: Control = screen.get("_menu_column") as Control
+			var center: CenterContainer = confirmation.get_node("CenterContainer")
+			assert(is_equal_approx(center.anchor_left, 0.075) and is_equal_approx(center.anchor_right, 0.38), "Title confirmation must align to the established content column")
+			menu_column.hide()
+			confirmation.show()
+			assert(not menu_column.visible and confirmation.visible, "Confirmation must fully replace, not overlap, menu choices")
+			screen.call("_on_confirmation_cancelled")
+			assert(menu_column.visible and not confirmation.visible, "Cancel must restore the title choices")
 		await _capture(scene_name)
 	for mode: String in ["shop", "collection", "upgrade"]:
 		var inventory := preload("res://scripts/ui/clock_collection_screen.gd").new()

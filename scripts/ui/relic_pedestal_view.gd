@@ -42,6 +42,9 @@ func _ready() -> void:
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# Remove the former broad radial bloom: at UI scale it reads like fog in a
+	# rectangular card. Hard-edged essence-colored lines now provide the aura.
+	_art_glow.hide()
 	_light_strokes = preload("res://scripts/ui/relic_light_strokes.gd").new() as RelicLightStrokes
 	_light_strokes.name = "RelicLightStrokes"
 	_art_frame.add_child(_light_strokes)
@@ -241,32 +244,12 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	effect_style.set_border_width_all(0)
 	effect_style.set_corner_radius_all(0)
 	_effect_frame.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	_art_glow.texture = _glow_texture(role_col, secondary_col, has_secondary)
 	_light_strokes.set_essences(role_col, secondary_col, has_secondary)
 
 	_load_art(relic.art_id)
 	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
 	ScreenDesign.apply_text_size(self)
 	call_deferred("_fit_content")
-
-
-func _glow_texture(primary: Color, secondary: Color, dual: bool) -> GradientTexture2D:
-	var glow_color: Color = primary.lerp(secondary, 0.5) if dual else primary
-	var gradient := Gradient.new()
-	gradient.offsets = PackedFloat32Array([0.0, 0.36, 1.0])
-	gradient.colors = PackedColorArray([
-		Color(glow_color, 0.34),
-		Color(glow_color, 0.12),
-		Color(glow_color, 0.0),
-	])
-	var texture := GradientTexture2D.new()
-	texture.gradient = gradient
-	texture.width = 256
-	texture.height = 256
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(0.95, 0.95)
-	return texture
 
 
 func _load_art(art_id: String) -> void:

@@ -30,7 +30,7 @@ const TYPE_COLORS := {
 	MapGenerator.NodeType.BOSS: Color("dfbd7c"),
 }
 
-const ROW_HEIGHT := 106.0
+const ROW_HEIGHT := 164.0
 const TOP_MARGIN := 44.0
 const BOTTOM_MARGIN := 64.0
 const SIDE_MARGIN := 90.0
@@ -148,7 +148,7 @@ func _build_screen_ui() -> void:
 	pause_button.custom_minimum_size = Vector2(96.0, 42.0)
 	header_row.add_child(pause_button)
 
-	_route_hint = ScreenDesign.label(self, "CHOOSE A LIT WAYSTONE TO CONTINUE THE ASCENT", 15, Color("d9d0bf"))
+	_route_hint = ScreenDesign.label(self, "CHOOSE A LIT WAYSTONE  ·  SCROLL TO SURVEY THE ASCENT", 15, Color("d9d0bf"))
 	_route_hint.anchor_left = 0.0
 	_route_hint.anchor_right = 1.0
 	_route_hint.anchor_top = 0.0
@@ -179,7 +179,7 @@ func _layout_screen() -> void:
 	_scroll.offset_top = 132.0
 	_scroll.offset_bottom = -150.0
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	if is_instance_valid(_route_hint):
 		_route_hint.offset_left = 42.0
 		_route_hint.offset_right = -42.0

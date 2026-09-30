@@ -104,8 +104,8 @@ func _ready() -> void:
 	get_window().size = Vector2i(2560, 1080)
 	await capture("ultrawide")
 	check_geometry()
-	# The pre-battle offer keeps its cinematic page backdrop, while its choice
-	# panels stay focused on only the decision title and action.
+	# The offer keeps its cinematic page and adds distinct contextual scenery to
+	# each title/action choice.
 	battle.queue_free()
 	await get_tree().process_frame
 	get_window().size = Vector2i(1920, 1080)
@@ -113,11 +113,15 @@ func _ready() -> void:
 	add_child(offer)
 	await capture("pre-battle-offer")
 	assert(offer._cards.size() == 3)
+	var backdrop_paths: Array[String] = []
 	for card: PanelContainer in offer._cards:
 		var card_art: Array[Node] = card.find_children("*", "TextureRect", true, false)
-		assert(card_art.is_empty(), "Offer panels should not repeat scenery thumbnails")
+		assert(card_art.size() == 1, "Each offer needs one contextual scenic backdrop")
+		assert(card_art[0].texture != null, "Each offer backdrop must resolve to real art")
+		backdrop_paths.append((card_art[0].texture as Texture2D).resource_path)
 		assert(not card.find_children("*", "Button", true, false).is_empty(), "Each offer keeps a clear action")
 		assert(not card.find_children("*", "Label", true, false).is_empty(), "Each offer keeps its title")
+	assert(backdrop_paths[0] != backdrop_paths[1] and backdrop_paths[1] != backdrop_paths[2], "Upgrade, Overkill and vitality need distinct contextual scenes")
 	offer.queue_free()
 	AudioManager.text_size = "normal"
 	print("PRESENTATION_014_OK: horizontal choices, safe bounds, readable telemetry, stable preview, inspection, explicit commit, locked slots, empty reserve, 720p large text and ultrawide")
@@ -133,6 +137,7 @@ func check_geometry() -> void:
 	var previous: Control = null
 	for choice: Control in battle._pedestal_row.get_children():
 		assert(panel.encloses(choice.get_global_rect()))
+		assert(not choice._art_glow.visible, "Relic objects must not have a foggy radial panel")
 		assert(choice._slot_button.size.y >= 48)
 		assert(choice._art_rect.size.y >= choice.size.y * 0.5, "Relic object art must own at least half the card")
 		assert(choice._desc_label.get_theme_font_size("normal_font_size") >= 20)

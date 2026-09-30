@@ -1,5 +1,5 @@
 class_name RelicLightStrokes extends Control
-## A few fine, refracted light strokes behind isolated relic objects.
+## Crisp, colored rays behind isolated relic objects; no fog panels or bloom.
 var primary: Color = Color("80c8d1")
 var secondary: Color = Color("e9a44a")
 var dual: bool = false
@@ -23,13 +23,15 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var center: Vector2 = size * 0.5
-	var radius: float = minf(size.x, size.y) * 0.40
-	var drift: float = sin(phase) * 3.0
-	for i: int in 7:
-		var angle: float = TAU * float(i) / 7.0 - PI * 0.5
-		var start: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius * 0.68
-		var tip: Vector2 = center + Vector2(cos(angle + 0.11), sin(angle + 0.11)) * (radius + drift)
-		var kink: Vector2 = start.lerp(tip, 0.58) + Vector2(cos(angle + 1.2), sin(angle + 1.2)) * 4.0
+	var radius: float = minf(size.x, size.y) * 0.47
+	var drift: float = sin(phase) * 2.0
+	for i: int in 9:
+		var angle: float = TAU * float(i) / 9.0 - PI * 0.5 + sin(phase + float(i)) * 0.025
+		var start: Vector2 = center + Vector2(cos(angle), sin(angle)) * radius * 0.20
+		var tip: Vector2 = center + Vector2(cos(angle + 0.10), sin(angle + 0.10)) * (radius + drift)
+		var kink: Vector2 = start.lerp(tip, 0.56) + Vector2(cos(angle + 1.2), sin(angle + 1.2)) * 3.0
 		var color: Color = secondary if dual and i % 2 == 1 else primary
-		draw_line(start, kink, Color(color, 0.50), 1.0, true)
-		draw_line(kink, tip, Color(color, 0.82), 1.3, true)
+		draw_line(start, kink, Color(color, 0.13), 5.0, true)
+		draw_line(kink, tip, Color(color, 0.18), 4.0, true)
+		draw_line(start, kink, Color(color, 0.72), 1.0, true)
+		draw_line(kink, tip, Color(color, 0.96), 1.35, true)

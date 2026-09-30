@@ -11,18 +11,21 @@ const CHOICES: Array[Dictionary] = [
 		"effect": "upgrade_relic",
 		"action": "CHOOSE A RELIC",
 		"accent": Color("e7bd72"),
+		"scenery": CinematicArt.UPGRADE,
 	},
 	{
 		"title": "BANK THE SPARK",
 		"effect": "gain_overkill",
 		"action": "GAIN 10 OVERKILL",
 		"accent": Color("79d7df"),
+		"scenery": "res://assets/screens/cinematic/event_overflowing_cache.jpg",
 	},
 	{
 		"title": "REINFORCE THE FRAME",
 		"effect": "gain_vitality",
 		"action": "GAIN 3 MAX VITALITY",
 		"accent": Color("d78e78"),
+		"scenery": "res://assets/screens/cinematic/event_humming_shrine.jpg",
 	},
 ]
 
@@ -104,13 +107,37 @@ func _build_choice(choice: Dictionary) -> PanelContainer:
 	card.add_theme_stylebox_override("panel", style)
 	var column := VBoxContainer.new()
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
-	column.add_theme_constant_override("separation", 28)
-	card.add_child(column)
+	column.add_theme_constant_override("separation", 20)
+	var interior := Control.new()
+	interior.custom_minimum_size = Vector2(390, 330)
+	card.add_child(interior)
+	interior.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var scenery := TextureRect.new()
+	scenery.texture = load(String(choice.scenery))
+	scenery.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	scenery.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	scenery.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	interior.add_child(scenery)
+	scenery.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scenery.modulate = Color(0.88, 0.92, 0.96, 0.92)
+	var veil := ColorRect.new()
+	veil.color = Color("07111ba3")
+	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	interior.add_child(veil)
+	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	interior.add_child(column)
+	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	column.offset_left = 20
+	column.offset_right = -20
+	column.offset_top = 22
+	column.offset_bottom = -22
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var name := ScreenDesign.label(column, choice.title, 28, ScreenDesign.TEXT, true)
 	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var action := ScreenDesign.button(column, choice.action, _choose.bind(choice.effect, card), true)
 	action.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ScreenDesign.add_actionable_fx(action, choice.accent, true)
 	action.mouse_entered.connect(_hover_card.bind(card, true))
 	action.mouse_exited.connect(_hover_card.bind(card, false))
 	action.focus_entered.connect(_hover_card.bind(card, true))

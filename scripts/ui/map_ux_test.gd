@@ -14,6 +14,13 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	assert(map._buttons.size() > 10, "The map must show the generated ascent route")
+	assert(map._scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_AUTO, "Long routes must expose scrolling only when needed")
+	var route_rows: Array[float] = []
+	for point: Vector2 in map._positions.values():
+		if not route_rows.has(point.y): route_rows.append(point.y)
+	route_rows.sort()
+	for row_index: int in range(1, route_rows.size()):
+		assert(route_rows[row_index] - route_rows[row_index - 1] >= 150.0, "Map layers need clear vertical breathing room")
 	for node_button: Button in map._buttons.values():
 		var icon: TextureRect = node_button.get_node("CenteredNodeIcon")
 		assert(icon.texture is AtlasTexture, "Map symbols must trim their transparent margins")

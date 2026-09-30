@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's Codex | fix/yonatan-full-ui-polish | Title confirmation, map spacing/scroll, pre-battle offer art, relic presentation and adjacent UI audit | `scripts/ui/title_screen.gd`, `scripts/ui/modal_confirm_dialog.gd`, `scripts/ui/map_screen.gd`, `scripts/ui/pre_battle_offer.gd`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/relic_light_strokes.gd`, focused UI tests | 2026-09-30 |
+| — | — | No active locks | — | — |
 
 
 

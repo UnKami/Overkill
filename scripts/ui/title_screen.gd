@@ -2,6 +2,7 @@ extends Control
 var _new_run_button: Button
 var _continue_button: Button
 var _replace_confirmation: ModalConfirmDialog
+var _menu_column: Control
 
 func _ready() -> void:
 	theme = ScreenDesign.build_theme()
@@ -11,6 +12,7 @@ func _ready() -> void:
 	ScreenDesign.shade(self)
 	ScreenDesign.frame(self,"THE CHRONOFORGE")
 	var column := ScreenDesign.column(self,0.22)
+	_menu_column = column
 	ScreenDesign.label(column,"A CLOCKWORK ROGUELIKE",18,ScreenDesign.CYAN)
 	ScreenDesign.label(column,"OVERKILL",86,ScreenDesign.TEXT,true)
 	ScreenDesign.label(column,"Every hour is a weapon.",26,ScreenDesign.GOLD,true)
@@ -27,19 +29,26 @@ func _ready() -> void:
 		ScreenDesign.label(column,"JOURNEY IN PROGRESS  /  ACT %d" % int(data.get("act_number",1)),16,ScreenDesign.MUTED)
 	var confirm_scene: PackedScene = load(ModalConfirmDialog.SCENE_PATH)
 	_replace_confirmation = confirm_scene.instantiate() as ModalConfirmDialog
+	_replace_confirmation.align_to_horizontal_region(0.075, 0.38)
 	_replace_confirmation.hide()
 	add_child(_replace_confirmation)
 	_replace_confirmation.set_message("Begin a new journey? Your saved route, bound relics, card deck, and unbanked Overkill will be replaced when you choose an Executioner.")
 	_replace_confirmation.set_confirm_label("CHOOSE EXECUTIONER")
 	_replace_confirmation.confirmed.connect(func() -> void: GameFlow.goto_class_select())
-	_replace_confirmation.cancelled.connect(_replace_confirmation.hide)
+	_replace_confirmation.cancelled.connect(_on_confirmation_cancelled)
 	(_continue_button if _continue_button.visible else _new_run_button).grab_focus()
 	ScreenDesign.reveal(column)
 	ScreenDesign.apply_text_size(self)
 
 func _new_journey() -> void:
-	if SaveManager.has_run_save(): _replace_confirmation.show()
+	if SaveManager.has_run_save():
+		_menu_column.hide()
+		_replace_confirmation.show()
 	else: GameFlow.goto_class_select()
+
+func _on_confirmation_cancelled() -> void:
+	_replace_confirmation.hide()
+	_menu_column.show()
 
 func _on_continue_pressed() -> void:
 	var data := SaveManager.load_run()

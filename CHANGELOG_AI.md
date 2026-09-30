@@ -4,6 +4,15 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-09-30 | Yonatan / Codex — Overkill 0.33.0 UI polish
+- **Branch / release:** `fix/yonatan-full-ui-polish`; intended prerelease `v0.33.0-test`.
+- **Completed:** Re-aligns the title confirmation to its content column and hides the underlying menu until cancel/confirm; gives map tiers 164px spacing with vertical scroll when needed; restores distinct context paintings for upgrade, Overkill and Vitality choices; removes the broad radial relic haze and renders crisp, colored light rays behind relic art.
+- **Files changed:** `scripts/ui/title_screen.gd`, `scripts/ui/modal_confirm_dialog.gd`, `scripts/ui/map_screen.gd`, `scripts/ui/map_ux_test.gd`, `scripts/ui/pre_battle_offer.gd`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/relic_light_strokes.gd`, `scripts/combat/presentation_polish_test.gd`, `scripts/combat/crystalline_visual_test.gd`, `VERSION`, `docs/encounter-033.md`, `.test-artifacts/verification-033.md`, release/update docs.
+- **Verification:** Godot 4.5.1 source map, presentation, consistency, clock-smoke and visual suites passed. Isolated installer test verified all five installed-file hashes, launched the app for an 8-second observation, and removed the test install. Portable ZIP contains exactly five export-matching files. Headless scene tests are not claimed for the exported windowed runtime; full campaign and pixel-level desktop acceptance remain open.
+- **Assets:** Installer 294,058,204 bytes, SHA-256 `a426885dbe96c90dc967aa139d478fd064bef5edbbf44f32ecb40c593c012543`; ZIP 321,143,084 bytes, SHA-256 `ae3544c8bda397221b1da4cb7facff73277704a0ae08698c432e6812fccb7764`.
+- **Mechanics:** No damage, enemy behavior, relic effects, turn order, clock rules, progression or save schema changed; no autoplay.
+- **Next / handoff:** Publish these verified assets against the exact source commit, verify public URL/size/digest, then update default-branch download links via documentation-only PR. Human review of actual screens remains encouraged. Locks released.
+
 ## 2026-09-30 | Yonatan / Codex — Overkill 0.32.0 prerelease published
 - **Branch / release:** `fix/yonatan-full-ui-polish`; exact source `211e7d96862ac6aa19c58ce5a59cffc12181fbe6`; tag [`v0.32.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.32.0-test).
 - **Completed:** Published the threat-scaled enemy accents, floating relic presentation, Keep & Sweep emphasis, actionable-button/idle polish, direct map travel, cleaner abandon and pre-battle screens, and slightly faster clock-pointer transitions. Gameplay remains on the feature branch; no gameplay merge to `main`.
