@@ -11,10 +11,9 @@
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
 
-| Yonatan's Codex | `fix/yonatan-full-ui-polish` | Package and publish the verified local 0.32.0 playtest candidate; publish only the exact feature-branch source and accurately disclose unverified installer wizard | `ACTIVE_WORK.md`; `CHANGELOG_AI.md`; `UPDATE_LOG.md`; `README.md`; `installer/README.md`; `scripts/release/publish_crystalline_release.ps1`; `docs/encounter-032.md`; `.test-artifacts/verification-032.md`; `installer/OverkillSetup-0.32.0.sha256`; `build/Overkill-0.32.0-Windows.zip`; `installer/OverkillSetup-0.32.0.exe` | 2026-09-30 |
 
 
-Published baseline: `v0.31.0-test`. Local `0.32.0` candidate details and release blockers are recorded in `CHANGELOG_AI.md`; production changes have been validated locally but are not yet published.
+Published baseline: `v0.32.0-test`. Gameplay remains on `fix/yonatan-full-ui-polish`; the latest download links are on `main` through reviewed documentation PR #17.
 
 ---
 

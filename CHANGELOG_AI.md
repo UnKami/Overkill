@@ -4,6 +4,13 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-09-30 | Yonatan / Codex — Overkill 0.32.0 prerelease published
+- **Branch / release:** `fix/yonatan-full-ui-polish`; exact source `211e7d96862ac6aa19c58ce5a59cffc12181fbe6`; tag [`v0.32.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.32.0-test).
+- **Completed:** Published the threat-scaled enemy accents, floating relic presentation, Keep & Sweep emphasis, actionable-button/idle polish, direct map travel, cleaner abandon and pre-battle screens, and slightly faster clock-pointer transitions. Gameplay remains on the feature branch; no gameplay merge to `main`.
+- **Verification:** Five Godot map/presentation/combat/crystalline suites passed. The final portable ZIP was extracted; its five files matched exported payload hashes, and the packaged game launched headlessly with isolated user data (exit 0). GitHub installer, ZIP and checksum-manifest sizes/digests matched, and all public download URLs returned HTTP 200. Installer: 294,056,249 bytes, SHA-256 `03d5aef1395f48d06d004bec3a63090315b06545545c724b08edc6a5b5ce723b`; ZIP: 321,141,315 bytes, SHA-256 `11fd6161feaf49fa7c2e7a336949df98212726637b178a37ee799df523f16e71`.
+- **Known limits:** Installer compiled but its setup wizard/installed game remain unverified; use the portable ZIP if setup fails. Full human campaign and final visual acceptance remain open. The restricted runner logs a certificate-store warning and ObjectDB shutdown notice.
+- **Documentation:** [PR #17](https://github.com/UnKami/Overkill/pull/17) merged as `922f9ed0c009dcd36cc1705808a5a66046b1e0e4`; `README.md`, `installer/README.md`, `UPDATE_LOG.md`, and `docs/encounter-032.md` were verified on `main`. File locks released.
+
 ## 2026-09-30 | Yonatan / Codex — threat palette and immersive UI polish
 - **Branch / delivery:** `fix/yonatan-full-ui-polish`; local candidate `0.32.0`, not published. GitHub authentication was unavailable, so the public tested release remains `0.31.0-test`.
 - **Completed:** Promoted the approved threat-scaled jade/amethyst/spectral-rose/blood-red enemy family accents over the shared obsidian-and-ivory foundation; added floating borderless relic presentation with color-matched light strokes; strengthened Keep & Sweep; added restrained electric focus/hover contours and reduced-motion-aware idle drift; made reachable map nodes route directly; hid pause choices behind abandon confirmation; simplified pre-battle offer choices to title/action; and modestly shortened clock-pointer transitions only. Combat math, turn order, impact timing, enemy behavior, relic mechanics and saves were not changed.

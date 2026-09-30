@@ -18,3 +18,9 @@ Source checks: `map_ux_test.tscn`, `presentation_polish_test.tscn`, `clock_battl
 ## Delivery status
 
 This is an unsigned Windows playtest prerelease. Install or extract the full package before starting Overkill. The isolated installer run did not establish that the setup wizard and installed application work correctly; if setup fails, use the portable ZIP and report the failure with the log. Existing saves are schema-compatible, though a fresh run is recommended for reviewing the updated map flow and replacement screen.
+
+## Downloads and source
+
+[GitHub release and checksum manifest](https://github.com/UnKami/Overkill/releases/tag/v0.32.0-test) · [Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.32.0-test/OverkillSetup-0.32.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.32.0-test/Overkill-0.32.0-Windows.zip)
+
+Exact source: `211e7d96862ac6aa19c58ce5a59cffc12181fbe6`, tag `v0.32.0-test`, branch `fix/yonatan-full-ui-polish`. The public installer and ZIP hashes are recorded in [UPDATE_LOG.md](../UPDATE_LOG.md).
