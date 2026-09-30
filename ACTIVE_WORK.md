@@ -10,21 +10,12 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's Codex | `fix/yonatan-full-ui-polish` | Map navigation, treasure screen, relic selection hit targets, transition presentation, distinct enemy art, release verification | `ACTIVE_WORK.md`; `scenes/map_screen.tscn`; `scripts/ui/map_screen.gd`; `scenes/relic_pedestal_view.tscn`; `scripts/ui/relic_pedestal_view.gd`; `scenes/reward_screen.tscn`; `scripts/ui/reward_screen.gd`; `scenes/treasure_screen.tscn`; `scripts/ui/treasure_screen.gd`; `scripts/autoload/game_flow.gd`; `scripts/ui/screen_transition.gd`; `scripts/ui/cinematic_art.gd`; `scripts/combat/combat_controller.gd`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/battle_arrival_visual_test.gd`; `scripts/combat/battle_arrival_test.gd`; `scripts/combat/presentation_polish_test.gd`; `assets/enemies/act1/`; `assets/enemies/act2/`; `assets/enemies/act3/`; `assets/enemies/final_boss_crystal_warden.png`; `assets/screens/cinematic/transition_act1_act2_painterly.png`; `assets/screens/cinematic/transition_act2_act3_painterly.png`; `assets/screens/cinematic/transition_act3_final_painterly.png`; `data/enemies/act1/boneghoul.tres`; `data/enemies/act1/act1_elite.tres`; `data/enemies/act2/act2_elite.tres`; `data/enemies/act3/act3_trash.tres`; `data/enemies/act3/act3_elite.tres`; `data/enemies/act3/act3_boss.tres`; `data/enemies/final_boss.tres`; `scripts/ui/map_ux_test.gd`; `scenes/map_ux_test.tscn`; `VERSION`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `README.md`; `installer/README.md` | 2026-09-30 |
+
+No active file locks. Yonatan's crystalline continuity pass was released as `v0.31.0-test` on 2026-09-30; see `CHANGELOG_AI.md` for exact source, verification and handoff. Gameplay remains on `fix/yonatan-full-ui-polish`; docs-only PR #16 updated main's download links.
 
 ---
 
 ## 2. How to Claim a Task (Instructions for Developers & AIs)
-
-### Extension of Yonatan's Codex lock — 2026-09-30
-
-Installer verification: `installer/overkill.iss` (allow explicit current-user testing without replacing the existing all-user installation).
-
-Cleanup and reference documentation: `assets/relics/active/*_v2_object.png*`; `assets/screens/cinematic/loading_executioner_bell_foundry.png*`; `docs/visual_canon.md`; `docs/cinematic-worlds.md`; `.test-artifacts/`; `export_presets.cfg` (local export settings only).
-
-Additional exact integration paths: `project.godot`; `scripts/combat/clock_battle_presentation.gd`; `scripts/release/publish_crystalline_release.ps1`; `docs/encounter-031.md`; `scripts/ui/map_ux_test.gd`; `scripts/combat/crystalline_visual_test.gd`; `scenes/crystalline_visual_test.tscn`.
-
-Same `fix/yonatan-full-ui-polish` task: complete crystalline consistency pass. Also locked: `data/clock_relics/`; `data/enemies/act1/act1_boss.tres`; `data/enemies/act2/act2_trash.tres`; `data/enemies/act2/act2_boss.tres`; `assets/icons/map/`; `assets/screens/cinematic/loading_crystalline_passage.png`; `scripts/combat/illustrated_actor.gd`; `scripts/ui/pre_battle_offer.gd`; `scripts/ui/clock_collection_screen.gd`; `scripts/ui/card_upgrade_selection.gd`; `scripts/ui/act_transition_screen.gd`; `scripts/ui/relic_art.gd`; `scripts/ui/crystalline_consistency_test.gd`; `scenes/crystalline_consistency_test.tscn`; `docs/art/crystalline-canon.md`; `docs/art/crystalline-prompts.json`; `.gitignore`.
 
 When starting work on a feature:
 1. Ensure your branch is updated: `git pull origin main`

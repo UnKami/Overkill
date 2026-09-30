@@ -83,7 +83,9 @@ if($Mode -eq 'docs'){
 if($Mode -eq 'merge-docs'){
  if($PullRequest -le 0){throw 'PR number required after review'}
  $pr=Api "/pulls/$PullRequest"
- $files=@(Api "/pulls/$PullRequest/files")
+ # Invoke-RestMethod can return its JSON array as a single pipeline object.
+ # Assign it directly before checking the actual file count.
+ $files=Api "/pulls/$PullRequest/files"
  if($files.Count -ne $docPaths.Count -or $pr.base.ref -ne 'main'){throw 'Unexpected documentation PR scope'}
  foreach($file in $files){
   if($file.filename -notin $docPaths){throw 'Non-documentation change; merge blocked'}

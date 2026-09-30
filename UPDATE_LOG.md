@@ -2,6 +2,18 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.31.0 playtest — 2026-09-30
+
+- Restores all 26 approved crystalline relic objects and consistent effect colors. Completes ten distinct crystalline enemy silhouettes, retaining the Executioner in every battle. Removes duplicate static fighters hiding actor animation; separates combatants from relic choices and centers HP beneath them.
+- Rebuilds map hierarchy around route selection, compact utilities and destination preview before travel. Seven new crystalline symbols are centered on their drawn circles, including the theme minimum-size correction. Adds a dedicated treasure reveal and whole-object relic selection.
+- Converts the last pre-battle card-upgrade route to actual clock relics. Connects the new Executioner-led crystalline passage to startup/navigation; restores three matching act-transition paintings and repairs title/continue placement. Preserves approved shop/rest/world art. Removes 36 discarded images from the active asset tree, with recoverable local copies outside Godot resources.
+- Mechanics/save compatibility: art-path-only changes to enemy/relic resources; no combat values, AI, clock sequencing, damage, status rules or save schema rebalanced. Pre-battle upgrade now targets one actual clock relic. No autoplay. Existing saves remain compatible; start a new run for review.
+- Verification: all 12 suites passed from source and exported executable/PCK. Packaged render fixtures cover production pages, all ten enemies, three maps/transitions, treasure, upgrades, inspection and hammer motion. All 26 relic descriptions at normal/large text; 720p/1080p/ultrawide bounds; 54 forecast comparisons; 30 enemy-intent sweeps. ZIP contains exactly five hash-matched files. Final installer passed isolated current-user installation, five-file hash verification, installed default launch, consistency test and scoped uninstall; existing all-user 0.30.0 payload and registry unchanged. Real saves untouched.
+- Installer: [OverkillSetup-0.31.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.31.0-test/OverkillSetup-0.31.0.exe), 296,588,151 bytes, SHA-256 `2968a8c2af0c3a9fad55db096254c9b7fd5281d2a548b5bdd636ad023dca6dd0`. [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.31.0-test/Overkill-0.31.0-Windows.zip), 323,673,946 bytes, SHA-256 `4fc47571216f70dc3e7f8bb73907aef1a20ad971363833954d65d713b9829522`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.31.0-test/OverkillSetup-0.31.0.sha256).
+- Source: `5c2169b86002a82e6fbccaf391647f8c53d0f045`, tag `v0.31.0-test`, branch `fix/yonatan-full-ui-polish`. [GitHub prerelease](https://github.com/UnKami/Overkill/releases/tag/v0.31.0-test). All three published GitHub asset sizes/digests match local files and public download URLs return HTTP 200. Gameplay remains separate from main; only reviewed download documentation is merged there.
+- Known limits: unsigned; full human campaign, final visual acceptance, interactive installer wizard and sustained hardware FPS unverified. Starter-only fixture loses four bosses. Restricted certificate-store notices and some fixture ObjectDB/resource shutdown notices persist; passing suites contain no script/assertion failures. [Player notes](docs/encounter-031.md).
+- This build supersedes the historical 0.27–0.30 candidates below. Previous releases are preserved for rollback.
+
 ## 0.30.0 playtest — 2026-09-29
 
 - Unifies battle composition around character-free cinematic environments and the same illustrated combatants across regular fights, elites and bosses; recenters route-node art and removes duplicate battle HUD/readouts.
@@ -21,7 +33,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Keeps all combat, clock, relic, progression and outcome rules unchanged; no autoplay. Source/editor and exported-runtime coverage pass at 1080p, 720p large text and ultrawide, including 54 live-resolution forecasts, 30 enemy-intent sweeps, all 26 relics and all 30 cinematic routes.
 - Local installer: 277,101,700 bytes, SHA-256 `7ff170a71e94867559aee75e44d31136bdbd3e2164886ecd5a0d6883f90c2c8c`. Local ZIP: 305,998,018 bytes, SHA-256 `57ab8ee0592a8dce6c92ab70fdfb1ab238af9bb19e7e159721c19f0047773746`. All five ZIP entries match the tested build payload; the packaged executable also passed a responsive launch smoke test.
 - Source implementation: `02f014d` on `fix/yonatan-full-ui-polish`. Save-compatible; a new run is recommended for visual review. Public 0.25.0 links remain unchanged until repository publication is explicitly approved.
-- Detailed scope: [Full interface polish candidate](docs/encounter-029.md).
+- Detailed scope: [Full interface polish candidate](https://github.com/UnKami/Overkill/blob/v0.31.0-test/docs/encounter-029.md).
 
 ## 0.28.0 candidate — 2026-09-29 — not yet published
 
@@ -32,7 +44,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Relic mechanics, the 12-copy starter inventory, clock rules, damage, progression and battle outcomes are unchanged. Source and exported-package relic-language, battle-arrival, guidance and responsive-presentation checks pass; rendered 1080p gallery and real Reliquary inspection pass.
 - Local installer: 277,075,828 bytes, SHA-256 `94fd0bed6309246bee2e1fc8d0e7a865da13f0703f13a3e734a967cf326dd462`. Local ZIP: 305,972,073 bytes, SHA-256 `89f0b6f7993c2d4c337b370a3203882726c1a09ce70c16474414a70dab854e38`. All five ZIP entries match the tested build payload.
 - Source: `d87fe7522e882e6a2b0974f68f0e289f193bc366` on `fix/yonatan-relic-ui-polish`. Save-compatible; no mechanics changes. Installer is unsigned and its interactive wizard remains untested. Public 0.25.0 links remain unchanged until repository publication is explicitly authorized.
-- Detailed scope: [Reliquary interface reconstruction](docs/encounter-028.md).
+- Detailed scope: [Reliquary interface reconstruction](https://github.com/UnKami/Overkill/blob/v0.31.0-test/docs/encounter-028.md).
 
 ## 0.27.0 candidate — 2026-09-28 — not yet published
 
@@ -42,7 +54,7 @@ Every delivered gameplay update appears here with its installer and matching sou
 - Preserves the 12-copy starter composition and existing relic ids; renames Blood Siphon to Vital Siphon to reserve blood language for Overkill generation.
 - Source, rendered, and exported-package validation pass. Local installer: 277,067,677 bytes, SHA-256 `8e9909a5933c2b83b84bd8e57fc01dd3bd198fde9cb89fa0780298e6802fa1d9`. Local ZIP: 305,963,253 bytes, SHA-256 `187dfb5f7c523dfbc53132b50c7a186b270bcb5c6ab4ab1ce7a7232d4026bee2`. Both remain unpublished; the existing 0.25.0 links are still the current public release until explicit repository publication approval is available.
 - Source: `c25c710284a9b70395691bb28a2fc8ce6fb8c48c` on `feat/yonatan-cinematic-worlds`. Save-compatible; a new run is recommended for the expanded pool. No autoplay. Human full-run balance and interactive installer-wizard testing remain open.
-- Detailed scope: [Five Essences playtest notes](docs/encounter-027.md) · [relic color language](docs/relic-color-language.md).
+- Detailed scope: [Five Essences playtest notes](https://github.com/UnKami/Overkill/blob/v0.31.0-test/docs/encounter-027.md) · [relic color language](https://github.com/UnKami/Overkill/blob/v0.31.0-test/docs/relic-color-language.md).
 
 ## 0.25.0 playtest — 2026-09-28
 
