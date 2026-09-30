@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| (none) | — | — | — | — |
+| Codex | fix/yonatan-full-ui-polish | Cap battle reward relics at 12 with replacement UX; rebalance HP/bosses; compact combat stat UI and audit related screens | `scripts/ui/reward_screen.gd`, `scenes/reward_screen.tscn`, `scripts/run/clock_inventory.gd`, `scripts/autoload/run_manager.gd`, `scripts/ui/class_select_screen.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_controller.gd`, `scenes/combat_scene.tscn`, `data/enemies/act1/act1_boss.tres`, `data/enemies/act2/act2_boss.tres`, `data/enemies/act3/act3_boss.tres`, `data/enemies/final_boss.tres`, targeted tests, `docs/overkill-balance-baseline.md`, `VERSION`, `CHANGELOG_AI.md`, `UPDATE_LOG.md` | 2026-09-30 |
 
 
 
