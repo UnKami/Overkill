@@ -12,6 +12,6 @@ Start a **new run** to review the roomier, scrollable map, aligned new-journey c
 
 Every delivered gameplay feature or update must have a versioned GitHub Release, downloadable Windows installer, and entry in the [update log](UPDATE_LOG.md). Release notes identify the exact source commit, test results, known issues, and save compatibility. Downloads live in Releases; the [installer folder](installer/README.md) provides direct links.
 
-The 0.33.0 playtest source commit and tag are recorded in [the update log](UPDATE_LOG.md) after publication. Gameplay remains on its feature branch; these default-branch download links identify the tested build separately from main's source state. Previous releases remain available for rollback.
+The 0.33.0 playtest is built from source `39d28619a9d929fc17cabb15bea311482de373a2`, tagged `v0.33.0-test`, on `fix/yonatan-full-ui-polish`. Gameplay remains on its feature branch; these default-branch download links identify the tested build separately from main's source state. Previous releases remain available for rollback.
 
 [AI collaboration instructions](AGENTS.md) · [Technical handoff log](CHANGELOG_AI.md) · [Active work](ACTIVE_WORK.md)

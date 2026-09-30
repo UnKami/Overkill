@@ -11,4 +11,4 @@ Compiled installers are attached to GitHub Releases rather than committed as lar
 
 Launch **Overkill** for the 0.33.0 UI polish playtest: a roomier scrollable map, aligned journey confirmation, contextual pre-battle paintings, and clearer relic light lines. See [detailed changes and limitations](../docs/encounter-033.md). The installer and installed app were verified in an isolated per-user test directory; the portable archive payload hashes match the export.
 
-Exact gameplay source commit and `v0.33.0-test` tag are recorded in [the update log](../UPDATE_LOG.md) after publication, on feature branch `fix/yonatan-full-ui-polish`. Main contains the download documentation, not the experimental gameplay merge. The installer is unsigned; prior releases remain available for rollback.
+Exact gameplay source: `39d28619a9d929fc17cabb15bea311482de373a2`, tag `v0.33.0-test`, feature branch `fix/yonatan-full-ui-polish`. Main contains the download documentation, not the experimental gameplay merge. The installer is unsigned; prior releases remain available for rollback.
