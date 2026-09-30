@@ -4,6 +4,15 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-09-30 | Yonatan / Codex — Overkill 0.35.0 relic capacity and survivability
+- **Branch / source:** `fix/yonatan-full-ui-polish`; gameplay source pushed as `7364b8da896f25cda30b9f4603014d61a3d721b8`.
+- **Completed:** Caps active chronometer inventory at 12; full battle relic rewards prompt selection of a specific replacement copy, with identity and upgraded form visible. Blocks overflow from shop/event grants; adds stable copy identification; raises new-run Vitality to 500 with proportional legacy-save migration; tunes all progression bosses to 100 HP; replaces verbose combat stats with icon/value chips and hover descriptions; reduces event-choice copy clutter.
+- **Files:** Reward/collection/event UI and inventory/run manager; combat HUD/introduction and class selection; four boss resources; integration test; balance baseline; `VERSION`; player-facing encounter notes and checksums.
+- **Verification:** Godot 4.5.1 parse and six targeted integration/presentation/arrival/consistency/visual/combat suites passed. Final exported portable ZIP contains exactly five files matching payload hashes; extracted game launched headlessly with exit code 0. Installer compiled (294,072,188 bytes; SHA-256 `084083e8c83096d2f2690c7a11351233f1a98057ce8f024858c04731ce9f9b49`). ZIP is 321,157,929 bytes; SHA-256 `1f200452acd25ae566f9177475e953207b92503eb521f03339e1e4d47ef1b2bf`.
+- **Delivery blocker:** The packaged files are local only. Release upload could not start because Git Credential Manager failed to provide an API credential (`Unable to persist credentials with the 'wincredman' credential store`); the 0.35.0 release/tag and default-branch download-docs PR are not published. Do not call this build downloadable from GitHub. Retry publication once authenticated GitHub API access is restored, using exact tested source `7364b8da896f25cda30b9f4603014d61a3d721b8` and the local artifacts above.
+- **Known limits:** The interactive installer wizard and full human campaign are unverified; 500-vs-100 is an intentionally generous balance playtest. Headless runs still show restricted Windows certificate-store and Godot ObjectDB/resource shutdown notices. Unrelated user-modified `.import` sidecars were preserved.
+- **Locks:** Released; source branch remains separate from `main`.
+
 ## 2026-09-30 | Yonatan / Codex — Overkill 0.33.0 UI polish
 - **Branch / release:** `fix/yonatan-full-ui-polish`; published prerelease [v0.33.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.33.0-test), exact tested source `39d28619a9d929fc17cabb15bea311482de373a2`.
 - **Completed:** Re-aligns the title confirmation to its content column and hides the underlying menu until cancel/confirm; gives map tiers 164px spacing with vertical scroll when needed; restores distinct context paintings for upgrade, Overkill and Vitality choices; removes the broad radial relic haze and renders crisp, colored light rays behind relic art.

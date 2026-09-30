@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Codex | fix/yonatan-full-ui-polish | Cap battle reward relics at 12 with replacement UX; rebalance HP/bosses; compact combat stat UI and audit related screens | `scripts/ui/reward_screen.gd`, `scenes/reward_screen.tscn`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/clock_collection_screen.gd`, `scripts/ui/event_screen.gd`, `scripts/run/clock_inventory.gd`, `scripts/autoload/run_manager.gd`, `scripts/ui/class_select_screen.gd`, `scripts/combat/player_state.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/battle_intro_sequence.gd`, `data/enemies/act1/act1_boss.tres`, `data/enemies/act2/act2_boss.tres`, `data/enemies/act3/act3_boss.tres`, `data/enemies/final_boss.tres`, `scripts/combat/clock_polish_test.gd`, `docs/overkill-balance-baseline.md`, `VERSION`, `CHANGELOG_AI.md`, `UPDATE_LOG.md` | 2026-09-30 |
+| Codex | fix/yonatan-full-ui-polish | Boss Overkill altar and cinematic trailer | `scripts/autoload/game_flow.gd`, `scripts/ui/boss_overkill_altar.gd`, `scenes/boss_overkill_altar.tscn`, `data/clock_relics/zenith/`, `assets/screens/cinematic/boss_overkill_altar.jpg`, `assets/relics/active/rel_27_*_object.png`, `assets/relics/active/rel_28_*_object.png`, `assets/relics/active/rel_29_*_object.png`, `docs/trailer-2026-09-30.md`, `trailer/` | 2026-09-30 |
 
 
 
