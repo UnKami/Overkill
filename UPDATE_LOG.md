@@ -2,6 +2,15 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.37.0 playtest — 2026-10-01
+
+- Enlarges battle combatants by 20% and restores readable vitality, Block and status indicators. Relic replacement now uses the dedicated color-matched sunburst artwork, the Reliquary lists individual copies, Keep & Sweep explains its outcome, Humming Shrine constraints are inline, and the Zenith offer background remains visible.
+- No combat math, relic effects, turn order, progression or save schema changed; existing saves are compatible. Start a new run for visual review.
+- **Installer:** [OverkillSetup-0.37.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.37.0-test/OverkillSetup-0.37.0.exe), 319,086,739 bytes, SHA-256 `7d2613d13c70b2497edde2378e290bb32378267e0f5313aaa31c626b28b93909`.
+- **Portable ZIP:** [Overkill-0.37.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.37.0-test/Overkill-0.37.0-Windows.zip), 346,175,816 bytes, SHA-256 `ad2ddef9d94b238246e4b2bd858818b7fa4c1a460fccab207639e0d7cddea4da`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.37.0-test/OverkillSetup-0.37.0.sha256), SHA-256 `8c6f12be422939128591af3e2e16e969d1d548d6afe65366f0bfc56cafdcd0e2`.
+- **Source:** `93ede9f5ce801b75049a29e6b0f6590034bd5017`, tag [`v0.37.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.37.0-test), feature branch `fix/yonatan-full-ui-polish`. All three public asset sizes and hashes were verified; download endpoints returned HTTP 200.
+- **Verification and limits:** Godot presentation and crystalline-visual suites passed. Portable ZIP's five files matched the tested payload; extracted and installed games launched headlessly. Silent isolated install/uninstall passed. Installer is unsigned; interactive installer wizard and full human campaign are unverified. Gameplay remains separate from main; documentation-only download PR [#22](https://github.com/UnKami/Overkill/pull/22) is open.
+
 ## 0.35.0 playtest — 2026-10-01
 
 - The 12-copy chronometer cap now asks which exact relic to replace when a battle reward is claimed at capacity. Shop and event grants respect the cap; new runs have 500 Vitality, existing saves migrate proportionally, bosses have 100 HP, and combatant stats use compact icon/value chips.
