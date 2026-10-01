@@ -2,15 +2,15 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
-## 0.39.0 playtest candidate — 2026-10-01
+## 0.39.0 playtest — 2026-10-02
 
 - Multi-hit relics finish their complete attack sequence against the selected target after a lethal first hit, banking all remaining unblocked damage as Overkill. Every damaging relic now visibly travels through the arena; multi-hit attacks show distinct hit beats. Effect scale controls relic art and impact VFX size. Battle stat icons and values are enlarged, and shared screen identities have stronger contrast.
 - No enemy behavior, relic effect definitions, turn order, progression or save schema changed. Existing saves remain compatible.
-- **Installer:** `installer/OverkillSetup-0.39.0.exe`, 319,094,051 bytes, SHA-256 `9caef9ec520f82da96f73bf0774371ecd9af977ec25dcc9527eb401ce520daee`.
-- **Portable ZIP:** `build/Overkill-0.39.0-Windows.zip`, 346,183,390 bytes, SHA-256 `2b96dec36eea6b0724debdc5648848b4ec6750338c6cf1beae8f7fccc3b00943`. [Checksum manifest](installer/OverkillSetup-0.39.0.sha256).
-- **Source:** `fix/yonatan-full-ui-polish`; exact tested commit and release links are added after publication.
-- **Verification:** All 14 source suites passed. The portable ZIP contains exactly five expected payload files, and both extracted portable and installed games launch headlessly with exit code 0. Per-user installation to an isolated workspace path and uninstall both passed. Interactive installer wizard is not claimed.
-- **Limits / delivery status:** GitHub publication and default-branch download-links PR pending. Headless suite logs include the Windows certificate-store warning and selected non-fatal Godot resource/shutdown notices. Full human campaign, interactive installer wizard and final user visual acceptance are not claimed. Installer is unsigned.
+- **Windows installer:** [OverkillSetup-0.39.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.39.0-test/OverkillSetup-0.39.0.exe), 319,094,051 bytes, SHA-256 `9caef9ec520f82da96f73bf0774371ecd9af977ec25dcc9527eb401ce520daee`.
+- **Portable ZIP:** [Overkill-0.39.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.39.0-test/Overkill-0.39.0-Windows.zip), 346,183,390 bytes, SHA-256 `2b96dec36eea6b0724debdc5648848b4ec6750338c6cf1beae8f7fccc3b00943`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.39.0-test/OverkillSetup-0.39.0.sha256), SHA-256 `160f26f5263b9092214638ebe331e54eac4b316303b127e538611744ed0bed07`.
+- **Source:** `87606327e909aadade1142f16cc4bfbf17ea425c`, tag [`v0.39.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.39.0-test), branch `fix/yonatan-full-ui-polish`. Save-compatible. Gameplay stays on the feature branch; a documentation-only PR updates main's download links.
+- **Verification:** All 14 source suites passed. The portable ZIP contains exactly five expected payload files; extracted portable launch, per-user install, installed-game launch and uninstall returned exit code 0. All three GitHub asset sizes and SHA-256 digests matched local files and each public download URL returned HTTP 200. Full test details: `.test-artifacts/verification-039.md`.
+- **Limits:** Installer is unsigned; interactive wizard, full human campaign and final user visual acceptance are not claimed. Test runs emitted the Windows certificate-store warning and selected non-fatal Godot resource/shutdown notices.
 
 ## 0.38.0 playtest candidate — 2026-10-01 — NOT PUBLISHED
 

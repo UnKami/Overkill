@@ -10,11 +10,8 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's AI (Codex) | fix/yonatan-full-ui-polish | 0.39.0 multi-hit overkill, cinematic relic activations, readable battle telemetry, screen-state clarity, Godot launch diagnosis, and verified Windows release | `scripts/ui/clock_collection_screen.gd`; `scripts/ui/upgrade_preview_dialog.gd`; `scenes/upgrade_preview_dialog.tscn`; `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/boss_overkill_altar.gd`; `scenes/boss_overkill_altar.tscn`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/presentation_polish_test.gd`; `scripts/combat/crystalline_visual_test.gd`; `scripts/combat/attack_presentation.gd`; `scripts/combat/combat_controller.gd`; `scripts/combat/combat_vfx.gd`; `scripts/combat/starter_relic_test.gd`; `scripts/ui/screen_design.gd`; `docs/overkill-data-schema.md`; `docs/encounter-039.md`; `VERSION`; `project.godot`; `README.md`; `installer/README.md`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md`; `installer/OverkillSetup-0.39.0.sha256` | 2026-10-01 |
 
-
-
-Published baseline: `v0.37.0-test` (gameplay source `93ede9f5ce801b75049a29e6b0f6590034bd5017`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links are pending documentation-only PR #22. All locks are released.
+Published baseline: `v0.39.0-test` (gameplay source `87606327e909aadade1142f16cc4bfbf17ea425c`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links await documentation-only PR #23 review. All locks are released.
 
 ---
 
