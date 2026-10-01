@@ -4,6 +4,16 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-10-01 | Yonatan / Codex — Overkill 0.37.0 battle and relic-screen polish
+- **Branch / release source:** `fix/yonatan-full-ui-polish`; published [`v0.37.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.37.0-test), exact tested source `93ede9f5ce801b75049a29e6b0f6590034bd5017`.
+- **Completed:** Enlarged the battle combatants by 20% and restored readable vitality/Block/status bands; replaced retired relic spokes with dedicated essence sunbursts on replacement choices; showed each owned relic copy separately; clarified Keep & Sweep consequences; made Humming Shrine constraints inline; and made the Zenith offer surface more transparent.
+- **Files changed:** Combat presentation, relic collection/replacement, shrine and Zenith UI; 15 sunburst image assets; `VERSION`, project version, player notes and release docs.
+- **Verification:** Godot 4.5.1 presentation fixture passed `PRESENTATION_014_OK`; crystalline consistency fixture passed `CRYSTALLINE_VISUAL_OK`. Installer compiled at 319,086,739 bytes; isolated silent install, launch and uninstall passed. Portable ZIP contains five files, all matching payload SHA-256; extracted portable game launched successfully. GitHub reports all three release assets with matching local size/SHA-256 and public URLs returned HTTP 200.
+- **Downloads:** Installer SHA-256 `7d2613d13c70b2497edde2378e290bb32378267e0f5313aaa31c626b28b93909`; portable ZIP SHA-256 `ad2ddef9d94b238246e4b2bd858818b7fa4c1a460fccab207639e0d7cddea4da`; manifest SHA-256 `8c6f12be422939128591af3e2e16e969d1d548d6afe65366f0bfc56cafdcd0e2`.
+- **Mechanics / compatibility:** No damage, enemy behavior, relic effects, turn order, clock rules, progression or save schema changed; existing saves remain compatible. Installer unsigned; interactive installer wizard and a full human campaign remain unverified.
+- **Default-branch docs:** Documentation-only PR [#22](https://github.com/UnKami/Overkill/pull/22) updates the main-branch download links. Gameplay remains on its feature branch; release tag points to the tested commit above.
+- **Locks / handoff:** Locks released. Source branch includes current `main` and the release commit; subsequent bookkeeping does not change the release tag.
+
 ## 2026-09-30 | Yonatan / Codex — Overkill 0.35.0 relic capacity and survivability
 - **Branch / source:** `fix/yonatan-full-ui-polish`; gameplay source pushed as `7364b8da896f25cda30b9f4603014d61a3d721b8`.
 - **Completed:** Caps active chronometer inventory at 12; full battle relic rewards prompt selection of a specific replacement copy, with identity and upgraded form visible. Blocks overflow from shop/event grants; adds stable copy identification; raises new-run Vitality to 500 with proportional legacy-save migration; tunes all progression bosses to 100 HP; replaces verbose combat stats with icon/value chips and hover descriptions; reduces event-choice copy clutter.

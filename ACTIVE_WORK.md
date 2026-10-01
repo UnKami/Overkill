@@ -10,11 +10,10 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's AI (Codex) | fix/yonatan-full-ui-polish | Battle stats, relic replacement/collection, event and Zenith altar presentation polish | `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/clock_collection_screen.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/event_screen.gd`; `scripts/ui/boss_overkill_altar.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/combat_controller.gd`; `scripts/combat/crystalline_visual_test.gd`; `scripts/combat/presentation_polish_test.gd`; `VERSION`; `project.godot`; `README.md`; `installer/README.md`; `docs/encounter-037.md`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md` | 2026-10-01 |
 
 
 
-Published baseline: `v0.36.0-test` (gameplay source `b45b52d5240f0eaf9ffceaf188864c3db0fc707f`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links and trailer are live through documentation-only PR #21.
+Published baseline: `v0.37.0-test` (gameplay source `93ede9f5ce801b75049a29e6b0f6590034bd5017`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links are pending documentation-only PR #22. All locks are released.
 
 ---
 
