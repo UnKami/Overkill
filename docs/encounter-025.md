@@ -19,4 +19,4 @@ Automated validation covers starter-relic mechanics, non-mutating outcome previe
 
 The combat rules, damage values, enemy AI, clock mechanics, relic effects, turn order, progression and run rules remain unchanged; no autoplay was added. Save data remains compatible, but starting a new run is recommended for visual review. Scripted encounter outcomes are unchanged from the existing balance fixtures and are not human boss-balance acceptance. The installer is unsigned, and interactive installer-wizard testing remains outstanding.
 
-Intended source tag: **v0.25.0-test**, branch **feat/yonatan-tactical-inspection**. This is a prerelease for partner visual acceptance; gameplay remains on the feature branch pending review.
+Source tag: **v0.25.0-test**, commit **05639415e20682b2d8d152e8cf6df6ba046c3eb2**, branch **feat/yonatan-tactical-inspection**. This is a prerelease for partner visual acceptance; gameplay remains on the feature branch pending review.
