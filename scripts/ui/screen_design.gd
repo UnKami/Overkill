@@ -137,7 +137,9 @@ static func column(parent: Control, top: float = 0.19, right: float = 0.38) -> V
 	return result
 
 static func frame(parent: Control, breadcrumb: String) -> void:
-	var top := label(parent,"O V E R K I L L     /     " + breadcrumb,18,GOLD)
+	var top := label(parent,"O V E R K I L L     /     " + breadcrumb,26,GOLD,true)
+	top.add_theme_color_override("font_outline_color", Color("071019dd"))
+	top.add_theme_constant_override("outline_size", 3)
 	top.position = Vector2(64,38)
 	var footer := label(parent,"BIND THE HOURS. BREAK THE CYCLE.",15,MUTED)
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
@@ -150,6 +152,14 @@ static func reveal(control: Control) -> void:
 static func polish(root: Control) -> void:
 	root.theme = build_theme()
 	for node in root.find_children("*","Label",true,false):
+		# Keep the current screen identity in one predictable, easy-to-scan
+		# position on every screen that uses the shared breadcrumb treatment.
+		if node.text.begins_with("O V E R K I L L     /"):
+			node.add_theme_font_size_override("font_size", 26)
+			node.add_theme_font_override("font", display_font())
+			node.add_theme_color_override("font_color", GOLD)
+			node.add_theme_color_override("font_outline_color", Color("071019dd"))
+			node.add_theme_constant_override("outline_size", 3)
 		if "Title" in node.name or "Header" in node.name:
 			node.add_theme_font_override("font",display_font())
 			node.add_theme_color_override("font_color",GOLD)

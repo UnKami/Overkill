@@ -2,6 +2,26 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.39.0 playtest candidate — 2026-10-01
+
+- Multi-hit relics finish their complete attack sequence against the selected target after a lethal first hit, banking all remaining unblocked damage as Overkill. Every damaging relic now visibly travels through the arena; multi-hit attacks show distinct hit beats. Effect scale controls relic art and impact VFX size. Battle stat icons and values are enlarged, and shared screen identities have stronger contrast.
+- No enemy behavior, relic effect definitions, turn order, progression or save schema changed. Existing saves remain compatible.
+- **Installer:** `installer/OverkillSetup-0.39.0.exe`, 319,094,051 bytes, SHA-256 `9caef9ec520f82da96f73bf0774371ecd9af977ec25dcc9527eb401ce520daee`.
+- **Portable ZIP:** `build/Overkill-0.39.0-Windows.zip`, 346,183,390 bytes, SHA-256 `2b96dec36eea6b0724debdc5648848b4ec6750338c6cf1beae8f7fccc3b00943`. [Checksum manifest](installer/OverkillSetup-0.39.0.sha256).
+- **Source:** `fix/yonatan-full-ui-polish`; exact tested commit and release links are added after publication.
+- **Verification:** All 14 source suites passed. The portable ZIP contains exactly five expected payload files, and both extracted portable and installed games launch headlessly with exit code 0. Per-user installation to an isolated workspace path and uninstall both passed. Interactive installer wizard is not claimed.
+- **Limits / delivery status:** GitHub publication and default-branch download-links PR pending. Headless suite logs include the Windows certificate-store warning and selected non-fatal Godot resource/shutdown notices. Full human campaign, interactive installer wizard and final user visual acceptance are not claimed. Installer is unsigned.
+
+## 0.38.0 playtest candidate — 2026-10-01 — NOT PUBLISHED
+
+- Re-centers the Overkill Altar around its relic choices and shows more of the cinematic altar backdrop through a lighter panel. The forge displays every relic instance separately with a visible copy number and per-copy upgrade. Upgrade confirmation now properly dims unrelated content. Combatants are 20% larger than 0.37.0, with the relic-choice strip tightened and raised without removing rules or actions.
+- No combat math, relic effects, turn order, map rules, progression values or save schema changed. Existing saves are compatible.
+- **Local installer:** `installer/OverkillSetup-0.38.0.exe`, 319,088,830 bytes, SHA-256 `277296e6a9ae20c576c6525ab8be8627356fcf1d0823da8c5109cbe80153e19b`.
+- **Local portable ZIP:** `installer/Overkill-0.38.0-Windows.zip`, 346,177,974 bytes, SHA-256 `f20c912893078ade1d6089c5900ca07094c0a0fabda5bf86b607ad0c898908bc`. Local SHA-256 manifest: `installer/OverkillSetup-0.38.0.sha256`.
+- **Source:** `4d2eb45443d75192d87d1ee5ebd25c605ed2788e`, branch `fix/yonatan-full-ui-polish`. No `v0.38.0-test` release/tag was published; GitHub release authentication failed before any release write. Do not use a release download URL yet.
+- **Verification:** Godot 4.5.1 `PRESENTATION_014_OK` and `CRYSTALLINE_VISUAL_OK`; installer compiled; portable ZIP contains exactly five expected files, all five match the exported payload by SHA-256, and the extracted game launches headlessly with exit code 0. Remote sizes, hashes and HTTP download checks are therefore not verified.
+- **Limits / delivery status:** prerelease publication and default-branch download-link PR are blocked pending working GitHub release authentication. Interactive installer wizard/installed app, full human campaign and final user visual acceptance are not claimed. Installer is unsigned; headless runtime emits a non-fatal ObjectDB shutdown notice.
+
 ## 0.37.0 playtest — 2026-10-01
 
 - Enlarges battle combatants by 20% and restores readable vitality, Block and status indicators. Relic replacement now uses the dedicated color-matched sunburst artwork, the Reliquary lists individual copies, Keep & Sweep explains its outcome, Humming Shrine constraints are inline, and the Zenith offer background remains visible.

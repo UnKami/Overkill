@@ -90,6 +90,11 @@ func _ready() -> void:
 	_choice_overlay = preload("res://scripts/ui/relic_choice_overlay.gd").new()
 	add_child(_choice_overlay)
 	_choice_overlay.install(self)
+	# The phase name is the first thing players need to recognize before they
+	# make a clock decision; make replacement distinct from ordinary binding.
+	if is_instance_valid(_choice_overlay._heading):
+		_choice_overlay._heading.add_theme_font_size_override("font_size", 28)
+		_choice_overlay._heading.add_theme_font_override("font", ScreenDesign.display_font())
 	_intent_clock_label = Label.new()
 	_enemy_chrono.add_child(_intent_clock_label)
 	_intent_clock_label.position = Vector2(105,135)
@@ -579,9 +584,26 @@ func _resolve_tick(hour: int) -> void:
 		dmg = int(floor(dmg * p_socket.multiplier)) * player_next_attack_multiplier
 		player_next_attack_multiplier = maxi(1, relic.next_attack_multiplier)
 
-		for hit in relic.hits:
-			await _apply_damage_to_enemy(dmg, p_socket)
-			if _check_combat_end() or starting_enemy != _enemy_index: return
+		for hit_index: int in range(relic.hits):
+			await _apply_damage_to_enemy(dmg, p_socket, hit_index, relic.hits)
+			# Keep this relic's hit sequence on the defeated target. A killing hit
+			# ends the enemy's ability to retaliate, but remaining hits are still
+			# real executions and bank their full damage as Overkill.
+			if player_hp <= 0:
+				_check_combat_end()
+				return
+		if _check_combat_end() or starting_enemy != _enemy_index: return
+	elif p_socket.slotted_relic != null:
+		var relic := p_socket.slotted_relic
+		var effect_magnitude: int = maxi(relic.grant_overkill, maxi(relic.bonus_damage_next_hit, maxi(relic.base_block, maxi(relic.apply_strength, maxi(relic.apply_thorns, maxi(relic.apply_vulnerable, maxi(relic.apply_weak, relic.apply_bleed)))))))
+		if effect_magnitude > 0:
+			var targets_enemy: bool = relic.apply_vulnerable > 0 or relic.apply_weak > 0 or relic.apply_bleed > 0
+			var target: Control = _enemy_portrait if targets_enemy else _player_portrait
+			var destination: Vector2 = target.global_position + target.size * 0.5
+			var origin: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
+			if not targets_enemy:
+				origin += Vector2(-170.0, -80.0)
+			AttackPresentation.play_relic_activation(self, relic, origin, destination, effect_magnitude)
 
 	# Enemy Attacks Player
 	if e_socket.intent_damage > 0 and enemy_hp > 0:
@@ -619,10 +641,14 @@ func _resolve_tick(hour: int) -> void:
 	await get_tree().create_timer(0.5 / AudioManager.combat_animation_speed_scale()).timeout
 
 
-func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
+func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: int = 0, hit_count: int = 1) -> void:
 	var profile: Dictionary = AttackPresentation.for_relic(p_socket.slotted_relic)
+	var target_was_alive: bool = enemy_hp > 0
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
 	_stage.attack(true, profile)
+	var relic_center: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
+	var target_center: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
+	AttackPresentation.play_relic_activation(self, p_socket.slotted_relic, relic_center, target_center, amount, hit_index, hit_count)
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
@@ -674,7 +700,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData) -> void:
 			AudioManager.play_combat_sound("heal")
 			_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
 	# Thorns check
-	if enemy_thorns > 0:
+	if target_was_alive and enemy_thorns > 0:
 		player_hp -= enemy_thorns
 		_spawn_damage_number(_player_portrait, enemy_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
@@ -831,10 +857,10 @@ func _update_stats_display() -> void:
 
 
 func _build_combatant_stat_ui() -> void:
-	_player_core_strip = _make_stat_row(_player_portrait, "CoreStatStrip", -140.0, 124.0, 280.0, 26.0)
-	_enemy_core_strip = _make_stat_row(_enemy_portrait, "CoreStatStrip", -140.0, 124.0, 280.0, 26.0)
-	_player_status_strip = _make_stat_row(_player_portrait, "StatusIconStrip", -140.0, 152.0, 280.0, 26.0)
-	_enemy_status_strip = _make_stat_row(_enemy_portrait, "StatusIconStrip", -140.0, 152.0, 280.0, 26.0)
+	_player_core_strip = _make_stat_row(_player_portrait, "CoreStatStrip", -138.0, 124.0, 276.0, 34.0)
+	_enemy_core_strip = _make_stat_row(_enemy_portrait, "CoreStatStrip", -138.0, 124.0, 276.0, 34.0)
+	_player_status_strip = _make_stat_row(_player_portrait, "StatusIconStrip", -138.0, 160.0, 276.0, 34.0)
+	_enemy_status_strip = _make_stat_row(_enemy_portrait, "StatusIconStrip", -138.0, 160.0, 276.0, 34.0)
 	_player_stats_label.visible = false
 	_enemy_stats_label.visible = false
 
@@ -848,7 +874,7 @@ func _make_stat_row(parent: Control, row_name: String, left: float, top: float, 
 	row.offset_right = left + width
 	row.offset_bottom = top + height
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 5)
+	row.add_theme_constant_override("separation", 6)
 	row.mouse_filter = Control.MOUSE_FILTER_PASS
 	parent.add_child(row)
 	return row
@@ -886,11 +912,11 @@ func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: Strin
 		var glyph := Label.new()
 		glyph.text = fallback_glyph
 		glyph.add_theme_color_override("font_color", tint)
-		glyph.add_theme_font_size_override("font_size", 16)
+		glyph.add_theme_font_size_override("font_size", 21)
 		glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chip.add_child(glyph)
 	else:
-		icon.custom_minimum_size = Vector2(18, 18)
+		icon.custom_minimum_size = Vector2(25, 25)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -898,7 +924,7 @@ func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: Strin
 	var label := Label.new()
 	label.text = value
 	label.add_theme_color_override("font_color", Color("f1eadb"))
-	label.add_theme_font_size_override("font_size", 16)
+	label.add_theme_font_size_override("font_size", 21)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_child(label)
@@ -914,7 +940,7 @@ func _add_status_chip(row: HBoxContainer, icon_path: String, glyph: String, stac
 	var icon := TextureRect.new()
 	if not icon_path.is_empty() and ResourceLoader.exists(icon_path): icon.texture = load(icon_path)
 	if icon.texture != null:
-		icon.custom_minimum_size = Vector2(18, 18)
+		icon.custom_minimum_size = Vector2(21, 21)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -923,12 +949,12 @@ func _add_status_chip(row: HBoxContainer, icon_path: String, glyph: String, stac
 		var symbol := Label.new()
 		symbol.text = glyph
 		symbol.add_theme_color_override("font_color", tint)
-		symbol.add_theme_font_size_override("font_size", 14)
+		symbol.add_theme_font_size_override("font_size", 19)
 		symbol.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chip.add_child(symbol)
 	var amount := Label.new()
 	amount.text = str(stack)
-	amount.add_theme_font_size_override("font_size", 15)
+	amount.add_theme_font_size_override("font_size", 19)
 	amount.add_theme_color_override("font_color", tint)
 	amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_child(amount)

@@ -80,6 +80,15 @@ func _ready() -> void:
 	await battle._apply_damage_to_enemy(3, battle.player_sockets[7])
 	assert(battle.player_hp == 61, "Overkill damage does not heal")
 	assert(battle.enemy_sockets[0].intent_revealed and battle.enemy_sockets[7].intent_revealed)
+	battle._combat_over = false
+	battle.player_hp = 60
+	battle.enemy_hp = 1
+	battle.enemy_block = 0
+	battle.enemy_thorns = 0
+	battle.player_sockets[3].slotted_relic = ContentDatabase.get_clock_relic("REL-02")
+	var ok_before_twin_kill: int = OKRunState.current_ok
+	await battle._resolve_tick(4)
+	assert(OKRunState.current_ok - ok_before_twin_kill == 7, "Twin Blades finish both hits on the slain target and bank 3 + 4 Overkill")
 	battle.queue_free()
 	var next_battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(next_battle)
