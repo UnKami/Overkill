@@ -172,48 +172,43 @@ func _rebuild() -> void:
 			view.set_instance_identities([entry])
 		return
 	if mode == "upgrade":
-		# Upgrading is a decision between relic designs, not a wall of identical
-		# inventory copies. Group owned copies by design and target one eligible
-		# copy from the chosen group. This keeps the forge legible even when the
-		# chronometer contains many starter duplicates.
-		var upgrade_groups: Dictionary = {}
-		var upgrade_order: Array[String] = []
+		# Every owned copy is its own forge target. Keep a compact per-design
+		# ordinal so identical relics are visually distinguishable without hiding
+		# them behind an aggregate stack count.
+		var design_totals: Dictionary = {}
 		for entry: Dictionary in RunManager.clock_inventory:
 			var relic_id: String = str(entry.get("id", ""))
-			if not upgrade_groups.has(relic_id):
-				upgrade_groups[relic_id] = []
-				upgrade_order.append(relic_id)
-			var entries: Array = upgrade_groups[relic_id]
-			entries.append(entry)
-			upgrade_groups[relic_id] = entries
-		_summary.text = "%d relics  /  %d designs  /  9 clock sockets  /  %d reserves     •     One free upgrade this visit." % [RunManager.clock_inventory.size(), upgrade_groups.size(), maxi(0, RunManager.clock_inventory.size() - 9)]
-		for relic_id: String in upgrade_order:
-			var entries: Array = upgrade_groups[relic_id]
-			var target_entry: Dictionary = {}
-			var ready_count: int = 0
-			for candidate: Dictionary in entries:
-				if int(candidate.get("level", 0)) == 0:
-					ready_count += 1
-					if target_entry.is_empty():
-						target_entry = candidate
-			if target_entry.is_empty():
-				target_entry = entries[0]
-			var relic: ClockRelicData = ClockInventory.resolve(target_entry)
+			design_totals[relic_id] = int(design_totals.get(relic_id, 0)) + 1
+		var design_seen: Dictionary = {}
+		var ready_count: int = 0
+		for owned: Dictionary in RunManager.clock_inventory:
+			if int(owned.get("level", 0)) == 0:
+				ready_count += 1
+		_summary.text = "%d INDIVIDUAL RELICS  /  9 CLOCK SOCKETS  /  %d RESERVES     •     %d READY TO UPGRADE" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), ready_count]
+		for entry: Dictionary in RunManager.clock_inventory:
+			var relic_id: String = str(entry.get("id", ""))
+			var copy_number: int = int(design_seen.get(relic_id, 0)) + 1
+			design_seen[relic_id] = copy_number
+			var copy_total: int = int(design_totals.get(relic_id, 1))
+			var relic: ClockRelicData = ClockInventory.resolve(entry)
 			if relic == null:
 				continue
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
-			var action: String = "PREVIEW UPGRADE  ·  %d READY" % ready_count if ready_count > 0 else "ALL COPIES UPGRADED"
+			var is_ready: bool = int(entry.get("level", 0)) == 0
+			var action: String = "UPGRADE COPY  %d / %d" % [copy_number, copy_total] if is_ready else "COPY  %d / %d  ·  UPGRADED" % [copy_number, copy_total]
 			view.bind_relic(relic, action)
-			view.set_stack_count(entries.size())
-			view._slot_button.disabled = ready_count == 0
-			if ready_count > 0:
-				var upgraded: Dictionary = target_entry.duplicate()
+			view._role_badge.text += "    ·    COPY %d / %d" % [copy_number, copy_total]
+			view._slot_button.disabled = not is_ready
+			if is_ready:
+				var upgraded: Dictionary = entry.duplicate()
 				upgraded.level = 1
 				var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
-				view.tooltip_text = "%d copies owned; %d may still be upgraded.\n\nTARGET INSTANCE\n%s\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [entries.size(), ready_count, ClockInventory.instance_identity(target_entry), relic.description, tempered.description]
-				var target_uid: int = int(target_entry.get("uid", -1))
+				view.tooltip_text = "COPY %d / %d\nTARGET INSTANCE\n%s\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [copy_number, copy_total, ClockInventory.instance_identity(entry), relic.description, tempered.description]
+				var target_uid: int = int(entry.get("uid", -1))
 				view.selected.connect(func(_r: ClockRelicData) -> void: _choose(target_uid))
+			else:
+				view.tooltip_text += "\n\nINSTANCE\n%s" % ClockInventory.instance_identity(entry)
 		return
 	if mode == "shop":
 		for relic: ClockRelicData in _offers:

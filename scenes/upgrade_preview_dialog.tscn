@@ -21,6 +21,16 @@ flat = true
 theme_override_colors/font_color = Color(0, 0, 0, 0)
 self_modulate = Color(0, 0, 0, 0.65)
 
+[node name="Dimmer" type="ColorRect" parent="."]
+unique_name_in_owner = true
+show_behind_parent = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.004, 0.009, 0.016, 0.92)
+
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15

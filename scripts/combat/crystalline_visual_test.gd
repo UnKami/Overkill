@@ -47,6 +47,24 @@ func _ready() -> void:
 				assert(copy_view.tooltip_text.contains("INSTANCE IDENTITIES"), "Every copy needs its own instance identity")
 				identities[copy_view.tooltip_text] = true
 			assert(identities.size() == RunManager.clock_inventory.size(), "Duplicate relic designs remain separate entries")
+		if mode == "upgrade":
+			assert(inventory._grid.get_child_count() == RunManager.clock_inventory.size(), "Forge must present every relic instance independently")
+			var selected_uid: int = -1
+			for copy_index: int in inventory._grid.get_child_count():
+				var copy_view: RelicPedestalView = inventory._grid.get_child(copy_index) as RelicPedestalView
+				assert(not copy_view._role_badge.text.contains("×") and not copy_view._role_badge.text.contains("OWNED"), "Forge must not collapse duplicate relics into a stack")
+				assert(copy_view._role_badge.text.contains("COPY ") and copy_view._role_badge.text.contains(" / "), "Every forge tile visibly numbers its individual copy")
+				assert(copy_view._slot_button.text.contains("COPY") or copy_view._slot_button.text.contains("UPGRADED"), "Each visible copy has its own ordinal/action")
+				if selected_uid < 0 and not copy_view._slot_button.disabled:
+					selected_uid = int(RunManager.clock_inventory[copy_index].get("uid", -1))
+			assert(selected_uid >= 0, "Forge fixture has an eligible instance")
+			inventory._choose(selected_uid)
+			await get_tree().process_frame
+			var preview: UpgradePreviewDialog = inventory._upgrade_preview
+			var dimmer: ColorRect = preview.get_node("Dimmer") as ColorRect
+			assert(dimmer.color.a >= 0.9 and preview.get_node("BackgroundButton").get_index() < dimmer.get_index(), "Upgrade confirmation fully veils unrelated choices behind it")
+			await _capture("upgrade-confirmation-focused")
+			preview.queue_free()
 		await _capture(mode)
 	for event: EventData in EventCatalog.get_all_events():
 		var event_screen: Control = load("res://scenes/event_screen.tscn").instantiate()
@@ -63,6 +81,9 @@ func _ready() -> void:
 	assert(offer_style.bg_color.a < 0.9, "Zenith composition must let the scenic altar artwork show through")
 	var zenith_cards: HBoxContainer = altar.get_node("AltarOfferPanel/VBoxContainer/ZenithOffers") if altar.has_node("AltarOfferPanel/VBoxContainer/ZenithOffers") else altar.find_child("ZenithOffers", true, false) as HBoxContainer
 	assert(zenith_cards != null and zenith_cards.get_child_count() == 3, "All Zenith offers remain visible over the lighter panel")
+	assert(absf(offer_panel.get_global_rect().get_center().x - altar.get_global_rect().get_center().x) < 2.0, "The consequential altar choice is centered in the viewport")
+	assert(altar._balance_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER and altar._status_label.horizontal_alignment == HORIZONTAL_ALIGNMENT_CENTER, "Altar balance and ritual status are composed around the central focal axis")
+	assert(zenith_cards.alignment == BoxContainer.ALIGNMENT_CENTER, "Zenith choices are symmetrically centered")
 	await _capture("zenith-altar")
 	for act: int in range(1, 4):
 		RunManager.act_number = act

@@ -160,7 +160,7 @@ func _place() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 	size = Vector2(minf(1320.0, _battle.size.x - 48.0), 0)
 	reset_size()
-	position = Vector2((_battle.size.x - size.x) * 0.5, 52)
+	position = Vector2((_battle.size.x - size.x) * 0.5, 20)
 
 func toggle_inspection() -> void:
 	if _battle._resolving or _battle._combat_over: return

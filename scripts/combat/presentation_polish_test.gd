@@ -136,7 +136,7 @@ func _ready() -> void:
 func check_geometry() -> void:
 	var panel: Rect2 = battle._choice_overlay.get_global_rect()
 	assert(Rect2(Vector2.ZERO, battle.size).encloses(panel), "Overlay must fit viewport")
-	assert(panel.position.y == 52 and panel.end.y < battle.size.y, "Choices must fit the viewport")
+	assert(panel.position.y == 20 and panel.end.y < battle.size.y, "Choices must fit the viewport while leaving room for enlarged fighters")
 	assert(battle._choice_overlay.get_theme_stylebox("panel") is StyleBoxEmpty)
 	for stats: Label in [battle._player_stats_label, battle._enemy_stats_label]:
 		assert(not panel.intersects(stats.get_global_rect()), "Health and Block must stay visible")
@@ -145,7 +145,7 @@ func check_geometry() -> void:
 		var status_panel: Panel = (strip.get_parent() as Control).get_node("CharacterStatusPanel")
 		assert(status_panel.get_global_rect().encloses(strip.get_global_rect()), "Stat strip must fit inside its owner's lower status area")
 	assert(battle._player_core_strip.get_child_count() >= 2 and battle._enemy_core_strip.get_child_count() >= 2, "Vitality and Block values must remain visible")
-	assert(is_equal_approx(battle._stage.player.target_height, 360.0) and is_equal_approx(battle._stage.enemy.target_height, 360.0), "Combatant artwork is enlarged by 20 percent")
+	assert(is_equal_approx(battle._stage.player.target_height, 432.0) and is_equal_approx(battle._stage.enemy.target_height, 432.0), "Combatant artwork is enlarged a further 20 percent")
 	var previous: Control = null
 	for choice: Control in battle._pedestal_row.get_children():
 		assert(panel.encloses(choice.get_global_rect()))

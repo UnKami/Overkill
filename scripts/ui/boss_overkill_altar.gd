@@ -45,7 +45,7 @@ func _build_backdrop() -> void:
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	AmbientMotion.apply_cinematic_backdrop(self, art, 26.0, 0.45)
 	var veil := ColorRect.new()
-	veil.color = Color(0.015, 0.025, 0.045, 0.22)
+	veil.color = Color(0.015, 0.025, 0.045, 0.16)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(veil)
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -54,28 +54,40 @@ func _build_backdrop() -> void:
 func _build_main_panel() -> void:
 	var panel := PanelContainer.new()
 	panel.name = "AltarOfferPanel"
-	panel.position = Vector2(54.0, 55.0)
-	panel.size = Vector2(1138.0, 952.0)
-	panel.add_theme_stylebox_override("panel", ScreenDesign.box(Color("081522c9"), Color("a897747a"), 2))
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var panel_width: float = minf(1480.0, viewport_size.x - 96.0)
+	var panel_height: float = minf(980.0, viewport_size.y - 72.0)
+	panel.offset_left = -panel_width * 0.5
+	panel.offset_right = panel_width * 0.5
+	panel.offset_top = -panel_height * 0.5
+	panel.offset_bottom = panel_height * 0.5
+	panel.add_theme_stylebox_override("panel", ScreenDesign.box(Color("06121ea3"), Color("c2a575a8"), 1))
 	add_child(panel)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 14)
+	column.name = "VBoxContainer"
+	column.add_theme_constant_override("separation", 12)
 	panel.add_child(column)
 	var kicker := _make_label("ACT GUARDIAN FALLEN    /    THE OVERKILL ALTAR", 16, Color("e3bb82"))
+	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(kicker)
 	var title := _make_label("POWER HAS A PRICE", 49, Color("f8e9cf"), true)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
 	var premise := _make_label("The damage you dealt beyond death has become power. Bind one Zenith relic before the next descent.", 22, Color("c2d5da"))
 	premise.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	premise.custom_minimum_size.y = 62.0
+	premise.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	premise.custom_minimum_size.y = 48.0
 	column.add_child(premise)
 	var rule := ScreenDesign.rule(column, Color("d7b680"))
 	rule.custom_minimum_size.y = 2.0
 	_balance_label = _make_label("", 27, Color("f3c27e"))
+	_balance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_balance_label)
 	var offer_row := HBoxContainer.new()
 	offer_row.name = "ZenithOffers"
-	offer_row.add_theme_constant_override("separation", 18)
+	offer_row.add_theme_constant_override("separation", 20)
+	offer_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_child(offer_row)
 	for id: String in OFFER_IDS:
 		var relic: ClockRelicData = ContentDatabase.get_clock_relic(id)
@@ -83,11 +95,12 @@ func _build_main_panel() -> void:
 			_build_offer(offer_row, relic, int(PRICES[id]))
 	_status_label = _make_label("One purchase at this altar. You may leave and keep your Overkill Points.", 18, Color("afc3c9"))
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_status_label)
 	_leave_button = Button.new()
 	_leave_button.text = "CONTINUE TO THE NEXT DESCENT  ›"
 	_leave_button.custom_minimum_size = Vector2(430.0, 62.0)
-	_leave_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_leave_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_leave_button.pressed.connect(_continue_after_altar)
 	ScreenDesign.add_actionable_fx(_leave_button, Color("e3bb82"), true)
 	column.add_child(_leave_button)
@@ -96,17 +109,19 @@ func _build_main_panel() -> void:
 func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> void:
 	var card := PanelContainer.new()
 	card.name = relic.id
-	card.custom_minimum_size = Vector2(342.0, 575.0)
-	card.add_theme_stylebox_override("panel", ScreenDesign.box(Color("0c1a2aa6"), relic.primary_color().darkened(0.32), 1))
+	var card_width: float = minf(410.0, (get_viewport_rect().size.x - 180.0) / 3.0)
+	card.custom_minimum_size = Vector2(card_width, 530.0)
+	card.add_theme_stylebox_override("panel", ScreenDesign.box(Color("071522a6"), relic.primary_color().darkened(0.32), 1))
 	parent.add_child(card)
 	var inner := VBoxContainer.new()
 	inner.add_theme_constant_override("separation", 7)
 	card.add_child(inner)
 	var tier := _make_label("ZENITH    /    %s" % ClockRelicData.role_to_name(relic.role).to_upper(), 14, relic.primary_color())
+	tier.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	inner.add_child(tier)
 	var art := TextureRect.new()
 	art.texture = RelicArt.load_texture(relic.art_id)
-	art.custom_minimum_size = Vector2(284.0, 266.0)
+	art.custom_minimum_size = Vector2(card_width - 44.0, 238.0)
 	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -123,6 +138,7 @@ func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> v
 	buy.name = "BuyButton"
 	buy.text = "BIND  ·  %d OVERKILL" % price
 	buy.custom_minimum_size.y = 56.0
+	buy.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	buy.pressed.connect(func() -> void: _open_purchase(relic.id))
 	ScreenDesign.add_actionable_fx(buy, relic.primary_color(), true)
 	inner.add_child(buy)
@@ -132,19 +148,25 @@ func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> v
 func _build_modal() -> void:
 	_modal = PanelContainer.new()
 	_modal.name = "PurchaseConfirmation"
-	_modal.position = Vector2(250.0, 190.0)
-	_modal.size = Vector2(740.0, 600.0)
+	_modal.set_anchors_preset(Control.PRESET_CENTER)
+	_modal.offset_left = -370.0
+	_modal.offset_right = 370.0
+	_modal.offset_top = -300.0
+	_modal.offset_bottom = 300.0
 	_modal.add_theme_stylebox_override("panel", ScreenDesign.box(Color("07121cf8"), Color("e7c48a"), 2))
 	add_child(_modal)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 20)
 	_modal.add_child(column)
 	var kicker := _make_label("SEAL THE BARGAIN", 15, Color("e7c48a"))
+	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(kicker)
 	_modal_title = _make_label("", 37, Color("f6e8d0"), true)
+	_modal_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_modal_title)
 	_modal_detail = _make_label("", 21, Color("c5d7da"))
 	_modal_detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_modal_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_modal_detail.custom_minimum_size.y = 96.0
 	column.add_child(_modal_detail)
 	_replacement_select = OptionButton.new()

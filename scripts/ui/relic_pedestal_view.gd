@@ -98,7 +98,7 @@ func _ready() -> void:
 
 func _fit_content() -> void:
 	if _battle_layout:
-		custom_minimum_size = Vector2(320, 370)
+		custom_minimum_size = Vector2(320, 320)
 		return
 	match _presentation_mode:
 		"collection": custom_minimum_size = Vector2(272, 370)
@@ -119,22 +119,22 @@ func _gui_input(event: InputEvent) -> void:
 func use_battle_layout() -> void:
 	_battle_layout = true
 	_presentation_mode = "battle"
-	custom_minimum_size = Vector2(320, 370)
-	pivot_offset = Vector2(160, 185)
+	custom_minimum_size = Vector2(320, 320)
+	pivot_offset = Vector2(160, 160)
 	_card_panel.pivot_offset = pivot_offset
 	# Keep the battle card in the same deterministic vertical container as every
 	# other relic presentation. Reparenting these controls into absolute
 	# positions allowed their old container transforms to survive for a frame,
 	# leaving the title behind the artwork on some resolutions.
 	_margin.offset_left = 14
-	_margin.offset_top = 4
+	_margin.offset_top = 0
 	_margin.offset_right = -14
-	_margin.offset_bottom = -4
-	_vbox.add_theme_constant_override("separation", 2)
+	_margin.offset_bottom = 0
+	_vbox.add_theme_constant_override("separation", 0)
 	_role_badge.hide()
 	_name_label.custom_minimum_size.y = 28
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_art_frame.custom_minimum_size.y = 200
+	_art_frame.custom_minimum_size.y = 170
 	_art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	# Two-line dual-effect relics need a little more breathing room at the
 	# battle text size; otherwise their second line is clipped beneath the art.

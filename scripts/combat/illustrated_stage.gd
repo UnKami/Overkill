@@ -16,8 +16,8 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	var actor := IllustratedActor.new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
-		actor.target_height = 360.0
-		actor.target_width = 552.0
+		actor.target_height = 432.0
+		actor.target_width = 662.0
 	actor.facing = facing
 	actor.position = at
 	actor.size = Vector2(552, 624)
