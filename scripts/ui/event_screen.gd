@@ -62,13 +62,17 @@ func _ready() -> void:
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.custom_minimum_size.y = 66
 		button.add_theme_font_size_override("font_size", 20)
-		button.tooltip_text = choice.consequence_summary
+		button.tooltip_text = ""
 		var full_clock: bool = choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
 		button.disabled = RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost or full_clock
-		if button.disabled:
-			button.tooltip_text = "Chronometer full. Dismantle or replace a relic first." if full_clock else "You cannot currently pay this consequence.\n" + choice.consequence_summary
 		button.pressed.connect(func() -> void: _on_choice_pressed(choice))
 		_choice_box.add_child(button)
+		var detail := ScreenDesign.label(_choice_box, choice.consequence_summary, 15, ScreenDesign.MUTED)
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		detail.custom_minimum_size = Vector2(0, 24)
+		if full_clock:
+			detail.text = "Chronometer full (12/12). Visit the Reliquary to free a slot before taking this bargain."
+			detail.add_theme_color_override("font_color", Color("e7b96f"))
 	var footer := ScreenDesign.label(stack, "THE CLOCK REMEMBERS WHAT YOU CHOOSE", 13, ScreenDesign.MUTED)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_load_background()

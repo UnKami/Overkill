@@ -17,6 +17,7 @@ func _ready() -> void:
 		relic_view.bind_relic(relic)
 		var sunburst: TextureRect = relic_view.get_node("CardPanel/Margin/VBox/ArtFrame/EssenceSunburst") as TextureRect
 		assert(sunburst.visible and sunburst.texture != null and sunburst.texture.resource_path == sunburst_path, "Selection art must match %s" % relic.affinity_name())
+		assert(relic_view.get_node("CardPanel/Margin/VBox/ArtFrame").find_child("RelicLightStrokes", true, false) == null, "Deprecated rays must not show over the dedicated sunburst")
 		assert(sunburst.texture.get_image().detect_alpha() != Image.ALPHA_NONE, "Essence sunburst must preserve transparency")
 		tested_sunbursts[sunburst_path] = true
 	assert(tested_sunbursts.size() == 15, "All five single essences and ten dual pairings must have distinct halos")
@@ -39,12 +40,30 @@ func _ready() -> void:
 		var inventory := preload("res://scripts/ui/clock_collection_screen.gd").new()
 		inventory.mode = mode
 		await _show(inventory)
+		if mode == "collection":
+			assert(inventory._grid.get_child_count() == RunManager.clock_inventory.size(), "Reliquary must show every owned relic copy independently")
+			var identities: Dictionary = {}
+			for copy_view: RelicPedestalView in inventory._grid.get_children():
+				assert(copy_view.tooltip_text.contains("INSTANCE IDENTITIES"), "Every copy needs its own instance identity")
+				identities[copy_view.tooltip_text] = true
+			assert(identities.size() == RunManager.clock_inventory.size(), "Duplicate relic designs remain separate entries")
 		await _capture(mode)
 	for event: EventData in EventCatalog.get_all_events():
 		var event_screen: Control = load("res://scenes/event_screen.tscn").instantiate()
 		event_screen.set_event(event)
 		await _show(event_screen)
+		if event.id == "greedy_shrine":
+			assert(event_screen._choice_box.get_child_count() == event.choices.size() * 2, "Every shrine choice has a visible consequence line")
+			assert(event_screen._choice_box.get_child(1).text.contains("Chronometer full"), "A full clock explains why relic bargains are unavailable")
 		await _capture(event.id)
+	var altar: Control = load("res://scenes/boss_overkill_altar.tscn").instantiate()
+	await _show(altar)
+	var offer_panel: PanelContainer = altar.get_node("AltarOfferPanel")
+	var offer_style: StyleBoxFlat = offer_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	assert(offer_style.bg_color.a < 0.9, "Zenith composition must let the scenic altar artwork show through")
+	var zenith_cards: HBoxContainer = altar.get_node("AltarOfferPanel/VBoxContainer/ZenithOffers") if altar.has_node("AltarOfferPanel/VBoxContainer/ZenithOffers") else altar.find_child("ZenithOffers", true, false) as HBoxContainer
+	assert(zenith_cards != null and zenith_cards.get_child_count() == 3, "All Zenith offers remain visible over the lighter panel")
+	await _capture("zenith-altar")
 	for act: int in range(1, 4):
 		RunManager.act_number = act
 		await _show(load("res://scenes/map_screen.tscn").instantiate())
@@ -72,9 +91,10 @@ func _ready() -> void:
 			var actor: IllustratedActor = pair[0]
 			var stats: Label = pair[1]
 			var art_rect: Rect2 = actor._front.get_global_rect()
-			assert(art_rect.position.y > battle._choice_overlay.get_global_rect().end.y, "Fighters must not overlap the choices")
+			assert(art_rect.position.y + 4.0 >= battle._choice_overlay.get_global_rect().end.y, "Fighters must remain below the choices")
 			assert(absf(actor.global_position.x + actor.size.x * 0.5 - stats.get_global_rect().get_center().x) < 1.0, "HP centered below its combatant")
-			assert(art_rect.end.y < stats.global_position.y, "HP below combatant artwork")
+			var portrait: Control = battle._player_portrait if actor == stage.player else battle._enemy_portrait
+			assert(art_rect.end.y < portrait.get_node("CharacterStatusPanel").get_global_rect().position.y, "Combatant stats must sit below enlarged character art")
 		await _capture(enemy_id)
 	if is_instance_valid(_current):
 		_current.queue_free()

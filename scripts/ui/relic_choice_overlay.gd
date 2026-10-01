@@ -47,18 +47,14 @@ func install(battle: CombatController) -> void:
 	_body.add_child(replacements)
 	choices.move_child(battle._phase_label, choices.get_child_count() - 1)
 	_footer = HBoxContainer.new()
-	_footer.alignment = BoxContainer.ALIGNMENT_CENTER
 	choices.add_child(_footer)
+	_footer.hide()
 	battle._skip_button.reparent(header)
-	header.move_child(battle._skip_button,1)
+	header.move_child(battle._skip_button, 1)
 	battle._skip_button.z_index = 31
-	battle._skip_button.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	battle._skip_button.offset_left = -205
-	battle._skip_button.offset_right = 205
-	battle._skip_button.offset_top = -88
-	battle._skip_button.offset_bottom = -20
-	battle._skip_button.custom_minimum_size = Vector2(370, 68)
-	battle._skip_button.add_theme_font_size_override("font_size", 25)
+	battle._skip_button.custom_minimum_size = Vector2(520, 58)
+	battle._skip_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	battle._skip_button.add_theme_font_size_override("font_size", 17)
 	battle._skip_button.add_theme_stylebox_override("normal", ScreenDesign.box(Color("5a3020f2"), Color("f0bd69"), 2))
 	battle._skip_button.add_theme_stylebox_override("hover", ScreenDesign.box(Color("75402af5"), Color("ffe0a1"), 2))
 	ScreenDesign.add_actionable_fx(battle._skip_button, Color("f0bd69"), true)
@@ -94,8 +90,6 @@ func present(battle: CombatController) -> void:
 			button.tooltip_text = "%s\n%s\nReplace this relic and resolve the three-hour sweep." % [relic.name if relic else "Empty slot",ClockInventory.describe(relic) if relic else ""]
 			replacements.add_child(button)
 			var relic_color: Color = relic.primary_color() if relic != null else ScreenDesign.GOLD
-			var secondary_color: Color = relic.secondary_color() if relic != null else relic_color
-			var dual: bool = relic != null and relic.secondary_essence >= 0
 			for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
 				var replacement_style := StyleBoxFlat.new()
 				replacement_style.bg_color = Color(0, 0, 0, 0) if state == "normal" else Color("18293699")
@@ -115,7 +109,7 @@ func present(battle: CombatController) -> void:
 			column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			column.add_theme_constant_override("separation", 3)
 			ScreenDesign.label(column, ("LOCKED · %02d" if socket.data.is_locked else ("HOUR %02d" if battle.current_drawn_relic == null else "REPLACE · %02d")) % hour, 21, relic_color, true)
-			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 24)
+			var title: Label = ScreenDesign.label(column, relic.name if relic != null else "Empty slot", 24, ScreenDesign.TEXT, true)
 			title.autowrap_mode = TextServer.AUTOWRAP_OFF
 			title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			title.clip_text = true
@@ -126,32 +120,26 @@ func present(battle: CombatController) -> void:
 			art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			column.add_child(art)
-			var strokes := preload("res://scripts/ui/relic_light_strokes.gd").new() as RelicLightStrokes
-			strokes.set_essences(relic_color, secondary_color, dual)
-			strokes.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			strokes.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			button.add_child(strokes)
-			button.move_child(strokes, 0)
-			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 19, ScreenDesign.MUTED)
+			var sunburst := TextureRect.new()
+			sunburst.name = "EssenceSunburst"
+			sunburst.texture = load(RelicPedestalView.essence_sunburst_path(relic)) as Texture2D if relic != null else null
+			sunburst.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			sunburst.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			sunburst.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			sunburst.modulate.a = 0.34
+			sunburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			sunburst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			button.add_child(sunburst)
+			button.move_child(sunburst, 0)
+			art.z_index = 1
+			column.z_index = 2
+			var effect: Label = ScreenDesign.label(column, RelicPedestalView.summary(relic) if relic != null else "No relic bound.", 17, ScreenDesign.TEXT)
 			effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			effect.clip_text = false
 			effect.custom_minimum_size.y = 36
 			effect.text = effect.text.replace("Lasts until absorbed or battle ends.", "")
 			for label: Node in column.get_children(): label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			var accent_primary := ColorRect.new()
-			accent_primary.color = relic_color
-			accent_primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			accent_primary.hide()
-			if dual:
-				var accent_secondary := ColorRect.new()
-				accent_secondary.color = secondary_color
-				accent_secondary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				accent_secondary.anchor_left = 0.5
-				accent_secondary.anchor_right = 1.0
-				accent_secondary.offset_bottom = 4
-				accent_secondary.z_index = 2
-				accent_secondary.hide()
 			ScreenDesign.add_actionable_fx(button, relic_color, false)
 			button.pressed.connect(battle._on_player_socket_pressed.bind(hour, socket))
 			button.mouse_entered.connect(battle._preview_swap.bind(socket))
@@ -170,9 +158,9 @@ func present(battle: CombatController) -> void:
 func _place() -> void:
 	if not is_instance_valid(_battle): return
 	set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	size = Vector2(1120, 0)
+	size = Vector2(minf(1320.0, _battle.size.x - 48.0), 0)
 	reset_size()
-	position = Vector2((_battle.size.x - size.x) * 0.5, 66)
+	position = Vector2((_battle.size.x - size.x) * 0.5, 52)
 
 func toggle_inspection() -> void:
 	if _battle._resolving or _battle._combat_over: return

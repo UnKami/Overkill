@@ -9,17 +9,18 @@ var _last_attack_profile: Dictionary = {}
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-175, 65))
+	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-221, -5))
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	var actor := IllustratedActor.new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
-		actor.target_height = 300.0
+		actor.target_height = 360.0
+		actor.target_width = 552.0
 	actor.facing = facing
 	actor.position = at
-	actor.size = Vector2(460, 520)
+	actor.size = Vector2(552, 624)
 	var shadow: Polygon2D = Polygon2D.new()
 	var points: PackedVector2Array = []
 	for i: int in 32:
@@ -27,7 +28,7 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 		points.append(Vector2(cos(angle) * 82, sin(angle) * 11))
 	shadow.polygon = points
 	shadow.color = Color(0.015,0.02,0.025,0.38)
-	shadow.position = at + Vector2(230,475)
+	shadow.position = at + Vector2(276,574)
 	add_child(shadow)
 	add_child(actor)
 	_shadows[actor] = shadow
@@ -44,7 +45,7 @@ func _replace_enemy() -> void:
 		remove_child(enemy)
 		enemy.queue_free()
 	var path := _enemy_art_path(_art_id if not _art_id.is_empty() else _kind)
-	enemy = _actor(path, -1.0, Vector2(355, 65))
+	enemy = _actor(path, -1.0, Vector2(309, -5))
 
 
 func _enemy_art_path(enemy_id: String) -> String:

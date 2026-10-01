@@ -304,7 +304,6 @@ func _configure_enemy_clock() -> void:
 func _start_phase_one() -> void:
 	phase = Phase.ASSEMBLY
 	turn_number = 1
-	_show_turn_banner("ASSEMBLY CYCLE ENGAGED")
 	_prompt_phase_one_draft()
 
 
@@ -379,7 +378,6 @@ func _transition_to_phase_two() -> void:
 	phase = Phase.QUADRANT
 	turn_number = 10
 	active_quadrant = 1
-	_show_turn_banner("QUADRANT ENGINE ENGAGED")
 	AmbientMotion.punch_scale(_nexus_sigil, 1.18, 0.5)
 	CombatVFX.play_shield_pulse(self, _nexus_sigil.global_position + _nexus_sigil.size * 0.5)
 	await get_tree().create_timer(0.4 / AudioManager.combat_animation_speed_scale()).timeout
@@ -421,7 +419,7 @@ func _prompt_phase_two_turn() -> void:
 		_phase_label.text = "SECTOR %d  /  HOURS %02d–%02d     ·     All relics are bound. Sweep to activate this wedge." % [active_quadrant, hours[0], hours[2]]
 
 	_skip_button.show()
-	_skip_button.text = "KEEP & SWEEP  %d → %d → %d" % hours
+	_skip_button.text = "KEEP ALL · DISCARD DRAWN · SWEEP %d → %d → %d" % hours
 	_choice_overlay.present(self)
 	_refresh_guidance()
 
@@ -833,10 +831,10 @@ func _update_stats_display() -> void:
 
 
 func _build_combatant_stat_ui() -> void:
-	_player_core_strip = _make_stat_row(_player_portrait, "CoreStatStrip", -95.0, 4.0, 190.0, 26.0)
-	_enemy_core_strip = _make_stat_row(_enemy_portrait, "CoreStatStrip", -95.0, 4.0, 190.0, 26.0)
-	_player_status_strip = _make_stat_row(_player_portrait, "StatusIconStrip", -112.0, 32.0, 224.0, 26.0)
-	_enemy_status_strip = _make_stat_row(_enemy_portrait, "StatusIconStrip", -112.0, 32.0, 224.0, 26.0)
+	_player_core_strip = _make_stat_row(_player_portrait, "CoreStatStrip", -140.0, 124.0, 280.0, 26.0)
+	_enemy_core_strip = _make_stat_row(_enemy_portrait, "CoreStatStrip", -140.0, 124.0, 280.0, 26.0)
+	_player_status_strip = _make_stat_row(_player_portrait, "StatusIconStrip", -140.0, 152.0, 280.0, 26.0)
+	_enemy_status_strip = _make_stat_row(_enemy_portrait, "StatusIconStrip", -140.0, 152.0, 280.0, 26.0)
 	_player_stats_label.visible = false
 	_enemy_stats_label.visible = false
 
@@ -900,7 +898,7 @@ func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: Strin
 	var label := Label.new()
 	label.text = value
 	label.add_theme_color_override("font_color", Color("f1eadb"))
-	label.add_theme_font_size_override("font_size", 12)
+	label.add_theme_font_size_override("font_size", 16)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_child(label)
@@ -930,7 +928,7 @@ func _add_status_chip(row: HBoxContainer, icon_path: String, glyph: String, stac
 		chip.add_child(symbol)
 	var amount := Label.new()
 	amount.text = str(stack)
-	amount.add_theme_font_size_override("font_size", 12)
+	amount.add_theme_font_size_override("font_size", 15)
 	amount.add_theme_color_override("font_color", tint)
 	amount.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_child(amount)

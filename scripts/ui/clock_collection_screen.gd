@@ -159,32 +159,17 @@ func _rebuild() -> void:
 	if mode == "upgrade": _summary.text += "     •     One free upgrade this visit."
 	if mode == "removal": _summary.text += "     •     Keep at least 10 relics."
 	if mode == "collection":
-		var groups: Dictionary = {}
-		var group_order: Array[String] = []
-		for entry: Dictionary in RunManager.clock_inventory:
-			var key := "%s:%d" % [str(entry.get("id", "")), int(entry.get("level", 0))]
-			if not groups.has(key):
-				groups[key] = {"entry": entry, "count": 0}
-				group_order.append(key)
-			var group: Dictionary = groups[key]
-			group.count = int(group.count) + 1
-			groups[key] = group
-		_summary.text = "%d relics  /  %d designs  /  9 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), groups.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
-		for key: String in group_order:
-			var group: Dictionary = groups[key]
-			var relic := ClockInventory.resolve(group.entry)
+		_summary.text = "%d INDIVIDUAL RELICS  /  9 CLOCK SOCKETS  /  %d RESERVES     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
+		for index: int in RunManager.clock_inventory.size():
+			var entry: Dictionary = RunManager.clock_inventory[index]
+			var relic := ClockInventory.resolve(entry)
 			if relic == null:
 				continue
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
 			view.use_collection_layout()
 			view.bind_relic(relic, "")
-			view.set_stack_count(int(group.count))
-			var grouped_entries: Array[Dictionary] = []
-			for owned_entry: Dictionary in RunManager.clock_inventory:
-				if "%s:%d" % [str(owned_entry.get("id", "")), int(owned_entry.get("level", 0))] == key:
-					grouped_entries.append(owned_entry)
-			view.set_instance_identities(grouped_entries)
+			view.set_instance_identities([entry])
 		return
 	if mode == "upgrade":
 		# Upgrading is a decision between relic designs, not a wall of identical

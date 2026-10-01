@@ -56,7 +56,7 @@ func _build_main_panel() -> void:
 	panel.name = "AltarOfferPanel"
 	panel.position = Vector2(54.0, 55.0)
 	panel.size = Vector2(1138.0, 952.0)
-	panel.add_theme_stylebox_override("panel", ScreenDesign.box(Color("081522e8"), Color("a897747a"), 2))
+	panel.add_theme_stylebox_override("panel", ScreenDesign.box(Color("081522c9"), Color("a897747a"), 2))
 	add_child(panel)
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 14)
@@ -97,7 +97,7 @@ func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> v
 	var card := PanelContainer.new()
 	card.name = relic.id
 	card.custom_minimum_size = Vector2(342.0, 575.0)
-	card.add_theme_stylebox_override("panel", ScreenDesign.box(Color("0c1a2aed"), relic.primary_color().darkened(0.32), 2))
+	card.add_theme_stylebox_override("panel", ScreenDesign.box(Color("0c1a2aa6"), relic.primary_color().darkened(0.32), 1))
 	parent.add_child(card)
 	var inner := VBoxContainer.new()
 	inner.add_theme_constant_override("separation", 7)
@@ -132,7 +132,7 @@ func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> v
 func _build_modal() -> void:
 	_modal = PanelContainer.new()
 	_modal.name = "PurchaseConfirmation"
-	_modal.position = Vector2(588.0, 205.0)
+	_modal.position = Vector2(250.0, 190.0)
 	_modal.size = Vector2(740.0, 600.0)
 	_modal.add_theme_stylebox_override("panel", ScreenDesign.box(Color("07121cf8"), Color("e7c48a"), 2))
 	add_child(_modal)
@@ -149,6 +149,7 @@ func _build_modal() -> void:
 	column.add_child(_modal_detail)
 	_replacement_select = OptionButton.new()
 	_replacement_select.custom_minimum_size.y = 62.0
+	_replacement_select.get_popup().max_size = Vector2i(620, 360)
 	_replacement_select.item_selected.connect(func(_index: int) -> void: _update_confirm_state())
 	column.add_child(_replacement_select)
 	_confirm_button = Button.new()

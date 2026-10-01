@@ -27,7 +27,6 @@ var _battle_layout: bool = false
 var _choice_style: StyleBoxFlat
 var _pulse_time: float = 0.0
 var _presentation_mode: String = "standard"
-var _light_strokes: RelicLightStrokes
 var _essence_sunburst: TextureRect
 
 const ESSENCE_SUNBURST_NAMES: Array[String] = ["orange", "blue", "purple", "green", "blood_red"]
@@ -46,13 +45,9 @@ func _ready() -> void:
 	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
 	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	# Remove the former broad radial bloom: at UI scale it reads like fog in a
-	# rectangular card. Hard-edged essence-colored lines now provide the aura.
+	# The dedicated transparent sunburst is the sole relic aura. Do not stack
+	# the retired procedural spokes over it: their mismatched rays look noisy.
 	_art_glow.hide()
-	_light_strokes = preload("res://scripts/ui/relic_light_strokes.gd").new() as RelicLightStrokes
-	_light_strokes.name = "RelicLightStrokes"
-	_art_frame.add_child(_light_strokes)
-	_art_frame.move_child(_light_strokes, 0)
 	_essence_sunburst = TextureRect.new()
 	_essence_sunburst.name = "EssenceSunburst"
 	_essence_sunburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -270,8 +265,6 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 	effect_style.set_border_width_all(0)
 	effect_style.set_corner_radius_all(0)
 	_effect_frame.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	_light_strokes.set_essences(role_col, secondary_col, has_secondary)
-
 	_load_art(relic.art_id)
 	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
 	ScreenDesign.apply_text_size(self)

@@ -10,12 +10,11 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Codex | fix/yonatan-full-ui-polish | Boss Overkill altar and cinematic trailer | `scripts/autoload/game_flow.gd`, `scripts/autoload/content_database.gd`, `scripts/ui/boss_overkill_altar.gd`, `scenes/boss_overkill_altar.tscn`, `data/clock_relics/zenith/`, `assets/screens/cinematic/boss_overkill_altar.jpg`, `assets/relics/active/rel_27_*_object.png`, `assets/relics/active/rel_28_*_object.png`, `assets/relics/active/rel_29_*_object.png`, `docs/trailer-2026-09-30.md`, `trailer/` | 2026-09-30 |
-| Codex | fix/yonatan-full-ui-polish | Generate and integrate essence-matched relic selection sunbursts | `assets/relics/essence_sunbursts/`, `scripts/ui/relic_pedestal_view.gd`, `scripts/combat/crystalline_visual_test.gd`, `docs/art/crystalline-canon.md`, `CHANGELOG_AI.md` | 2026-09-30 |
+| Yonatan's AI (Codex) | fix/yonatan-full-ui-polish | Battle stats, relic replacement/collection, event and Zenith altar presentation polish | `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/clock_collection_screen.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/event_screen.gd`; `scripts/ui/boss_overkill_altar.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/combat_controller.gd`; `scripts/combat/crystalline_visual_test.gd`; `scripts/combat/presentation_polish_test.gd`; `VERSION`; `project.godot`; `README.md`; `installer/README.md`; `docs/encounter-037.md`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md` | 2026-10-01 |
 
 
 
-Published baseline: `v0.34.0-test` (gameplay source `3b343d3679ed5748f8aeeb8e8f83344db89acdbd`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links are live through documentation-only PR #19.
+Published baseline: `v0.36.0-test` (gameplay source `b45b52d5240f0eaf9ffceaf188864c3db0fc707f`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links and trailer are live through documentation-only PR #21.
 
 ---
 
