@@ -10,7 +10,7 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's AI (Codex) | fix/yonatan-full-ui-polish | 0.38.0 forge/modal, relic-copy, combatant scale, and Overkill Altar composition pass | `scripts/ui/clock_collection_screen.gd`; `scripts/ui/upgrade_preview_dialog.gd`; `scenes/upgrade_preview_dialog.tscn`; `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/boss_overkill_altar.gd`; `scenes/boss_overkill_altar.tscn`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/presentation_polish_test.gd`; `scripts/combat/crystalline_visual_test.gd`; `scripts/ui/boss_altar_test.gd`; `scenes/boss_altar_test.tscn`; `VERSION`; `project.godot`; `docs/encounter-038.md`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md` | 2026-10-01 |
+| Yonatan's AI (Codex) | fix/yonatan-full-ui-polish | 0.38.0 forge/modal, relic-copy, combatant scale, and Overkill Altar composition pass | `scripts/ui/clock_collection_screen.gd`; `scripts/ui/upgrade_preview_dialog.gd`; `scenes/upgrade_preview_dialog.tscn`; `scripts/ui/relic_pedestal_view.gd`; `scripts/ui/relic_choice_overlay.gd`; `scripts/ui/boss_overkill_altar.gd`; `scenes/boss_overkill_altar.tscn`; `scripts/combat/illustrated_stage.gd`; `scripts/combat/clock_battle_presentation.gd`; `scripts/combat/presentation_polish_test.gd`; `scripts/combat/crystalline_visual_test.gd`; `scripts/ui/boss_altar_test.gd`; `scenes/boss_altar_test.tscn`; `VERSION`; `project.godot`; `docs/encounter-038.md`; `UPDATE_LOG.md`; `CHANGELOG_AI.md`; `ACTIVE_WORK.md` | 2026-10-01 |
 
 
 
