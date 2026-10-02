@@ -40,6 +40,10 @@ func _render_tooltip(r: RelicData) -> String:
 func _trigger_sentence(r: RelicData) -> String:
 	var trigger_text: String = _condition_to_text(r.trigger, r.condition_data)
 	var effect_text: String = " ".join(r.effects.map(_effect_to_text))
+	if r.trigger == RelicData.Trigger.ON_PLAYER_HIT:
+		for effect: EffectData in r.effects:
+			if effect.effect_type == EffectData.EffectType.APPLY_STATUS and effect.status_id == "weak":
+				effect_text = "Weaken the foe's next strike."
 	var limit_text: String = " Once per battle." if bool(r.condition_data.get("once_per_combat", false)) else ""
 	return "%s %s%s" % [trigger_text, effect_text, limit_text]
 
@@ -61,6 +65,12 @@ func _condition_to_text(trigger: RelicData.Trigger, condition_data: Dictionary) 
 			return "Triggers at the start of combat."
 		RelicData.Trigger.ON_CARD_PLAYED:
 			return "Triggers when you play a card."
+		RelicData.Trigger.ON_PLAYER_ATTACK:
+			return "Triggers on your first attack of battle."
+		RelicData.Trigger.ON_BLOCK_GAIN:
+			return "Triggers when one of your Block relics activates."
+		RelicData.Trigger.ON_PLAYER_HIT:
+			return "Triggers after you lose Vitality to a hit."
 		_:
 			return "Always active."
 
@@ -79,6 +89,10 @@ func _effect_to_text(effect: EffectData) -> String:
 			return "Gain %d energy." % effect.value
 		EffectData.EffectType.HEAL:
 			return "Restore %d Vitality." % effect.value
+		EffectData.EffectType.ATTACK_BONUS:
+			return "Add %d damage to your next strike." % effect.value
+		EffectData.EffectType.STRENGTH:
+			return "Gain %d Strength." % effect.value
 		EffectData.EffectType.APPLY_STATUS:
 			return "Apply %d %s." % [effect.value, effect.status_id.capitalize()]
 		_:

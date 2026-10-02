@@ -8,6 +8,10 @@ enum Trigger {
 	ON_COMBAT_START,
 	ON_CARD_PLAYED,
 	PASSIVE_MODIFIER,
+	## Appended to preserve serialized ordinals for existing relic resources.
+	ON_PLAYER_ATTACK,
+	ON_BLOCK_GAIN,
+	ON_PLAYER_HIT,
 }
 
 @export var id: String = ""

@@ -7,6 +7,7 @@ signal combat_lost
 
 enum Phase { ASSEMBLY, QUADRANT }
 const Presentation := preload("res://scripts/combat/clock_battle_presentation.gd")
+const ArtifactPresentation := preload("res://scripts/combat/artifact_presentation.gd")
 
 @export var pedestal_scene: PackedScene
 @export var damage_number_scene: PackedScene
@@ -542,6 +543,7 @@ func _resolve_tick(hour: int) -> void:
 			player_block += relic.base_block
 			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK")
 			CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
+			_apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
 		if relic.apply_strength > 0:
 			player_strength += relic.apply_strength
 		if relic.apply_thorns > 0:
@@ -576,12 +578,14 @@ func _resolve_tick(hour: int) -> void:
 	# Player Attacks Enemy
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.base_damage > 0:
 		var relic := p_socket.slotted_relic
-		var dmg := relic.base_damage + player_strength + player_next_hit_bonus
+		_apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_ATTACK)
+		var strike_bonus: int = player_next_hit_bonus
+		var dmg := relic.base_damage + player_strength + strike_bonus
 		player_next_hit_bonus = 0
 
 		# Execution Wedge condition
 		if relic.conditional_hp_threshold_pct > 0.0 and float(enemy_hp) / float(enemy_max_hp) <= relic.conditional_hp_threshold_pct:
-			dmg = relic.conditional_damage + player_strength
+			dmg = relic.conditional_damage + player_strength + strike_bonus
 
 		if enemy_vulnerable > 0:
 			dmg = int(floor(dmg * 1.5))
@@ -745,6 +749,8 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 
 		player_hp -= unblocked
 		_spawn_damage_number(_player_portrait, unblocked, false, Color("#E24B4A"))
+		if player_hp > 0:
+			_apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_HIT)
 
 		# Siphon modifier check
 		if e_socket.is_siphon and OKRunState.current_ok > 0:
@@ -812,6 +818,7 @@ func _apply_run_artifact_trigger(trigger: RelicData.Trigger, trigger_value: int 
 		if once_per_combat:
 			_artifact_triggered_this_combat[artifact.id] = true
 		for effect: EffectData in artifact.effects:
+			var presentation_target: Control = _player_portrait
 			match effect.effect_type:
 				EffectData.EffectType.BLOCK:
 					player_block += effect.value
@@ -828,13 +835,30 @@ func _apply_run_artifact_trigger(trigger: RelicData.Trigger, trigger_value: int 
 						_spawn_damage_number(_player_portrait, healed, false, Color("b78af4"), "HEAL")
 				EffectData.EffectType.APPLY_STATUS:
 					if effect.status_id == "weak":
-						enemy_weak += effect.value
+						# Player-hit triggers resolve after the foe's hit; retain the
+						# status through this tick's decay so it affects its next strike.
+						enemy_weak += effect.value + (1 if trigger == RelicData.Trigger.ON_PLAYER_HIT else 0)
+						presentation_target = _enemy_portrait
 					elif effect.status_id == "vulnerable":
 						enemy_vulnerable += effect.value
+						presentation_target = _enemy_portrait
+				EffectData.EffectType.ATTACK_BONUS:
+					player_next_hit_bonus += effect.value
+					presentation_target = _enemy_portrait
+				EffectData.EffectType.STRENGTH:
+					player_strength += effect.value
+			ArtifactPresentation.play(self, _artifact_icon(artifact.id), presentation_target, artifact, effect)
 		for child: Node in _relic_bar.get_children():
 			if child is RelicIcon and child.relic.id == artifact.id:
 				(child as RelicIcon).play_trigger_flash()
 				break
+
+
+func _artifact_icon(artifact_id: String) -> RelicIcon:
+	for child: Node in _relic_bar.get_children():
+		if child is RelicIcon and (child as RelicIcon).relic != null and (child as RelicIcon).relic.id == artifact_id:
+			return child as RelicIcon
+	return null
 
 
 func _check_combat_end() -> bool:

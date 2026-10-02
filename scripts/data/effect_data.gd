@@ -13,6 +13,8 @@ enum EffectType {
 	                 ## Burst-archetype cards (schema's effect_type enum is explicitly
 	                 ## open-ended, this is an intentional documented extension)
 	HEAL,            ## restore Vitality, capped at maximum HP
+	ATTACK_BONUS,    ## add damage to the next player strike
+	STRENGTH,        ## gain player Strength
 }
 
 ## Closed set of non-FIXED value sources an effect's value can resolve from at

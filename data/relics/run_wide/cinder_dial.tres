@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="AttackBonus"]
+script = ExtResource("2_effect")
+effect_type = 9
+value = 4
+
+[resource]
+script = ExtResource("1_relic")
+id = "artifact_cinder_dial"
+display_name = "Cinder Dial"
+trigger = 7
+effects = Array[Resource]([SubResource("AttackBonus")])
+condition_data = {"essence": "orange", "once_per_combat": true}
+flavor_text = "The first attack draws a burning line through the hourglass."
+art_id = "run_wide/cinder_dial"

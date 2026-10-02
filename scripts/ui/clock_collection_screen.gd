@@ -305,7 +305,7 @@ func _build_artifact_offer(relic: RelicData) -> void:
 	offer.add_theme_constant_override("separation", 2)
 	_artifact_grid.add_child(offer)
 	var art_stage := Control.new()
-	art_stage.custom_minimum_size = Vector2(0.0, 135.0)
+	art_stage.custom_minimum_size = Vector2(0.0, 112.0)
 	art_stage.mouse_filter = Control.MOUSE_FILTER_STOP
 	offer.add_child(art_stage)
 	var aura := TextureRect.new()
@@ -371,6 +371,7 @@ func _buy_artifact(relic: RelicData, price: int) -> void:
 
 func _artifact_color(relic: RelicData) -> Color:
 	match str(relic.condition_data.get("essence", "blue")):
+		"orange": return Color("ff9a36")
 		"blood_red": return Color("cf5e5b")
 		"green": return Color("77d28b")
 		"purple": return Color("bd83ed")
@@ -384,15 +385,27 @@ func _artifact_aura_path(relic: RelicData) -> String:
 
 
 func _artifact_description(relic: RelicData) -> String:
-	var when_text: String = "At the start of each battle" if relic.trigger == RelicData.Trigger.ON_COMBAT_START else ("On the first kill" if relic.trigger == RelicData.Trigger.ON_KILL else "On qualifying Overkill")
+	var when_text: String = ""
+	match relic.trigger:
+		RelicData.Trigger.ON_COMBAT_START: when_text = "Battle start"
+		RelicData.Trigger.ON_KILL: when_text = "First kill"
+		RelicData.Trigger.ON_OVERKILL: when_text = "Qualifying Overkill"
+		RelicData.Trigger.ON_PLAYER_ATTACK: when_text = "First attack"
+		RelicData.Trigger.ON_BLOCK_GAIN: when_text = "Block relic"
+		RelicData.Trigger.ON_PLAYER_HIT: when_text = "After a hit"
+		_: when_text = "When its condition is met"
 	var effect_text: String = ""
 	for effect: EffectData in relic.effects:
 		match effect.effect_type:
 			EffectData.EffectType.BLOCK: effect_text = "+%d Block" % effect.value
 			EffectData.EffectType.GAIN_OK: effect_text = "+%d Overkill" % effect.value
 			EffectData.EffectType.HEAL: effect_text = "+%d Vitality" % effect.value
-			EffectData.EffectType.APPLY_STATUS: effect_text = "Apply %d Weak" % effect.value
-	return "%s: %s%s" % [when_text, effect_text, "\nOnce per battle" if bool(relic.condition_data.get("once_per_combat", false)) else ""]
+			EffectData.EffectType.APPLY_STATUS:
+				effect_text = "Weaken next strike" if relic.trigger == RelicData.Trigger.ON_PLAYER_HIT and effect.status_id == "weak" else "Apply %d %s" % [effect.value, effect.status_id.capitalize()]
+			EffectData.EffectType.ATTACK_BONUS: effect_text = "+%d damage" % effect.value
+			EffectData.EffectType.STRENGTH: effect_text = "+%d Strength" % effect.value
+	var limit_text: String = " · 1/battle" if bool(relic.condition_data.get("once_per_combat", false)) else ""
+	return "%s: %s%s" % [when_text, effect_text, limit_text]
 
 func _choose(uid: int) -> void:
 	if _committed: return
