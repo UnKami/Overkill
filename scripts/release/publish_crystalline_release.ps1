@@ -1,6 +1,7 @@
 param(
  [ValidateSet('inspect','publish','verify','docs','merge-docs')][string]$Mode='inspect',
  [string]$Source,
+ [string]$SourceBranch,
  [int]$PullRequest=0
 )
 $ErrorActionPreference='Stop'
@@ -8,7 +9,8 @@ $repoRoot = (Resolve-Path "$PSScriptRoot/../..").Path
 Set-Location $repoRoot
 $version=(Get-Content VERSION -Raw).Trim()
 $tag="v$version-test"
-$sourceBranch='fix/yonatan-full-ui-polish'
+$sourceBranch = if ([string]::IsNullOrWhiteSpace($SourceBranch)) { (git branch --show-current).Trim() } else { $SourceBranch.Trim() }
+if ($sourceBranch -notmatch '^(feat|fix)/') { throw "Release source must be an isolated feature/fix branch, got: $sourceBranch" }
 $base='https://api.github.com/repos/UnKami/Overkill'
 $credentialLines="protocol=https`nhost=github.com`n`n" | git credential fill
 $credential=@{}
@@ -105,7 +107,7 @@ if($Mode -eq 'docs'){
  $commit=Api '/git/commits' 'Post' @{message="docs: publish verified $version playtest downloads";tree=$newTree.sha;parents=@($main.object.sha)}
  $branch="fix/yonatan-{0:000}-downloads" -f ([version]$version).Minor
  $null=Api '/git/refs' 'Post' @{ref="refs/heads/$branch";sha=$commit.sha}
- $pr=Api '/pulls' 'Post' @{title="Publish verified $version crystalline playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on fix/yonatan-full-ui-polish. No gameplay merge is included."}
+ $pr=Api '/pulls' 'Post' @{title="Publish verified $version crystalline playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on $sourceBranch. No gameplay merge is included."}
  Write-Output "DOCS_PR $($pr.number) $($pr.html_url) $($commit.sha)"
  exit
 }

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Heal"]
+script = ExtResource("2_effect")
+effect_type = 8
+value = 12
+
+[resource]
+script = ExtResource("1_relic")
+id = "artifact_deepwell_suture"
+display_name = "Deepwell Suture"
+trigger = 0
+effects = Array[Resource]([SubResource("Heal")])
+condition_data = {"essence": "purple", "once_per_combat": true, "min_hp_missing": 12}
+flavor_text = "On the first fallen foe, its sealed spring returns lost vitality."
+art_id = "run_wide/deepwell_suture"

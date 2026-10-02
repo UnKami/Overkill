@@ -6,7 +6,7 @@ func _ready() -> void:
 	Engine.time_scale = 12.0
 	for encounter_id in ["boneghoul", "act1_elite", "act1_boss", "act2_boss", "act3_boss", "final_boss"]:
 		seed(912)
-		RunManager.start_new_run([], [], 80, 912)
+		RunManager.start_new_run([], [], 500, 912)
 		# Later-act fixtures model accumulated forge upgrades, not inflated HP.
 		if encounter_id in ["act2_boss", "act3_boss", "final_boss"]:
 			for entry in RunManager.clock_inventory: entry.level = 1
@@ -34,7 +34,7 @@ func _ready() -> void:
 			steps += 1
 		assert(steps < 60, "Encounter failed to terminate")
 		print("ENCOUNTER_RESULT %s %s hp=%d turns=%d enemy_hp=%d" % [encounter_id, "WIN" if battle.enemy_hp <= 0 and battle.player_hp > 0 else "LOSS", battle.player_hp, steps, battle.enemy_hp])
-		if encounter_id == "boneghoul": assert(battle.enemy_hp <= 0 and battle.player_hp > 0)
+		assert(battle.enemy_hp <= 0 and battle.player_hp > 0, "%s must be winnable with the shipped 500 Vitality baseline" % encounter_id)
 		await get_tree().create_timer(1.0).timeout
 		battle.queue_free()
 		await get_tree().process_frame

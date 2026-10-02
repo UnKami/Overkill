@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Overkill"]
+script = ExtResource("2_effect")
+effect_type = 5
+value = 5
+
+[resource]
+script = ExtResource("1_relic")
+id = "artifact_ashen_ledger"
+display_name = "Ashen Ledger"
+trigger = 1
+effects = Array[Resource]([SubResource("Overkill")])
+condition_data = {"essence": "blood_red", "min_ok": 8, "once_per_combat": true}
+flavor_text = "The first decisive excess of each battle is entered twice."
+art_id = "run_wide/ashen_ledger"

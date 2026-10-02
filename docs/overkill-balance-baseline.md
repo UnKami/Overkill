@@ -137,3 +137,11 @@ Per the original design doc's guidance to scale difficulty *on-theme* rather tha
 - Whether the OK pricing curve's exponent (1.15) creates a "cliff" where prices spike too fast by late Act 2
 - Whether Burst-archetype classes clear Excess thresholds so much faster than Volume-archetype classes that per-class threshold tuning becomes mandatory rather than optional
 - Boss HP bands against actual player damage output at the point a boss is reached — this can only be verified once real combat exists, not from these numbers alone
+
+## 9. v0.40 defensive relic and shop Artifact check
+
+- Guard Plate: 7 persistent Block (previously 5).
+- Reinforced Wall: 10 persistent Block (previously 8).
+- Artifacts are a separate, unique, run-wide inventory, never one of the twelve Chronometer copies. Three unowned objects appear at the Clockwright; the visit permits one purchase at 30 Overkill before the existing 1.15 per-run category escalation.
+- Current first-pass effects: Aegis Seed (+8 Block at battle start); Ashen Ledger (+5 Overkill once per battle for an 8+ Overkill hit); Deepwell Suture (heal 12 Vitality on the first kill with 12+ missing Vitality); Verdigris Thorn (apply 1 Weak to the opening foe).
+- These are test values, not final balance claims. In particular, 30 Overkill may be too expensive or cheap for the current playtest economy, and passive effects need campaign playtesting against the present 500 HP baseline.

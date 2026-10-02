@@ -39,15 +39,15 @@ func _ready() -> void:
 		socket.intent_weak = 0
 	battle.player_sockets[0].slotted_relic = ContentDatabase.get_clock_relic("REL-04")
 	await battle._resolve_tick(1)
-	assert(battle.player_block == 5)
+	assert(battle.player_block == 7, "Guard Plate now gives early blue relics a meaningful defense floor")
 	await battle._resolve_tick(2)
-	assert(battle.player_block == 5, "Unused block must persist across ticks")
+	assert(battle.player_block == 7, "Unused block must persist across ticks")
 	battle.enemy_sockets[2].intent_damage = 4
 	await battle._resolve_tick(3)
-	assert(battle.player_block == 1 and battle.player_hp == 80)
+	assert(battle.player_block == 3 and battle.player_hp == 80)
 	battle.player_sockets[3].slotted_relic = ContentDatabase.get_clock_relic("REL-06")
 	await battle._resolve_tick(4)
-	assert(battle.player_block == 9, "Stronger block adds 8 to remaining block")
+	assert(battle.player_block == 13, "Reinforced Wall now adds 10 to remaining block")
 	battle.player_sockets[4].slotted_relic = ContentDatabase.get_clock_relic("REL-02")
 	var hp_before: int = battle.enemy_hp
 	await battle._resolve_tick(5)

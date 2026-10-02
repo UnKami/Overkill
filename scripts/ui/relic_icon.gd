@@ -16,8 +16,7 @@ func _ready() -> void:
 
 
 func _apply_relic() -> void:
-	var path := "res://assets/relics/%s.png" % relic.art_id
-	texture = ResourceLoader.load(path) if ResourceLoader.exists(path) else null
+	texture = RelicArt.load_texture(relic.art_id)
 	tooltip_text = _render_tooltip(relic)
 
 
@@ -41,7 +40,8 @@ func _render_tooltip(r: RelicData) -> String:
 func _trigger_sentence(r: RelicData) -> String:
 	var trigger_text: String = _condition_to_text(r.trigger, r.condition_data)
 	var effect_text: String = " ".join(r.effects.map(_effect_to_text))
-	return "%s %s" % [trigger_text, effect_text]
+	var limit_text: String = " Once per battle." if bool(r.condition_data.get("once_per_combat", false)) else ""
+	return "%s %s%s" % [trigger_text, effect_text, limit_text]
 
 
 func _condition_to_text(trigger: RelicData.Trigger, condition_data: Dictionary) -> String:
@@ -51,7 +51,8 @@ func _condition_to_text(trigger: RelicData.Trigger, condition_data: Dictionary) 
 				return "Triggers when you Overkill by %d or more." % int(condition_data["min_ok"])
 			return "Triggers on any Overkill."
 		RelicData.Trigger.ON_KILL:
-			return "Triggers on kill."
+			var missing_hp: int = int(condition_data.get("min_hp_missing", 0))
+			return "Triggers on kill when at least %d Vitality is missing." % missing_hp if missing_hp > 0 else "Triggers on kill."
 		RelicData.Trigger.ON_TURN_START:
 			return "Triggers at the start of your turn."
 		RelicData.Trigger.ON_TURN_END:
@@ -76,6 +77,10 @@ func _effect_to_text(effect: EffectData) -> String:
 			return "Draw %d card(s)." % effect.value
 		EffectData.EffectType.ENERGY_GAIN:
 			return "Gain %d energy." % effect.value
+		EffectData.EffectType.HEAL:
+			return "Restore %d Vitality." % effect.value
+		EffectData.EffectType.APPLY_STATUS:
+			return "Apply %d %s." % [effect.value, effect.status_id.capitalize()]
 		_:
 			return ""
 

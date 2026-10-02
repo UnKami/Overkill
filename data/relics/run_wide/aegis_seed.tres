@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Block"]
+script = ExtResource("2_effect")
+effect_type = 1
+value = 8
+
+[resource]
+script = ExtResource("1_relic")
+id = "artifact_aegis_seed"
+display_name = "Aegis Seed"
+trigger = 4
+effects = Array[Resource]([SubResource("Block")])
+condition_data = {"essence": "blue", "once_per_combat": true}
+flavor_text = "At the first bell of each battle, its shell unfolds into a ward."
+art_id = "run_wide/aegis_seed"

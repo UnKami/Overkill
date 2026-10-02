@@ -220,9 +220,12 @@ func remove_card_from_deck(instance_id: int) -> bool:
 	return false
 
 
-func add_relic(relic: RelicData) -> void:
+func add_relic(relic: RelicData) -> bool:
+	if relic == null or (relic.id.begins_with("artifact_") and has_relic(relic.id)):
+		return false
 	relics_held.append(relic)
 	relics_changed.emit(relics_held)
+	return true
 
 
 func has_relic(relic_id: String) -> bool:

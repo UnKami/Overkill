@@ -177,19 +177,19 @@ func use_collection_layout() -> void:
 
 func use_shop_layout() -> void:
 	_presentation_mode = "shop"
-	custom_minimum_size = Vector2(246, 402)
+	custom_minimum_size = Vector2(246, 352)
 	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_margin.offset_left = 13
-	_margin.offset_top = 13
+	_margin.offset_top = 10
 	_margin.offset_right = -13
-	_margin.offset_bottom = -12
-	_vbox.add_theme_constant_override("separation", 4)
+	_margin.offset_bottom = -10
+	_vbox.add_theme_constant_override("separation", 3)
 	_role_badge.custom_minimum_size.y = 18
 	_role_badge.add_theme_font_size_override("font_size", 13)
 	_name_label.custom_minimum_size.y = 30
 	_name_label.add_theme_font_size_override("font_size", 22)
-	_art_frame.custom_minimum_size.y = 184
-	_effect_frame.custom_minimum_size.y = 66
+	_art_frame.custom_minimum_size.y = 155
+	_effect_frame.custom_minimum_size.y = 60
 	_desc_label.add_theme_font_size_override("normal_font_size", 16)
 	_slot_button.custom_minimum_size.y = 46
 	_slot_button.add_theme_font_size_override("font_size", 16)

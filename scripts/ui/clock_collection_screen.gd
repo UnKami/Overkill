@@ -1,4 +1,4 @@
-extends Control
+class_name ClockCollectionScreen extends Control
 ## Shared inventory, merchant and forge. All actions mutate the same saved copies.
 signal resolved
 
@@ -9,6 +9,9 @@ var _grid: GridContainer
 var _summary: Label
 var _committed: bool = false
 var _offers: Array = []
+var _artifact_offers: Array[RelicData] = []
+var _artifact_grid: GridContainer
+var _artifact_purchase_made: bool = false
 var _upgrade_preview: UpgradePreviewDialog
 const Pedestal := preload("res://scenes/relic_pedestal_view.tscn")
 
@@ -75,9 +78,13 @@ func _ready() -> void:
 	_add_legend_token(legend, "DEBUFF", ClockRelicData.Essence.DEBUFF)
 	_add_legend_token(legend, "OVERKILL", ClockRelicData.Essence.OVERKILL)
 	var scroll := ScrollContainer.new()
+	scroll.name = "InventoryScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER if get_viewport_rect().size.x >= 1500.0 else ScrollContainer.SCROLL_MODE_AUTO
+	# The shop's artifact row sits below its five clock offers. Keep a visible
+	# scroll cue at desktop resolutions so the separate, run-wide purchases are
+	# not mistaken for decorative art below the fold.
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	column.add_child(scroll)
 	_grid = GridContainer.new()
@@ -85,11 +92,30 @@ func _ready() -> void:
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grid.add_theme_constant_override("h_separation", 12 if mode == "shop" else 16)
 	_grid.add_theme_constant_override("v_separation", 18)
-	scroll.add_child(_grid)
+	var scroll_content := VBoxContainer.new()
+	scroll_content.add_theme_constant_override("separation", 22)
+	scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(scroll_content)
+	scroll_content.add_child(_grid)
+	if mode == "shop":
+		var artifact_heading := ScreenDesign.label(scroll_content, "RUN-WIDE ARTIFACTS  ·  ONE UNIQUE PURCHASE", 20, Color("e8c994"), true)
+		artifact_heading.name = "RunArtifactShopHeading"
+		var artifact_note := ScreenDesign.label(scroll_content, "These objects travel with you; they never occupy a clock socket.", 15, Color("b7c4cc"))
+		artifact_note.name = "RunArtifactShopNote"
+		_artifact_grid = GridContainer.new()
+		_artifact_grid.name = "RunArtifactShopGrid"
+		_artifact_grid.columns = 3
+		_artifact_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_artifact_grid.add_theme_constant_override("h_separation", 26)
+		_artifact_grid.add_theme_constant_override("v_separation", 16)
+		scroll_content.add_child(_artifact_grid)
 	scroll.resized.connect(func() -> void:
 		var card_width: float = 258.0 if mode == "shop" else 288.0
 		var maximum: int = 5 if mode == "shop" else 4
-		_grid.columns = maxi(1, mini(maximum, int((scroll.size.x + 12.0) / card_width))))
+		_grid.columns = maxi(1, mini(maximum, int((scroll.size.x + 12.0) / card_width)))
+		if mode == "shop" and is_instance_valid(_artifact_grid):
+			_artifact_grid.columns = maxi(1, mini(3, int((scroll.size.x + 26.0) / 270.0)))
+	)
 	var back := Button.new()
 	back.text = "ENTER BATTLE  ›" if pre_battle else ("CLOSE RELIQUARY" if overlay else "RETURN TO MAP")
 	back.custom_minimum_size = Vector2(220, 50)
@@ -124,6 +150,11 @@ func _ready() -> void:
 	_offers = ContentDatabase.all_clock_relics().duplicate()
 	_offers.shuffle()
 	_offers = _offers.slice(0, 5)
+	for relic: RelicData in ContentDatabase.all_relics(true):
+		if relic.id.begins_with("artifact_") and not RunManager.has_relic(relic.id):
+			_artifact_offers.append(relic)
+	_artifact_offers.shuffle()
+	_artifact_offers = _artifact_offers.slice(0, 3)
 	_rebuild()
 	ScreenDesign.apply_text_size(self)
 	modulate.a = 0
@@ -154,8 +185,12 @@ func _rebuild() -> void:
 	for child in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
+	if is_instance_valid(_artifact_grid):
+		for child: Node in _artifact_grid.get_children():
+			_artifact_grid.remove_child(child)
+			child.queue_free()
 	_summary.text = "%d relics  /  9 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
-	if mode == "shop": _summary.text = "%d OVERKILL AVAILABLE     ·     EACH RELIC COSTS 15     ·     PURCHASES JOIN YOUR CHRONOMETER" % OKRunState.current_ok
+	if mode == "shop": _summary.text = "%d OVERKILL AVAILABLE     ·     CLOCK RELICS COST 15     ·     ARTIFACTS ARE UNIQUE AND RUN-WIDE" % OKRunState.current_ok
 	if mode == "upgrade": _summary.text += "     •     One free upgrade this visit."
 	if mode == "removal": _summary.text += "     •     Keep at least 10 relics."
 	if mode == "collection":
@@ -222,6 +257,8 @@ func _rebuild() -> void:
 				view._slot_button.text = "CHRONOMETER FULL" if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Need %d more" % (price - OKRunState.current_ok)
 				view._slot_button.tooltip_text = "Dismantle or replace a relic before adding another." if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Not enough Overkill."
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
+		for relic: RelicData in _artifact_offers:
+			_build_artifact_offer(relic)
 		return
 	for entry in RunManager.clock_inventory:
 		var relic := ClockInventory.resolve(entry)
@@ -258,6 +295,104 @@ func _buy(relic: ClockRelicData, price: int) -> void:
 	_offers.erase(relic)
 	SaveManager.save_run()
 	_rebuild()
+
+
+func _build_artifact_offer(relic: RelicData) -> void:
+	var offer := VBoxContainer.new()
+	# Keep the CTA inside the first desktop viewport; the parent ScrollContainer
+	# remains available for smaller windows without clipping the purchase action.
+	offer.custom_minimum_size = Vector2(246.0, 286.0)
+	offer.add_theme_constant_override("separation", 2)
+	_artifact_grid.add_child(offer)
+	var art_stage := Control.new()
+	art_stage.custom_minimum_size = Vector2(0.0, 135.0)
+	art_stage.mouse_filter = Control.MOUSE_FILTER_STOP
+	offer.add_child(art_stage)
+	var aura := TextureRect.new()
+	aura.texture = load(_artifact_aura_path(relic))
+	aura.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	aura.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	aura.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	aura.modulate = Color(1.0, 1.0, 1.0, 0.46)
+	aura.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art_stage.add_child(aura)
+	AmbientMotion.pulse_alpha(aura, 0.34, 0.49, 3.2)
+	var art := TextureRect.new()
+	art.texture = RelicArt.load_texture(relic.art_id)
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	art.offset_left = 18.0
+	art.offset_right = -18.0
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	art_stage.add_child(art)
+	AmbientMotion.idle_bob(art, 3.0, 3.1)
+	var color: Color = _artifact_color(relic)
+	var label := ScreenDesign.label(offer, relic.display_name.to_upper(), 24, color, true)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.custom_minimum_size.y = 32.0
+	var detail := ScreenDesign.label(offer, _artifact_description(relic), 16, ScreenDesign.TEXT)
+	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	detail.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail.custom_minimum_size.y = 48.0
+	var price: int = RunManager.price_for("run_artifact", 30)
+	var buy := Button.new()
+	buy.custom_minimum_size.y = 48.0
+	buy.text = "PURCHASE  ·  %d OVERKILL" % price if not _artifact_purchase_made else "ONE ARTIFACT PER VISIT"
+	buy.disabled = _artifact_purchase_made or OKRunState.current_ok < price
+	if not _artifact_purchase_made and OKRunState.current_ok < price:
+		buy.text = "NEED %d MORE OVERKILL" % (price - OKRunState.current_ok)
+	ScreenDesign.add_actionable_fx(buy, color, true)
+	buy.pressed.connect(func() -> void: _buy_artifact(relic, price))
+	art_stage.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not buy.disabled:
+			_buy_artifact(relic, price)
+			art_stage.accept_event()
+	)
+	offer.add_child(buy)
+
+
+func _buy_artifact(relic: RelicData, price: int) -> void:
+	if _artifact_purchase_made or not _artifact_offers.has(relic) or RunManager.has_relic(relic.id):
+		return
+	if OKRunState.current_ok < price or not OKRunState.spend_ok(price, "run_artifact"):
+		return
+	if not RunManager.add_relic(relic):
+		OKRunState.gain_ok(price, "artifact_purchase_rollback")
+		return
+	_artifact_purchase_made = true
+	_artifact_offers.erase(relic)
+	RunManager.record_purchase("run_artifact")
+	SaveManager.save_run()
+	_rebuild()
+
+
+func _artifact_color(relic: RelicData) -> Color:
+	match str(relic.condition_data.get("essence", "blue")):
+		"blood_red": return Color("cf5e5b")
+		"green": return Color("77d28b")
+		"purple": return Color("bd83ed")
+		_: return Color("76d9ee")
+
+
+func _artifact_aura_path(relic: RelicData) -> String:
+	var essence: String = str(relic.condition_data.get("essence", "blue"))
+	var path: String = "res://assets/relics/essence_sunbursts/%s.png" % essence
+	return path if ResourceLoader.exists(path) else "res://assets/relics/essence_sunbursts/blue.png"
+
+
+func _artifact_description(relic: RelicData) -> String:
+	var when_text: String = "At the start of each battle" if relic.trigger == RelicData.Trigger.ON_COMBAT_START else ("On the first kill" if relic.trigger == RelicData.Trigger.ON_KILL else "On qualifying Overkill")
+	var effect_text: String = ""
+	for effect: EffectData in relic.effects:
+		match effect.effect_type:
+			EffectData.EffectType.BLOCK: effect_text = "+%d Block" % effect.value
+			EffectData.EffectType.GAIN_OK: effect_text = "+%d Overkill" % effect.value
+			EffectData.EffectType.HEAL: effect_text = "+%d Vitality" % effect.value
+			EffectData.EffectType.APPLY_STATUS: effect_text = "Apply %d Weak" % effect.value
+	return "%s: %s%s" % [when_text, effect_text, "\nOnce per battle" if bool(relic.condition_data.get("once_per_combat", false)) else ""]
 
 func _choose(uid: int) -> void:
 	if _committed: return

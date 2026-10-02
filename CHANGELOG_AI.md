@@ -4,6 +4,14 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-10-02 | Yonatan / Codex — Overkill 0.40.0 Clockwright Artifacts (release in progress)
+- **Branch / source:** `feat/yonatan-040-artifacts-block-balance`; exact source SHA and publication URL will be added after the tested package is released.
+- **Completed:** Added four shop-only unique run-wide Artifacts with newly generated, transparent crystalline-magitech object art; separate Clockwright shelf with per-visit single-purchase rule, scroll cue, visible CTA layout, color-matched sunbursts and reduced-motion idle/aura animation. Artifacts persist in run inventory without consuming Chronometer copies, appear as inspectable battle HUD icons, and use once-per-battle triggers for start-of-battle Block/Weak, conditional kill healing and qualifying Overkill. Guard Plate is 7 Block; Reinforced Wall is 10 Block. Encounter sweep uses the intended shipped 500 new-run Vitality baseline.
+- **Files:** New `assets/relics/run_wide/` PNGs, `data/relics/run_wide/` resources, artifact and engine test fixtures, `scripts/combat/`, `scripts/ui/`, autoload/resource changes, balance and image-direction docs. Updated project/release version metadata and v0.40 player documentation.
+- **Verification:** 15 Godot source suites passed, including `RUN_ARTIFACTS_OK` and `ENCOUNTER_PLAYTHROUGHS_OK`; final shop and battle screens were rendered at desktop size and reviewed. Export succeeded; the extracted portable passed its Artifact integration fixture and startup. Installer compiled. Per-user installer launch was attempted but Windows shell-folder discovery failed with `SHGetKnownFolderPath` `0x80070002`; installation remains unverified. Remote GitHub checks remain to be completed.
+- **Compatibility / limits:** Existing save layout remains compatible; Artifact uniqueness is enforced without changing legacy duplicate passive relic behavior. Balance values require a human campaign pass; unsigned test build and final user visual acceptance remain open.
+- **Next / handoff:** Finish exported payload/installer testing, publish exact-source `v0.40.0-test`, verify asset hashes and URLs, update download documentation through a reviewable docs-only PR, then release file locks.
+
 ## 2026-10-01 | Yonatan / Codex — Overkill 0.37.0 battle and relic-screen polish
 - **Branch / release source:** `fix/yonatan-full-ui-polish`; published [`v0.37.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.37.0-test), exact tested source `93ede9f5ce801b75049a29e6b0f6590034bd5017`.
 - **Completed:** Enlarged the battle combatants by 20% and restored readable vitality/Block/status bands; replaced retired relic spokes with dedicated essence sunbursts on replacement choices; showed each owned relic copy separately; clarified Keep & Sweep consequences; made Humming Shrine constraints inline; and made the Zenith offer surface more transparent.

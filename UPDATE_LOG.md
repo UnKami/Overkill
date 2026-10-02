@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.40.0 playtest — 2026-10-02
+
+- The Clockwright now offers three unique, run-wide Artifacts distinct from the 12-relic Chronometer roster. One may be purchased per shop visit; four new illustrated crystalline-magitech objects bring once-per-battle defensive, Overkill, healing and Weak effects. Idle motion/aura, battle trigger accents, reduced-motion support, and inspectable battle icons are included.
+- Guard Plate now grants 7 persistent Block (was 5); Reinforced Wall grants 10 (was 8). Save format and the 12-copy limit are unchanged. Existing saves remain compatible; a new run is recommended for balance and art review.
+- **Windows installer:** [OverkillSetup-0.40.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.40.0-test/OverkillSetup-0.40.0.exe), 322,803,743 bytes, SHA-256 `121bab5576402cf17c015fe14e8549a8a3f601060f56f83d62b6f49e1ac12767`.
+- **Portable ZIP:** [Overkill-0.40.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.40.0-test/Overkill-0.40.0-Windows.zip), 349,892,477 bytes, SHA-256 `610262b927ec209eb0bfc60e1303f68d754108e6c27685c9f0d09d96db9dde67`. [SHA-256 manifest](https://github.com/UnKami/Overkill/releases/download/v0.40.0-test/OverkillSetup-0.40.0.sha256), SHA-256 `8c40267a434117f2efdc25c511c80f07e49a31598f3bc80c825a095311e97264`.
+- **Source:** exact commit and branch will be listed in the v0.40.0-test release notes after the final source commit is frozen. Gameplay remains isolated from `main`; a docs-only PR updates default-branch download pointers.
+- **Verification:** Godot 4.5.1 source suites, exported portable `RUN_ARTIFACTS_OK` integration fixture and startup passed. ZIP contains the five expected files with hashes matching export. Installer compiled; isolated installed-app validation could not pass Windows shell-folder resolution (`SHGetKnownFolderPath`, `0x80070002`). Remote release assets are not yet published/verified. Full details: `.test-artifacts/verification-040.md`.
+- **Limits:** unsigned playtest; installer wizard/installed app, final user visual acceptance and a human full campaign are not claimed. Automated six-encounter coverage is not proof of broad balance. The root-certificate-store warning and selected non-fatal engine shutdown notices remain.
+
 ## 0.39.0 playtest — 2026-10-02
 
 - Multi-hit relics finish their complete attack sequence against the selected target after a lethal first hit, banking all remaining unblocked damage as Overkill. Every damaging relic now visibly travels through the arena; multi-hit attacks show distinct hit beats. Effect scale controls relic art and impact VFX size. Battle stat icons and values are enlarged, and shared screen identities have stronger contrast.

@@ -160,6 +160,10 @@ func _describe_relic(relic: RelicData) -> String:
 				sentences.append("Draw %d card(s)." % effect.value)
 			EffectData.EffectType.ENERGY_GAIN:
 				sentences.append("Gain %d energy." % effect.value)
+			EffectData.EffectType.HEAL:
+				sentences.append("Restore %d Vitality." % effect.value)
+			EffectData.EffectType.APPLY_STATUS:
+				sentences.append("Apply %d %s." % [effect.value, effect.status_id.capitalize()])
 	if not relic.flavor_text.is_empty():
 		sentences.append(relic.flavor_text)
 	return " ".join(sentences)
