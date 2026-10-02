@@ -10,9 +10,8 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | v0.40 shop-purchasable run-wide Artifacts, defensive/Block relic balance, screen/art/animation polish, verification and playtest release | `scripts/autoload/run_manager.gd`, `scripts/autoload/content_database.gd`, `scripts/autoload/game_flow.gd`, `scripts/ui/clock_collection_screen.gd`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/relic_art.gd`, `scripts/ui/relic_icon.gd`, `scripts/ui/treasure_screen.gd`, `scripts/ui/shop_screen.gd`, `scripts/release/`, `scripts/combat/`, `scripts/run/`, `scripts/data/`, `data/relics/`, `data/clock_relics/`, `scenes/run_artifact_test.tscn`, `docs/`, `assets/relics/`, `assets/screens/`, `.test-artifacts/`, `VERSION`, `README.md`, `installer/README.md`, `installer/overkill.iss`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `.github/workflows/` | 2026-10-02 |
 
-Published baseline: `v0.39.0-test` (gameplay source `87606327e909aadade1142f16cc4bfbf17ea425c`). Gameplay remains on `fix/yonatan-full-ui-polish`; default-branch download links await documentation-only PR #23 review. All locks are released.
+Published baseline: `v0.40.0-test` (source `fdee0ffb4ae217476610822d85fb7137cf21dc3a`) on `feat/yonatan-040-artifacts-block-balance`. Default-branch download links and verification notes are in documentation-only PR #24 awaiting review. All locks are released.
 
 ---
 
