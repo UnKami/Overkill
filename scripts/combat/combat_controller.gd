@@ -25,6 +25,7 @@ const Presentation := preload("res://scripts/combat/clock_battle_presentation.gd
 @onready var _turn_banner: Label = %TurnBanner
 @onready var _clash_nexus: Control = %ClashNexus
 @onready var _nexus_sigil: TextureRect = %NexusSigil
+@onready var _relic_bar: HBoxContainer = %RelicBar
 
 var phase: Phase = Phase.ASSEMBLY
 var turn_number: int = 1
@@ -80,6 +81,7 @@ var _player_status_strip: HBoxContainer
 var _enemy_status_strip: HBoxContainer
 var _player_core_strip: HBoxContainer
 var _enemy_core_strip: HBoxContainer
+var _artifact_triggered_this_combat: Dictionary = {}
 
 
 func _ready() -> void:
@@ -224,10 +226,14 @@ func _prepare_combat(with_intro: bool) -> void:
 	_load_visual_assets(main_enemy)
 	_init_player_deck()
 	_init_chronometers(main_enemy)
+	_artifact_triggered_this_combat.clear()
+	_build_run_artifact_tray()
 	for hour in range(1,10):
 		var socket := _player_chrono.get_socket_view(hour)
 		socket.previewed.connect(_preview_swap)
 		socket.preview_ended.connect(_refresh_guidance)
+	_update_stats_display()
+	_apply_run_artifact_trigger(RelicData.Trigger.ON_COMBAT_START)
 	_update_stats_display()
 	if with_intro:
 		_battle_intro = preload("res://scripts/combat/battle_intro_sequence.gd").new()
@@ -686,6 +692,8 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 			var overkill := unblocked - enemy_hp
 			_spawn_damage_number(_enemy_portrait, hp_damage, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 			enemy_hp = 0
+			if target_was_alive:
+				_apply_run_artifact_trigger(RelicData.Trigger.ON_KILL)
 			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
 				player_block += overkill
 			_handle_overkill(overkill)
@@ -755,13 +763,8 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 func _handle_overkill(overkill: int) -> void:
 	_spawn_damage_number(_enemy_portrait, overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL))
 	OKRunState.record_kill(overkill, "combat:chronometer")
-	for passive in RunManager.relics_held:
-		if passive.trigger != RelicData.Trigger.ON_OVERKILL or overkill < int(passive.condition_data.get("min_ok", 1)): continue
-		for effect in passive.effects:
-			if effect.effect_type == EffectData.EffectType.BLOCK:
-				player_block += effect.value
-			elif effect.effect_type == EffectData.EffectType.GAIN_OK:
-				OKRunState.gain_ok(effect.value, passive.id)
+	if overkill > 0:
+		_apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, overkill)
 	TutorialCallout.trigger("first_ok")
 
 	var enemy_pos: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
@@ -772,6 +775,66 @@ func _handle_overkill(overkill: int) -> void:
 
 	if overkill >= 5:
 		AmbientMotion.shake(self, clampf(overkill * 0.4, 6.0, 12.0), 0.5)
+
+
+func _build_run_artifact_tray() -> void:
+	for child: Node in _relic_bar.get_children():
+		child.queue_free()
+	_relic_bar.visible = not RunManager.relics_held.is_empty()
+	_relic_bar.offset_left = 30.0
+	_relic_bar.offset_top = 106.0
+	_relic_bar.offset_right = 300.0
+	_relic_bar.offset_bottom = 158.0
+	_relic_bar.add_theme_constant_override("separation", 8)
+	for artifact: RelicData in RunManager.relics_held:
+		var icon := RelicIcon.new()
+		icon.custom_minimum_size = Vector2(46.0, 46.0)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		icon.relic = artifact
+		_relic_bar.add_child(icon)
+
+
+func _apply_run_artifact_trigger(trigger: RelicData.Trigger, trigger_value: int = 0) -> void:
+	for artifact: RelicData in RunManager.relics_held:
+		if artifact.trigger != trigger:
+			continue
+		var minimum_overkill: int = int(artifact.condition_data.get("min_ok", 0))
+		if trigger == RelicData.Trigger.ON_OVERKILL and trigger_value < minimum_overkill:
+			continue
+		var minimum_missing_hp: int = int(artifact.condition_data.get("min_hp_missing", 0))
+		if trigger == RelicData.Trigger.ON_KILL and player_max_hp - player_hp < minimum_missing_hp:
+			continue
+		var once_per_combat: bool = bool(artifact.condition_data.get("once_per_combat", false))
+		if once_per_combat and _artifact_triggered_this_combat.has(artifact.id):
+			continue
+		if once_per_combat:
+			_artifact_triggered_this_combat[artifact.id] = true
+		for effect: EffectData in artifact.effects:
+			match effect.effect_type:
+				EffectData.EffectType.BLOCK:
+					player_block += effect.value
+					_spawn_damage_number(_player_portrait, effect.value, false, Color("76d9ee"), "BLOCK")
+					CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
+				EffectData.EffectType.GAIN_OK:
+					OKRunState.gain_ok(effect.value, "artifact:%s" % artifact.id)
+					_spawn_damage_number(_player_portrait, effect.value, true, Color("cf5e5b"))
+				EffectData.EffectType.HEAL:
+					var healed: int = mini(effect.value, maxi(player_max_hp - player_hp, 0))
+					player_hp += healed
+					if healed > 0:
+						AudioManager.play_combat_sound("heal")
+						_spawn_damage_number(_player_portrait, healed, false, Color("b78af4"), "HEAL")
+				EffectData.EffectType.APPLY_STATUS:
+					if effect.status_id == "weak":
+						enemy_weak += effect.value
+					elif effect.status_id == "vulnerable":
+						enemy_vulnerable += effect.value
+		for child: Node in _relic_bar.get_children():
+			if child is RelicIcon and child.relic.id == artifact.id:
+				(child as RelicIcon).play_trigger_flash()
+				break
 
 
 func _check_combat_end() -> bool:
