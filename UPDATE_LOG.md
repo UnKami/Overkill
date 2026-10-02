@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.41.0 playtest — 2026-10-02
+
+- Adds four unique run-wide Artifacts to the Clockwright's shop (eight total), separate from the twelve bound clock relics. Also improves transition pacing, lethal Bleed/Thorns kill triggers, and prevents a no-op Rest choice at full Vitality.
+- **Installer:** [OverkillSetup-0.41.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.41.0-test/OverkillSetup-0.41.0.exe), 327,598,650 bytes, SHA-256 `a41984ba7b512cdbc0e466dcb6d330ebc0bd3de3b583e6d7f1f97c495987ba02`.
+- **Portable ZIP:** [Overkill-0.41.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.41.0-test/Overkill-0.41.0-Windows.zip), 354,687,424 bytes, SHA-256 `3c2972916916a114b03683e242f0963bf8090f773d789a58260dde5b57052d76`. [Checksum manifest](https://github.com/UnKami/Overkill/releases/download/v0.41.0-test/OverkillSetup-0.41.0.sha256).
+- **Source:** `6e16d250e97162e78fe53d19c60374241a50bdc2`, tag [`v0.41.0-test`](https://github.com/UnKami/Overkill/releases/tag/v0.41.0-test), feature branch `feat/yonatan-040-artifacts-block-balance`. Gameplay remains separate from main's source.
+- **Verification:** Six Godot 4.5.1 suites passed: `RUN_ARTIFACTS_OK`, `MAP_UX_OK`, `POLISH_INTEGRATION_OK`, `BATTLE_GUIDANCE_OK`, `CLOCK_SMOKE_OK`, and `PRESENTATION_014_OK`. The exported PCK compiled; the portable ZIP has the expected five files with extracted payload hashes matching the export, and the extracted game launched headlessly. GitHub release metadata confirms uploaded asset sizes and SHA-256 digests match the local files. Installer compilation passed, but interactive setup and installed-game launch were not verified. Restricted Godot runs still print a root-certificate warning and selected nonfatal ObjectDB shutdown notices.
+- **Compatibility and limits:** Existing saves remain compatible; a new run is recommended to see the full shop pool and acquisition rules. Unsigned prerelease. Full human campaign, broad balance acceptance, interactive installer wizard, and final user visual acceptance remain open.
+
+
 ## 0.35.0 playtest — 2026-10-01
 
 - The 12-copy chronometer cap now asks which exact relic to replace when a battle reward is claimed at capacity. Shop and event grants respect the cap; new runs have 500 Vitality, existing saves migrate proportionally, bosses have 100 HP, and combatant stats use compact icon/value chips.
