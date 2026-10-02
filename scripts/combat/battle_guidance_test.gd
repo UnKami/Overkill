@@ -9,6 +9,8 @@ func _ready() -> void:
 	var enemy: EnemyData = ContentDatabase.get_enemy("act1_boss").duplicate()
 	enemy.max_hp = 800
 	battle.start_combat([enemy])
+	assert(battle._battle_info.get_theme_font_size("font_size") == 20, "Enemy mechanics guidance must use comfortable desktop text size")
+	assert(battle._battle_info.global_position.y + battle._battle_info.size.y <= battle.size.y - 10, "Enemy mechanics guidance must not sit against the bottom edge")
 	await capture("next-hour-one")
 	assert(battle._guidance.target == battle._player_chrono.get_socket_view(1))
 	var draft: RelicPedestalView = battle._pedestal_row.get_child(0)

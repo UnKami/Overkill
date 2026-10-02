@@ -66,6 +66,17 @@ func _ready() -> void:
 	assert((treasure.get_node("TreasureRevealCurrencyAmount") as Label).text == "+25")
 	assert((treasure.get_node("TreasureRevealRelicName") as Label).text == recovered_relic.display_name)
 	await _capture_visual("treasure-reveal")
+	RunManager.current_hp = RunManager.max_hp
+	var rest_site: Control = load("res://scenes/rest_site_screen.tscn").instantiate()
+	add_child(rest_site)
+	await get_tree().process_frame
+	var rest_button: Button = rest_site.find_child("RestButton", true, false) as Button
+	assert(rest_button.disabled and rest_button.text.contains("already full"), "A full-health rest must be visibly unavailable rather than offering a no-op choice")
+	var full_vitality: int = RunManager.current_hp
+	rest_site.call("_on_rest_pressed")
+	assert(RunManager.current_hp == full_vitality and not bool(rest_site.get("_resolved")), "Trying to rest at full Vitality must not consume the visit")
+	rest_site.queue_free()
+	await get_tree().process_frame
 
 	var pause: Control = load("res://scenes/pause_menu.tscn").instantiate()
 	add_child(pause)
@@ -96,7 +107,7 @@ func _ready() -> void:
 	while GameFlow._transitioning and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
 	assert(not GameFlow._transitioning and get_tree().current_scene != null, "The selected destination screen must finish opening")
-	print("MAP_UX_OK: direct waypoint routing, relic art selection, cache reward reveal, abandon confirmation, unique final enemy art")
+	print("MAP_UX_OK: direct waypoint routing, relic art selection, cache reveal, full-health rest guard, abandon confirmation, unique final enemy art")
 	get_tree().quit()
 
 

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_relic"]
+[ext_resource type="Script" path="res://scripts/data/effect_data.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Vitality"]
+script = ExtResource("2_effect")
+effect_type = 8
+value = 6
+
+[resource]
+script = ExtResource("1_relic")
+id = "artifact_tideward_clapper"
+display_name = "Tideward Clapper"
+trigger = 8
+effects = Array[Resource]([SubResource("Vitality")])
+condition_data = {"essence": "blue", "once_per_combat": true}
+flavor_text = "When a bound ward rises, the clapper calls six stolen heartbeats home."
+art_id = "run_wide/tideward_clapper"

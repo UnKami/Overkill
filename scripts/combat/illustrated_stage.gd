@@ -6,6 +6,7 @@ var _kind: String = "stalker"
 var _art_id: String = ""
 var _shadows: Dictionary = {}
 var _last_attack_profile: Dictionary = {}
+var _has_configured_enemy: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -38,14 +39,39 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 func configure_enemy(kind: String, art_id: String = "") -> void:
 	_kind = kind
 	_art_id = art_id
-	if is_node_ready(): _replace_enemy()
+	if is_node_ready():
+		_replace_enemy(_has_configured_enemy)
+		_has_configured_enemy = true
 
-func _replace_enemy() -> void:
-	if is_instance_valid(enemy):
+func _replace_enemy(animate_reinforcement: bool = false) -> void:
+	var departing_enemy: IllustratedActor = enemy if is_instance_valid(enemy) and animate_reinforcement else null
+	if is_instance_valid(enemy) and not animate_reinforcement:
 		remove_child(enemy)
 		enemy.queue_free()
 	var path := _enemy_art_path(_art_id if not _art_id.is_empty() else _kind)
 	enemy = _actor(path, -1.0, Vector2(309, -5))
+	if departing_enemy != null:
+		_animate_reinforcement(departing_enemy, enemy)
+
+
+func _animate_reinforcement(departing: IllustratedActor, incoming: IllustratedActor) -> void:
+	# A brief crystalline handoff makes a kill legible before the next enemy acts.
+	var departure := departing.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
+	departure.tween_property(departing, "modulate:a", 0.0, 0.15)
+	departure.tween_property(departing, "position:y", departing.position.y + 20.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	var departing_shadow: CanvasItem = _shadows.get(departing)
+	if departing_shadow != null:
+		departure.tween_property(departing_shadow, "modulate:a", 0.0, 0.15)
+	departure.chain().tween_callback(departing.queue_free)
+	incoming.pivot_offset = incoming.size * Vector2(0.5, 0.82)
+	incoming.position += Vector2(58.0, -8.0)
+	incoming.scale = Vector2(0.88, 0.88)
+	incoming.modulate.a = 0.0
+	var arrival := incoming.create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
+	arrival.tween_interval(0.10)
+	arrival.tween_property(incoming, "position", Vector2(309.0, -5.0), 0.20).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	arrival.parallel().tween_property(incoming, "scale", Vector2.ONE, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	arrival.parallel().tween_property(incoming, "modulate:a", 1.0, 0.16)
 
 
 func _enemy_art_path(enemy_id: String) -> String:

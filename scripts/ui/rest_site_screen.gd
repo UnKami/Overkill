@@ -43,7 +43,7 @@ func _ready() -> void:
 	content.move_child(state, title.get_index() + 1)
 	var rule := ScreenDesign.rule(content, ScreenDesign.GOLD)
 	content.move_child(rule, state.get_index() + 1)
-	_rest_button.text = "REST\nRecover up to %d vitality" % int(round(RunManager.max_hp*REST_HEAL_FRACTION))
+	_refresh_rest_option()
 	_upgrade_button.text = "UPGRADE A RELIC\nStrengthen one bound relic for the rest of this run"
 	_back_button.text = "RETURN TO MAP"
 	for button in [_rest_button,_upgrade_button,_back_button]:
@@ -57,7 +57,10 @@ func _ready() -> void:
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_status_label.add_theme_color_override("font_color", ScreenDesign.CYAN)
 	ScreenDesign.frame(self,"SANCTUARY")
-	_rest_button.grab_focus()
+	if _rest_button.disabled:
+		_upgrade_button.grab_focus()
+	else:
+		_rest_button.grab_focus()
 	_rest_button.pressed.connect(_on_rest_pressed)
 	_upgrade_button.pressed.connect(_on_upgrade_pressed)
 	_load_background()
@@ -72,8 +75,22 @@ func _load_background() -> void:
 		AmbientMotion.apply_cinematic_backdrop(self, _background, 62.0, 0.52)
 
 
+func _refresh_rest_option() -> void:
+	if RunManager.current_hp >= RunManager.max_hp:
+		_rest_button.text = "REST\nVitality already full"
+		_rest_button.tooltip_text = "Vitality is full. Upgrade a relic or return to the map instead."
+		_rest_button.disabled = true
+		return
+	_rest_button.text = "REST\nRecover up to %d vitality" % int(round(RunManager.max_hp * REST_HEAL_FRACTION))
+	_rest_button.tooltip_text = ""
+	_rest_button.disabled = false
+
+
 func _on_rest_pressed() -> void:
 	if _resolved:
+		return
+	if RunManager.current_hp >= RunManager.max_hp:
+		_refresh_rest_option()
 		return
 	var heal_amount: int = int(round(RunManager.max_hp * REST_HEAL_FRACTION))
 	RunManager.apply_run_hp_change(heal_amount)
