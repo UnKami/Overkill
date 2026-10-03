@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.43.0 playtest — 2026-10-04
+
+- Refines the Executioner's joints with continuous hand/ankle IK, bounded elbow flexion, planted anticipation, softer joint weights, smaller crouches and gradual recovery. Blender actions now export at 60 Hz. Weapons follow the wrist and thrown relics follow the hand until release.
+- Adds connected Blender-authored surface motion to all ten illustrated enemies, with restrained body shifts, head counter-motion, appendage lag, grounded support and gentle floating idle. Repairs shadow lifetime handling during actor replacement. Enemy art remains a weighted surface rather than separately painted limbs.
+- **Installer:** [OverkillSetup-0.43.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.43.0-test/OverkillSetup-0.43.0.exe). **Portable ZIP:** [Overkill-0.43.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.43.0-test/Overkill-0.43.0-Windows.zip). [Release and verification](https://github.com/UnKami/Overkill/releases/tag/v0.43.0-test) · [SHA-256 manifest](https://github.com/UnKami/Overkill/releases/download/v0.43.0-test/OverkillSetup-0.43.0.sha256).
+- **Source:** `45367f8991bec1e6f01ac9ca090d2b64a5474431`, immutable tag `v0.43.0-test`, branch `feat/yonatan-043-fluid-motion`, reviewed source PR [#28](https://github.com/UnKami/Overkill/pull/28). The tag identifies the exact tested download; later reviewed branch changes do not replace it.
+- **Compatibility:** existing 0.42 saves remain compatible. Damage, Block, healing, turn order, progression and enemy rules are unchanged. Fast and reduced-motion options remain supported; no player-facing autoplay is added.
+- **Verification:** eight source and eight packaged suites passed, including all 29 relics, 117 checkpoint checks and 59 forecast comparisons. Anatomical checks passed (44,490); 88 native studio poses and a 44.2-second exported animation movie were reviewed. Four screen presets passed 288 captures and 744 checks, with all contact sheets inspected. Installer installation, all five payload hashes, installed checkpoint regression and uninstall passed. Public downloads and remote asset digests are verified at publication. PNG capture costs are excluded from performance measurements.
+- **Limits:** unsigned playtest; final human visual approval and a full human campaign are not claimed. Native measurements under current background load averaged about 35-37 FPS; no controlled performance uplift or locked 60 FPS is claimed. The movie fixture retains a shutdown-only ObjectDB warning. Separate painted enemy limbs remain future art work. Previous releases remain available for rollback.
+
 ## 0.42.0 playtest — 2026-10-03
 
 - Integrates both 0.41 source histories while preserving the cogwheel map. Releases the obsolete coordination locks. Adds a Blender-authored Executioner with 18 bones, 16 weighted art parts and 11 character actions, plus authored prop tracks for all 29 relics. Iron Strike summons for 1.5 seconds; Bastion Bell rings for two seconds; Siphon shows actual damage-based healing; multiplier and Block labels travel to the status area.
