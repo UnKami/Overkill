@@ -40,6 +40,8 @@ static func show_dialog(parent: Node, message: String, confirm_label: String, on
 
 func _ready() -> void:
 	ScreenDesign.polish(self)
+	ScreenDesign.remove_actionable_fx(_cancel_button)
+	ScreenDesign.remove_actionable_fx(_confirm_button)
 	var panel: PanelContainer = get_node("CenterContainer/Panel")
 	panel.custom_minimum_size.x = minf(560.0, get_viewport_rect().size.x - 48.0)
 	var panel_style := StyleBoxFlat.new()

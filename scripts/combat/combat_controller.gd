@@ -1,6 +1,8 @@
 class_name CombatController extends Control
 ## CombatController - Orchestrates the Dual-Chronometer Battle Engine.
 ## Implements Phase 1 (Assembly Cycle) and Phase 2 (Quadrant Engine).
+const TICK_STARTUP_DELAY: float = 0.09
+const TICK_RECOVERY_DELAY: float = 0.12
 
 signal combat_won(enemies_data: Array[EnemyData])
 signal combat_lost
@@ -125,14 +127,14 @@ func _ready() -> void:
 	_battle_info = Label.new()
 	add_child(_battle_info)
 	_battle_info.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_battle_info.offset_left = -380
-	_battle_info.offset_right = 380
-	_battle_info.offset_top = -42
-	_battle_info.offset_bottom = -6
+	_battle_info.offset_left = -500
+	_battle_info.offset_right = 500
+	_battle_info.offset_top = -62
+	_battle_info.offset_bottom = -12
 	_battle_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_battle_info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_battle_info.add_theme_font_size_override("font_size", 18)
-	_battle_info.add_theme_color_override("font_color", Color("c4b899"))
+	_battle_info.add_theme_font_size_override("font_size", 20)
+	_battle_info.add_theme_color_override("font_color", Color("e0cfaa"))
 	_battle_info.add_theme_color_override("font_outline_color", Color("02070bd9"))
 	_battle_info.add_theme_constant_override("outline_size", 4)
 	_battle_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -524,15 +526,17 @@ func _resolve_tick(hour: int) -> void:
 		Presentation.relay(self, p_view, _player_portrait, p_socket.slotted_relic.primary_color())
 	if e_view:
 		Presentation.relay(self, e_view, _enemy_portrait, Color("e99778"))
-	await get_tree().create_timer(0.22 / AudioManager.combat_animation_speed_scale()).timeout
+	await get_tree().create_timer(TICK_STARTUP_DELAY / AudioManager.combat_animation_speed_scale()).timeout
 
 	# 1. Resolve Bleed (true unblockable damage at start of tick)
 	if player_bleed > 0:
 		player_hp -= player_bleed
 		_spawn_damage_number(_player_portrait, player_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
 	if enemy_bleed > 0:
+		var target_was_alive: bool = enemy_hp > 0
 		enemy_hp -= enemy_bleed
 		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
+		_notify_enemy_killed(target_was_alive)
 	_update_stats_display()
 	if _check_combat_end() or starting_enemy != _enemy_index: return
 
@@ -648,7 +652,7 @@ func _resolve_tick(hour: int) -> void:
 	if enemy_weak > 0: enemy_weak -= 1
 
 	_update_stats_display()
-	await get_tree().create_timer(0.5 / AudioManager.combat_animation_speed_scale()).timeout
+	await get_tree().create_timer(TICK_RECOVERY_DELAY / AudioManager.combat_animation_speed_scale()).timeout
 
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: int = 0, hit_count: int = 1) -> void:
@@ -696,8 +700,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 			var overkill := unblocked - enemy_hp
 			_spawn_damage_number(_enemy_portrait, hp_damage, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 			enemy_hp = 0
-			if target_was_alive:
-				_apply_run_artifact_trigger(RelicData.Trigger.ON_KILL)
+			_notify_enemy_killed(target_was_alive)
 			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
 				player_block += overkill
 			_handle_overkill(overkill)
@@ -759,8 +762,10 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 
 	# Thorns check
 	if player_thorns > 0:
+		var target_was_alive: bool = enemy_hp > 0
 		enemy_hp -= player_thorns
 		_spawn_damage_number(_enemy_portrait, player_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
+		_notify_enemy_killed(target_was_alive)
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.combat_animation_speed_scale()).timeout
@@ -859,6 +864,11 @@ func _artifact_icon(artifact_id: String) -> RelicIcon:
 		if child is RelicIcon and (child as RelicIcon).relic != null and (child as RelicIcon).relic.id == artifact_id:
 			return child as RelicIcon
 	return null
+
+
+func _notify_enemy_killed(target_was_alive: bool) -> void:
+	if target_was_alive and enemy_hp <= 0:
+		_apply_run_artifact_trigger(RelicData.Trigger.ON_KILL)
 
 
 func _check_combat_end() -> bool:

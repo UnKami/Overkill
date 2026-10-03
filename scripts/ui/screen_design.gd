@@ -96,6 +96,12 @@ static func add_actionable_fx(button: Button, accent: Color = GOLD, primary: boo
 	fx.accent = accent
 	button.add_child(fx)
 
+static func remove_actionable_fx(button: Button) -> void:
+	# Modal controls already have a clear theme-owned focus/hover outline. Do
+	# not stack the idle electric contour on top of that second outline system.
+	var fx: Node = button.get_node_or_null("ActionableButtonFX")
+	if fx != null: fx.free()
+
 static func rule(parent: Node, color: Color = GOLD) -> ColorRect:
 	var line := ColorRect.new()
 	line.color = Color(color,0.45)

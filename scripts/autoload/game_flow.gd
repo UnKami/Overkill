@@ -17,6 +17,7 @@ enum DeckViewMode { UPGRADE, REMOVAL, REFERENCE, PILE_VIEW }
 const TITLE_SCENE_PATH := "res://scenes/title_screen.tscn"
 const CLASS_SELECT_SCENE_PATH := "res://scenes/class_select_screen.tscn"
 const MAP_SCENE_PATH := "res://scenes/map_screen.tscn"
+const COG_MAP_SCENE_PATH := "res://scenes/cog_map_screen.tscn"
 const SHOP_SCENE_PATH := "res://scenes/shop_screen.tscn"
 const REST_SITE_SCENE_PATH := "res://scenes/rest_site_screen.tscn"
 const EVENT_SCENE_PATH := "res://scenes/event_screen.tscn"
@@ -88,7 +89,13 @@ func goto_class_select() -> void:
 
 
 func goto_map() -> void:
-	_swap_scene(load(MAP_SCENE_PATH).instantiate(), "THE ASCENT")
+	# Runs saved on the earlier node lattice stay on that map for compatibility.
+	# Fresh runs and runs already using cog IDs travel through the timed mechanism.
+	var saved_node_id: String = RunManager.current_node_id
+	var scene_path: String = MAP_SCENE_PATH
+	if saved_node_id.is_empty() or saved_node_id.begins_with("cogmap-"):
+		scene_path = COG_MAP_SCENE_PATH
+	_swap_scene(load(scene_path).instantiate(), "THE COGWORK ASCENT" if scene_path == COG_MAP_SCENE_PATH else "THE ASCENT")
 
 
 func goto_shop() -> void:

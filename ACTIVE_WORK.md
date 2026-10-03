@@ -10,9 +10,10 @@
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | v0.41 Artifact roster expansion, distinct passive implementation, and signature animation polish | `scripts/autoload/run_manager.gd`, `scripts/autoload/content_database.gd`, `scripts/combat/`, `scripts/ui/shop_screen.gd`, `scripts/ui/relic_art.gd`, `scripts/ui/relic_icon.gd`, `scripts/run/`, `scripts/data/`, `data/relics/`, `data/clock_relics/`, `data/run_artifacts/`, `scenes/run_artifact_test.tscn`, `docs/encounter-041.md`, `docs/`, `assets/relics/artifacts/`, `assets/vfx/`, `assets/screens/`, `VERSION`, `project.godot`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `installer/overkill.iss`, `.test-artifacts/` | 2026-10-02 |
+| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | v0.41 Artifacts, cadence, UI polish, and cogwheel navigation map | `scripts/autoload/run_manager.gd`, `scripts/autoload/content_database.gd`, `scripts/combat/`, `scripts/map/cog_navigation_generator.gd`, `scripts/map/cog_navigation_test.gd`, `scripts/ui/chronometer_view.gd`, `scripts/ui/cog_map_screen.gd`, `scripts/ui/shop_screen.gd`, `scripts/ui/relic_art.gd`, `scripts/ui/relic_icon.gd`, `scripts/run/`, `scripts/data/`, `data/relics/`, `data/clock_relics/`, `data/run_artifacts/`, `scenes/cog_map_screen.tscn`, `scenes/cog_navigation_test.tscn`, `scenes/run_artifact_test.tscn`, `docs/encounter-041.md`, `docs/`, `assets/map/cog_navigation/`, `assets/relics/artifacts/`, `assets/vfx/`, `assets/screens/`, `VERSION`, `project.godot`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `installer/overkill.iss`, `.test-artifacts/` | 2026-10-03 |
+| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | Rest-site full-Vitality no-op prevention and UI regression coverage | `scripts/ui/rest_site_screen.gd`, `scripts/ui/map_ux_test.gd` | 2026-10-02 |
 
-Published baseline: `v0.40.0-test` (source `fdee0ffb4ae217476610822d85fb7137cf21dc3a`) on `feat/yonatan-040-artifacts-block-balance`. Default-branch download links and verification notes are in documentation-only PR #24 awaiting review. The active v0.41 lock is listed above.
+Published baseline: `v0.40.0-test` (source `fdee0ffb4ae217476610822d85fb7137cf21dc3a`) on `feat/yonatan-040-artifacts-block-balance`. Default-branch download links and verification notes are in documentation-only PR #24 awaiting review. The active v0.41 release lock is listed above.
 
 ---
 

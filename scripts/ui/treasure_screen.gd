@@ -40,12 +40,8 @@ func _build_backdrop() -> void:
 	art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	AmbientMotion.apply_cinematic_backdrop(self, art, 20.0, 0.52)
 
-	var dim := ColorRect.new()
-	dim.name = "TreasureDim"
-	dim.color = Color("03080eb0")
-	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(dim)
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# ScreenDesign.shade supplies the single left-side text legibility veil;
+	# avoid adding a second full-screen dim that buries the cache artwork.
 	ScreenDesign.shade(self)
 
 

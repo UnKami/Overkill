@@ -49,6 +49,8 @@ static func show_relic_dialog(parent: Node, current: ClockRelicData, upgraded: C
 
 func _ready() -> void:
 	ScreenDesign.polish(self)
+	ScreenDesign.remove_actionable_fx(_cancel_button)
+	ScreenDesign.remove_actionable_fx(_confirm_button)
 	var panel: PanelContainer = get_node("CenterContainer/Panel")
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("091520f8")
@@ -109,19 +111,19 @@ func _setup_relic(current: ClockRelicData, upgraded: ClockRelicData) -> void:
 	_confirm_button.text = "UPGRADE RELIC"
 	# Relic cards retain a taller natural rect than card memories. Give the
 	# comparison row that full height so the action buttons never cover stats.
-	_current_slot.custom_minimum_size = Vector2(272, 440)
-	_upgraded_slot.custom_minimum_size = Vector2(272, 440)
+	_current_slot.custom_minimum_size = Vector2(272, 370)
+	_upgraded_slot.custom_minimum_size = Vector2(272, 370)
 	var current_view: RelicPedestalView = RelicViewScene.instantiate()
 	_current_slot.add_child(current_view)
 	current_view.use_collection_layout()
 	current_view.bind_relic(current, "")
-	current_view.size = Vector2(272, 440)
+	current_view.size = Vector2(272, 370)
 	current_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var upgraded_view: RelicPedestalView = RelicViewScene.instantiate()
 	_upgraded_slot.add_child(upgraded_view)
 	upgraded_view.use_collection_layout()
 	upgraded_view.bind_relic(upgraded, "")
-	upgraded_view.size = Vector2(272, 440)
+	upgraded_view.size = Vector2(272, 370)
 	upgraded_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_no_change_label.hide()
 
@@ -145,8 +147,8 @@ func _play_relic_upgrade() -> void:
 	_confirm_button.text = "FORGING THE BOND…"
 	var upgraded_label: Label = get_node("CenterContainer/Panel/Margin/VBox/CardsRow/UpgradedColumn/UpgradedLabel")
 	upgraded_label.text = "RESHAPING THE BINDING"
-	_current_slot.pivot_offset = Vector2(136, 220)
-	_upgraded_slot.pivot_offset = Vector2(136, 220)
+	_current_slot.pivot_offset = Vector2(136, 185)
+	_upgraded_slot.pivot_offset = Vector2(136, 185)
 	_current_slot.scale = Vector2.ONE
 	_upgraded_slot.scale = Vector2(0.94, 0.94)
 	var tween := create_tween()
@@ -170,7 +172,7 @@ func show_relic_success() -> void:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.get_node("CurrentColumn").hide()
 	row.get_node("UpgradedColumn/UpgradedLabel").text = "NEW BOUND FORM"
-	_upgraded_slot.pivot_offset = Vector2(136, 220)
+	_upgraded_slot.pivot_offset = Vector2(136, 185)
 	_upgraded_slot.scale = Vector2.ONE
 	_upgraded_slot.modulate = Color.WHITE
 	_cancel_button.hide()

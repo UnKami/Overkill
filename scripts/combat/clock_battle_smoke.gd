@@ -15,6 +15,8 @@ func _ready() -> void:
 	AudioManager.fast_mode = false
 	assert(is_equal_approx(AudioManager.clock_animation_speed_scale(), 1.0), "Normal hand travel must remain crisp")
 	assert(is_equal_approx(AudioManager.combat_animation_speed_scale(), 0.5), "Normal impacts must retain deliberate pacing")
+	assert(is_equal_approx(ChronometerView.DEFAULT_HAND_TRAVEL_DURATION, 0.18), "Clock travel should stay brisk between actions")
+	assert(CombatController.TICK_STARTUP_DELAY <= 0.10 and CombatController.TICK_RECOVERY_DELAY <= 0.15, "Tick transitions should not stall between resolved actions")
 	AudioManager.fast_mode = true
 	var standard_relic := ClockRelicData.new()
 	standard_relic.base_damage = 6
@@ -24,10 +26,12 @@ func _ready() -> void:
 	combo_relic.hits = 2
 	var combo_profile := AttackPresentation.for_relic(combo_relic)
 	assert(combo_profile.anticipation < standard_profile.anticipation and combo_profile.recovery < standard_profile.recovery, "Multi-hit attacks need a quicker, clearly separate rhythm")
+	assert(combo_profile.recovery <= 0.13 and combo_profile.hit_settle <= 0.05, "Multi-hit recovery should leave a crisp beat between impacts")
 	var heavy_relic := ClockRelicData.new()
 	heavy_relic.base_damage = 12
 	var heavy_profile := AttackPresentation.for_relic(heavy_relic)
 	assert(heavy_profile.anticipation > standard_profile.anticipation and heavy_profile.travel_pixels > standard_profile.travel_pixels, "Heavy strikes need more wind-up and travel")
+	assert(heavy_profile.recovery < 0.42, "Heavy strikes should keep their impact but avoid an overlong return")
 	var light_intent := ClockSocketData.new()
 	light_intent.intent_damage = 4
 	var heavy_intent := ClockSocketData.new()
@@ -110,7 +114,15 @@ func _ready() -> void:
 	assert(battle._check_combat_end())
 	await get_tree().create_timer(1.0).timeout
 	assert(wins.size() == 1, "Victory must be emitted once")
-	print("CLOCK_SMOKE_OK: 9 assembly hours, double input, 3 sectors, hot swap, forward wrap, single victory signal, muted audio")
+	var departing_enemy: IllustratedActor = battle._stage.enemy
+	battle._stage.configure_enemy("forward", enemy.art_id)
+	assert(battle._stage.enemy != departing_enemy, "A reinforcement must get a fresh illustrated actor")
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 0.0), "A reinforcement should enter with its reveal animation")
+	await get_tree().create_timer(0.02).timeout
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 0.0), "A reinforcement should hold briefly before its entrance")
+	await get_tree().create_timer(0.35).timeout
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 1.0), "A reinforcement reveal must resolve cleanly")
+	print("CLOCK_SMOKE_OK: 9 assembly hours, double input, 3 sectors, hot swap, forward wrap, cadence timings, reinforcement reveal, single victory signal, muted audio")
 	get_tree().quit()
 
 func capture(label: String) -> void:

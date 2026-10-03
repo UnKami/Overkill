@@ -69,12 +69,15 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await _capture_if_rendered("artifact-battle-041")
 	battle.player_hp = 400
-	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_KILL)
-	assert(battle.player_hp == 412, "Deepwell Suture should restore 12 missing Vitality on first kill")
+	battle.enemy_hp = 1
+	battle.enemy_bleed = 1
+	await battle._resolve_tick(1)
+	assert(battle.player_hp == 412, "Deepwell Suture should restore missing Vitality when Bleed scores the first kill")
 	assert(battle.player_strength == 2, "Violet Weaver's Shuttle should grant Strength on the first kill")
-	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_KILL)
-	assert(battle.player_hp == 412, "Deepwell Suture must trigger only once per battle")
-	assert(battle.player_strength == 2, "Violet Weaver's Shuttle must trigger only once per battle")
+	assert(battle._artifact_triggered_this_combat.has("artifact_deepwell_suture"), "A Bleed kill must mark Deepwell Suture as used for the battle")
+	battle.enemy_hp = 1
+	battle._notify_enemy_killed(true)
+	assert(battle.player_hp == 412 and battle.player_strength == 2, "Kill-trigger Artifacts must remain once-per-battle after a non-attack kill")
 	battle.player_next_hit_bonus = 0
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_ATTACK)
 	await get_tree().process_frame
@@ -98,7 +101,21 @@ func _ready() -> void:
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 20)
 	assert(OKRunState.current_ok == 5, "Ashen Ledger should trigger only once per battle")
 	battle.queue_free()
-	print("RUN_ARTIFACTS_OK: eight unique artifacts, save data, shop purchase, 12-slot separation, transparent art, effects and trigger limits")
+	await get_tree().process_frame
+	var thorns_battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
+	add_child(thorns_battle)
+	var thorns_enemy: EnemyData = ContentDatabase.get_enemy("boneghoul").duplicate()
+	thorns_battle.start_combat([thorns_enemy])
+	await get_tree().process_frame
+	thorns_battle.player_hp = 400
+	thorns_battle.enemy_hp = 1
+	thorns_battle.player_sockets[0].slotted_relic = null
+	thorns_battle.enemy_sockets[0].intent_damage = 1
+	thorns_battle.player_thorns = 1
+	await thorns_battle._resolve_tick(1)
+	assert(thorns_battle.player_hp == 412, "Deepwell Suture should restore missing Vitality when Thorns scores the first kill")
+	thorns_battle.queue_free()
+	print("RUN_ARTIFACTS_OK: eight unique artifacts, Bleed/Thorns kill triggers, save data, shop purchase, 12-slot separation, art, effects and trigger limits")
 	get_tree().quit()
 
 

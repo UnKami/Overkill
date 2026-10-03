@@ -19,7 +19,7 @@ anchor_bottom = 1.0
 focus_mode = 0
 flat = true
 theme_override_colors/font_color = Color(0, 0, 0, 0)
-self_modulate = Color(0, 0, 0, 0.65)
+self_modulate = Color(1, 1, 1, 0)
 
 [node name="Dimmer" type="ColorRect" parent="."]
 unique_name_in_owner = true

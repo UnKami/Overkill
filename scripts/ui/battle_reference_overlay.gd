@@ -40,6 +40,7 @@ func _ready() -> void:
 	z_index = 100
 	theme = ScreenDesign.build_theme()
 	ScreenDesign.polish(self)
+	ScreenDesign.remove_actionable_fx(_close_button)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color("08141ff8")
 	style.border_color = Color(_accent, 0.76)

@@ -1,0 +1,116 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/cog_map_screen.gd" id="1_cog_map"]
+
+[node name="CogMapScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_cog_map")
+
+[node name="Background" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.02, 0.035, 0.05, 0.38)
+
+[node name="Header" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 26.0
+offset_top = 16.0
+offset_right = -26.0
+offset_bottom = 82.0
+
+[node name="RouteHint" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 28.0
+offset_top = 94.0
+offset_right = -28.0
+offset_bottom = 124.0
+horizontal_alignment = 1
+
+[node name="MapScroll" type="ScrollContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.025
+anchor_top = 0.13
+anchor_right = 0.975
+anchor_bottom = 1.0
+offset_bottom = -194.0
+horizontal_scroll_mode = 1
+vertical_scroll_mode = 1
+
+[node name="MapCanvas" type="Control" parent="MapScroll"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1530, 500)
+layout_mode = 2
+
+[node name="Footer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 34.0
+offset_top = -174.0
+offset_right = -34.0
+offset_bottom = -14.0
+
+[node name="FooterMargin" type="MarginContainer" parent="Footer"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 9
+
+[node name="FooterStack" type="VBoxContainer" parent="Footer/FooterMargin"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="FooterTop" type="HBoxContainer" parent="Footer/FooterMargin/FooterStack"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="FooterTitles" type="VBoxContainer" parent="Footer/FooterMargin/FooterStack/FooterTop"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="DestinationLabel" type="Label" parent="Footer/FooterMargin/FooterStack/FooterTop/FooterTitles"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "SELECT A FORWARD GEAR"
+
+[node name="TimingHint" type="Label" parent="Footer/FooterMargin/FooterStack/FooterTop/FooterTitles"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Watch the seats pass the arrival pointer."
+
+[node name="AdvanceButton" type="Button" parent="Footer/FooterMargin/FooterStack/FooterTop"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(290, 56)
+layout_mode = 2
+text = "ADVANCE ON ALIGNMENT"
+
+[node name="SeatSummary" type="HBoxContainer" parent="Footer/FooterMargin/FooterStack"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12

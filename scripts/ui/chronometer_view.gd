@@ -1,6 +1,7 @@
 class_name ChronometerView extends Control
 ## ChronometerView - Renders the 9-hour circular battle mechanism.
 ## Manages circular layout, quadrant lighting, socket dispatch, and sweeping hands.
+const DEFAULT_HAND_TRAVEL_DURATION: float = 0.18
 
 signal socket_pressed(hour_index: int, socket_view: ClockSocketView)
 
@@ -138,7 +139,7 @@ func get_socket_view(hour: int) -> ClockSocketView:
 
 
 ## Smoothly rotates the pointer hand to aim directly at an hour.
-func snap_hand_to_hour(hour: int, duration: float = 0.25) -> Signal:
+func snap_hand_to_hour(hour: int, duration: float = DEFAULT_HAND_TRAVEL_DURATION) -> Signal:
 	var target_deg := (hour * 40.0) - 90.0
 	var target_rad := deg_to_rad(target_deg)
 	if rotation_direction > 0:
