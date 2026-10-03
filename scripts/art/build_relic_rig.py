@@ -154,7 +154,9 @@ for name, cell, bone_name, rect, depth in PARTS:
     x0, x1 = max(1, min_x - 1), min(cw - 1, max_x + 2)
     y0, y1 = max(1, min_y - 1), min(ch - 1, max_y + 2)
     x, y, width, height = rect
-    nx, ny = 6, 10
+    # Dense cloth needs curvature; rigid armor needs only enough subdivisions
+    # to blend its joint overlap. Avoid excess skin work on every rendered frame.
+    nx, ny = (6, 10) if name in ("cloak", "torso", "pelvis") else (3, 7)
     verts, uv, weights = [], [], {}
     for j in range(ny + 1):
         v = j / ny

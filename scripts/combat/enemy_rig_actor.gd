@@ -16,6 +16,7 @@ var _mass: float = 1.0
 var _blend: float = 1.0
 var _from: Array[Transform2D] = []
 var _fallen: bool = false
+const SURFACE_DIVISIONS: int = 12
 
 func _ready() -> void:
 	super._ready()
@@ -56,9 +57,9 @@ func _ready() -> void:
 	var weights: Array[PackedFloat32Array] = []
 	for index: int in 5:
 		weights.append(PackedFloat32Array())
-	for y: int in 25:
-		for x: int in 25:
-			var pixel: Vector2 = Vector2(x/24.0,y/24.0) * Vector2(atlas.get_size())
+	for y: int in SURFACE_DIVISIONS+1:
+		for x: int in SURFACE_DIVISIONS+1:
+			var pixel: Vector2 = Vector2(float(x)/SURFACE_DIVISIONS,float(y)/SURFACE_DIVISIONS) * Vector2(atlas.get_size())
 			points.append(pixel * _art_scale)
 			uv.append(pixel)
 			var normalized: Vector2 = (pixel - Vector2(bounds.position)) / Vector2(bounds.size)
@@ -71,11 +72,11 @@ func _ready() -> void:
 			for index: int in 5:
 				weights[index].append(values[index])
 	var triangles: Array[PackedInt32Array] = []
-	for y: int in 24:
-		for x: int in 24:
-			var a: int = y*25+x
-			triangles.append(PackedInt32Array([a,a+1,a+26]))
-			triangles.append(PackedInt32Array([a,a+26,a+25]))
+	for y: int in SURFACE_DIVISIONS:
+		for x: int in SURFACE_DIVISIONS:
+			var a: int = y*(SURFACE_DIVISIONS+1)+x
+			triangles.append(PackedInt32Array([a,a+1,a+SURFACE_DIVISIONS+2]))
+			triangles.append(PackedInt32Array([a,a+SURFACE_DIVISIONS+2,a+SURFACE_DIVISIONS+1]))
 	_mesh.polygon = points
 	_mesh.uv = uv
 	_mesh.polygons = triangles
