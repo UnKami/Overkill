@@ -6,9 +6,11 @@ var _active: bool = false
 var _capture_enabled: bool = false
 var _frames: Array[Dictionary] = []
 var _benchmark: bool = false
+var _motion_video: bool = false
+var _movie_review: bool = false
 var _frame_times: Array[float] = []
 var _last_frame_usec: int = 0
-const OUTPUT := "res://.test-artifacts/042/animations"
+const OUTPUT := "res://.test-artifacts/043/animations"
 
 func _ready() -> void:
 	get_window().mode = Window.MODE_WINDOWED
@@ -17,7 +19,10 @@ func _ready() -> void:
 	AudioManager.fast_mode = false
 	AudioManager.reduced_motion = false
 	_benchmark = OS.get_cmdline_user_args().has("--benchmark")
-	_capture_enabled = DisplayServer.get_name() != "headless" and not _benchmark
+	_motion_video = OS.get_cmdline_user_args().has("--motion-video")
+	_movie_review = OS.get_cmdline_user_args().has("--movie-review")
+	if _motion_video or _movie_review: get_window().size = Vector2i(1280,720)
+	_capture_enabled = DisplayServer.get_name() != "headless" and not _benchmark and not _movie_review
 	RunManager.start_new_run([], [], 500, 42042)
 	battle = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(battle)
@@ -33,6 +38,12 @@ func _ready() -> void:
 	var named: Array[String] = ["REL-01", "REL-25", "REL-04", "REL-16", "REL-13", "REL-14", "REL-15", "REL-03", "REL-11"]
 	for id: String in named:
 		await _exercise(id, true)
+	if _movie_review:
+		battle.queue_free()
+		await get_tree().process_frame
+		print("RELIC_MOVIE_REVIEW_OK: nine signature/melee sequences at fixed simulation FPS")
+		get_tree().quit()
+		return
 	# Check every catalog item reaches recovery and cannot leave an input lock.
 	AudioManager.fast_mode = true
 	for relic: ClockRelicData in ContentDatabase.all_clock_relics(true):
@@ -95,23 +106,25 @@ func _exercise(id: String, capture: bool) -> void:
 	_run_tick()
 	var shot: int = 0
 	while _active:
-		await get_tree().create_timer(0.35).timeout
+		await get_tree().create_timer(1.0/24.0 if _motion_video and capture else 0.35).timeout
 		if capture:
 			await _capture("%s-%02d" % [id, shot], Time.get_ticks_msec() - start)
 		shot += 1
-		assert(Time.get_ticks_msec() - start < 22000, "Animation failed to finish: " + id)
+		# Synchronous PNG encoding slows wall time without advancing authored
+		# simulation time equivalently; retain the tighter bound without capture.
+		assert(Time.get_ticks_msec() - start < (120000 if _capture_enabled or _movie_review else 22000), "Animation failed to finish: " + id)
 	assert(not battle._stage.player._busy, "Character must recover before the next action")
 	await get_tree().create_timer(0.8 / AudioManager.animation_speed_scale()).timeout
 	assert(battle.find_children("RelicChoreography*", "", true, false).is_empty(), "Temporary choreography must be cleaned up")
 	match id:
 		"REL-01":
 			assert(battle.enemy_hp == 9994, "Iron Strike damage changed")
-			if not AudioManager.fast_mode:
+			if not AudioManager.fast_mode and not _movie_review:
 				assert(Time.get_ticks_msec() - start >= 2500, "Summon, launch and recovery need recognizable time")
 		"REL-04": assert(battle.player_block == 7, "Guard Plate balance changed")
 		"REL-15":
 			assert(battle.player_block == 10, "Bell must grant exactly ten Block")
-			if not AudioManager.fast_mode:
+			if not AudioManager.fast_mode and not _movie_review:
 				assert(Time.get_ticks_msec() - start >= 2500, "Bell needs two seconds of ringing before its reward")
 		"REL-16": assert(battle.player_strength == 3, "War Crown strength changed")
 		"REL-25":

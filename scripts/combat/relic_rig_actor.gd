@@ -16,6 +16,9 @@ var _action_duration: float = 3.2
 var _fallen: bool = false
 var _blend_from: Array[Transform2D] = []
 var _blend_time: float = 1.0
+var _idle_phase: float = 0.0
+var _recoil_amount: float = 0.0
+var _recoil_blocked: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -85,8 +88,10 @@ func _process(delta: float) -> void:
 	if _bones.is_empty() or _fallen:
 		return
 	var speed: float = AudioManager.animation_speed_scale()
+	_idle_phase = fmod(_idle_phase + delta * speed, float(RIG_DATA.actions.idle.duration))
 	_action_time += delta * speed
-	_blend_time = minf(1.0, _blend_time + delta * speed / 0.13)
+	_blend_time = minf(1.0, _blend_time + delta * speed / 0.20)
+	_recoil_amount = maxf(0.0, _recoil_amount - delta * speed / 0.28)
 	if _busy:
 		if _action_contact >= 0.0 and _action_time >= _action_contact:
 			_contact_ready = true
@@ -100,8 +105,7 @@ func _process(delta: float) -> void:
 			else:
 				_rest()
 	else:
-		if not AudioManager.reduced_motion:
-			_apply_sample("idle", fmod(_action_time, float(RIG_DATA.actions.idle.duration)))
+		_apply_sample("idle", 0.0 if AudioManager.reduced_motion else _idle_phase)
 
 func _apply_sample(action_name: String, time: float) -> void:
 	var action: Dictionary = RIG_DATA.actions[action_name]
@@ -123,7 +127,14 @@ func _apply_sample(action_name: String, time: float) -> void:
 			angle *= 0.35
 		var sampled: Transform2D = Transform2D(angle, at)
 		if _blend_time < 1.0 and _blend_from.size() == _bones.size():
-			sampled = _blend_from[index].interpolate_with(sampled, _blend_time)
+			var eased: float = _blend_time * _blend_time * (3.0 - 2.0 * _blend_time)
+			sampled = _blend_from[index].interpolate_with(sampled, eased)
+		if _recoil_amount > 0.0 and not AudioManager.reduced_motion:
+			var envelope: float = sin(_recoil_amount * PI)
+			if str(_bones[index].name) == "spine":
+				sampled = Transform2D(sampled.get_rotation() + deg_to_rad(-2.0 if _recoil_blocked else -4.5) * envelope, sampled.origin)
+			elif str(_bones[index].name) == "head":
+				sampled = Transform2D(sampled.get_rotation() + deg_to_rad(-2.0) * envelope, sampled.origin)
 		_bones[index].transform = sampled
 
 func play_action(action_name: String, _profile: Dictionary = {}) -> void:
@@ -154,7 +165,9 @@ func attack(profile: Dictionary = {}) -> void:
 func hit(blocked: bool, _profile: Dictionary = {}) -> void:
 	# Incoming impact must never cancel an outgoing contact event and deadlock the
 	# deterministic clash sequence. Overlay a brief tint if already performing.
-	if _busy and _action_contact >= 0.0 and not _contact_ready:
+	if _busy:
+		_recoil_amount = 1.0
+		_recoil_blocked = blocked
 		var flash: Tween = create_tween()
 		_front.modulate = Color(1.35, 1.35, 1.5)
 		flash.tween_property(_front, "modulate", Color.WHITE, 0.18)
@@ -170,11 +183,17 @@ func set_pose(_frame: int) -> void:
 		_apply_sample("idle", 0.0)
 
 func _rest() -> void:
+	# Recovery joins the current breathing phase; there is no one-frame reset
+	# of root, knee, shoulder or head transforms at the end of an action.
+	_blend_from.clear()
+	for bone: Bone2D in _bones:
+		_blend_from.append(bone.transform)
+	_blend_time = 0.0
 	_busy = false
 	_action_name = "idle"
 	_action_time = 0.0
 	_front.modulate = Color.WHITE
-	_apply_sample("idle", 0.0)
+	_apply_sample("idle", _idle_phase)
 
 func is_busy() -> bool:
 	return _busy
@@ -183,6 +202,11 @@ func contact_ready() -> bool:
 	return _contact_ready
 
 func anchor_position(anchor: String, global_space: bool = true) -> Vector2:
+	if anchor == "feet" and _bone_names.has("foot_near"):
+		var near_foot: Bone2D = _bone_names["foot_near"]
+		var far_foot: Bone2D = _bone_names["foot_far"]
+		var ground: Vector2 = (near_foot.global_position + far_foot.global_position) * 0.5 + Vector2(0.0, 34.0 * _art_scale)
+		return ground if global_space else get_global_transform().affine_inverse() * ground
 	var bone_name: String = "spine"
 	var offset: Vector2 = Vector2(0, -25)
 	match anchor:

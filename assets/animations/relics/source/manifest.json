@@ -32,6 +32,6 @@
     "REL-29"
   ],
   "bone_count": 6,
-  "fps": 30,
+  "fps": 60,
   "source": "scripts/art/build_relic_choreography.py"
 }

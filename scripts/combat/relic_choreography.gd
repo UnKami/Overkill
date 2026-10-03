@@ -32,6 +32,8 @@ var _initial_tint := Color.WHITE
 var _restored: bool = false
 var _notified_resolve: bool = false
 var _label_count: int = 0
+var _released: bool = false
+var _release_rotation: float = 0.0
 var _siphon_tube: Polygon2D
 var _siphon_enemy: Node2D
 var _siphon_hand: Node2D
@@ -292,19 +294,35 @@ func _apply_frame() -> void:
 	var origin: Vector2 = _anchor(str(_clip.anchor))
 	var destination: Vector2 = _enemy_at_contact if _target_frozen else _enemy()
 	var is_thrown: bool = str(_clip.anchor) == "hand" and _model not in ["sword", "hammer", "wedge"]
+	var hand_rotation: float = 0.0
+	var player_actor: CanvasItem = _player()
+	if player_actor != null and player_actor.has_method("get_hand_global_rotation"):
+		hand_rotation = float(player_actor.call("get_hand_global_rotation"))
 	if is_thrown:
-		if _clock <= 0.55:
+		var release_time: float = float(_clip.get("release", 0.76))
+		if _clock <= release_time:
 			_launch = origin
+			_release_rotation = hand_rotation
 		else:
+			if not _released:
+				_released = true
+				_launch = origin
+				_release_rotation = hand_rotation
 			var travel: float = clampf(float(flow[0]) / 100.0, 0.0, 1.0)
 			origin = _launch.lerp(destination, travel)
 			if not AudioManager.reduced_motion:
-				origin.y -= sin(travel * PI) * 85.0
+				origin.y -= 4.0 * travel * (1.0 - travel) * 45.0
 	var offset := Vector2(float(prop_track[0]), float(prop_track[1]))
 	if _model in ["sword", "hammer", "wedge"]:
 		offset = Vector2.ZERO
 	_prop.position = to_local(origin) + offset
 	_prop.rotation = 0.0 if AudioManager.reduced_motion else float(prop_track[2])
+	if not AudioManager.reduced_motion:
+		if _model in ["sword", "hammer", "wedge"]:
+			_prop.rotation += hand_rotation
+		elif is_thrown:
+			var travel_weight: float = clampf(float(flow[0]) / 100.0, 0.0, 1.0)
+			_prop.rotation += lerp_angle(_release_rotation, 0.0, travel_weight) if _released else hand_rotation
 	_prop.scale = Vector2(float(prop_track[3]), float(prop_track[4]))
 	_prop.modulate.a = float(prop_track[5])
 	if AudioManager.reduced_motion and is_thrown:

@@ -8,15 +8,14 @@
 
 ## 1. Active Locks
 
-No active file locks. All 0.42 team reservations were released on 2026-10-03 after implementation and verification.
+No active reservations remain from the completed 0.43 motion refinement.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| — | — | No active reservations | — | 2026-10-03 |
 
-Published playtest: [v0.42.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.42.0-test), exact tested source `cb28d2851fc1dff235b87064ccedef1dad043b2f`. Documentation PR [#27](https://github.com/UnKami/Overkill/pull/27) is merged. Reviewed cumulative source integration is tracked in PR [#26](https://github.com/UnKami/Overkill/pull/26).
+Published playtest: [v0.43.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.43.0-test), exact tested source `45367f8991bec1e6f01ac9ca090d2b64a5474431`. Documentation PR [#29](https://github.com/UnKami/Overkill/pull/29) is merged. Reviewed motion integration is tracked in source PR [#28](https://github.com/UnKami/Overkill/pull/28); GitHub records its current merge status. The previous 0.42 source and documentation PRs (#26 and #27) are merged.
 
 ---
 ## 2. How to Claim a Task (Instructions for Developers & AIs)

@@ -1,7 +1,7 @@
 {
-  "format": "overkill_blender_skin_v1",
-  "fps": 30,
-  "authoring": "Blender armature modifier; 18 bones; weighted 16-part painted cutout meshes",
+  "format": "overkill_blender_skin_v2",
+  "fps": 60,
+  "authoring": "Blender armature modifier; 18 bones; connected IK limbs; weighted joint overlaps; 60 Hz motion",
   "atlas_size": [
     1254,
     1254
@@ -12,6 +12,11 @@
     264,
     489
   ],
+  "motion_quality": {
+    "continuous_ik": true,
+    "elbow_max_degrees": 112,
+    "grounded_anticipation": true
+  },
   "bones": [
     {
       "name": "root",
