@@ -8,15 +8,18 @@
 
 ## 1. Active Locks
 
+The prior v0.41 release and rest-site locks were released on 2026-10-03 at Yonatan's explicit request. They were coordination reservations, not technical release restrictions. The divergent source histories are being reconciled on `feat/yonatan-042-rigged-relics`; existing cog-map work is preserved.
+
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | v0.41 Artifacts, cadence, UI polish, and cogwheel navigation map | `scripts/autoload/run_manager.gd`, `scripts/autoload/content_database.gd`, `scripts/combat/`, `scripts/map/cog_navigation_generator.gd`, `scripts/map/cog_navigation_test.gd`, `scripts/ui/chronometer_view.gd`, `scripts/ui/cog_map_screen.gd`, `scripts/ui/shop_screen.gd`, `scripts/ui/relic_art.gd`, `scripts/ui/relic_icon.gd`, `scripts/run/`, `scripts/data/`, `data/relics/`, `data/clock_relics/`, `data/run_artifacts/`, `scenes/cog_map_screen.tscn`, `scenes/cog_navigation_test.tscn`, `scenes/run_artifact_test.tscn`, `docs/encounter-041.md`, `docs/`, `assets/map/cog_navigation/`, `assets/relics/artifacts/`, `assets/vfx/`, `assets/screens/`, `VERSION`, `project.godot`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `installer/overkill.iss`, `.test-artifacts/` | 2026-10-03 |
-| Yonatan's Codex | `feat/yonatan-040-artifacts-block-balance` | Rest-site full-Vitality no-op prevention and UI regression coverage | `scripts/ui/rest_site_screen.gd`, `scripts/ui/map_ux_test.gd` | 2026-10-02 |
+| Yonatan / Codex root | `feat/yonatan-042-rigged-relics` | Integrated release and visual verification | `ACTIVE_WORK.md`, `CHANGELOG_AI.md`, `VERSION`, `README.md`, `UPDATE_LOG.md`, `installer/README.md`, `docs/encounter-042.md`, `scripts/combat/relic_animation_test.gd`, `scenes/relic_animation_test.tscn`, `.test-artifacts/042/` | 2026-10-03 |
+| Yonatan / Codex merge_audit (same team) | `feat/yonatan-042-rigged-relics` | Merge existing release histories, then hand controller/stage to root | `docs/encounter-041.md`, `project.godot`, `scripts/combat/battle_guidance_test.gd`, `scripts/combat/clock_battle_smoke.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/illustrated_stage.gd`, `scripts/ui/chronometer_view.gd`, `scripts/ui/clock_collection_screen.gd` | 2026-10-03 |
+| Yonatan / Codex blender_rig (same team) | `feat/yonatan-042-rigged-relics` | Blender authored character skeleton and runtime actor | `scripts/art/build_relic_rig.py`, `assets/characters/executioner/rigged/`, `scripts/combat/relic_rig_actor.gd` | 2026-10-03 |
+| Yonatan / Codex relic_choreography (same team) | `feat/yonatan-042-rigged-relics` | Blender authored relic timelines and runtime effects | `scripts/art/build_relic_choreography.py`, `assets/animations/relics/`, `scripts/combat/relic_choreography.gd`, `scripts/combat/attack_presentation.gd` | 2026-10-03 |
 
-Published baseline: `v0.40.0-test` (source `fdee0ffb4ae217476610822d85fb7137cf21dc3a`) on `feat/yonatan-040-artifacts-block-balance`. Default-branch download links and verification notes are in documentation-only PR #24 awaiting review. The active v0.41 release lock is listed above.
+No old lock blocks publication. These narrow, live ownership rows prevent this team's parallel edits from colliding and will be released at handoff.
 
 ---
-
 ## 2. How to Claim a Task (Instructions for Developers & AIs)
 
 When starting work on a feature:
