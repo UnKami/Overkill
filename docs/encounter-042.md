@@ -61,6 +61,8 @@ auxiliary standalone engine checks crashed during startup in the restricted
 automation environment. Subsequent full-project native launches completed with
 exit code zero; this does not establish the exact cause of the earlier crash.
 The shipped project now defaults to the same tested Compatibility renderer.
+Asset import uses one thread after a bulk reimport terminated in the clean-build
+environment. This changes editor import scheduling, not gameplay threading.
 
 Source, rendered-screen, exported-payload and download checks are recorded in
 the version-specific verification report attached to the release. This is an unsigned
