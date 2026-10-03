@@ -31,14 +31,19 @@ static func build_theme() -> Theme:
 	_theme.default_font_size = 22
 	_theme.set_color("font_color", "Label", TEXT)
 	for type in ["Button", "SecondaryButton", "DangerButton", "OptionButton"]:
-		var accent := Color("b66d64") if type == "DangerButton" else GOLD
-		_theme.set_stylebox("normal",type,box(Color("101b26e8"),Color("655a4380")))
-		_theme.set_stylebox("hover",type,box(Color("213440f5"),accent))
-		_theme.set_stylebox("pressed",type,box(Color("30404d"),CYAN))
+		var is_danger: bool = type == "DangerButton"
+		var accent := Color("b66d64") if is_danger else GOLD
+		var normal_fill := Color("271419f2") if is_danger else Color("101b26e8")
+		var normal_line := Color("b66d64b8") if is_danger else Color("655a4380")
+		var hover_fill := Color("402027f5") if is_danger else Color("213440f5")
+		var pressed_fill := Color("5a2328") if is_danger else Color("30404d")
+		_theme.set_stylebox("normal",type,box(normal_fill,normal_line,2 if is_danger else 1))
+		_theme.set_stylebox("hover",type,box(hover_fill,accent,2 if is_danger else 1))
+		_theme.set_stylebox("pressed",type,box(pressed_fill,accent,2 if is_danger else 1))
 		_theme.set_stylebox("disabled",type,box(Color("0c141aa0"),Color("35414a")))
-		_theme.set_stylebox("focus",type,box(Color(0,0,0,0),CYAN,2))
-		_theme.set_color("font_color",type,TEXT)
-		_theme.set_color("font_hover_color",type,Color("fff1d3"))
+		_theme.set_stylebox("focus",type,box(Color(0,0,0,0),accent if is_danger else CYAN,2))
+		_theme.set_color("font_color",type,Color("ffdcd6") if is_danger else TEXT)
+		_theme.set_color("font_hover_color",type,Color("fff1ed") if is_danger else Color("fff1d3"))
 		_theme.set_color("font_disabled_color",type,Color("75818a"))
 		_theme.set_font_size("font_size",type,22)
 	for type in ["Panel", "PanelContainer", "PopupPanel", "PopupMenu"]:
@@ -79,7 +84,23 @@ static func button(parent: Node, text: String, action: Callable, primary: bool =
 	result.pressed.connect(action)
 	result.mouse_entered.connect(func() -> void: AudioManager.play_clock_sound("tick"))
 	result.focus_entered.connect(func() -> void: AudioManager.play_clock_sound("tick"))
+	add_actionable_fx(result, GOLD, primary)
 	return result
+
+static func add_actionable_fx(button: Button, accent: Color = GOLD, primary: bool = false) -> void:
+	if button.has_node("ActionableButtonFX"): return
+	button.set_meta("action_fx_primary", primary)
+	var fx := preload("res://scripts/ui/actionable_button_fx.gd").new() as ActionableButtonFX
+	fx.name = "ActionableButtonFX"
+	fx.button = button
+	fx.accent = accent
+	button.add_child(fx)
+
+static func remove_actionable_fx(button: Button) -> void:
+	# Modal controls already have a clear theme-owned focus/hover outline. Do
+	# not stack the idle electric contour on top of that second outline system.
+	var fx: Node = button.get_node_or_null("ActionableButtonFX")
+	if fx != null: fx.free()
 
 static func rule(parent: Node, color: Color = GOLD) -> ColorRect:
 	var line := ColorRect.new()
@@ -122,11 +143,13 @@ static func column(parent: Control, top: float = 0.19, right: float = 0.38) -> V
 	return result
 
 static func frame(parent: Control, breadcrumb: String) -> void:
-	var top := label(parent,"O V E R K I L L     /     " + breadcrumb,18,GOLD)
+	var top := label(parent,"O V E R K I L L     /     " + breadcrumb,26,GOLD,true)
+	top.add_theme_color_override("font_outline_color", Color("071019dd"))
+	top.add_theme_constant_override("outline_size", 3)
 	top.position = Vector2(64,38)
 	var footer := label(parent,"BIND THE HOURS. BREAK THE CYCLE.",15,MUTED)
 	footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	footer.position += Vector2(64,-52)
+	footer.position += Vector2(64,-96)
 
 static func reveal(control: Control) -> void:
 	control.modulate.a = 0
@@ -135,28 +158,51 @@ static func reveal(control: Control) -> void:
 static func polish(root: Control) -> void:
 	root.theme = build_theme()
 	for node in root.find_children("*","Label",true,false):
+		# Keep the current screen identity in one predictable, easy-to-scan
+		# position on every screen that uses the shared breadcrumb treatment.
+		if node.text.begins_with("O V E R K I L L     /"):
+			node.add_theme_font_size_override("font_size", 26)
+			node.add_theme_font_override("font", display_font())
+			node.add_theme_color_override("font_color", GOLD)
+			node.add_theme_color_override("font_outline_color", Color("071019dd"))
+			node.add_theme_constant_override("outline_size", 3)
 		if "Title" in node.name or "Header" in node.name:
 			node.add_theme_font_override("font",display_font())
 			node.add_theme_color_override("font_color",GOLD)
 	for node in root.find_children("*","Button",true,false):
 		if not root is CombatController: node.custom_minimum_size.y = maxf(node.custom_minimum_size.y,48)
 		if not node.mouse_entered.is_connected(_hover): node.mouse_entered.connect(_hover)
+		if not node is Button or node.has_node("ActionableButtonFX"): continue
+		var primary: bool = node.theme_type_variation == &"DangerButton"
+		add_actionable_fx(node, Color("df8076") if node.theme_type_variation == &"DangerButton" else GOLD, primary)
 	apply_text_size(root)
 
 static func apply_text_size(root: Node) -> void:
 	var multiplier := 1.15 if AudioManager.text_size == "large" else 1.0
 	var shared := build_theme()
-	shared.default_font_size = roundi(22*multiplier)
+	var target_size: int = roundi(22*multiplier)
+	# Theme mutations notify every consumer. Rebinding a relic must not restyle
+	# the entire battle when the accessibility setting has not changed.
+	if shared.default_font_size != target_size: shared.default_font_size = target_size
 	for type in ["Button","SecondaryButton","DangerButton","OptionButton"]:
-		shared.set_font_size("font_size",type,roundi(22*multiplier))
+		if shared.get_font_size("font_size",type) != target_size:
+			shared.set_font_size("font_size",type,target_size)
 	_scale_labels(root,multiplier)
 
 static func _scale_labels(root: Node, multiplier: float) -> void:
+	if root is RichTextLabel and root.has_theme_font_size_override("normal_font_size"):
+		if not root.has_meta("base_body_size"):
+			root.set_meta("base_body_size", root.get_theme_font_size("normal_font_size"))
+		var target_body: int = roundi(int(root.get_meta("base_body_size")) * multiplier)
+		if root.get_theme_font_size("normal_font_size") != target_body:
+			root.add_theme_font_size_override("normal_font_size", target_body)
 	if root is Control and root.has_theme_font_size_override("font_size"):
 		if not root.has_meta("base_text_size"):
 			root.set_meta("base_text_size",root.get_theme_font_size("font_size"))
 		var base: int = root.get_meta("base_text_size")
-		if base <= 32: root.add_theme_font_size_override("font_size",roundi(base*multiplier))
+		var target_text: int = roundi(base*multiplier)
+		if base <= 32 and root.get_theme_font_size("font_size") != target_text:
+			root.add_theme_font_size_override("font_size",target_text)
 	for child in root.get_children(): _scale_labels(child,multiplier)
 
 static func _hover() -> void:

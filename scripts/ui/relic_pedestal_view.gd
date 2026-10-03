@@ -1,75 +1,226 @@
 class_name RelicPedestalView extends Control
-## RelicPedestalView - Renders a draftable or drawn relic in the bottom dock.
+## Shared relic presentation for battle choices, rewards, shop and collection.
 
 signal selected(relic_data: ClockRelicData)
 signal previewed(view: RelicPedestalView)
 signal preview_ended
 
 @onready var _card_panel: Panel = %CardPanel
+@onready var _accent_primary: ColorRect = %AccentPrimary
+@onready var _accent_secondary: ColorRect = %AccentSecondary
+@onready var _margin: MarginContainer = %Margin
+@onready var _vbox: VBoxContainer = %VBox
 @onready var _role_badge: Label = %RoleBadge
 @onready var _name_label: Label = %NameLabel
+@onready var _title_rule: ColorRect = %TitleRule
+@onready var _art_frame: Control = %ArtFrame
+@onready var _art_backdrop: Panel = %ArtBackdrop
+@onready var _art_glow: TextureRect = %ArtGlow
 @onready var _art_rect: TextureRect = %ArtRect
+@onready var _effect_frame: PanelContainer = %EffectFrame
 @onready var _desc_label: RichTextLabel = %DescLabel
 @onready var _slot_button: Button = %SlotButton
 
 var relic: ClockRelicData
 var _hover_tween: Tween = null
+var _battle_layout: bool = false
+var _choice_style: StyleBoxFlat
+var _pulse_time: float = 0.0
+var _presentation_mode: String = "standard"
+var _essence_sunburst: TextureRect
+
+const ESSENCE_SUNBURST_NAMES: Array[String] = ["orange", "blue", "purple", "green", "blood_red"]
+const ESSENCE_PAIR_KEYS: Array[String] = ["attack", "block", "buff", "debuff", "overkill"]
 
 
 func _ready() -> void:
+	custom_minimum_size = Vector2(300, 440)
+	_card_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_accent_primary.hide()
+	_accent_secondary.hide()
+	_title_rule.hide()
+	_role_badge.add_theme_font_size_override("font_size", 15)
+	_name_label.add_theme_font_size_override("font_size", 26)
+	_name_label.add_theme_font_override("font", ScreenDesign.display_font())
+	_name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_art_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# The dedicated transparent sunburst is the sole relic aura. Do not stack
+	# the retired procedural spokes over it: their mismatched rays look noisy.
+	_art_glow.hide()
+	_essence_sunburst = TextureRect.new()
+	_essence_sunburst.name = "EssenceSunburst"
+	_essence_sunburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_essence_sunburst.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	_essence_sunburst.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_essence_sunburst.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_essence_sunburst.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_essence_sunburst.modulate = Color(1.0, 1.0, 1.0, 0.34)
+	_art_frame.add_child(_essence_sunburst)
+	_art_frame.move_child(_essence_sunburst, 0)
+	AmbientMotion.idle_bob(_art_rect, 3.0, 3.2)
+	_desc_label.add_theme_font_size_override("normal_font_size", 18)
+	_slot_button.add_theme_font_size_override("font_size", 18)
+	_slot_button.custom_minimum_size.y = 48
+	for display: Control in [_role_badge, _name_label, _title_rule, _art_frame, _art_backdrop, _art_rect, _essence_sunburst, _effect_frame, _desc_label]:
+		display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_slot_button.pressed.connect(_on_button_pressed)
 	_slot_button.mouse_entered.connect(func() -> void: previewed.emit(self))
 	_slot_button.focus_entered.connect(func() -> void: previewed.emit(self))
 	_slot_button.focus_exited.connect(func() -> void: preview_ended.emit())
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	_card_panel.pivot_offset = Vector2(130, 145)
+	resized.connect(func() -> void:
+		pivot_offset = size * 0.5
+		_card_panel.pivot_offset = size * 0.5
+	)
 	modulate.a = 0.0
 	var arrival := create_tween()
 	arrival.tween_interval(float(get_index()) * 0.07)
 	arrival.tween_property(self, "modulate:a", 1.0, 0.28)
 	_slot_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	for state in ["normal", "hover", "pressed", "focus"]:
+	for state in ["normal", "hover", "pressed", "focus", "disabled"]:
 		var button_style := StyleBoxFlat.new()
-		button_style.bg_color = Color("17232c") if state == "normal" else Color("30414a")
-		button_style.border_color = Color("8d7654") if state == "normal" else Color("ebc68a")
+		button_style.bg_color = Color("111d26ed") if state == "normal" else Color("263946f5")
+		button_style.border_color = Color("8d765499") if state == "normal" else Color("f2ce91")
 		button_style.set_border_width_all(1)
-		button_style.set_corner_radius_all(3)
+		button_style.set_corner_radius_all(5)
 		button_style.content_margin_top = 7
 		button_style.content_margin_bottom = 7
 		_slot_button.add_theme_stylebox_override(state, button_style)
 	_slot_button.add_theme_color_override("font_color", Color("efd9ad"))
+	_slot_button.add_theme_color_override("font_disabled_color", Color("b8c3cc"))
+	_slot_button.mouse_exited.connect(func() -> void: preview_ended.emit())
+	_slot_button.focus_entered.connect(_on_mouse_entered)
+	_slot_button.focus_exited.connect(_on_mouse_exited)
+	_desc_label.theme_changed.connect(func() -> void: call_deferred("_fit_content"))
+	_fit_content()
+
+func _fit_content() -> void:
+	if _battle_layout:
+		custom_minimum_size = Vector2(320, 320)
+		return
+	match _presentation_mode:
+		"collection": custom_minimum_size = Vector2(272, 370)
+		"shop": custom_minimum_size = Vector2(246, 402)
+		"gallery": custom_minimum_size = Vector2(280, 448)
+		_: custom_minimum_size = Vector2(300, 440)
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_on_button_pressed()
+	# The relic object is the choice itself: clicking its art/body performs the
+	# same explicit action as the button. The action button remains for clarity,
+	# keyboard/controller access, and collection-only views remain non-selectable.
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed and _slot_button.visible and not _slot_button.disabled:
+			_on_button_pressed()
+		accept_event()
 
 func use_battle_layout() -> void:
-	custom_minimum_size = Vector2(390,190)
-	pivot_offset = Vector2(195,95)
+	_battle_layout = true
+	_presentation_mode = "battle"
+	custom_minimum_size = Vector2(320, 320)
+	pivot_offset = Vector2(160, 160)
 	_card_panel.pivot_offset = pivot_offset
-	for child in [_role_badge,_name_label,_art_rect,_desc_label,_slot_button]:
-		child.reparent(_card_panel)
-		child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	_card_panel.get_node("Margin").hide()
-	_role_badge.position = Vector2(128,12)
-	_role_badge.size = Vector2(244,20)
-	_role_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_name_label.position = Vector2(128,36)
-	_name_label.size = Vector2(244,28)
-	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_art_rect.custom_minimum_size = Vector2.ZERO
-	_art_rect.position = Vector2(14,20)
-	_art_rect.size = Vector2(100,112)
-	_desc_label.position = Vector2(128,70)
-	_desc_label.size = Vector2(244,70)
+	# Keep the battle card in the same deterministic vertical container as every
+	# other relic presentation. Reparenting these controls into absolute
+	# positions allowed their old container transforms to survive for a frame,
+	# leaving the title behind the artwork on some resolutions.
+	_margin.offset_left = 14
+	_margin.offset_top = 0
+	_margin.offset_right = -14
+	_margin.offset_bottom = 0
+	_vbox.add_theme_constant_override("separation", 0)
+	_role_badge.hide()
+	_name_label.custom_minimum_size.y = 28
+	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_art_frame.custom_minimum_size.y = 170
+	_art_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# Two-line dual-effect relics need a little more breathing room at the
+	# battle text size; otherwise their second line is clipped beneath the art.
+	_effect_frame.custom_minimum_size.y = 72
+	var effect_margin: MarginContainer = _effect_frame.get_node("EffectMargin")
+	effect_margin.add_theme_constant_override("margin_top", 2)
+	effect_margin.add_theme_constant_override("margin_bottom", 2)
 	_desc_label.fit_content = false
-	_slot_button.position = Vector2(14,144)
-	_slot_button.size = Vector2(362,34)
-	_name_label.add_theme_font_size_override("font_size",22)
-	_desc_label.add_theme_font_size_override("normal_font_size",18)
-	_slot_button.add_theme_font_size_override("font_size",18)
+	_desc_label.text_direction = Control.TEXT_DIRECTION_AUTO
+	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_slot_button.custom_minimum_size.y = 48
+	_name_label.add_theme_font_size_override("font_size", 22)
+	_desc_label.add_theme_font_size_override("normal_font_size", 20)
+	_slot_button.add_theme_font_size_override("font_size", 19)
+	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var style: StyleBoxFlat = _slot_button.get_theme_stylebox(state).duplicate()
+		style.content_margin_top = 2
+		style.content_margin_bottom = 2
+		_slot_button.add_theme_stylebox_override(state, style)
+
+
+func use_collection_layout() -> void:
+	_presentation_mode = "collection"
+	custom_minimum_size = Vector2(272, 370)
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_margin.offset_left = 13
+	_margin.offset_top = 13
+	_margin.offset_right = -13
+	_margin.offset_bottom = -12
+	_vbox.add_theme_constant_override("separation", 3)
+	_role_badge.custom_minimum_size.y = 17
+	_role_badge.add_theme_font_size_override("font_size", 13)
+	_name_label.custom_minimum_size.y = 29
+	_name_label.add_theme_font_size_override("font_size", 22)
+	_art_frame.custom_minimum_size.y = 177
+	_effect_frame.custom_minimum_size.y = 67
+	_desc_label.add_theme_font_size_override("normal_font_size", 16)
+	_slot_button.hide()
+
+
+func use_shop_layout() -> void:
+	_presentation_mode = "shop"
+	custom_minimum_size = Vector2(246, 352)
+	size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_margin.offset_left = 13
+	_margin.offset_top = 10
+	_margin.offset_right = -13
+	_margin.offset_bottom = -10
+	_vbox.add_theme_constant_override("separation", 3)
+	_role_badge.custom_minimum_size.y = 18
+	_role_badge.add_theme_font_size_override("font_size", 13)
+	_name_label.custom_minimum_size.y = 30
+	_name_label.add_theme_font_size_override("font_size", 22)
+	_art_frame.custom_minimum_size.y = 155
+	_effect_frame.custom_minimum_size.y = 60
+	_desc_label.add_theme_font_size_override("normal_font_size", 16)
+	_slot_button.custom_minimum_size.y = 46
+	_slot_button.add_theme_font_size_override("font_size", 16)
+
+
+func use_gallery_layout() -> void:
+	_presentation_mode = "gallery"
+	custom_minimum_size = Vector2(280, 448)
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_role_badge.add_theme_font_size_override("font_size", 15)
+	_name_label.add_theme_font_size_override("font_size", 25)
+	_art_frame.custom_minimum_size.y = 230
+	_effect_frame.custom_minimum_size.y = 82
+	_desc_label.add_theme_font_size_override("normal_font_size", 18)
+	_slot_button.hide()
+
+
+func set_stack_count(count: int) -> void:
+	if count <= 1:
+		return
+	_role_badge.text += "    ×%d OWNED" % count
+	tooltip_text += "\n\n%d copies owned." % count
+
+
+func set_instance_identities(entries: Array[Dictionary]) -> void:
+	if entries.is_empty():
+		return
+	var identities := PackedStringArray()
+	for entry: Dictionary in entries:
+		identities.append(ClockInventory.instance_identity(entry))
+	tooltip_text += "\n\nINSTANCE IDENTITIES\n" + "\n".join(identities)
 
 
 func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> void:
@@ -78,43 +229,63 @@ func bind_relic(relic_data: ClockRelicData, action_label: String = "SLOT") -> vo
 		return
 
 	_name_label.text = relic.name
-	_role_badge.text = "[ %s ]" % ClockRelicData.role_to_name(relic.role).to_upper()
-	_desc_label.text = relic.description
+	_role_badge.text = relic.compact_affinity_name().to_upper().replace(" + ", "  ·  ")
+	_desc_label.text = summary(relic).to_upper()
 	_slot_button.text = action_label
 
-	var role_col := ClockRelicData.role_to_color(relic.role)
+	var role_col: Color = relic.primary_color()
+	var secondary_col: Color = relic.secondary_color()
+	var has_secondary: bool = relic.secondary_essence >= 0
+	var blended: Color = role_col.lerp(secondary_col, 0.5) if has_secondary else role_col
 	_role_badge.add_theme_color_override("font_color", role_col)
+	ScreenDesign.add_actionable_fx(_slot_button, role_col, true)
+	_title_rule.color = Color(blended, 0.56)
+	_accent_primary.color = role_col
+	_accent_secondary.color = secondary_col
+	_accent_secondary.visible = has_secondary
+	_accent_primary.anchor_right = 0.5 if has_secondary else 1.0
+	_accent_primary.offset_right = 0.0
+	var sunburst_path: String = essence_sunburst_path(relic)
+	_essence_sunburst.texture = load(sunburst_path) as Texture2D if not sunburst_path.is_empty() else null
+	_essence_sunburst.visible = _essence_sunburst.texture != null
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.set_corner_radius_all(5)
-	panel_style.bg_color = Color("#101921")
-	panel_style.border_color = role_col.darkened(0.42)
-	panel_style.set_border_width_all(1)
-	panel_style.border_width_top = 3
-	panel_style.shadow_color = Color(0, 0, 0, 0.65)
-	panel_style.shadow_size = 16
-	_card_panel.add_theme_stylebox_override("panel", panel_style)
+	_card_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_choice_style = null
 
+	var art_style := StyleBoxFlat.new()
+	art_style.bg_color = Color("030a1020")
+	art_style.border_color = Color(blended, 0.0)
+	art_style.set_border_width_all(0)
+	art_style.set_corner_radius_all(0)
+	_art_backdrop.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+
+	var effect_style := StyleBoxFlat.new()
+	effect_style.bg_color = Color("0d1b2555")
+	effect_style.border_color = Color(blended, 0.0)
+	effect_style.set_border_width_all(0)
+	effect_style.set_corner_radius_all(0)
+	_effect_frame.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	_load_art(relic.art_id)
+	tooltip_text = "%s\n%s\n%s\n\nBlock lasts until absorbed or battle ends.\nStrength: extra damage per hit. Thorns: damage returned when hit.\nBleed: HP lost each tick. Weak: 25%% less attack damage.\nVulnerable: 50%% more damage taken. Lifesteal: heal actual HP damage dealt." % [relic.name, relic.affinity_name(), ClockInventory.describe(relic)]
+	ScreenDesign.apply_text_size(self)
+	call_deferred("_fit_content")
 
 
 func _load_art(art_id: String) -> void:
-	var candidates: Array[String] = [
-		"res://assets/relics/active/%s.jpg" % art_id,
-		"res://assets/relics/active/%s.png" % art_id,
-		"res://assets/relics/%s.png" % art_id,
-		"res://assets/relics/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.png" % art_id,
-		"res://assets/cards/excess/%s.jpg" % art_id,
-		"res://assets/cards/excess/%s.png" % art_id,
-		"res://assets/icons/ui/%s.png" % art_id,
-	]
-	for p in candidates:
-		if ResourceLoader.exists(p):
-			_art_rect.texture = ResourceLoader.load(p)
-			return
-	_art_rect.texture = null
+	_art_rect.texture = RelicArt.load_texture(art_id)
+
+
+static func essence_sunburst_path(relic_data: ClockRelicData) -> String:
+	if relic_data == null:
+		return ""
+	var primary_index: int = clampi(int(relic_data.primary_essence), 0, ESSENCE_SUNBURST_NAMES.size() - 1)
+	var filename: String = ESSENCE_SUNBURST_NAMES[primary_index]
+	if relic_data.secondary_essence >= 0:
+		var first_index: int = mini(primary_index, int(relic_data.secondary_essence))
+		var second_index: int = maxi(primary_index, int(relic_data.secondary_essence))
+		filename = "%s_%s" % [ESSENCE_PAIR_KEYS[first_index], ESSENCE_PAIR_KEYS[second_index]]
+	var path: String = "res://assets/relics/essence_sunbursts/%s.png" % filename
+	return path if ResourceLoader.exists(path) else ""
 
 
 func _on_button_pressed() -> void:
@@ -125,6 +296,7 @@ func _on_button_pressed() -> void:
 
 func _on_mouse_entered() -> void:
 	previewed.emit(self)
+	if AudioManager.reduced_motion or _battle_layout: return
 	if _hover_tween and _hover_tween.is_valid():
 		_hover_tween.kill()
 	_hover_tween = create_tween()
@@ -135,9 +307,29 @@ func _on_mouse_entered() -> void:
 
 func _on_mouse_exited() -> void:
 	preview_ended.emit()
+	if AudioManager.reduced_motion:
+		scale = Vector2.ONE
+		return
 	if _hover_tween and _hover_tween.is_valid():
 		_hover_tween.kill()
 	_hover_tween = create_tween()
 	_hover_tween.set_parallel(true)
 	_hover_tween.tween_property(self, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_SINE)
 	_hover_tween.tween_property(_art_rect, "modulate", Color.WHITE, 0.16)
+
+func _process(delta: float) -> void:
+	if _battle_layout and relic != null and not AudioManager.reduced_motion: _pulse_time += delta
+
+static func summary(r: ClockRelicData) -> String:
+	var lines: Array[String] = []
+	if r.base_damage > 0: lines.append("%d damage%s" % [r.base_damage," × %d" % r.hits if r.hits > 1 else ""])
+	if r.lifesteal: lines.append("Heal HP dealt")
+	if r.base_block > 0: lines.append("%d persistent Block" % r.base_block)
+	if r.grant_overkill > 0: lines.append("Gain %d Overkill" % r.grant_overkill)
+	if r.next_attack_multiplier > 1: lines.append("Next attack: ×%d" % r.next_attack_multiplier)
+	if r.bonus_damage_next_hit > 0: lines.append("Next attack: +%d" % r.bonus_damage_next_hit)
+	for pair: Array in [[r.apply_strength,"Strength"],[r.apply_thorns,"Thorns"],[r.apply_bleed,"Bleed"],[r.apply_weak,"Weak"],[r.apply_vulnerable,"Vulnerable"]]:
+		if int(pair[0]) > 0: lines.append(("Enemy: " if str(pair[1]) in ["Bleed","Weak","Vulnerable"] else "Gain ") + "%d %s" % pair)
+	if r.conditional_damage > 0: lines.append("%d at enemy HP ≤%d%%" % [r.conditional_damage,int(r.conditional_hp_threshold_pct*100)])
+	if r.recoil_block_on_overkill: lines.append("Overkill → Block")
+	return "\n".join(lines)

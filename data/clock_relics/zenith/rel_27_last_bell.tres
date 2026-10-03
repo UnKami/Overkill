@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-27"
+name = "The Last Bell"
+tier = 3
+role = 1
+primary_essence = 1
+secondary_essence = 2
+description = "Gain 14 Block, 3 Thorns and 1 Strength. Block persists until absorbed or battle ends."
+art_id = "rel_27_last_bell"
+base_block = 14
+apply_strength = 1
+apply_thorns = 3

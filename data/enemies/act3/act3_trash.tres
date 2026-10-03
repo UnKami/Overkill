@@ -30,4 +30,4 @@ move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
 overkill_death_threshold = 36
-art_id = "act3_trash_idle"
+art_id = "shattered_husk_crystalline"

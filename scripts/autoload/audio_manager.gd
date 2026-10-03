@@ -10,8 +10,43 @@ var sfx_volume: float = 1.0
 var fast_mode: bool = false
 var text_size: String = "normal"
 var reduced_motion: bool = false
+var render_quality: String = "high"
 var _clock_sounds: Dictionary = {}
 var _music_player: AudioStreamPlayer
+const MAX_COMBAT_VOICES: int = 8
+var _voices: Array[AudioStreamPlayer] = []
+var _sound_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+var _music_duck: float = 1.0
+
+func play_combat_sound(cue: String) -> void:
+	if master_volume * sfx_volume <= 0.001: return
+	var path: String = "res://assets/audio/combat/" + cue + ".wav"
+	if not ResourceLoader.exists(path): return
+	if _voices.size() >= MAX_COMBAT_VOICES:
+		var oldest: AudioStreamPlayer = _voices.pop_front()
+		oldest.stop()
+		oldest.queue_free()
+	var voice: AudioStreamPlayer = AudioStreamPlayer.new()
+	voice.stream = load(path)
+	voice.pitch_scale = _sound_rng.randf_range(0.96, 1.04) if cue in ["swing", "strike", "guard", "shatter"] else 1.0
+	_voices.append(voice)
+	add_child(voice)
+	_update_sfx_volume()
+	voice.finished.connect(func() -> void:
+		_voices.erase(voice)
+		voice.queue_free())
+	voice.play()
+	if cue in ["strike", "guard", "shatter"]: _music_duck = 0.65
+
+func _process(delta: float) -> void:
+	if _music_duck < 1.0:
+		_music_duck = move_toward(_music_duck, 1.0, delta * 1.8)
+		_update_music_volume()
+
+func _update_sfx_volume() -> void:
+	for voice: AudioStreamPlayer in _voices:
+		voice.volume_db = linear_to_db(maxf(master_volume * sfx_volume, 0.00001)) - 3.0
+
 
 
 ## Short synthesized mechanical accents, cached and governed by existing settings.
@@ -46,6 +81,7 @@ func play_clock_sound(cue: String) -> void:
 
 
 func _ready() -> void:
+	_sound_rng.randomize()
 	load_settings()
 	var score_path := "res://assets/audio/clockwork_nocturne.wav"
 	if ResourceLoader.exists(score_path):
@@ -69,7 +105,7 @@ func _exit_tree() -> void:
 
 func _update_music_volume() -> void:
 	if is_instance_valid(_music_player):
-		_music_player.volume_db = linear_to_db(maxf(0.00001, master_volume * music_volume)) - 7.0
+		_music_player.volume_db = linear_to_db(maxf(0.00001, master_volume * music_volume * _music_duck)) - 7.0
 
 
 func load_settings() -> void:
@@ -81,6 +117,8 @@ func load_settings() -> void:
 	fast_mode = settings.get("fast_mode", false)
 	text_size = settings.get("text_size", "normal")
 	reduced_motion = settings.get("reduced_motion", false)
+	render_quality = settings.get("render_quality", "high")
+	if render_quality not in ["high","balanced","performance"]: render_quality = "high"
 
 
 func save_settings() -> void:
@@ -91,13 +129,15 @@ func save_settings() -> void:
 		"fast_mode": fast_mode,
 		"text_size": text_size,
 		"reduced_motion": reduced_motion,
+		"render_quality": render_quality,
 	}
 	SaveManager.save_meta(settings)
 	settings_changed.emit(settings)
 
 
 func set_master_volume(value: float) -> void:
-	master_volume = value
+	master_volume = clampf(value, 0.0, 1.0)
+	_update_sfx_volume()
 	_update_music_volume()
 	save_settings()
 
@@ -109,7 +149,8 @@ func set_music_volume(value: float) -> void:
 
 
 func set_sfx_volume(value: float) -> void:
-	sfx_volume = value
+	sfx_volume = clampf(value, 0.0, 1.0)
+	_update_sfx_volume()
 	save_settings()
 
 
@@ -128,3 +169,20 @@ func set_text_size(value: String) -> void:
 ## by this rather than hiding information, per the doc's explicit rule.
 func animation_speed_scale() -> float:
 	return 2.0 if fast_mode else 1.0
+
+
+## Combat uses a slower, more readable rhythm than the rest of the interface.
+## Normal playback gives impacts and character reactions twice their former
+## screen time; Fast Mode remains an explicit opt-in at the old 2x playback.
+func combat_animation_speed_scale() -> float:
+	return 2.0 if fast_mode else 0.5
+
+
+## Clock-hand travel is a connective beat, not an impact beat: keep the normal
+## pointer sweep crisp while preserving its full easing and turn information.
+func clock_animation_speed_scale() -> float:
+	return 2.0 if fast_mode else 1.0
+
+func set_render_quality(value: String) -> void:
+	render_quality = value if value in ["high","balanced","performance"] else "high"
+	save_settings()

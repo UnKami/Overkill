@@ -1,0 +1,137 @@
+param(
+ [ValidateSet('inspect','publish','verify','docs','merge-docs')][string]$Mode='inspect',
+ [string]$Source,
+ [string]$SourceBranch,
+ [int]$PullRequest=0
+)
+$ErrorActionPreference='Stop'
+$repoRoot = (Resolve-Path "$PSScriptRoot/../..").Path
+Set-Location $repoRoot
+$version=(Get-Content VERSION -Raw).Trim()
+$tag="v$version-test"
+$sourceBranch = if ([string]::IsNullOrWhiteSpace($SourceBranch)) { (git branch --show-current).Trim() } else { $SourceBranch.Trim() }
+if ($sourceBranch -notmatch '^(feat|fix)/') { throw "Release source must be an isolated feature/fix branch, got: $sourceBranch" }
+$base='https://api.github.com/repos/UnKami/Overkill'
+$credentialLines="protocol=https`nhost=github.com`n`n" | git credential fill
+$credential=@{}
+foreach($line in $credentialLines){$pair=$line -split '=',2;if($pair.Count -eq 2){$credential[$pair[0]]=$pair[1]}}
+if(!$credential['password']){throw 'GitHub authentication unavailable'}
+$headers=@{Authorization=('Bearer '+$credential['password']);Accept='application/vnd.github+json';'User-Agent'='Overkill-release';'X-GitHub-Api-Version'='2022-11-28'}
+function Api([string]$Path,[string]$Method='Get',$Body=$null) {
+ $params=@{Uri=("$base"+$Path);Headers=$headers;Method=$Method}
+ if($null -ne $Body){$params.Body=($Body | ConvertTo-Json -Depth 12 -Compress);$params.ContentType='application/json; charset=utf-8'}
+ Invoke-RestMethod @params
+}
+function Get-TagCommit([string]$Name) {
+ $ref=Api ("/git/ref/tags/"+[uri]::EscapeDataString($Name))
+ $target=$ref.object
+ if($target.type -eq 'tag'){$target=Api ("/git/tags/"+$target.sha)}
+ $target.sha
+}
+$assets=@("installer/OverkillSetup-$version.exe","build/Overkill-$version-Windows.zip","installer/OverkillSetup-$version.sha256")
+$notesPath='docs/encounter-{0:000}.md' -f ([version]$version).Minor
+$verificationPath='.test-artifacts/verification-{0:000}.md' -f ([version]$version).Minor
+$docPaths=@('README.md','installer/README.md','UPDATE_LOG.md',$notesPath)
+if($Mode -eq 'inspect'){
+ $repo=Api ''
+ $releases=Api '/releases?per_page=5'
+ [pscustomobject]@{repository=$repo.full_name;can_push=$repo.permissions.push;default_branch=$repo.default_branch;tags=@($releases.tag_name)} | ConvertTo-Json
+ exit
+}
+if($Mode -in @('publish','verify')){
+ if($Source -notmatch '^[a-f0-9]{40}$'){throw 'Exact source SHA required'}
+ if($Mode -eq 'publish'){
+  $branchHead=Api ("/git/ref/heads/"+$sourceBranch.Replace('/','%2F'))
+  if($branchHead.object.sha -ne $Source){throw "Source SHA is not the current remote $sourceBranch head"}
+  if (!(Test-Path -LiteralPath $verificationPath)) { throw "Version-specific verification report is missing: $verificationPath" }
+  $body=((Get-Content $notesPath -Raw)+"`n`nSource: "+$Source+"`n`n"+(Get-Content $verificationPath -Raw))
+  $tagRef="refs/tags/$tag"
+  $matchingRefs=@(Api ("/git/matching-refs/tags/"+[uri]::EscapeDataString($tag)) | Where-Object ref -eq $tagRef)
+  if($matchingRefs.Count -eq 0){$null=Api '/git/refs' 'Post' @{ref=$tagRef;sha=$Source}}
+  elseif($matchingRefs.Count -ne 1 -or (Get-TagCommit $tag) -ne $Source){throw 'Release tag already exists but does not identify the tested source commit'}
+  if((Get-TagCommit $tag) -ne $Source){throw 'Release tag does not resolve to the tested source commit'}
+  $existing=@(Api '/releases?per_page=100' | Where-Object tag_name -eq $tag)
+  if($existing.Count -gt 1 -or ($existing.Count -eq 1 -and !$existing[0].draft)){throw 'A non-draft release already exists; refusing to overwrite it'}
+  if($existing.Count -eq 1){
+   $release=Api ("/releases/"+$existing[0].id) 'Patch' @{target_commitish=$sourceBranch;body=$body;prerelease=$true}
+  }else{
+   $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Playtest";body=$body;draft=$true;prerelease=$true}
+  }
+  foreach($path in $assets){
+   $file=Get-Item -LiteralPath $path
+   $hash=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+   $release=Api ("/releases/"+$release.id)
+   $prior=@($release.assets | Where-Object name -eq $file.Name)
+   if($prior.Count){
+    if($prior.Count -ne 1 -or $prior[0].size -ne $file.Length -or $prior[0].digest -ne "sha256:$hash"){throw "Existing draft asset differs from local candidate: $path"}
+    Write-Output "ALREADY_UPLOADED_AND_HASHED $($file.Name)"
+   }else{
+    $upload="https://uploads.github.com/repos/UnKami/Overkill/releases/$($release.id)/assets?name="+[uri]::EscapeDataString($file.Name)
+    $asset=Invoke-RestMethod -Uri $upload -Headers $headers -Method Post -InFile $file.FullName -ContentType 'application/octet-stream' -TimeoutSec 1800
+    if($asset.size -ne $file.Length -or $asset.digest -ne "sha256:$hash"){throw "Upload size or digest mismatch: $path"}
+    Write-Output "UPLOADED_AND_HASHED $($file.Name)"
+   }
+  }
+  $release=Api "/releases/$($release.id)"
+  if(@($release.assets).Count -ne 3 -or (Get-TagCommit $tag) -ne $Source){throw 'Draft metadata or exact source tag mismatch'}
+  $branchHead=Api ("/git/ref/heads/"+$sourceBranch.Replace('/','%2F'))
+  if($branchHead.object.sha -ne $Source){throw 'Source branch moved during release preparation; leaving release as draft'}
+  $release=Api "/releases/$($release.id)" 'Patch' @{draft=$false}
+ }
+ $release=Api "/releases/tags/$tag"
+ if($release.draft -or !$release.prerelease -or (Get-TagCommit $tag) -ne $Source){throw 'Published source or release-state mismatch'}
+ if(@($release.assets).Count -ne 3){throw 'Wrong asset count'}
+ foreach($asset in $release.assets){
+  $path=$assets | Where-Object {(Split-Path $_ -Leaf) -eq $asset.name} | Select-Object -First 1
+  $file=Get-Item -LiteralPath $path
+  $hash=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+  if($asset.size -ne $file.Length -or $asset.digest -ne "sha256:$hash"){throw "Published digest mismatch: $path"}
+  $response=Invoke-WebRequest -Uri $asset.browser_download_url -Method Head -MaximumRedirection 10
+  if($response.StatusCode -ne 200){throw 'Public download unavailable'}
+  Write-Output "PUBLIC_VERIFIED $($asset.name) $($asset.size) $hash"
+ }
+ Write-Output "RELEASE_OK $($release.html_url)"
+ exit
+}
+if($Mode -eq 'docs'){
+ $published=Api "/releases/tags/$tag"
+ if($published.draft){throw 'Publish downloads first'}
+ $main=Api '/git/ref/heads/main'
+ $mainCommit=Api "/git/commits/$($main.object.sha)"
+ $tree=@()
+ foreach($path in $docPaths){
+  $blob=Api '/git/blobs' 'Post' @{content=[Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path $repoRoot $path)));encoding='base64'}
+  $tree+=@{path=$path;mode='100644';type='blob';sha=$blob.sha}
+ }
+ $newTree=Api '/git/trees' 'Post' @{base_tree=$mainCommit.tree.sha;tree=$tree}
+ $commit=Api '/git/commits' 'Post' @{message="docs: publish verified $version playtest downloads";tree=$newTree.sha;parents=@($main.object.sha)}
+ $branch="fix/yonatan-{0:000}-downloads" -f ([version]$version).Minor
+ $null=Api '/git/refs' 'Post' @{ref="refs/heads/$branch";sha=$commit.sha}
+ $pr=Api '/pulls' 'Post' @{title="Publish verified $version playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on $sourceBranch. No gameplay merge is included."}
+ Write-Output "DOCS_PR $($pr.number) $($pr.html_url) $($commit.sha)"
+ exit
+}
+if($Mode -eq 'merge-docs'){
+ if($PullRequest -le 0){throw 'PR number required after review'}
+ $pr=Api "/pulls/$PullRequest"
+ # Invoke-RestMethod can return its JSON array as a single pipeline object.
+ # Assign it directly before checking the actual file count.
+ $files=Api "/pulls/$PullRequest/files"
+ if($files.Count -ne $docPaths.Count -or $pr.base.ref -ne 'main'){throw 'Unexpected documentation PR scope'}
+ foreach($file in $files){
+  if($file.filename -notin $docPaths){throw 'Non-documentation change; merge blocked'}
+  $remote=Api ("/contents/"+$file.filename+"?ref="+$pr.head.sha)
+  $localBytes=[IO.File]::ReadAllBytes((Join-Path $repoRoot $file.filename))
+  if($remote.content.Replace("`n","").Replace("`r","") -ne [Convert]::ToBase64String($localBytes)){throw 'PR content changed since local review'}
+ }
+ $merged=Api "/pulls/$PullRequest/merge" 'Put' @{sha=$pr.head.sha;merge_method='squash';commit_title="docs: publish verified $version downloads"}
+ if(!$merged.merged){throw 'Documentation merge failed'}
+ foreach($path in $docPaths){
+  $remote=Api ("/contents/"+$path+"?ref=main")
+  $body=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($remote.content))
+  if(!$body.Contains($version)){throw "Current download version missing on main: $path"}
+  Write-Output "MAIN_VERIFIED $path"
+ }
+ Write-Output "DOCS_MERGED $($pr.html_url) $($merged.sha)"
+}
+

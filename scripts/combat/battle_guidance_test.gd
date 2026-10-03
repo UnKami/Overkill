@@ -9,6 +9,8 @@ func _ready() -> void:
 	var enemy: EnemyData = ContentDatabase.get_enemy("act1_boss").duplicate()
 	enemy.max_hp = 800
 	battle.start_combat([enemy])
+	assert(battle._battle_info.get_theme_font_size("font_size") == 20, "Enemy mechanics guidance must use comfortable desktop text size")
+	assert(battle._battle_info.global_position.y + battle._battle_info.size.y <= battle.size.y - 10, "Enemy mechanics guidance must not sit against the bottom edge")
 	await capture("next-hour-one")
 	assert(battle._guidance.target == battle._player_chrono.get_socket_view(1))
 	var draft: RelicPedestalView = battle._pedestal_row.get_child(0)
@@ -28,7 +30,7 @@ func _ready() -> void:
 	battle.player_hp = 10000
 	battle.enemy_hp = 10000
 	AudioManager.fast_mode = true
-	for hour in range(2,13): await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
+	for hour in range(2,10): await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
 	await get_tree().create_timer(0.6).timeout
 	AudioManager.fast_mode = false
 	assert(battle.phase == CombatController.Phase.QUADRANT)
@@ -42,7 +44,11 @@ func _ready() -> void:
 	battle._skip_button.mouse_entered.emit()
 	assert(battle._phase_label.text.contains("KEEP YOUR CLOCK"))
 	await capture("keep-preview")
-	await battle._on_player_socket_pressed(2,battle._player_chrono.get_socket_view(2))
+	assert(battle._choice_overlay.visible)
+	assert(battle._choice_overlay.replacements.get_child_count() == 3)
+	battle._choice_overlay.replacements.get_child(1).pressed.emit()
+	assert(not battle._choice_overlay.visible)
+	while battle._resolving: await get_tree().process_frame
 	assert(battle.player_sockets[1].slotted_relic == reserve)
 	assert(battle.active_quadrant == 2)
 	get_window().size = Vector2i(1280,720)

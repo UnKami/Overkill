@@ -9,7 +9,7 @@ signal block_changed(current: int)
 signal energy_changed(current: int, max: int)
 signal hand_changed(hand: Array)
 
-const MAX_HP := 75          ## balance doc Section 1
+const MAX_HP := 500         ## run baseline; run-persistent upgrades may raise this further
 const MAX_ENERGY := 3
 const HAND_SIZE := 5
 

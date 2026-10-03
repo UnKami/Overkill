@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-21"
+name = "Hex Bloom"
+tier = 2
+role = 2
+primary_essence = 2
+secondary_essence = 3
+description = "Gain 1 Strength. Apply 2 Weak."
+art_id = "rel_21_hex_bloom"
+apply_strength = 1
+apply_weak = 2

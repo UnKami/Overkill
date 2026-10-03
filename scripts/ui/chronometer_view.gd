@@ -1,6 +1,7 @@
 class_name ChronometerView extends Control
-## ChronometerView - Renders the 12-hour circular battle mechanism.
+## ChronometerView - Renders the 9-hour circular battle mechanism.
 ## Manages circular layout, quadrant lighting, socket dispatch, and sweeping hands.
+const DEFAULT_HAND_TRAVEL_DURATION: float = 0.18
 
 signal socket_pressed(hour_index: int, socket_view: ClockSocketView)
 
@@ -16,14 +17,16 @@ const RADIUS := 177.5
 @onready var _center_hub: Panel = %CenterHub
 @onready var _title_label: Label = %TitleLabel
 
-var _socket_views: Dictionary = {} # hour_index (1..12) -> ClockSocketView
+var _socket_views: Dictionary = {} # hour_index (1..9) -> ClockSocketView
 var _is_enemy: bool = false
 var _hand_tween: Tween = null
 var _engraving: Control
 var rotation_direction: int = 1
+var _readout_clearance: bool = false
 
 
 func _ready() -> void:
+	resized.connect(_update_hand_geometry)
 	_engraving = preload("res://scripts/ui/clock_engraving.gd").new()
 	add_child(_engraving)
 	move_child(_engraving, _socket_container.get_index())
@@ -32,6 +35,8 @@ func _ready() -> void:
 	mask.shader = preload("res://assets/ui/combat/circular_art.gdshader")
 	_dial_texture.material = mask
 	_style_chassis()
+	_dial_texture.modulate = Color(0.46, 0.46, 0.46)
+	_engraving.modulate.a = 0.4
 
 
 func initialize(is_enemy: bool = false, title: String = "") -> void:
@@ -79,6 +84,27 @@ func _style_chassis() -> void:
 		_engraving.accent = Color("e99778") if _is_enemy else Color("7bd6de")
 	if _dial_texture.material:
 		_dial_texture.material.set_shader_parameter("tint", Color(0.95, 0.65, 0.48) if _is_enemy else Color(0.7, 0.9, 0.95))
+	_update_hand_geometry()
+
+## During decisions, leave the center readable while retaining an hour pointer.
+## The full mechanical hand returns when the player's guidance is cleared.
+func set_readout_clearance(enabled: bool) -> void:
+	if _readout_clearance == enabled: return
+	_readout_clearance = enabled
+	_update_hand_geometry()
+
+func _update_hand_geometry() -> void:
+	if not is_instance_valid(_hand_line): return
+	var inner: float = size.x*0.45
+	var outer: float = size.x*0.49
+	_hand_line.points = PackedVector2Array([Vector2(inner,0),Vector2(outer,0)]) if _readout_clearance else PackedVector2Array([Vector2(-22,0),Vector2(145,0)])
+	var hand: Polygon2D = _center_hand_pivot.get_node_or_null("ForgedHand")
+	if hand:
+		hand.polygon = PackedVector2Array([Vector2(outer,-6),Vector2(inner,0),Vector2(outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-30,0),Vector2(-12,-7),Vector2(100,-3),Vector2(156,0),Vector2(100,3),Vector2(-12,7)])
+	_center_hub.visible = not _readout_clearance
+	var twin: Polygon2D = _center_hand_pivot.get_node_or_null("TwinHand")
+	if twin:
+		twin.polygon = PackedVector2Array([Vector2(-inner,0),Vector2(-outer,-6),Vector2(-outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-146,0),Vector2(-95,-4),Vector2(0,-2),Vector2(0,2),Vector2(-95,4)])
 
 
 func _create_clock_sockets() -> void:
@@ -87,9 +113,9 @@ func _create_clock_sockets() -> void:
 	_socket_views.clear()
 
 	var center := size * 0.5
-	for hour in range(1, 13):
-		# Angle: 12 is top (-90 deg), 3 is right (0 deg), 6 is bottom (90 deg)
-		var deg := (hour * 30.0) - 90.0
+	for hour in range(1, 10):
+		# Nine equally spaced sockets; hour 9 is at the top.
+		var deg := (hour * 40.0) - 90.0
 		var rad := deg_to_rad(deg)
 		var pos := center + Vector2(cos(rad), sin(rad)) * size.x * 0.355
 
@@ -113,8 +139,8 @@ func get_socket_view(hour: int) -> ClockSocketView:
 
 
 ## Smoothly rotates the pointer hand to aim directly at an hour.
-func snap_hand_to_hour(hour: int, duration: float = 0.32) -> Signal:
-	var target_deg := (hour * 30.0) - 90.0
+func snap_hand_to_hour(hour: int, duration: float = DEFAULT_HAND_TRAVEL_DURATION) -> Signal:
+	var target_deg := (hour * 40.0) - 90.0
 	var target_rad := deg_to_rad(target_deg)
 	if rotation_direction > 0:
 		while target_rad < _center_hand_pivot.rotation - 0.001: target_rad += TAU
@@ -126,7 +152,8 @@ func snap_hand_to_hour(hour: int, duration: float = 0.32) -> Signal:
 		_hand_tween.kill()
 
 	_hand_tween = create_tween()
-	_hand_tween.tween_property(_center_hand_pivot, "rotation", target_rad, duration / AudioManager.animation_speed_scale()).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	_hand_tween.set_speed_scale(AudioManager.clock_animation_speed_scale())
+	_hand_tween.tween_property(_center_hand_pivot, "rotation", target_rad, duration).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	return _hand_tween.finished
 
 
@@ -135,12 +162,14 @@ func set_twin_hand(enabled: bool) -> void:
 		var echo := Polygon2D.new()
 		echo.name = "TwinHand"
 		echo.polygon = PackedVector2Array([Vector2(-146, 0), Vector2(-95, -4), Vector2(0, -2), Vector2(0, 2), Vector2(-95, 4)])
+		echo.rotation = deg_to_rad(-20.0)
 		echo.color = Color("c98ad8")
 		_center_hand_pivot.add_child(echo)
 	_center_hand_pivot.get_node("TwinHand").visible = enabled
+	_update_hand_geometry()
 
 
-## Highlights the 3 sockets in quadrant q (1: 1-3, 2: 4-6, 3: 7-9, 4: 10-12)
+## Highlights the 3 sockets in quadrant q (1: 1-3, 2: 4-6, 3: 7-9)
 func highlight_quadrant(quadrant_index: int, highlight_color: Color = Color("#EF9F27")) -> void:
 	clear_quadrant_highlights()
 	_engraving.quadrant = quadrant_index
@@ -178,7 +207,6 @@ static func get_quadrant_hours(q: int) -> Array[int]:
 		1: return [1, 2, 3]
 		2: return [4, 5, 6]
 		3: return [7, 8, 9]
-		4: return [10, 11, 12]
 		_: return [1, 2, 3]
 
 

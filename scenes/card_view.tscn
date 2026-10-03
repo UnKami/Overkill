@@ -42,10 +42,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 16
 
 [node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
 layout_mode = 2
@@ -89,14 +89,20 @@ custom_minimum_size = Vector2(0, 190)
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RulesText" type="RichTextLabel" parent="Panel/Margin/VBox"]
+[node name="RulesMargin" type="MarginContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+
+[node name="RulesText" type="RichTextLabel" parent="Panel/Margin/VBox/RulesMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
-theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/normal_font_size = 16
 
 [node name="FrameOverlay" type="TextureRect" parent="."]
 unique_name_in_owner = true

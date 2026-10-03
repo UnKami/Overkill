@@ -48,6 +48,7 @@ static func play_slash(parent: CanvasItem, target_center: Vector2, angle_deg: fl
 
 	slash.scale = Vector2(0.2, scale_factor * 1.3)
 	var tween := slash.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(slash, "scale", Vector2(scale_factor * 1.2, scale_factor), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(slash, "position", slash.position + Vector2(randf_range(-15, 15), randf_range(-10, 10)), 0.18)
@@ -56,7 +57,7 @@ static func play_slash(parent: CanvasItem, target_center: Vector2, angle_deg: fl
 
 
 ## Spawns kinetic impact sparks radiating from a hit point.
-static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: Color = Color(1.0, 0.95, 0.8), count: int = 5) -> void:
+static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: Color = Color(1.0, 0.95, 0.8), count: int = 5, scale_factor: float = 1.0) -> void:
 	if parent == null or not parent.is_inside_tree():
 		return
 	_spark_tex = _get_tex(SPARK_TEXTURE_PATH, _spark_tex)
@@ -68,10 +69,11 @@ static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: C
 	flare.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	flare.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	flare.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	flare.custom_minimum_size = Vector2(128, 128)
-	flare.size = Vector2(128, 128)
-	flare.pivot_offset = Vector2(64, 64)
-	flare.position = target_center - Vector2(64, 64)
+	var flare_size: float = 128.0 * scale_factor
+	flare.custom_minimum_size = Vector2(flare_size, flare_size)
+	flare.size = Vector2(flare_size, flare_size)
+	flare.pivot_offset = Vector2(flare_size * 0.5, flare_size * 0.5)
+	flare.position = target_center - Vector2(flare_size * 0.5, flare_size * 0.5)
 	flare.rotation = randf_range(0, TAU)
 	flare.modulate = color
 	flare.scale = Vector2(0.4, 0.4)
@@ -79,8 +81,9 @@ static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: C
 	parent.add_child(flare)
 
 	var tween := flare.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
-	tween.tween_property(flare, "scale", Vector2(1.6, 1.6), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(flare, "scale", Vector2(1.6 * scale_factor, 1.6 * scale_factor), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(flare, "modulate:a", 0.0, 0.16).set_delay(0.06)
 	tween.chain().tween_callback(flare.queue_free)
 
@@ -88,19 +91,20 @@ static func play_hit_sparks(parent: CanvasItem, target_center: Vector2, color: C
 		var speck := TextureRect.new()
 		speck.texture = _spark_tex
 		speck.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		speck.custom_minimum_size = Vector2(32, 32)
-		speck.size = Vector2(32, 32)
-		speck.pivot_offset = Vector2(16, 16)
-		speck.position = target_center - Vector2(16, 16)
+		speck.custom_minimum_size = Vector2(32 * scale_factor, 32 * scale_factor)
+		speck.size = Vector2(32 * scale_factor, 32 * scale_factor)
+		speck.pivot_offset = speck.size * 0.5
+		speck.position = target_center - speck.size * 0.5
 		speck.modulate = color
 		speck.scale = Vector2(randf_range(0.3, 0.6), randf_range(0.3, 0.6))
 		speck.z_index = 52
 		parent.add_child(speck)
 
 		var ang := randf_range(0, TAU)
-		var dist := randf_range(50, 110)
+		var dist := randf_range(50, 110) * scale_factor
 		var dest := speck.position + Vector2(cos(ang), sin(ang)) * dist
 		var sp_tween := speck.create_tween()
+		sp_tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 		sp_tween.set_parallel(true)
 		sp_tween.tween_property(speck, "position", dest, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		sp_tween.tween_property(speck, "scale", Vector2.ZERO, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
@@ -130,6 +134,7 @@ static func play_shield_pulse(parent: CanvasItem, target_center: Vector2) -> voi
 	parent.add_child(shield)
 
 	var tween := shield.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(shield, "scale", Vector2(1.25, 1.25), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(shield, "modulate:a", 1.0, 0.1)
@@ -164,6 +169,7 @@ static func play_overkill_burst(parent: CanvasItem, target_center: Vector2, over
 
 	var scale_target: float = clampf(1.8 + overkill * 0.04, 2.0, 3.2)
 	var tween := burst.create_tween()
+	tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(burst, "scale", Vector2(scale_target, scale_target), 0.28).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	tween.tween_property(burst, "rotation", burst.rotation + 0.5, 0.3)
@@ -198,6 +204,7 @@ static func play_ok_essence_trail(parent: CanvasItem, from_pos: Vector2, to_pos:
 		var mid_pos := (from_pos + to_pos) * 0.5 + mid_offset
 
 		var tween := orb.create_tween()
+		tween.set_speed_scale(AudioManager.combat_animation_speed_scale())
 		tween.tween_property(orb, "scale", Vector2(1.2, 1.2), 0.12).set_delay(delay)
 		tween.parallel().tween_property(orb, "modulate:a", 1.0, 0.08).set_delay(delay)
 		tween.tween_property(orb, "position", mid_pos, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

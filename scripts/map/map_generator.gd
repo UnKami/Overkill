@@ -72,7 +72,14 @@ static func generate(seed_value: int, act_number: int) -> Dictionary:
 		for node_id in current_row:
 			var edge_count: int = rng.randi_range(1, min(2, next_row.size()))
 			var shuffled: Array = next_row.duplicate()
-			shuffled.shuffle()
+			# Array.shuffle() uses the global RNG, so unrelated effects or a
+			# save/load could change routes for the same run seed. Keep the
+			# permutation on this map's seeded RNG as well.
+			for swap_index: int in range(shuffled.size() - 1, 0, -1):
+				var picked_index: int = rng.randi_range(0, swap_index)
+				var held_id: String = shuffled[swap_index]
+				shuffled[swap_index] = shuffled[picked_index]
+				shuffled[picked_index] = held_id
 			nodes[node_id].connections.assign(shuffled.slice(0, edge_count))
 		for next_id in next_row:
 			var has_incoming := false

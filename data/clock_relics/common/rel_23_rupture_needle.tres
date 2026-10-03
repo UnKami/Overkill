@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-23"
+name = "Rupture Needle"
+tier = 1
+role = 3
+primary_essence = 0
+secondary_essence = 3
+description = "Deal 4 damage. Apply 3 Bleed."
+art_id = "rel_23_rupture_needle"
+base_damage = 4
+apply_bleed = 3

@@ -18,18 +18,16 @@ try {
     # Ship the same official runtime already used for local gameplay verification.
     Copy-Item -LiteralPath $runtime -Destination "$buildDir/Overkill.exe"
     Copy-Item -LiteralPath "$projectRoot/installer/GODOT-LICENSE.txt" -Destination "$buildDir/GODOT-LICENSE.txt"
-    $delivery = (Get-Content -Raw "$projectRoot/docs/frontend-polish-delivery.md") + "`r`n`r`n" + (Get-Content -Raw "$projectRoot/docs/directed-encounter-delivery.md")
+    $notesName = 'encounter-{0:000}.md' -f ([version]$version).Minor
+    $delivery = Get-Content -Raw (Join-Path "$projectRoot/docs" $notesName)
     Set-Content -LiteralPath "$buildDir/DELIVERY.md" -Value $delivery -Encoding utf8
     @'
 @echo off
 setlocal
-set "APPDATA=%LOCALAPPDATA%\OverkillSentinel"
-if not exist "%APPDATA%" mkdir "%APPDATA%"
-set "LOCALAPPDATA=%APPDATA%"
 cd /d "%~dp0"
-start "" "%~dp0Overkill.exe" --scene res://scenes/sentinel_encounter.tscn
+start "" "%~dp0Overkill.exe"
 endlocal
-'@ | Set-Content -LiteralPath "$buildDir/Play Sentinel.cmd" -Encoding ascii
+'@ | Set-Content -LiteralPath "$buildDir/Play Overkill.cmd" -Encoding ascii
     $compile = Start-Process -FilePath $Compiler -ArgumentList @("/DAppVersion=$version", "/O`"$installerDir`"", "`"$installerDir/overkill.iss`"") -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput "$buildDir/installer-compile.log" -RedirectStandardError "$buildDir/installer-compile-errors.log"
     if ($compile.ExitCode -ne 0) { throw "Installer compilation failed; see $buildDir/installer-compile-errors.log" }
     Get-Item -LiteralPath "$installerDir/OverkillSetup-$version.exe"

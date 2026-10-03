@@ -51,14 +51,14 @@ func play_resolved() -> void:
 ## The visible "you just hit this enemy" beat - every landed hit, not just
 ## the big Overkill ones (which additionally get the screen shake).
 func play_hit_flash() -> void:
-	AmbientMotion.flash(self, Color(2.0, 0.8, 0.8), 0.18)
+	AmbientMotion.flash(self, Color(2.0, 0.8, 0.8), 0.36)
 	play_knockback(Vector2.RIGHT, 22.0)
 
 
 ## Kinetic recoil knockback when struck by attacks.
 func play_knockback(direction: Vector2 = Vector2.RIGHT, distance: float = 22.0) -> void:
 	pivot_offset = size * 0.5
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	# Fast punch in impact direction with slight squash/tilt
 	tween.set_parallel(true)
 	tween.tween_property(self, "position", position + direction * distance, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -78,7 +78,7 @@ func play_attack_lunge(target_global_pos: Vector2) -> Tween:
 	var dir := (target_global_pos - global_position).normalized()
 	var lunge_dist := 75.0
 
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	# Anticipation wind-up: lean back
 	tween.set_parallel(true)
 	tween.tween_property(self, "position", origin - dir * 25.0, 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
@@ -97,7 +97,7 @@ func play_attack_lunge(target_global_pos: Vector2) -> Tween:
 ## Violent crystalline disintegration when killed via Overkill.
 func play_death_shatter() -> Signal:
 	pivot_offset = size * 0.5
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	# Hit-flash whiteout + violent jitter
 	tween.set_parallel(true)
 	tween.tween_property(self, "modulate", Color(2.5, 2.2, 1.8), 0.08)

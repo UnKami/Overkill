@@ -1,5 +1,5 @@
 class_name ClockSocketView extends Control
-## ClockSocketView - Renders an individual 1-to-12 hour socket on a Chronometer.
+## ClockSocketView - Renders an individual 1-to-9 hour socket on a Chronometer.
 
 signal pressed(socket_view: ClockSocketView)
 signal previewed(socket_view: ClockSocketView)
@@ -25,12 +25,17 @@ func _ready() -> void:
 	var mask := ShaderMaterial.new()
 	mask.shader = preload("res://assets/ui/combat/circular_art.gdshader")
 	_icon_rect.material = mask
+	_icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	var metal := ShaderMaterial.new()
 	metal.shader = preload("res://assets/ui/combat/socket_metal.gdshader")
 	_socket_base.material = metal
+	_icon_rect.modulate = Color(0.65, 0.65, 0.65)
+	_hour_label.position.y = -22
+	_hour_label.add_theme_constant_override("outline_size", 8)
+	_value_label.add_theme_constant_override("outline_size", 8)
 	focus_mode = Control.FOCUS_ALL
-	_hour_label.add_theme_font_size_override("font_size",20)
-	_value_label.add_theme_font_size_override("font_size",19)
+	_hour_label.add_theme_font_size_override("font_size",25)
+	_value_label.add_theme_font_size_override("font_size",26)
 	focus_entered.connect(_on_mouse_entered)
 	focus_exited.connect(_on_mouse_exited)
 
@@ -64,23 +69,31 @@ func _style_socket(is_enemy: bool) -> void:
 
 	if not is_enemy and data.slotted_relic != null:
 		var relic := data.slotted_relic
-		border_col = ClockRelicData.role_to_color(relic.role)
+		border_col = relic.primary_color()
 		_load_relic_art(relic.art_id)
 
 		if relic.base_damage > 0:
 			val_text = "%d×%d" % [relic.base_damage, relic.hits] if relic.hits > 1 else str(relic.base_damage)
-			_value_label.add_theme_color_override("font_color", Color("#FF8C8C"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.base_block > 0:
 			val_text = str(relic.base_block)
-			_value_label.add_theme_color_override("font_color", Color("#8CE1FF"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.apply_strength > 0:
 			val_text = "+%d" % relic.apply_strength
-			_value_label.add_theme_color_override("font_color", Color("#FFD58C"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
 		elif relic.apply_bleed > 0:
 			val_text = "%db" % relic.apply_bleed
-			_value_label.add_theme_color_override("font_color", Color("#E58CFF"))
+			_value_label.add_theme_color_override("font_color", relic.primary_color().lightened(0.2))
+		elif relic.grant_overkill > 0:
+			val_text = "+%d" % relic.grant_overkill
+			_value_label.add_theme_color_override("font_color", ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.18))
 
-		tooltip_text = "[%s] %s\n%s" % [ClockRelicData.role_to_name(relic.role), relic.name, relic.description]
+		tooltip_text = "[%s] %s\n%s" % [relic.affinity_name(), relic.name, relic.description]
+	elif is_enemy and not data.intent_revealed:
+		_icon_rect.texture = null
+		val_text = "?"
+		_value_label.add_theme_color_override("font_color", Color("83929e"))
+		tooltip_text = "Hour %d · Unrevealed enemy relic" % data.hour_index
 	elif is_enemy:
 		if data.intent_damage > 0:
 			border_col = Color("#E74C3C")
@@ -93,14 +106,14 @@ func _style_socket(is_enemy: bool) -> void:
 			_value_label.add_theme_color_override("font_color", Color("#8CE1FF"))
 			_load_icon("intent_defend")
 		elif data.intent_strength > 0:
-			border_col = Color("#F39C12")
+			border_col = ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF)
 			val_text = "+%d" % data.intent_strength
-			_value_label.add_theme_color_override("font_color", Color("#FFD58C"))
+			_value_label.add_theme_color_override("font_color", border_col.lightened(0.2))
 			_load_icon("intent_buff")
 		elif data.intent_bleed > 0 or data.intent_vulnerable > 0 or data.intent_weak > 0:
-			border_col = Color("#9B59B6")
+			border_col = ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF)
 			val_text = "!"
-			_value_label.add_theme_color_override("font_color", Color("#E58CFF"))
+			_value_label.add_theme_color_override("font_color", border_col.lightened(0.2))
 			_load_icon("intent_debuff")
 		else:
 			_icon_rect.texture = null
@@ -118,7 +131,9 @@ func _style_socket(is_enemy: bool) -> void:
 	_value_label.text = val_text
 
 	# Modifiers
-	if data.is_locked:
+	if is_enemy and not data.intent_revealed:
+		_modifier_badge.hide()
+	elif data.is_locked:
 		_modifier_badge.text = "L"
 		_modifier_badge.show()
 	elif data.is_hazard:
@@ -132,22 +147,7 @@ func _style_socket(is_enemy: bool) -> void:
 
 
 func _load_relic_art(art_id: String) -> void:
-	var candidates: Array[String] = [
-		"res://assets/relics/active/%s.jpg" % art_id,
-		"res://assets/relics/active/%s.png" % art_id,
-		"res://assets/relics/%s.png" % art_id,
-		"res://assets/relics/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.jpg" % art_id,
-		"res://assets/cards/executioner/%s.png" % art_id,
-		"res://assets/cards/excess/%s.jpg" % art_id,
-		"res://assets/cards/excess/%s.png" % art_id,
-		"res://assets/icons/ui/%s.png" % art_id,
-	]
-	for p in candidates:
-		if ResourceLoader.exists(p):
-			_icon_rect.texture = ResourceLoader.load(p)
-			return
-	_icon_rect.texture = null
+	_icon_rect.texture = RelicArt.load_texture(art_id)
 
 
 func _load_icon(icon_name: String) -> void:
@@ -169,7 +169,7 @@ func set_quadrant_highlight(active: bool, highlight_color: Color = Color("#EF9F2
 
 func play_tick_resolution_flash() -> void:
 	pivot_offset = size * 0.5
-	var tween := create_tween()
+	var tween := create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	tween.set_parallel(true)
 	tween.tween_property(self, "scale", Vector2(1.28, 1.28), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_glow_ring, "modulate:a", 1.8, 0.08)

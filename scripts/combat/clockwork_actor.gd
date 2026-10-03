@@ -196,7 +196,7 @@ func _process(delta: float) -> void:
 func attack() -> void:
 	if _motion and _motion.is_valid(): _motion.kill()
 	_acting = true
-	_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+	_motion = create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	_motion.set_parallel(true)
 	_motion.tween_property(weapon_arm, "rotation:x", -1.6, 0.14).set_trans(Tween.TRANS_CUBIC)
 	_motion.tween_property(torso, "rotation:y", -0.3, 0.14)
@@ -213,7 +213,7 @@ func attack() -> void:
 func hit(blocked: bool = false) -> void:
 	if _motion and _motion.is_valid(): _motion.kill()
 	_acting = true
-	_motion = create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+	_motion = create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	_motion.tween_property(torso, "rotation:x", -0.08 if blocked else -0.24, 0.055)
 	_motion.tween_property(torso, "rotation:x", 0.0, 0.25).set_trans(Tween.TRANS_BACK)
 	_motion.tween_callback(func() -> void: _acting = false)
@@ -221,7 +221,7 @@ func hit(blocked: bool = false) -> void:
 func fall() -> void:
 	if _motion and _motion.is_valid(): _motion.kill()
 	_acting = true
-	_motion = create_tween()
+	_motion = create_tween().set_speed_scale(AudioManager.combat_animation_speed_scale())
 	_motion.set_parallel(true)
 	_motion.tween_property(self, "rotation:x", -PI * 0.48, 0.65).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_motion.tween_property(self, "position:y", -0.08, 0.65)

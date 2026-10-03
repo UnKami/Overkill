@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/upgrade_preview_dialog.gd" id="1_script"]
 
 [node name="UpgradePreviewDialog" type="Control"]
+z_index = 64
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +20,17 @@ anchor_bottom = 1.0
 focus_mode = 0
 flat = true
 theme_override_colors/font_color = Color(0, 0, 0, 0)
-self_modulate = Color(0, 0, 0, 0.65)
+self_modulate = Color(1, 1, 1, 0)
+
+[node name="Dimmer" type="ColorRect" parent="."]
+unique_name_in_owner = true
+show_behind_parent = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.004, 0.009, 0.016, 0.64)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -28,7 +39,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Panel" type="Panel" parent="CenterContainer"]
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
 layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="CenterContainer/Panel"]

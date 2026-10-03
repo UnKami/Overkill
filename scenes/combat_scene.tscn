@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/relic_pedestal_view.tscn" id="5_pedestal"]
 [ext_resource type="PackedScene" path="res://scenes/damage_number.tscn" id="6_damage"]
 [ext_resource type="PackedScene" path="res://scenes/tutorial_callout_view.tscn" id="7_tutorial"]
-[ext_resource type="Texture2D" path="res://assets/ui/combat/nexus_sigil.jpg" id="8_sigil"]
+[ext_resource type="Texture2D" path="res://assets/ui/combat/nexus_sigil.png" id="8_sigil"]
 
 [node name="CombatScene" type="Control"]
 layout_mode = 3

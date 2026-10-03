@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-15"
+name = "Bastion Bell"
+tier = 1
+role = 1
+primary_essence = 1
+description = "Gain 10 Block. Lasts until absorbed or battle ends."
+art_id = "rel_15_bastion_bell"
+base_block = 10

@@ -20,6 +20,9 @@ var seed_value: int = 0
 var act_number: int = 1
 var current_node_id: String = ""
 var visited_nodes: Array[String] = []
+var pre_battle_offer_acts: Array[int] = []
+## Optional scene checkpoint; old saves without it use map recovery.
+var resume_context: Dictionary = {}
 
 ## Run-persistent HP (distinct from PlayerState.hp, which resets every fight)
 var current_hp: int = 0
@@ -38,7 +41,7 @@ var purchase_counts: Dictionary = {}  # category String -> int
 var _next_card_instance_id: int = 0
 
 
-func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicData] = [], starting_max_hp: int = 75, map_seed: int = -1) -> void:
+func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicData] = [], starting_max_hp: int = 500, map_seed: int = -1) -> void:
 	OKRunState.reset_for_new_run()
 	deck.clear()
 	clock_inventory = ClockInventory.starter()
@@ -54,6 +57,8 @@ func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicD
 	act_number = 1
 	current_node_id = ""
 	visited_nodes.clear()
+	pre_battle_offer_acts.clear()
+	resume_context.clear()
 	seed_value = map_seed if map_seed != -1 else randi()
 	run_active = true
 	run_started.emit()
@@ -63,6 +68,8 @@ func load_from_save(data: Dictionary) -> void:
 	clock_inventory.clear()
 	var seen: Dictionary = {}
 	for raw in data.get("clock_inventory", []):
+		if clock_inventory.size() >= ClockInventory.MAX_SIZE:
+			break
 		if raw is Dictionary and ContentDatabase.get_clock_relic(str(raw.get("id", ""))) != null:
 			var uid := int(raw.get("uid", clock_inventory.size()))
 			if seen.has(uid): uid = clock_inventory.size() + 10000
@@ -87,14 +94,21 @@ func load_from_save(data: Dictionary) -> void:
 
 	potions_held.assign(data.get("potions_held", []))
 	purchase_counts = data.get("purchase_counts", {}).duplicate()
-	current_hp = data.get("current_hp", 75)
-	max_hp = data.get("max_hp", 75)
+	current_hp = int(data.get("current_hp", 75))
+	max_hp = int(data.get("max_hp", 75))
+	if int(data.get("health_balance_version", 0)) < 1:
+		var previous_max_hp: int = maxi(max_hp, 1)
+		var hp_bonus: int = maxi(0, max_hp - 75)
+		max_hp = 500 + hp_bonus
+		current_hp = roundi(float(clampi(current_hp, 0, previous_max_hp)) / float(previous_max_hp) * float(max_hp))
 
 	var map_data: Dictionary = data.get("map", {})
 	seed_value = map_data.get("seed", randi())
 	act_number = map_data.get("act_number", 1)
 	current_node_id = map_data.get("current_node_id", "")
 	visited_nodes.assign(map_data.get("visited_nodes", []))
+	pre_battle_offer_acts.assign(map_data.get("pre_battle_offer_acts", []))
+	resume_context = data.get("resume_context", {}).duplicate(true)
 
 	OKRunState.load_from_save(data.get("ok_run_state", {}))
 	run_active = true
@@ -109,10 +123,12 @@ func to_save_dict() -> Dictionary:
 	for relic in relics_held:
 		relic_ids.append(relic.id)
 	return {
+		"resume_context": resume_context.duplicate(true),
 		"clock_inventory": clock_inventory.duplicate(true),
 		"deck": deck_data,
 		"current_hp": current_hp,
 		"max_hp": max_hp,
+		"health_balance_version": 1,
 		"relics_held": relic_ids,
 		"potions_held": potions_held.duplicate(),
 		"purchase_counts": purchase_counts.duplicate(),
@@ -121,6 +137,7 @@ func to_save_dict() -> Dictionary:
 			"current_node_id": current_node_id,
 			"visited_nodes": visited_nodes.duplicate(),
 			"act_number": act_number,
+			"pre_battle_offer_acts": pre_battle_offer_acts.duplicate(),
 		},
 	}
 
@@ -131,11 +148,25 @@ func ensure_clock_inventory() -> void:
 
 func add_clock_relic(relic_id: String) -> bool:
 	if ContentDatabase.get_clock_relic(relic_id) == null: return false
+	if clock_inventory.size() >= ClockInventory.MAX_SIZE: return false
 	var uid := 0
 	for entry in clock_inventory: uid = maxi(uid, int(entry.uid) + 1)
 	clock_inventory.append({"uid": uid, "id": relic_id, "level": 0})
 	clock_inventory_changed.emit()
 	return true
+
+
+func replace_clock_relic(uid: int, relic_id: String) -> bool:
+	if ContentDatabase.get_clock_relic(relic_id) == null: return false
+	for index: int in clock_inventory.size():
+		if int(clock_inventory[index].get("uid", -1)) != uid: continue
+		var next_uid: int = 0
+		for entry: Dictionary in clock_inventory:
+			next_uid = maxi(next_uid, int(entry.get("uid", -1)) + 1)
+		clock_inventory[index] = {"uid": next_uid, "id": relic_id, "level": 0}
+		clock_inventory_changed.emit()
+		return true
+	return false
 
 
 func upgrade_clock_relic(uid: int) -> bool:
@@ -159,6 +190,7 @@ func remove_clock_relic(uid: int) -> bool:
 
 func end_run() -> void:
 	run_active = false
+	resume_context.clear()
 	run_ended.emit()
 
 
@@ -194,9 +226,12 @@ func remove_card_from_deck(instance_id: int) -> bool:
 	return false
 
 
-func add_relic(relic: RelicData) -> void:
+func add_relic(relic: RelicData) -> bool:
+	if relic == null or (relic.id.begins_with("artifact_") and has_relic(relic.id)):
+		return false
 	relics_held.append(relic)
 	relics_changed.emit(relics_held)
+	return true
 
 
 func has_relic(relic_id: String) -> bool:
@@ -243,8 +278,21 @@ func commit_map_node(node_id: String) -> void:
 		visited_nodes.append(node_id)
 
 
+func should_offer_pre_battle() -> bool:
+	# One authored offer at the first battle of each act. Keeping the trigger in
+	# run state (rather than the map UI) lets future elite/boss events opt into
+	# the same presentation without making every encounter show an offer.
+	return not pre_battle_offer_acts.has(act_number)
+
+
+func mark_pre_battle_offer_seen() -> void:
+	if not pre_battle_offer_acts.has(act_number):
+		pre_battle_offer_acts.append(act_number)
+
+
 func advance_act(new_seed: int = -1) -> void:
 	act_number += 1
+	resume_context.clear()
 	current_node_id = ""
 	visited_nodes.clear()
 	seed_value = new_seed if new_seed != -1 else randi()

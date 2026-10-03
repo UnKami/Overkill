@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = "REL-18"
+name = "Blood Tithe"
+tier = 1
+role = 4
+primary_essence = 4
+description = "Gain 3 Overkill."
+art_id = "rel_18_blood_tithe"
+grant_overkill = 3

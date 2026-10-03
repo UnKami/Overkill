@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS := {
 	"sfx_volume": 1.0,
 	"fast_mode": false,
 	"text_size": "normal",
+	"render_quality": "high",
 }
 
 

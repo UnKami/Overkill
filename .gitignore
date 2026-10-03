@@ -34,4 +34,12 @@ firebase-debug.log
 
 .tools/
 artifacts/
+/.test-artifacts/
+/installer/Overkill-*-Windows.zip
+/installer/*.sha256
+
+# Trailer outputs: keep the editable capture/render scripts, not generated media
+/trailer/*.mp4
+/trailer/captures/
+/trailer/*contact-sheet.jpg
 

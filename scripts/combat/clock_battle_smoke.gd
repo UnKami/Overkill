@@ -6,9 +6,47 @@ func _ready() -> void:
 	get_window().mode = Window.MODE_WINDOWED
 	get_window().size = Vector2i(1920, 1080)
 	seed(42)
+	# Keep this input-flow smoke deterministic and quick; the human-facing
+	# default cadence is intentionally slower for impact readability.
+	AudioManager.fast_mode = true
 	AudioManager.set_master_volume(0.0)
+	assert(is_equal_approx(AudioManager.clock_animation_speed_scale(), 2.0), "Fast Mode must preserve accelerated hand travel")
+	assert(is_equal_approx(AudioManager.combat_animation_speed_scale(), 2.0), "Fast Mode must accelerate combat feedback")
+	AudioManager.fast_mode = false
+	assert(is_equal_approx(AudioManager.clock_animation_speed_scale(), 1.0), "Normal hand travel must remain crisp")
+	assert(is_equal_approx(AudioManager.combat_animation_speed_scale(), 0.5), "Normal impacts must retain deliberate pacing")
+	assert(is_equal_approx(ChronometerView.DEFAULT_HAND_TRAVEL_DURATION, 0.18), "Clock travel should stay brisk between actions")
+	assert(CombatController.TICK_STARTUP_DELAY <= 0.10 and CombatController.TICK_RECOVERY_DELAY <= 0.15, "Tick transitions should not stall between resolved actions")
+	AudioManager.fast_mode = true
+	var standard_relic := ClockRelicData.new()
+	standard_relic.base_damage = 6
+	var standard_profile := AttackPresentation.for_relic(standard_relic)
+	var combo_relic := ClockRelicData.new()
+	combo_relic.base_damage = 4
+	combo_relic.hits = 2
+	var combo_profile := AttackPresentation.for_relic(combo_relic)
+	assert(combo_profile.anticipation < standard_profile.anticipation and combo_profile.recovery < standard_profile.recovery, "Multi-hit attacks need a quicker, clearly separate rhythm")
+	assert(combo_profile.recovery <= 0.13 and combo_profile.hit_settle <= 0.05, "Multi-hit recovery should leave a crisp beat between impacts")
+	var heavy_relic := ClockRelicData.new()
+	heavy_relic.base_damage = 12
+	var heavy_profile := AttackPresentation.for_relic(heavy_relic)
+	assert(heavy_profile.anticipation > standard_profile.anticipation and heavy_profile.travel_pixels > standard_profile.travel_pixels, "Heavy strikes need more wind-up and travel")
+	assert(heavy_profile.recovery < 0.42, "Heavy strikes should keep their impact but avoid an overlong return")
+	var light_intent := ClockSocketData.new()
+	light_intent.intent_damage = 4
+	var heavy_intent := ClockSocketData.new()
+	heavy_intent.intent_damage = 12
+	var flurry_intent := ClockSocketData.new()
+	flurry_intent.intent_damage = 12
+	flurry_intent.intent_hits = 2
+	var enemy_fast_profile := AttackPresentation.for_enemy(light_intent)
+	var enemy_heavy_profile := AttackPresentation.for_enemy(heavy_intent)
+	var enemy_flurry_profile := AttackPresentation.for_enemy(flurry_intent)
+	assert(enemy_heavy_profile.anticipation > enemy_fast_profile.anticipation and enemy_heavy_profile.shake > enemy_fast_profile.shake, "Dangerous enemy blows need a stronger tell and impact")
+	assert(enemy_flurry_profile.id == "enemy_flurry" and enemy_flurry_profile.recovery < enemy_fast_profile.recovery, "Enemy multi-hit intents need a distinct quicker rhythm")
 	AudioManager.play_clock_sound("tick")
 	assert(AudioManager._clock_sounds.is_empty(), "Muted audio must not allocate a voice")
+	RunManager.start_new_run([], [], 80, 42)
 	RunManager.current_hp = 80
 	RunManager.max_hp = 80
 	battle = load("res://scenes/combat_scene.tscn").instantiate()
@@ -23,18 +61,26 @@ func _ready() -> void:
 	var chosen := battle.current_draft_selection[0]
 	battle._on_phase_one_relic_chosen(chosen)
 	battle._on_phase_one_relic_chosen(chosen)
-	await get_tree().create_timer(2.0).timeout
+	# Named relic choreography now includes an authored summon and recovery.
+	# Await the completed decision so the double-input assertion tests one
+	# committed hour, while still failing if the combat resolver stalls.
+	var resolution_deadline: int = Time.get_ticks_msec() + 12000
+	while battle._resolving and Time.get_ticks_msec() < resolution_deadline:
+		await get_tree().process_frame
+	assert(not battle._resolving, "The first committed relic must finish within twelve seconds in Fast Mode")
 	assert(battle.turn_number == 2, "Double-click must resolve only one hour")
 	assert(battle.player_sockets[0].slotted_relic == chosen)
-	# High health fixtures exercise the complete 12-hour assembly and wrap.
+	# High health fixtures exercise the complete 9-hour assembly and wrap.
 	battle.player_hp = 10000
-	for hour in range(2, 13):
+	for hour in range(2, 10):
+		for i: int in 9:
+			assert(battle.enemy_sockets[i].intent_revealed == (i < hour), "Reveal before placement; retain previous actions")
 		await battle._on_phase_one_relic_chosen(battle.current_draft_selection[0])
 	await get_tree().create_timer(0.8).timeout
 	assert(battle.phase == CombatController.Phase.QUADRANT)
-	assert(battle.turn_number == 13)
+	assert(battle.turn_number == 10)
 	assert(battle.current_drawn_relic != null, "The real run inventory must leave reserves")
-	assert(battle.player_deck.size() + battle.player_discard.size() == 5)
+	assert(battle.player_deck.size() + battle.player_discard.size() == 2)
 	battle.player_hp = 66
 	battle._update_stats_display()
 	await capture("quadrant")
@@ -49,9 +95,17 @@ func _ready() -> void:
 	assert(battle.player_sockets[3].slotted_relic == reserve)
 	# Exercise forward wrap.
 	await battle._on_skip_button_pressed()
-	await battle._on_skip_button_pressed()
 	assert(battle.active_quadrant == 1)
 	var previous_rotation := battle._player_chrono._center_hand_pivot.rotation
+	AudioManager.fast_mode = false
+	var normal_start_usec: int = Time.get_ticks_usec()
+	await battle._player_chrono.snap_hand_to_hour(2)
+	var normal_snap_usec: int = Time.get_ticks_usec() - normal_start_usec
+	AudioManager.fast_mode = true
+	var fast_start_usec: int = Time.get_ticks_usec()
+	await battle._player_chrono.snap_hand_to_hour(3)
+	var fast_snap_usec: int = Time.get_ticks_usec() - fast_start_usec
+	assert(fast_snap_usec < normal_snap_usec * 0.8, "Clock travel in Fast Mode should be perceptibly quicker")
 	await battle._player_chrono.snap_hand_to_hour(1)
 	assert(battle._player_chrono._center_hand_pivot.rotation > previous_rotation)
 	get_window().size = Vector2i(1280, 720)
@@ -64,9 +118,17 @@ func _ready() -> void:
 	battle.enemy_hp = 0
 	assert(battle._check_combat_end())
 	assert(battle._check_combat_end())
-	await get_tree().create_timer(1.6 if battle._stage is DirectedArena else 1.0).timeout
+	await get_tree().create_timer(1.0).timeout
 	assert(wins.size() == 1, "Victory must be emitted once")
-	print("CLOCK_SMOKE_OK: 12 assembly hours, double input, 4 quadrants, hot swap, forward wrap, single victory signal, muted audio")
+	var departing_enemy: IllustratedActor = battle._stage.enemy
+	battle._stage.configure_enemy("forward", enemy.art_id)
+	assert(battle._stage.enemy != departing_enemy, "A reinforcement must get a fresh illustrated actor")
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 0.0), "A reinforcement should enter with its reveal animation")
+	await get_tree().create_timer(0.02).timeout
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 0.0), "A reinforcement should hold briefly before its entrance")
+	await get_tree().create_timer(0.35).timeout
+	assert(is_equal_approx(battle._stage.enemy.modulate.a, 1.0), "A reinforcement reveal must resolve cleanly")
+	print("CLOCK_SMOKE_OK: 9 assembly hours, double input, 3 sectors, hot swap, forward wrap, cadence timings, reinforcement reveal, single victory signal, muted audio")
 	get_tree().quit()
 
 func capture(label: String) -> void:

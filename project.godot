@@ -11,8 +11,13 @@ config_version=5
 [application]
 
 config/name="Overkill"
+config/version="0.42.0"
 run/main_scene="res://scenes/title_screen.tscn"
-config/features=PackedStringArray("4.5", "Mobile")
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/image="res://assets/screens/cinematic/loading_crystalline_passage.png"
+boot_splash/fullsize=true
+boot_splash/use_filter=true
+boot_splash/bg_color=Color(0.012, 0.018, 0.028, 1)
 
 [autoload]
 
@@ -38,7 +43,11 @@ window/stretch/aspect="expand"
 theme/custom="res://assets/ui/theme/overkill_theme.tres"
 timers/tooltip_delay_sec=0.15
 
+[editor]
+
+import/use_multiple_threads=false
+
 [rendering]
 
-renderer/rendering_method="mobile"
-renderer/rendering_method.mobile="mobile"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

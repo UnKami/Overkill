@@ -1,0 +1,50 @@
+{
+  "swing": {
+    "seconds": 0.32,
+    "peak_dbfs": -2.05,
+    "rms_dbfs": -15.65,
+    "clipped_samples": 0
+  },
+  "strike": {
+    "seconds": 0.65,
+    "peak_dbfs": -2.05,
+    "rms_dbfs": -22.07,
+    "clipped_samples": 0
+  },
+  "guard": {
+    "seconds": 0.8,
+    "peak_dbfs": -2.05,
+    "rms_dbfs": -19.53,
+    "clipped_samples": 0
+  },
+  "shatter": {
+    "seconds": 0.65,
+    "peak_dbfs": -5.92,
+    "rms_dbfs": -22.87,
+    "clipped_samples": 0
+  },
+  "heal": {
+    "seconds": 0.9,
+    "peak_dbfs": -7.53,
+    "rms_dbfs": -19.51,
+    "clipped_samples": 0
+  },
+  "reveal": {
+    "seconds": 0.45,
+    "peak_dbfs": -5.59,
+    "rms_dbfs": -23.59,
+    "clipped_samples": 0
+  },
+  "victory": {
+    "seconds": 1.8,
+    "peak_dbfs": -6.12,
+    "rms_dbfs": -19.28,
+    "clipped_samples": 0
+  },
+  "defeat": {
+    "seconds": 1.2,
+    "peak_dbfs": -5.59,
+    "rms_dbfs": -18.55,
+    "clipped_samples": 0
+  }
+}

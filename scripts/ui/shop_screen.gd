@@ -37,14 +37,13 @@ func _ready() -> void:
 	_roll_inventory()
 	_rebuild()
 	_load_background()
-	AmbientMotion.spawn_embers(self, Color(0.85, 0.85, 0.92, 0.4), 10, true)
 
 
 func _load_background() -> void:
 	var path := "res://assets/screens/shop_bg.jpg"
 	if ResourceLoader.exists(path):
 		_background.texture = ResourceLoader.load(path)
-		AmbientMotion.apply_ken_burns(_background, 40.0, 0.025)
+		AmbientMotion.apply_cinematic_backdrop(self, _background, 48.0, 0.72)
 
 
 func _roll_inventory() -> void:

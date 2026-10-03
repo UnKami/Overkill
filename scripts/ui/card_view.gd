@@ -67,6 +67,7 @@ const RARITY_NAMES := {
 var _card: CardData
 var _hover_tween: Tween = null
 var _base_z_index: int = 0
+var _background_style: StyleBoxFlat
 
 
 func _ready() -> void:
@@ -75,10 +76,10 @@ func _ready() -> void:
 	# are hollow-centered border decorations (transparent middle by design),
 	# so without this the card had nothing behind its header/rules text once
 	# real frame art replaced the old flat programmatic panel style.
-	var bg_style := StyleBoxFlat.new()
-	bg_style.bg_color = Color("#141416")
-	bg_style.set_corner_radius_all(10)
-	_card_background.add_theme_stylebox_override("panel", bg_style)
+	_background_style = StyleBoxFlat.new()
+	_background_style.bg_color = Color("#141416")
+	_background_style.set_corner_radius_all(10)
+	_card_background.add_theme_stylebox_override("panel", _background_style)
 	_style_cost_badge()
 	_hover_glow.texture = AmbientMotion._get_glow_texture()
 
@@ -116,7 +117,8 @@ func _on_mouse_exited() -> void:
 	_hover_tween.set_parallel(true)
 	_hover_tween.tween_property(self, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_SINE)
 	_hover_tween.tween_property(self, "position:y", 0.0, 0.14).set_trans(Tween.TRANS_SINE)
-	_hover_tween.tween_property(_hover_glow, "modulate:a", 0.0, 0.14)
+	var resting_glow: float = 0.32 if _card != null and _card.upgrade_level > 0 else 0.0
+	_hover_tween.tween_property(_hover_glow, "modulate:a", resting_glow, 0.14)
 	_hover_tween.chain().tween_callback(func() -> void: z_index = _base_z_index)
 
 
@@ -187,7 +189,32 @@ func set_card(card: CardData, compare_against: CardData = null) -> void:
 	_rarity_gem.tooltip_text = RARITY_NAMES.get(card.rarity, "")
 	_rules_text.text = _build_rules_bbcode(card, compare_against)
 	var glow_color: Color = RARITY_FRAME_COLORS.get(card.rarity, Color.WHITE)
-	_hover_glow.modulate = Color(glow_color.r, glow_color.g, glow_color.b, _hover_glow.modulate.a)
+	var resting_glow: float = 0.32 if card.upgrade_level > 0 else 0.0
+	_hover_glow.modulate = Color(ScreenDesign.GOLD if card.upgrade_level > 0 else glow_color, resting_glow)
+	if _background_style != null:
+		_background_style.border_color = ScreenDesign.GOLD if card.upgrade_level > 0 else Color.TRANSPARENT
+		_background_style.set_border_width_all(3 if card.upgrade_level > 0 else 0)
+	tooltip_text = ("UPGRADED  ·  " if card.upgrade_level > 0 else "") + card.display_name
+
+
+func play_upgrade_animation(upgraded_card: CardData) -> void:
+	if _hover_tween != null and _hover_tween.is_valid(): _hover_tween.kill()
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	z_index = _base_z_index + 60
+	pivot_offset = size * 0.5
+	var flare := _hover_glow
+	var windup := create_tween().set_parallel(true)
+	windup.tween_property(self, "scale", Vector2(1.22, 1.22), 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	windup.tween_property(self, "rotation", deg_to_rad(-2.5), 0.10).set_trans(Tween.TRANS_CUBIC)
+	windup.tween_property(flare, "modulate", Color(1.45, 1.12, 0.42, 1.0), 0.18)
+	await windup.finished
+	set_card(upgraded_card)
+	rotation = deg_to_rad(2.0)
+	var settle := create_tween().set_parallel(true)
+	settle.tween_property(self, "scale", Vector2(1.06, 1.06), 0.30).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	settle.tween_property(self, "rotation", 0.0, 0.26).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	settle.tween_property(flare, "modulate", Color(ScreenDesign.GOLD, 0.42), 0.30)
+	await settle.finished
 
 
 ## Same "load if present, else leave blank" convention as CombatHUD - lets

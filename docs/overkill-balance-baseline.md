@@ -8,7 +8,7 @@ Every number in this document is a **first-pass baseline, not a final balance pa
 
 | Stat | Value | Notes |
 |---|---|---|
-| Starting HP | 75 | In line with StS's Ironclad (80) — slightly lower since Overkill's aggression-rewarding loop should feel a touch riskier by default |
+| Starting HP | 500 | Playtest retune to make long clock-cycle boss encounters survivable; existing saves preserve their health ratio when migrated |
 | Energy per turn | 3 | Standard deckbuilder baseline; do not deviate without a specific class identity reason |
 | Hand size drawn per turn | 5 | |
 | Starting deck size | 10 cards | 5 basic attacks, 4 basic defends, 1 class-specific starter card |
@@ -41,11 +41,11 @@ HP bands are deliberately **wide within a tier**, not tight — a wide range is 
 
 | Act | Trash HP range | Elite HP range | Boss HP range |
 |---|---|---|---|
-| Act 1 | 8-24 | 45-60 | 150-200 |
-| Act 2 | 20-40 | 65-85 | 220-280 |
-| Act 3 | 35-55 | 90-115 | 300-380 |
+| Act 1 | 8-24 | 45-60 | 100 |
+| Act 2 | 20-40 | 65-85 | 100 |
+| Act 3 | 35-55 | 90-115 | 100 |
 
-Final boss (post-Act 3, per the original design doc's "capstone" note): 400-550 HP, with the phase-gate/damage-cap mechanics flagged in the game design doc to prevent trivial one-shot overkill on a boss this large.
+Final boss: 100 HP for the current accessibility/winnability playtest pass; re-evaluate after human playtesting.
 
 **Design intent to protect**: the low end of each trash band should be comfortably killable in one hit by a baseline attack card *with room to overshoot* — if a player's basic Strike-equivalent (6-8 dmg) can't ever overkill the lowest-HP trash in Act 1, the Volume archetype has no floor to stand on. Playtest this specifically, not just average-case balance.
 
@@ -137,3 +137,11 @@ Per the original design doc's guidance to scale difficulty *on-theme* rather tha
 - Whether the OK pricing curve's exponent (1.15) creates a "cliff" where prices spike too fast by late Act 2
 - Whether Burst-archetype classes clear Excess thresholds so much faster than Volume-archetype classes that per-class threshold tuning becomes mandatory rather than optional
 - Boss HP bands against actual player damage output at the point a boss is reached — this can only be verified once real combat exists, not from these numbers alone
+
+## 9. v0.40 defensive relic and shop Artifact check
+
+- Guard Plate: 7 persistent Block (previously 5).
+- Reinforced Wall: 10 persistent Block (previously 8).
+- Artifacts are a separate, unique, run-wide inventory, never one of the twelve Chronometer copies. Three unowned objects appear at the Clockwright; the visit permits one purchase at 30 Overkill before the existing 1.15 per-run category escalation.
+- Current first-pass effects: Aegis Seed (+8 Block at battle start); Ashen Ledger (+5 Overkill once per battle for an 8+ Overkill hit); Deepwell Suture (heal 12 Vitality on the first kill with 12+ missing Vitality); Verdigris Thorn (apply 1 Weak to the opening foe).
+- These are test values, not final balance claims. In particular, 30 Overkill may be too expensive or cheap for the current playtest economy, and passive effects need campaign playtesting against the present 500 HP baseline.
