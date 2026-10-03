@@ -8,13 +8,13 @@
 
 ## 1. Active Locks
 
-No active file locks. All 0.42 team reservations were released on 2026-10-03 after implementation and verification.
+0.43 motion refinement is active. These reservations coordinate edits for this task.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| — | — | No active reservations | — | 2026-10-03 |
+| Yonatan / Codex | `feat/yonatan-043-fluid-motion` | Natural joints, continuous poses, enemy and relic motion; verified playtest delivery | `scripts/art/build_relic_rig.py`, `scripts/art/build_relic_choreography.py`, `assets/characters/executioner/rigged/`, `assets/animations/relics/`, `scripts/combat/relic_rig_actor.gd`, `scripts/combat/illustrated_actor.gd`, `scripts/combat/relic_choreography.gd`, `scripts/combat/attack_presentation.gd`, `scripts/combat/relic_animation_test.gd`, `scripts/combat/illustrated_stage.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/motion_quality_test.gd`, `scenes/motion_quality_test.tscn`, `VERSION`, `project.godot`, `README.md`, `installer/README.md`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `ACTIVE_WORK.md`, `docs/encounter-043.md` | 2026-10-04 |
 
 Published playtest: [v0.42.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.42.0-test), exact tested source `cb28d2851fc1dff235b87064ccedef1dad043b2f`. Documentation PR [#27](https://github.com/UnKami/Overkill/pull/27) is merged. Reviewed cumulative source integration is tracked in PR [#26](https://github.com/UnKami/Overkill/pull/26).
 
