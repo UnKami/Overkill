@@ -8,18 +8,15 @@
 
 ## 1. Active Locks
 
-The prior v0.41 release and rest-site locks were released on 2026-10-03 at Yonatan's explicit request. They were coordination reservations, not technical release restrictions. The divergent source histories are being reconciled on `feat/yonatan-042-rigged-relics`; existing cog-map work is preserved.
+No active file locks. All 0.42 team reservations were released on 2026-10-03 after implementation and verification.
+
+The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex root | `feat/yonatan-042-rigged-relics` | Integrated release and visual verification | `ACTIVE_WORK.md`, `CHANGELOG_AI.md`, `VERSION`, `README.md`, `UPDATE_LOG.md`, `installer/README.md`, `docs/encounter-042.md`, `scripts/combat/relic_animation_test.gd`, `scenes/relic_animation_test.tscn`, `scripts/combat/combat_controller.gd`, `scripts/combat/illustrated_stage.gd`, `project.godot`, `scenes/upgrade_preview_dialog.tscn`, `scripts/ui/upgrade_preview_dialog.gd`, `scripts/dev/run_godot.ps1`, `scripts/release/publish_crystalline_release.ps1`, `.test-artifacts/042/animations/` | 2026-10-03 |
-| Yonatan / Codex merge_audit (same team) | `feat/yonatan-042-rigged-relics` | Screen coverage and regression audit (merge complete) | `scripts/autoload/run_manager.gd`, `scripts/autoload/game_flow.gd`, `scripts/ui/title_screen.gd`, `scripts/ui/boss_overkill_altar.gd`, `scripts/ui/reward_screen.gd`, `scripts/ui/pause_menu.gd`, `scripts/run/resume_checkpoint_test.gd`, `scenes/resume_checkpoint_test.tscn`, `scripts/ui/release_screen_audit.gd`, `scenes/release_screen_audit.tscn`, `scripts/combat/clock_battle_smoke.gd`, `scripts/combat/crystalline_visual_test.gd`, `.test-artifacts/042/screens/`, `.test-artifacts/042/regression/` | 2026-10-03 |
-| Yonatan / Codex blender_rig (same team) | `feat/yonatan-042-rigged-relics` | Blender authored character skeleton and runtime actor | `scripts/art/build_relic_rig.py`, `assets/characters/executioner/rigged/`, `scripts/combat/relic_rig_actor.gd`, `scripts/ui/cog_map_screen.gd`, `scenes/cog_map_screen.tscn`, `scripts/map/map_generator.gd`, `scripts/map/map_determinism_test.gd`, `scenes/map_determinism_test.tscn` | 2026-10-03 |
-| Yonatan / Codex relic_choreography (same team) | `feat/yonatan-042-rigged-relics` | Blender authored relic timelines and runtime effects | `scripts/art/build_relic_choreography.py`, `assets/animations/relics/`, `scripts/combat/relic_choreography.gd`, `scripts/combat/attack_presentation.gd`, `scripts/combat/run_artifact_test.gd`, `scripts/combat/decision_preview.gd`, `scripts/ui/ux_017_test.gd` | 2026-10-03 |
+| — | — | No active reservations | — | 2026-10-03 |
 
-Additional live scope: `scripts/ui/act_transition_screen.gd` belongs to `merge_audit` for the reviewed early-input recovery fix.
-
-No old lock blocks publication. These narrow, live ownership rows prevent this team's parallel edits from colliding and will be released at handoff.
+Published playtest: [v0.42.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.42.0-test), exact tested source `cb28d2851fc1dff235b87064ccedef1dad043b2f`. Documentation PR [#27](https://github.com/UnKami/Overkill/pull/27) is merged. Reviewed cumulative source integration is tracked in PR [#26](https://github.com/UnKami/Overkill/pull/26).
 
 ---
 ## 2. How to Claim a Task (Instructions for Developers & AIs)
