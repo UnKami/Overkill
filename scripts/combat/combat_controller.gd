@@ -10,6 +10,7 @@ signal combat_lost
 enum Phase { ASSEMBLY, QUADRANT }
 const Presentation := preload("res://scripts/combat/clock_battle_presentation.gd")
 const ArtifactPresentation := preload("res://scripts/combat/artifact_presentation.gd")
+const RelicMotion := preload("res://scripts/combat/relic_choreography.gd")
 
 @export var pedestal_scene: PackedScene
 @export var damage_number_scene: PackedScene
@@ -138,11 +139,11 @@ func _ready() -> void:
 	_battle_info.add_theme_color_override("font_outline_color", Color("02070bd9"))
 	_battle_info.add_theme_constant_override("outline_size", 4)
 	_battle_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_turn_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_turn_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_turn_banner.offset_left = -360
 	_turn_banner.offset_right = 360
-	_turn_banner.offset_top = -242
-	_turn_banner.offset_bottom = -188
+	_turn_banner.offset_top = 245
+	_turn_banner.offset_bottom = 299
 	_turn_banner.add_theme_font_size_override("font_size", 24)
 	var banner_style := StyleBoxFlat.new()
 	banner_style.bg_color = Color("07121cdd")
@@ -322,6 +323,7 @@ func _start_phase_one() -> void:
 
 
 func _prompt_phase_one_draft() -> void:
+	_phase_label.show()
 	if _combat_over:
 		return
 
@@ -399,6 +401,7 @@ func _transition_to_phase_two() -> void:
 
 
 func _prompt_phase_two_turn() -> void:
+	_phase_label.show()
 	if _combat_over:
 		return
 
@@ -509,6 +512,14 @@ func _resolve_tick(hour: int) -> void:
 	var starting_enemy := _enemy_index
 	var enemy_hour := EnemyClockPattern.hour_for(hour, _active_enemy())
 	_reveal_enemy_hour(enemy_hour)
+	# The player has committed. Clear decision helpers so hand, head and knee
+	# motion remain visible, especially during the first tutorial encounter.
+	_choice_overlay.hide()
+	_guidance.clear()
+	_phase_label.hide()
+	var tutorial: TutorialCalloutView = get_node_or_null("TutorialCalloutView") as TutorialCalloutView
+	if tutorial != null:
+		tutorial.dismiss_now()
 	AudioManager.play_clock_sound("tick")
 	_show_turn_banner("YOUR HOUR %d  ·  ENEMY HOUR %d" % [hour, enemy_hour])
 	_phase_label.text = "RESOLVING  /  YOUR HOUR %d  •  ENEMY HOUR %d\nRelics activate, then the clocks advance." % [hour,enemy_hour]
@@ -541,11 +552,17 @@ func _resolve_tick(hour: int) -> void:
 	if _check_combat_end() or starting_enemy != _enemy_index: return
 
 	# 2. Resolve Shields & Buffs
+	# Present the authored preparation before its result is exposed. Simulation
+	# order remains shields/statuses, player attacks, then surviving enemies.
+	var support_motion: Node2D = null
+	if p_socket.slotted_relic != null and p_socket.slotted_relic.base_damage <= 0:
+		support_motion = _new_relic_motion(p_socket.slotted_relic)
+		await support_motion.play_prepare()
 	if p_socket.slotted_relic != null:
 		var relic := p_socket.slotted_relic
 		if relic.base_block > 0:
 			player_block += relic.base_block
-			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK")
+			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK", false)
 			CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
 			_apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
 		if relic.apply_strength > 0:
@@ -562,9 +579,19 @@ func _resolve_tick(hour: int) -> void:
 			player_next_hit_bonus += relic.bonus_damage_next_hit
 		if relic.grant_overkill > 0:
 			OKRunState.gain_ok(relic.grant_overkill, "clock_relic:%s" % relic.id)
-			_spawn_damage_number(_player_portrait, relic.grant_overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL), "OVERKILL")
+			_spawn_damage_number(_player_portrait, relic.grant_overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL), "OVERKILL", false)
 			CombatVFX.play_hit_sparks(self, _player_portrait.global_position + _player_portrait.size * 0.5, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.2), 9)
 			TutorialCallout.trigger("first_ok")
+	if is_instance_valid(support_motion):
+		var support_relic: ClockRelicData = p_socket.slotted_relic
+		_update_stats_display()
+		await support_motion.play_resolve({
+			"block_gained": support_relic.base_block,
+			"strength_gained": support_relic.apply_strength,
+			"overkill_gained": support_relic.grant_overkill,
+		})
+		support_motion.dispose()
+		await _stage.await_player_recovery()
 
 	if e_socket.intent_block > 0:
 		enemy_block += e_socket.intent_block
@@ -607,17 +634,6 @@ func _resolve_tick(hour: int) -> void:
 				_check_combat_end()
 				return
 		if _check_combat_end() or starting_enemy != _enemy_index: return
-	elif p_socket.slotted_relic != null:
-		var relic := p_socket.slotted_relic
-		var effect_magnitude: int = maxi(relic.grant_overkill, maxi(relic.bonus_damage_next_hit, maxi(relic.base_block, maxi(relic.apply_strength, maxi(relic.apply_thorns, maxi(relic.apply_vulnerable, maxi(relic.apply_weak, relic.apply_bleed)))))))
-		if effect_magnitude > 0:
-			var targets_enemy: bool = relic.apply_vulnerable > 0 or relic.apply_weak > 0 or relic.apply_bleed > 0
-			var target: Control = _enemy_portrait if targets_enemy else _player_portrait
-			var destination: Vector2 = target.global_position + target.size * 0.5
-			var origin: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
-			if not targets_enemy:
-				origin += Vector2(-170.0, -80.0)
-			AttackPresentation.play_relic_activation(self, relic, origin, destination, effect_magnitude)
 
 	# Enemy Attacks Player
 	if e_socket.intent_damage > 0 and enemy_hp > 0:
@@ -657,18 +673,20 @@ func _resolve_tick(hour: int) -> void:
 
 func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: int = 0, hit_count: int = 1) -> void:
 	var profile: Dictionary = AttackPresentation.for_relic(p_socket.slotted_relic)
+	profile["hit_index"] = hit_index
+	profile["hit_count"] = hit_count
 	var target_was_alive: bool = enemy_hp > 0
+	var relic_motion: Node2D = _new_relic_motion(p_socket.slotted_relic)
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
 	_stage.attack(true, profile)
-	var relic_center: Vector2 = _player_portrait.global_position + _player_portrait.size * 0.5
-	var target_center: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
-	AttackPresentation.play_relic_activation(self, p_socket.slotted_relic, relic_center, target_center, amount, hit_index, hit_count)
+	relic_motion.start_attack(profile)
 	var swing_wait: float = _stage.swing_delay(true) if _stage.has_method("swing_delay") else 0.0
 	if swing_wait > 0.0: await get_tree().create_timer(swing_wait / AudioManager.combat_animation_speed_scale()).timeout
 	AudioManager.play_combat_sound("swing")
 	Presentation.relay(self, _player_portrait, _enemy_portrait, profile.get("accent", Color("7bd6de")))
 	if _stage.has_method("await_contact"): await _stage.await_contact(true)
 	else: await get_tree().create_timer(0.16 / AudioManager.combat_animation_speed_scale()).timeout
+	await relic_motion.await_contact()
 	AudioManager.play_combat_sound("guard" if enemy_block >= amount else ("shatter" if enemy_block > 0 else "strike"))
 	_stage.impact(false, enemy_block >= amount, profile)
 	var nexus_pos: Vector2 = _enemy_portrait.global_position + _enemy_portrait.size * 0.5
@@ -685,6 +703,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 		_spawn_damage_number(_player_portrait, recoil, false, Color("#E24B4A"), "RECOIL")
 
 	var hp_damage: int = mini(maxi(enemy_hp, 0), maxi(amount - enemy_block, 0))
+	var recoil_block_gained: int = 0
 	if enemy_block >= amount:
 		enemy_block -= amount
 		_spawn_damage_number(_enemy_portrait, amount, false, Color("#5DADE2"), "BLOCKED")
@@ -703,24 +722,41 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 			_notify_enemy_killed(target_was_alive)
 			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
 				player_block += overkill
+				recoil_block_gained = overkill
 			_handle_overkill(overkill)
 		else:
 			enemy_hp -= unblocked
 			_spawn_damage_number(_enemy_portrait, unblocked, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 
+	var healed: int = 0
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.lifesteal and player_hp > 0:
-		var healed: int = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
+		healed = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
 		player_hp += healed
 		if healed > 0:
 			AudioManager.play_combat_sound("heal")
-			_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
+			_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL", false)
 	# Thorns check
 	if target_was_alive and enemy_thorns > 0:
 		player_hp -= enemy_thorns
 		_spawn_damage_number(_player_portrait, enemy_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
 
 	_update_stats_display()
-	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.combat_animation_speed_scale()).timeout
+	await relic_motion.play_resolve({
+		"damage_dealt": hp_damage,
+		"healed": healed,
+		"block_gained": (p_socket.slotted_relic.base_block if hit_index == 0 else 0) + recoil_block_gained,
+		"strength_gained": p_socket.slotted_relic.apply_strength if hit_index == 0 else 0,
+		"overkill_gained": p_socket.slotted_relic.grant_overkill if hit_index == 0 else 0,
+		"next_attack_multiplier": player_next_attack_multiplier if hit_index == hit_count - 1 else 1,
+	})
+	relic_motion.dispose()
+	await _stage.await_player_recovery()
+
+
+func _new_relic_motion(relic: ClockRelicData) -> Node2D:
+	var motion: Node2D = RelicMotion.create(_stage, self, relic)
+	motion.buff_target_global = _player_core_strip.get_global_rect().get_center()
+	return motion
 
 
 func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
@@ -833,6 +869,11 @@ func _apply_run_artifact_trigger(trigger: RelicData.Trigger, trigger_value: int 
 					OKRunState.gain_ok(effect.value, "artifact:%s" % artifact.id)
 					_spawn_damage_number(_player_portrait, effect.value, true, Color("cf5e5b"))
 				EffectData.EffectType.HEAL:
+					# Kill-trigger healing is recovery, not resurrection. Thorns
+					# and Bleed may still earn a kill after the incoming lethal
+					# damage; retain that accounting without undoing death.
+					if player_hp <= 0:
+						continue
 					var healed: int = mini(effect.value, maxi(player_max_hp - player_hp, 0))
 					player_hp += healed
 					if healed > 0:
@@ -1006,6 +1047,7 @@ func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: Strin
 	var icon := TextureRect.new()
 	if ResourceLoader.exists(icon_path): icon.texture = load(icon_path)
 	if icon.texture == null:
+		icon.free()
 		var glyph := Label.new()
 		glyph.text = fallback_glyph
 		glyph.add_theme_color_override("font_color", tint)
@@ -1043,6 +1085,7 @@ func _add_status_chip(row: HBoxContainer, icon_path: String, glyph: String, stac
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chip.add_child(icon)
 	else:
+		icon.free()
 		var symbol := Label.new()
 		symbol.text = glyph
 		symbol.add_theme_color_override("font_color", tint)
@@ -1066,10 +1109,11 @@ func _status_text(strength: int, bleed: int, thorns: int, weak: int, vulnerable:
 	return " · ".join(parts)
 
 
-func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, kind: String = "HP") -> void:
+func _spawn_damage_number(target: Control, val: int, is_ok: bool, col: Color, kind: String = "HP", show_visual: bool = true) -> void:
 	if val <= 0: return
 	_combat_history.push_front("Hour %d · %s · %s %d" % [_resolution_hour,"You" if target == _player_portrait or is_ok else "Enemy","Overkill gained" if is_ok else kind,val])
 	if _combat_history.size() > 16: _combat_history.pop_back()
+	if not show_visual: return
 	var num: DamageNumber = damage_number_scene.instantiate()
 	add_child(num)
 	num.position = target.global_position + target.size * 0.5 + Vector2(randf_range(-20, 20), -20)

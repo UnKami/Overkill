@@ -2,16 +2,16 @@
 
 ## Download and test
 
-**[Download the Windows installer — 0.41.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.41.0-test/OverkillSetup-0.41.0.exe)**
+**[Download the Windows installer — 0.42.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.42.0-test/OverkillSetup-0.42.0.exe)**
 
-[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.41.0-test/Overkill-0.41.0-Windows.zip) · [44-second gameplay trailer (MP4)](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.41.0-test) · **[Update log](UPDATE_LOG.md)**
+[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.42.0-test/Overkill-0.42.0-Windows.zip) · [44-second gameplay trailer (MP4)](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.42.0-test) · **[Update log](UPDATE_LOG.md)**
 
-Start a **new run** for the 0.41.0 playtest to navigate the timed cogwheel ascent and find unique run-wide Artifacts at the Clockwright. The 18-gear map uses three event seats per wheel, two forward route choices, and snap-to-nearest-seat timing. Legacy in-progress maps remain intact. [Detailed changes and testing limits](docs/encounter-041.md). This is an unsigned prerelease; source, exported payload, installer and public assets are verified, and package checks are recorded in the release report.
+Start a **new run** for the 0.42.0 playtest to try the Blender-authored Executioner skeleton, readable relic sequences, cogwheel ascent and Clockwright Artifacts. The seven signature sequences include sword summoning, chalice pouring, ringing bells and lifesteal transfer. Legacy saves and combat rules remain intact. [Detailed changes and testing limits](docs/encounter-042.md). This unsigned prerelease includes source, rendered-screen and package evidence in its release report; final human visual approval and a full human campaign remain open.
 
 ## Partner sync
 
 Every delivered gameplay feature or update must have a versioned GitHub Release, downloadable Windows installer, and entry in the [update log](UPDATE_LOG.md). Release notes identify the exact source commit, test results, known issues, and save compatibility. Downloads live in Releases; the [installer folder](installer/README.md) provides direct links.
 
-The 0.41.0 playtest is built from the exact source commit recorded in its release notes and tagged `v0.41.0-test`. Gameplay remains on a feature branch; default-branch download links identify the tested build separately from main's source state. Previous releases remain available for rollback.
+The 0.42.0 playtest is built from the exact source commit recorded in its release notes and tagged `v0.42.0-test`. That immutable tag identifies the tested download even as `main` receives later reviewed changes. Previous releases remain available for rollback.
 
 [AI collaboration instructions](AGENTS.md) · [Technical handoff log](CHANGELOG_AI.md) · [Active work](ACTIVE_WORK.md)

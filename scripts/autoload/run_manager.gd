@@ -21,6 +21,8 @@ var act_number: int = 1
 var current_node_id: String = ""
 var visited_nodes: Array[String] = []
 var pre_battle_offer_acts: Array[int] = []
+## Optional scene checkpoint; old saves without it use map recovery.
+var resume_context: Dictionary = {}
 
 ## Run-persistent HP (distinct from PlayerState.hp, which resets every fight)
 var current_hp: int = 0
@@ -56,6 +58,7 @@ func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicD
 	current_node_id = ""
 	visited_nodes.clear()
 	pre_battle_offer_acts.clear()
+	resume_context.clear()
 	seed_value = map_seed if map_seed != -1 else randi()
 	run_active = true
 	run_started.emit()
@@ -105,6 +108,7 @@ func load_from_save(data: Dictionary) -> void:
 	current_node_id = map_data.get("current_node_id", "")
 	visited_nodes.assign(map_data.get("visited_nodes", []))
 	pre_battle_offer_acts.assign(map_data.get("pre_battle_offer_acts", []))
+	resume_context = data.get("resume_context", {}).duplicate(true)
 
 	OKRunState.load_from_save(data.get("ok_run_state", {}))
 	run_active = true
@@ -119,6 +123,7 @@ func to_save_dict() -> Dictionary:
 	for relic in relics_held:
 		relic_ids.append(relic.id)
 	return {
+		"resume_context": resume_context.duplicate(true),
 		"clock_inventory": clock_inventory.duplicate(true),
 		"deck": deck_data,
 		"current_hp": current_hp,
@@ -185,6 +190,7 @@ func remove_clock_relic(uid: int) -> bool:
 
 func end_run() -> void:
 	run_active = false
+	resume_context.clear()
 	run_ended.emit()
 
 
@@ -286,6 +292,7 @@ func mark_pre_battle_offer_seen() -> void:
 
 func advance_act(new_seed: int = -1) -> void:
 	act_number += 1
+	resume_context.clear()
 	current_node_id = ""
 	visited_nodes.clear()
 	seed_value = new_seed if new_seed != -1 else randi()

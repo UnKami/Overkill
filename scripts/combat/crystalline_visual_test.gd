@@ -62,7 +62,10 @@ func _ready() -> void:
 			await get_tree().process_frame
 			var preview: UpgradePreviewDialog = inventory._upgrade_preview
 			var dimmer: ColorRect = preview.get_node("Dimmer") as ColorRect
-			assert(dimmer.color.a >= 0.9 and preview.get_node("BackgroundButton").get_index() < dimmer.get_index(), "Upgrade confirmation fully veils unrelated choices behind it")
+			# The merged UI direction uses one readable veil, preserving the Forge
+			# scenery while the opaque comparison panel owns the decision.
+			assert(dimmer.color.a >= 0.5 and dimmer.color.a <= 0.66 and preview.get_node("BackgroundButton").get_index() < dimmer.get_index(), "Upgrade confirmation uses one moderate veil above its transparent click catcher")
+			assert(is_zero_approx((preview.get_node("BackgroundButton") as Button).self_modulate.a), "The click catcher must not add a second darkening layer")
 			await _capture("upgrade-confirmation-focused")
 			preview.queue_free()
 		await _capture(mode)

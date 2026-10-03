@@ -36,15 +36,17 @@ static func forecast(b: CombatController, hours: Array, replace_hour: int = 0, r
 				uncertain = true
 				break
 			if echo.intent_damage > 0:
-				_enemy_hit(s, _enemy_damage(s, echo.intent_damage))
+				_enemy_hit(s, _enemy_damage(s, echo.intent_damage), echo.is_siphon)
 				s.enemy_block += echo.intent_block
 		for key: String in ["player_weak","player_vulnerable","enemy_weak","enemy_vulnerable"]: s[key] = maxi(0, int(s[key]) - 1)
 	var result: String = "You: %d HP · %d Block · %d Overkill   |   Enemy: %d HP · %d Block" % [maxi(0,s.player_hp),s.player_block,s.overkill,maxi(0,s.enemy_hp),s.enemy_block]
 	if completed == 0: return "Outcome unknown until the next enemy action is revealed."
-	if uncertain: return "Known hours only — " + result + "\nRemaining actions are unrevealed."
+	var excludes_artifacts: bool = not RunManager.relics_held.is_empty()
+	var prefix: String = "Estimate (Artifact triggers excluded) — " if excludes_artifacts else "After resolution — "
+	if uncertain: return ("Known hours only (Artifact triggers excluded) — " if excludes_artifacts else "Known hours only — ") + result + "\nRemaining actions are unrevealed."
 	if int(s.player_hp) <= 0: result += " · LETHAL TO YOU"
 	elif int(s.enemy_hp) <= 0: result += " · ENEMY DEFEATED (forecast ends here)"
-	return "After resolution — " + result
+	return prefix + result
 
 static func _tick(s: Dictionary, p: ClockSocketData, e: ClockSocketData, r: ClockRelicData) -> void:
 	s.player_hp -= s.player_bleed
@@ -65,14 +67,16 @@ static func _tick(s: Dictionary, p: ClockSocketData, e: ClockSocketData, r: Cloc
 	s.player_weak += e.intent_weak
 	s.player_vulnerable += e.intent_vulnerable
 	if r != null and r.base_damage > 0:
-		var damage: int = r.base_damage + int(s.player_strength) + int(s.player_next_hit_bonus)
+		var strike_bonus: int = int(s.player_next_hit_bonus)
+		var damage: int = r.base_damage + int(s.player_strength) + strike_bonus
 		s.player_next_hit_bonus = 0
-		if r.conditional_hp_threshold_pct > 0.0 and float(s.enemy_hp) / float(s.enemy_max_hp) <= r.conditional_hp_threshold_pct: damage = r.conditional_damage + int(s.player_strength)
+		if r.conditional_hp_threshold_pct > 0.0 and float(s.enemy_hp) / float(s.enemy_max_hp) <= r.conditional_hp_threshold_pct: damage = r.conditional_damage + int(s.player_strength) + strike_bonus
 		if int(s.enemy_vulnerable) > 0: damage = floori(damage * 1.5)
 		if int(s.player_weak) > 0: damage = floori(damage * 0.75)
 		damage = floori(damage * p.multiplier) * int(s.player_next_attack_multiplier)
 		s.player_next_attack_multiplier = maxi(1, r.next_attack_multiplier)
 		for hit: int in r.hits:
+			var target_was_alive: bool = int(s.enemy_hp) > 0
 			if p.is_hazard: s.player_hp -= floori(damage * 0.5)
 			var hp_damage: int = mini(maxi(s.enemy_hp,0), maxi(damage - int(s.enemy_block), 0))
 			var overkill: int = maxi(0, damage - int(s.enemy_block) - int(s.enemy_hp))
@@ -81,12 +85,15 @@ static func _tick(s: Dictionary, p: ClockSocketData, e: ClockSocketData, r: Cloc
 			s.enemy_block = maxi(0,int(s.enemy_block)-damage)
 			if r.recoil_block_on_overkill: s.player_block += overkill
 			if r.lifesteal and int(s.player_hp) > 0: s.player_hp += mini(hp_damage,maxi(0,int(s.player_max_hp)-int(s.player_hp)))
-			s.player_hp -= s.enemy_thorns
-			if int(s.player_hp) <= 0 or int(s.enemy_hp) <= 0: return
+			if target_was_alive: s.player_hp -= s.enemy_thorns
+			if int(s.player_hp) <= 0: return
+		# A relic finishes its remaining hits on the defeated target and banks
+		# their damage as Overkill before the enemy's retaliation is skipped.
+		if int(s.enemy_hp) <= 0: return
 	if e.intent_damage > 0:
 		var damage: int = _enemy_damage(s,e.intent_damage)
 		for hit: int in e.intent_hits:
-			_enemy_hit(s,damage)
+			_enemy_hit(s,damage,e.is_siphon)
 			if int(s.player_hp) <= 0 or int(s.enemy_hp) <= 0: return
 
 static func _enemy_damage(s: Dictionary, base: int) -> int:
@@ -95,7 +102,10 @@ static func _enemy_damage(s: Dictionary, base: int) -> int:
 	if int(s.enemy_weak) > 0: damage = floori(damage * 0.75)
 	return damage
 
-static func _enemy_hit(s: Dictionary, damage: int) -> void:
-	s.player_hp -= maxi(0, damage - int(s.player_block))
+static func _enemy_hit(s: Dictionary, damage: int, siphon: bool = false) -> void:
+	var hp_damage: int = maxi(0, damage - int(s.player_block))
+	s.player_hp -= hp_damage
 	s.player_block = maxi(0,int(s.player_block)-damage)
+	if siphon and hp_damage > 0 and int(s.overkill) > 0:
+		s.overkill -= floori(int(s.overkill) * 0.25)
 	s.enemy_hp -= s.player_thorns

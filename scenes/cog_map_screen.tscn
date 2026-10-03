@@ -43,10 +43,14 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 28.0
-offset_top = 94.0
+offset_top = 118.0
 offset_right = -28.0
-offset_bottom = 124.0
+offset_bottom = 148.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.83, 0.85, 1)
+theme_override_font_sizes/font_size = 16
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="MapScroll" type="ScrollContainer" parent="."]
 unique_name_in_owner = true

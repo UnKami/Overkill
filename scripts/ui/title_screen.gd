@@ -26,7 +26,7 @@ func _ready() -> void:
 	ScreenDesign.button(column,"QUIT GAME",func() -> void: get_tree().quit())
 	if _continue_button.visible:
 		var data := SaveManager.load_run()
-		ScreenDesign.label(column,"JOURNEY IN PROGRESS  /  ACT %d" % int(data.get("act_number",1)),16,ScreenDesign.MUTED)
+		ScreenDesign.label(column,"JOURNEY IN PROGRESS  /  ACT %d" % int(data.get("map", {}).get("act_number",1)),16,ScreenDesign.MUTED)
 	var confirm_scene: PackedScene = load(ModalConfirmDialog.SCENE_PATH)
 	_replace_confirmation = confirm_scene.instantiate() as ModalConfirmDialog
 	_replace_confirmation.align_to_horizontal_region(0.075, 0.38)
@@ -54,4 +54,4 @@ func _on_continue_pressed() -> void:
 	var data := SaveManager.load_run()
 	if data.is_empty(): return
 	RunManager.load_from_save(data)
-	GameFlow.goto_map()
+	GameFlow.resume_saved_run()

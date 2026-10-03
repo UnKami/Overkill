@@ -55,7 +55,7 @@ if($Mode -in @('publish','verify')){
   if($existing.Count -eq 1){
    $release=Api ("/releases/"+$existing[0].id) 'Patch' @{target_commitish=$sourceBranch;body=$body;prerelease=$true}
   }else{
-   $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Crystalline playtest";body=$body;draft=$true;prerelease=$true}
+   $release=Api '/releases' 'Post' @{tag_name=$tag;target_commitish=$sourceBranch;name="Overkill $version - Playtest";body=$body;draft=$true;prerelease=$true}
   }
   foreach($path in $assets){
    $file=Get-Item -LiteralPath $path
@@ -107,7 +107,7 @@ if($Mode -eq 'docs'){
  $commit=Api '/git/commits' 'Post' @{message="docs: publish verified $version playtest downloads";tree=$newTree.sha;parents=@($main.object.sha)}
  $branch="fix/yonatan-{0:000}-downloads" -f ([version]$version).Minor
  $null=Api '/git/refs' 'Post' @{ref="refs/heads/$branch";sha=$commit.sha}
- $pr=Api '/pulls' 'Post' @{title="Publish verified $version crystalline playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on $sourceBranch. No gameplay merge is included."}
+ $pr=Api '/pulls' 'Post' @{title="Publish verified $version playtest downloads";head=$branch;base='main';body="Documentation only: installer/portable links, exact source, verification and known limits. Gameplay remains on $sourceBranch. No gameplay merge is included."}
  Write-Output "DOCS_PR $($pr.number) $($pr.html_url) $($commit.sha)"
  exit
 }

@@ -1,0 +1,161 @@
+{
+  "format": "overkill_blender_skin_v1",
+  "fps": 30,
+  "authoring": "Blender armature modifier; 18 bones; weighted 16-part painted cutout meshes",
+  "atlas_size": [
+    1254,
+    1254
+  ],
+  "bounds": [
+    -128,
+    -484,
+    264,
+    489
+  ],
+  "bones": [
+    {
+      "name": "root",
+      "parent": "",
+      "rest": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "pelvis",
+      "parent": "root",
+      "rest": [
+        0.0,
+        -224.0
+      ]
+    },
+    {
+      "name": "spine",
+      "parent": "pelvis",
+      "rest": [
+        0.0,
+        -71.0
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "spine",
+      "rest": [
+        8.0,
+        -108.0
+      ]
+    },
+    {
+      "name": "cloak_upper",
+      "parent": "spine",
+      "rest": [
+        -15.0,
+        -21.0
+      ]
+    },
+    {
+      "name": "cloak_lower",
+      "parent": "cloak_upper",
+      "rest": [
+        -9.0,
+        131.0
+      ]
+    },
+    {
+      "name": "arm_far",
+      "parent": "spine",
+      "rest": [
+        -46.0,
+        -75.0
+      ]
+    },
+    {
+      "name": "forearm_far",
+      "parent": "arm_far",
+      "rest": [
+        -36.0,
+        72.0
+      ]
+    },
+    {
+      "name": "hand_far",
+      "parent": "forearm_far",
+      "rest": [
+        -18.0,
+        73.0
+      ]
+    },
+    {
+      "name": "thigh_far",
+      "parent": "pelvis",
+      "rest": [
+        -28.0,
+        4.0
+      ]
+    },
+    {
+      "name": "shin_far",
+      "parent": "thigh_far",
+      "rest": [
+        -35.0,
+        97.0
+      ]
+    },
+    {
+      "name": "foot_far",
+      "parent": "shin_far",
+      "rest": [
+        -13.0,
+        88.0
+      ]
+    },
+    {
+      "name": "thigh_near",
+      "parent": "pelvis",
+      "rest": [
+        29.0,
+        4.0
+      ]
+    },
+    {
+      "name": "shin_near",
+      "parent": "thigh_near",
+      "rest": [
+        32.0,
+        97.0
+      ]
+    },
+    {
+      "name": "foot_near",
+      "parent": "shin_near",
+      "rest": [
+        -6.0,
+        89.0
+      ]
+    },
+    {
+      "name": "arm_near",
+      "parent": "spine",
+      "rest": [
+        47.0,
+        -71.0
+      ]
+    },
+    {
+      "name": "forearm_near",
+      "parent": "arm_near",
+      "rest": [
+        33.0,
+        77.0
+      ]
+    },
+    {
+      "name": "hand_near",
+      "parent": "forearm_near",
+      "rest": [
+        20.0,
+        71.0
+      ]
+    }
+  ]
+}

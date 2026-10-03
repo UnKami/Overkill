@@ -77,7 +77,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _dismiss() -> void:
-	if _dismissed:
+	# Keyboard input can arrive while the incoming curtain still owns navigation.
+	# Do not consume this one-shot action until its destination can be accepted.
+	if _dismissed or GameFlow._transitioning:
 		return
 	_dismissed = true
 	if _on_complete.is_valid():

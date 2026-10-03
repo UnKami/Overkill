@@ -171,6 +171,7 @@ func show_relic_success() -> void:
 	var row: HBoxContainer = stack.get_node("CardsRow")
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.get_node("CurrentColumn").hide()
+	row.get_node("ArrowLabel").hide()
 	row.get_node("UpgradedColumn/UpgradedLabel").text = "NEW BOUND FORM"
 	_upgraded_slot.pivot_offset = Vector2(136, 185)
 	_upgraded_slot.scale = Vector2.ONE

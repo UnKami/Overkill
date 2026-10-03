@@ -65,6 +65,22 @@ static func for_relic(relic: ClockRelicData) -> Dictionary:
 			"accent": Color("ffae52"),
 			"shake": 9.0,
 		}
+	# Real relics use the same Blender-authored contact markers as the skeletal
+	# actor and their articulated prop cue. Synthetic test/comparison resources
+	# retain the generic profile above.
+	var clips: Dictionary = preload("res://assets/animations/relics/relic_tracks.gd").DATA.clips
+	if clips.has(relic.id):
+		var clip: Dictionary = clips[relic.id]
+		profile["relic_id"] = relic.id
+		profile["rig_action"] = str(clip.actor_action)
+		profile["rig_contact"] = float(clip.contact)
+		profile["rig_duration"] = float(clip.duration)
+		if relic.base_damage > 0:
+			var travel: float = .55 if relic.id == "REL-01" else .40
+			profile["anticipation"] = float(clip.contact) - travel
+			profile["travel"] = travel
+			profile["impact_hold"] = .12
+			profile["recovery"] = maxf(.45, float(clip.duration) - float(clip.contact))
 	return profile
 
 

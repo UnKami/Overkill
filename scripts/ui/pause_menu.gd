@@ -88,9 +88,14 @@ func _on_main_menu_pressed() -> void:
 		GameFlow.close_pause_menu()
 		GameFlow.goto_title()
 		return
+	var message: String = "Return to the main menu? Your current run will be saved and can be resumed with Continue."
+	if str(RunManager.resume_context.get("kind", "")) == "combat":
+		message = "Return to the main menu? Continue will restart this encounter with the vitality, relics and Overkill you had when it began."
+	elif str(RunManager.resume_context.get("kind", "")) == "prebattle":
+		message = "Return to the main menu? Continue will return to the offer before this battle. Any unfinished choice will be reset."
 	ModalConfirmDialog.show_dialog(
 		self,
-		"Return to the main menu? Your current run will be saved and can be resumed with Continue.",
+		message,
 		"Return to Menu",
 		func() -> void:
 			SaveManager.save_run()

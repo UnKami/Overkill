@@ -115,8 +115,40 @@ func _ready() -> void:
 	await thorns_battle._resolve_tick(1)
 	assert(thorns_battle.player_hp == 412, "Deepwell Suture should restore missing Vitality when Thorns scores the first kill")
 	thorns_battle.queue_free()
-	print("RUN_ARTIFACTS_OK: eight unique artifacts, Bleed/Thorns kill triggers, save data, shop purchase, 12-slot separation, art, effects and trigger limits")
+	await get_tree().process_frame
+	var death_artifacts: Array[RelicData] = [artifacts[2], artifacts[6]]
+	await _verify_no_posthumous_healing(death_artifacts, false)
+	await _verify_no_posthumous_healing(death_artifacts, true)
+	print("RUN_ARTIFACTS_OK: eight unique artifacts, Bleed/Thorns kill triggers, no posthumous healing, save data, shop purchase, 12-slot separation, art, effects and trigger limits")
 	get_tree().quit()
+
+
+func _verify_no_posthumous_healing(artifacts: Array[RelicData], simultaneous_bleed: bool) -> void:
+	RunManager.start_new_run([], artifacts, 500, 40044)
+	var battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
+	add_child(battle)
+	var enemy: EnemyData = ContentDatabase.get_enemy("boneghoul").duplicate()
+	battle.start_combat([enemy])
+	await get_tree().process_frame
+	battle.player_hp = 1 if simultaneous_bleed else 3
+	battle.player_block = 0
+	battle.enemy_hp = 1
+	battle.player_sockets[0].slotted_relic = null
+	battle.enemy_sockets[0].intent_damage = 0 if simultaneous_bleed else 4
+	battle.enemy_sockets[0].intent_block = 0
+	battle.player_thorns = 0 if simultaneous_bleed else 1
+	battle.player_bleed = 1 if simultaneous_bleed else 0
+	battle.enemy_bleed = 1 if simultaneous_bleed else 0
+	await battle._resolve_tick(1)
+	assert(battle.enemy_hp <= 0, "The lethal clash must still award the earned Thorns/Bleed kill")
+	assert(battle.player_hp <= 0, "Deepwell Suture must never revive an already defeated player")
+	assert(battle._combat_over, "A simultaneous lethal clash must finish as defeat")
+	assert(battle.player_strength == 2, "Non-healing kill-trigger effects must still resolve once")
+	for history_entry: String in battle._combat_history:
+		assert(not history_entry.contains("HEAL"), "No healing may be reported after lethal damage")
+	battle.queue_free()
+	await get_tree().process_frame
+	print("POSTHUMOUS_HEAL_GUARD_OK %s" % ("simultaneous_bleed" if simultaneous_bleed else "lethal_hit_and_thorns"))
 
 
 func _capture_if_rendered(label: String) -> void:

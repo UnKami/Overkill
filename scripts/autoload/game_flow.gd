@@ -89,6 +89,8 @@ func goto_class_select() -> void:
 
 
 func goto_map() -> void:
+	if _transitioning: return
+	RunManager.resume_context = {"kind": "map"}
 	# Runs saved on the earlier node lattice stay on that map for compatibility.
 	# Fresh runs and runs already using cog IDs travel through the timed mechanism.
 	var saved_node_id: String = RunManager.current_node_id
@@ -119,6 +121,8 @@ func goto_event(event_data: EventData) -> void:
 ## every normal single-enemy node (elites/bosses always are), and a 2-element
 ## array for the rare trash-pack nodes map_generator rolls.
 func goto_combat(enemies_data: Array[EnemyData], background_id: String = "") -> void:
+	if _transitioning or enemies_data.is_empty(): return
+	_checkpoint_encounter("combat", enemies_data, background_id)
 	var scene: PackedScene = load(COMBAT_SCENE_PATH)
 	var instance: CombatController = scene.instantiate()
 	instance.combat_won.connect(_on_combat_won)
@@ -132,6 +136,8 @@ func goto_combat(enemies_data: Array[EnemyData], background_id: String = "") -> 
 
 
 func goto_pre_battle_offer(enemies_data: Array[EnemyData], node_id: String, background_id: String = "") -> void:
+	if _transitioning or enemies_data.is_empty(): return
+	_checkpoint_encounter("prebattle", enemies_data, background_id, node_id)
 	_pending_combat_enemies.assign(enemies_data)
 	_pending_combat_background = background_id
 	_pending_combat_node_id = node_id
@@ -169,17 +175,99 @@ func _finish_pre_battle() -> void:
 
 
 func goto_reward_screen(reward_context: Dictionary) -> void:
+	if _transitioning: return
+	var enemy: EnemyData = reward_context.get("enemy_data") as EnemyData
+	RunManager.resume_context = {"kind": "reward", "enemy_id": enemy.id if enemy != null else "", "offer_ids": reward_context.get("offer_ids", []).duplicate()}
+	SaveManager.save_run()
 	var scene: PackedScene = load(REWARD_SCENE_PATH)
 	var instance := scene.instantiate()
 	instance.set_reward_context(reward_context)
 	_swap_scene(instance, "REWARD")
 
 
-func goto_boss_overkill_altar(enemy_data: EnemyData) -> void:
+func goto_boss_overkill_altar(enemy_data: EnemyData, purchased: bool = false) -> void:
+	if _transitioning or enemy_data == null: return
+	RunManager.resume_context = {"kind": "altar", "enemy_id": enemy_data.id, "purchased": purchased}
+	SaveManager.save_run()
 	var scene: PackedScene = load(BOSS_ALTAR_SCENE_PATH)
 	var instance: BossOverkillAltar = scene.instantiate() as BossOverkillAltar
-	instance.set_boss_context(enemy_data)
+	instance.set_boss_context(enemy_data, purchased)
 	_swap_scene(instance, "THE OVERKILL ALTAR")
+
+
+## Restart unfinished combat/offers at their entry boundary. Restoring the entry
+## run AND currency prevents already-earned combat effects from being farmed.
+func _checkpoint_encounter(kind: String, enemies: Array[EnemyData], background: String, node_id: String = "") -> void:
+	var entry: Dictionary = RunManager.to_save_dict()
+	entry.erase("resume_context")
+	entry["ok_run_state"] = OKRunState.to_save_dict()
+	var ids: Array[String] = []
+	for enemy: EnemyData in enemies: ids.append(enemy.id)
+	RunManager.resume_context = {"kind": kind, "enemy_ids": ids, "background": background, "node_id": node_id, "entry_state": entry}
+	SaveManager.save_run()
+
+
+func resume_saved_run() -> void:
+	if _transitioning: return
+	var context: Dictionary = RunManager.resume_context.duplicate(true)
+	var kind: String = str(context.get("kind", ""))
+	if kind in ["combat", "prebattle"]:
+		var enemies: Array[EnemyData] = []
+		for id: String in context.get("enemy_ids", []):
+			var enemy: EnemyData = ContentDatabase.get_enemy(id)
+			if enemy != null: enemies.append(enemy)
+		if not enemies.is_empty() and enemies.size() == context.get("enemy_ids", []).size():
+			var entry: Dictionary = context.get("entry_state", {})
+			if not entry.is_empty(): RunManager.load_from_save(entry)
+			if kind == "prebattle":
+				goto_pre_battle_offer(enemies, str(context.get("node_id", "")), str(context.get("background", "")))
+			else:
+				goto_combat(enemies, str(context.get("background", "")))
+			return
+	elif kind == "reward":
+		goto_reward_screen({"enemy_data": ContentDatabase.get_enemy(str(context.get("enemy_id", ""))), "offer_ids": context.get("offer_ids", [])})
+		return
+	elif kind in ["altar", "boss_exit"]:
+		var boss: EnemyData = ContentDatabase.get_enemy(str(context.get("enemy_id", "")))
+		if boss != null:
+			if kind == "boss_exit": goto_boss_exit(boss)
+			else: goto_boss_overkill_altar(boss, bool(context.get("purchased", false)))
+			return
+	# Old saves cannot distinguish an entered boss from a finished altar. Replay
+	# the guardian conservatively, preserving inventory/currency, rather than
+	# skip its fight or strand the player on a node without forward connections.
+	if kind.is_empty():
+		var generated: Dictionary = CogNavigationGenerator.generate(RunManager.seed_value, RunManager.act_number) if RunManager.current_node_id.begins_with("cogmap-") else MapGenerator.generate(RunManager.seed_value, RunManager.act_number)
+		var node: MapGenerator.MapNode = generated.nodes.get(RunManager.current_node_id) as MapGenerator.MapNode
+		if node != null and node.type == MapGenerator.NodeType.BOSS:
+			var boss: EnemyData = ContentDatabase.get_enemy(node.enemy_id)
+			if boss != null:
+				var bosses: Array[EnemyData] = [boss]
+				goto_combat(bosses)
+				return
+	goto_map()
+
+
+## Persist the destination before displaying the inter-act curtain, including
+## the final-boss route. Quitting on the curtain resumes the same destination.
+func goto_boss_exit(boss: EnemyData) -> void:
+	if _transitioning or boss == null: return
+	RunManager.resume_context = {"kind": "boss_exit", "enemy_id": boss.id}
+	SaveManager.save_run()
+	var final_descent: bool = boss.id == "act3_boss"
+	var next_act: int = RunManager.act_number + 1
+	goto_act_transition(CinematicArt.transition_background(RunManager.act_number), "THE FINAL DESCENT" if final_descent else "ACT %d" % next_act, func() -> void:
+		if final_descent:
+			var final_boss: EnemyData = ContentDatabase.get_enemy("final_boss")
+			if final_boss != null:
+				var enemies: Array[EnemyData] = [final_boss]
+				goto_combat(enemies)
+		else:
+			RunManager.advance_act()
+			RunManager.resume_context = {"kind": "map"}
+			SaveManager.save_run()
+			goto_map()
+	)
 
 
 func goto_treasure(ok_gain: int, found_relic: RelicData) -> void:

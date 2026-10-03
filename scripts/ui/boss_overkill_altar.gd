@@ -27,8 +27,9 @@ var _confirm_button: Button
 var _leave_button: Button
 
 
-func set_boss_context(enemy_data: EnemyData) -> void:
+func set_boss_context(enemy_data: EnemyData, purchased: bool = false) -> void:
 	_boss = enemy_data
+	_purchased = purchased
 
 
 func _ready() -> void:
@@ -36,6 +37,9 @@ func _ready() -> void:
 	_build_backdrop()
 	_build_main_panel()
 	_build_modal()
+	if _purchased:
+		_status_label.text = "ZENITH ALREADY BOUND. Continue with the relic you purchased."
+		_leave_button.text = "CARRY THIS POWER FORWARD  ›"
 	_refresh_balance()
 	_show_arrival()
 
@@ -342,6 +346,8 @@ func _confirm_purchase() -> void:
 		_refresh_balance()
 		return
 	_purchased = true
+	if _boss != null:
+		RunManager.resume_context = {"kind": "altar", "enemy_id": _boss.id, "purchased": true}
 	_modal.hide()
 	_main_panel.show()
 	var bound: ClockRelicData = ContentDatabase.get_clock_relic(_pending_id)
@@ -374,28 +380,7 @@ func _continue_after_altar() -> void:
 	if _departed:
 		return
 	_departed = true
-	SaveManager.save_run()
-	if _boss != null and _boss.id == "act3_boss":
-		GameFlow.goto_act_transition(
-			CinematicArt.transition_background(3),
-			"THE FINAL DESCENT",
-			func() -> void:
-				var final_boss: EnemyData = ContentDatabase.get_enemy("final_boss")
-				if final_boss != null:
-					var enemies: Array[EnemyData] = [final_boss]
-					GameFlow.goto_combat(enemies)
-		)
-		return
-	var next_act: int = RunManager.act_number + 1
-	var background_path: String = CinematicArt.transition_background(RunManager.act_number)
-	GameFlow.goto_act_transition(
-		background_path,
-		"ACT %d" % next_act,
-		func() -> void:
-			RunManager.advance_act()
-			SaveManager.save_run()
-			GameFlow.goto_map()
-	)
+	GameFlow.goto_boss_exit(_boss)
 
 
 func _make_label(value: String, font_size: int, color: Color, display: bool = false) -> Label:

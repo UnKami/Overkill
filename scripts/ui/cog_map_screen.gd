@@ -50,6 +50,7 @@ static var _icon_cache: Dictionary = {}
 @onready var _advance_button: Button = %AdvanceButton
 @onready var _seat_summary: HBoxContainer = %SeatSummary
 var _header_status: Label
+var _path_lines: Control
 @onready var _route_hint: Label = %RouteHint
 
 var _map: Dictionary = {}
@@ -93,8 +94,8 @@ func _process(delta: float) -> void:
 		var rate: float = 0.88 if gear_id == _selected_gear_id and _reachable_gears.has(gear_id) else 0.035
 		surface.rotation += direction * rate * delta
 	_update_timing_hint()
-	if is_instance_valid(_route_hint):
-		_route_hint.queue_redraw()
+	if is_instance_valid(_path_lines):
+		_path_lines.queue_redraw()
 
 
 func _load_map_art() -> void:
@@ -152,6 +153,7 @@ func _build_header() -> void:
 	margin.add_theme_constant_override("margin_bottom", 8)
 	header.add_child(margin)
 	margin.add_child(row)
+	header.resized.connect(_layout_route_hint)
 	_route_hint = %RouteHint
 	_route_hint.text = "CHOOSE A FORWARD GEAR  ·  TIME YOUR ARRIVAL  ·  MISSED WINDOWS SNAP TO THE NEAREST SEAT"
 	if _current_node == null:
@@ -198,15 +200,20 @@ func _build_path_lines() -> void:
 	layer_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer_lines.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer_lines.draw.connect(_draw_links.bind(layer_lines))
-	layer_lines.z_index = -5
+	# The map canvas already follows the backdrop in drawing order. A negative
+	# z index would put these links behind that backdrop, not only behind gears.
+	layer_lines.z_index = 0
 	_canvas.add_child(layer_lines)
+	_path_lines = layer_lines
 
 
 func _add_layer_labels() -> void:
 	for layer_index: int in _map.layers.size():
 		var layer_name: String = "ACT GUARDIAN" if layer_index == _map.layers.size() - 1 else "STAGE %02d" % (layer_index + 1)
 		var label := ScreenDesign.label(_canvas, layer_name, 13, ScreenDesign.MUTED)
-		label.position = Vector2(18.0, _layer_y(layer_index) + GEAR_SIZE * 0.5 - 13.0)
+		# The old left rail ran through the leftmost wheel. Keep row headings
+		# above the row in the clear gutter beyond that wheel's right edge.
+		label.position = Vector2(GEAR_SIZE + 30.0, _layer_y(layer_index) - 22.0)
 		label.size = Vector2(130.0, 26.0)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -231,6 +238,7 @@ func _add_gear(gear: CogNavigationGenerator.Gear, center: Vector2) -> void:
 	clickable.add_theme_stylebox_override("hover", _invisible_box())
 	clickable.add_theme_stylebox_override("pressed", _invisible_box())
 	clickable.add_theme_stylebox_override("focus", _invisible_box())
+	clickable.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
 	clickable.pressed.connect(_on_gear_selected.bind(gear.id))
 	root.add_child(clickable)
 	_gear_buttons[gear.id] = clickable
@@ -312,6 +320,7 @@ func _draw_links(layer: Control) -> void:
 func _layout() -> void:
 	if not is_instance_valid(_scroll):
 		return
+	_layout_route_hint()
 	_scroll.anchor_left = 0.025
 	_scroll.anchor_right = 0.975
 	_scroll.offset_top = 142.0
@@ -322,6 +331,16 @@ func _layout() -> void:
 	if not _gears.is_empty() and absf(desired_width - _canvas_width) > 1.0:
 		_build_map()
 		_update_destination_summary()
+
+
+func _layout_route_hint() -> void:
+	if not is_instance_valid(_route_hint):
+		return
+	# Theme content margins can grow the header beyond its scene offsets.
+	# Place the instruction below its actual bottom, without shifting gear seats.
+	var header: Control = %Header
+	_route_hint.offset_top = maxf(118.0, header.position.y + header.size.y + 10.0)
+	_route_hint.offset_bottom = _route_hint.offset_top + 30.0
 
 
 func _scroll_to_current_layer() -> void:

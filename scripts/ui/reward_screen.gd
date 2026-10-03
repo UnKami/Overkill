@@ -17,10 +17,12 @@ var _defeated_enemy: EnemyData
 var _resolved: bool = false
 var _pending_relic_id: String = ""
 var _subtitle: Label
+var _offer_ids: Array[String] = []
 
 
 func set_reward_context(context: Dictionary) -> void:
 	_defeated_enemy = context.get("enemy_data", null)
+	_offer_ids.assign(context.get("offer_ids", []))
 
 
 func _ready() -> void:
@@ -55,9 +57,17 @@ func _ready() -> void:
 
 
 func _offer_relics() -> void:
-	var pool := ContentDatabase.all_clock_relics().duplicate()
-	pool.shuffle()
-	for relic: ClockRelicData in pool.slice(0, 3):
+	if _offer_ids.is_empty():
+		var pool: Array = ContentDatabase.all_clock_relics().duplicate()
+		pool.shuffle()
+		for relic: ClockRelicData in pool.slice(0, 3): _offer_ids.append(relic.id)
+	# The same offers survive replacement/back and a saved Continue.
+	if str(RunManager.resume_context.get("kind", "")) == "reward":
+		RunManager.resume_context["offer_ids"] = _offer_ids.duplicate()
+		SaveManager.save_run()
+	for id: String in _offer_ids:
+		var relic: ClockRelicData = ContentDatabase.get_clock_relic(id)
+		if relic == null: continue
 		var view: RelicPedestalView = load("res://scenes/relic_pedestal_view.tscn").instantiate()
 		_choice_row.add_child(view)
 		view.bind_relic(relic, "CLAIM RELIC")
@@ -148,28 +158,8 @@ func _on_skip_pressed() -> void:
 
 func _continue_after_reward() -> void:
 	if _defeated_enemy != null and _defeated_enemy.tier == EnemyData.Tier.BOSS:
-		if _defeated_enemy.id == "act3_boss":
-			SaveManager.save_run()
-			GameFlow.goto_act_transition(
-				CinematicArt.transition_background(3),
-				"THE FINAL DESCENT",
-				func() -> void:
-					var final_boss := ContentDatabase.get_enemy("final_boss")
-					if final_boss != null:
-						GameFlow.goto_combat([final_boss])
-			)
-			return
-		var next_act: int = RunManager.act_number + 1
-		var art_path: String = CinematicArt.transition_background(RunManager.act_number)
-		SaveManager.save_run()
-		GameFlow.goto_act_transition(
-			art_path,
-			"ACT %d" % next_act,
-			func() -> void:
-				RunManager.advance_act()
-				SaveManager.save_run()
-				GameFlow.goto_map()
-		)
+		GameFlow.goto_boss_exit(_defeated_enemy)
 		return
+	RunManager.resume_context = {"kind": "map"}
 	SaveManager.save_run()
 	GameFlow.goto_map()

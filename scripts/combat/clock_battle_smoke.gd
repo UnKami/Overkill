@@ -61,7 +61,13 @@ func _ready() -> void:
 	var chosen := battle.current_draft_selection[0]
 	battle._on_phase_one_relic_chosen(chosen)
 	battle._on_phase_one_relic_chosen(chosen)
-	await get_tree().create_timer(2.0).timeout
+	# Named relic choreography now includes an authored summon and recovery.
+	# Await the completed decision so the double-input assertion tests one
+	# committed hour, while still failing if the combat resolver stalls.
+	var resolution_deadline: int = Time.get_ticks_msec() + 12000
+	while battle._resolving and Time.get_ticks_msec() < resolution_deadline:
+		await get_tree().process_frame
+	assert(not battle._resolving, "The first committed relic must finish within twelve seconds in Fast Mode")
 	assert(battle.turn_number == 2, "Double-click must resolve only one hour")
 	assert(battle.player_sockets[0].slotted_relic == chosen)
 	# High health fixtures exercise the complete 9-hour assembly and wrap.

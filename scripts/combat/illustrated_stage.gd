@@ -14,7 +14,7 @@ func _ready() -> void:
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
-	var actor := IllustratedActor.new()
+	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else IllustratedActor.new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
 		actor.target_height = 432.0
@@ -103,6 +103,17 @@ func await_contact(from_player: bool) -> void:
 
 func recovery_delay() -> float:
 	return float(_last_attack_profile.get("recovery", 0.40))
+
+
+func await_player_recovery() -> void:
+	while is_instance_valid(player) and player._busy:
+		await get_tree().process_frame
+
+
+func finish_delay() -> float:
+	# Controller divides this legacy timing unit by combat speed. The skeletal
+	# fall uses authored seconds, so Fast Mode must still reach its final pose.
+	return maxf(0.8, 1.1 * AudioManager.combat_animation_speed_scale() / AudioManager.animation_speed_scale())
 
 
 func set_intro_hidden() -> void:
