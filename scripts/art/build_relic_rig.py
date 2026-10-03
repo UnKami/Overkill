@@ -15,7 +15,7 @@ from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "assets/characters/executioner/rigged"
-FPS = 30
+FPS = 60
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / "source").mkdir(exist_ok=True)
 (OUT / "source/.gdignore").write_text("")
@@ -154,7 +154,7 @@ for name, cell, bone_name, rect, depth in PARTS:
     x0, x1 = max(1, min_x - 1), min(cw - 1, max_x + 2)
     y0, y1 = max(1, min_y - 1), min(ch - 1, max_y + 2)
     x, y, width, height = rect
-    nx, ny = 4, 7
+    nx, ny = 6, 10
     verts, uv, weights = [], [], {}
     for j in range(ny + 1):
         v = j / ny
@@ -172,7 +172,17 @@ for name, cell, bone_name, rect, depth in PARTS:
                 low = max(0, min(0.72, (v - 0.58) / 0.42))
                 value = {"spine": 1 - low, "pelvis": low}
             else:
+                # Soft overlap at armored elbows/knees keeps the painted joint
+                # connected as its two rigid limb sections change direction.
                 value = {bone_name: 1.0}
+                child = {"arm_near":"forearm_near", "arm_far":"forearm_far",
+                         "thigh_near":"shin_near", "thigh_far":"shin_far"}.get(name)
+                if child and v > .68:
+                    blend = min(.5, (v-.68)/.32*.5)
+                    value = {bone_name:1-blend, child:blend}
+                if name.startswith(("forearm_", "shin_", "hand_")) and v < .24:
+                    blend = (.24-v)/.24*.45
+                    value = {bone_name:1-blend, PARENTS[bone_name]:blend}
             for bn in value:
                 if bn not in weights:
                     weights[bn] = [0.0] * ((nx + 1) * (ny + 1))
@@ -204,92 +214,161 @@ for name, cell, bone_name, rect, depth in PARTS:
         "uv": [[round(u * aw, 4), round((1 - v) * ah, 4)] for u, v in uv],
         "triangles": triangles, "weights": weights})
 
-def leg_pose(drop=0.0):
-    """Two-bone solve keeps both boot soles on the floor during anticipation."""
-    values = {"root": (0, 0, drop)}
-    for side, sign in [("near", 1), ("far", -1)]:
-        h = HEADS["thigh_" + side] + Vector((0, drop))
-        k0, a0 = HEADS["shin_" + side], HEADS["foot_" + side]
-        v1 = k0 - HEADS["thigh_" + side]
-        v2 = a0 - k0
-        distance = (a0 - h).length
-        l1, l2 = v1.length, v2.length
-        theta = math.atan2((a0 - h).y, (a0 - h).x)
-        alpha = math.acos(max(-1, min(1, (l1*l1 + distance*distance - l2*l2) / (2*l1*distance))))
-        desired1 = theta - sign * alpha
-        knee = h + Vector((math.cos(desired1), math.sin(desired1))) * l1
-        desired2 = math.atan2((a0-knee).y, (a0-knee).x)
-        r1 = desired1 - math.atan2(v1.y, v1.x)
-        r2 = desired2 - math.atan2(v2.y, v2.x) - r1
-        # Normalise so a nearly straight rear leg never turns through 360°.
-        r1 = math.atan2(math.sin(r1), math.cos(r1))
-        r2 = math.atan2(math.sin(r2), math.cos(r2))
-        values["thigh_"+side] = (math.degrees(r1),)
-        values["shin_"+side] = (math.degrees(r2),)
-        values["foot_"+side] = (-math.degrees(r1+r2),)
+def pose(drop=0, x=0, near=None, far=None, feet=None, **kwargs):
+    values = {"root":(0,x,drop), "_near":near or tuple(HEADS["hand_near"]),
+              "_far":far or tuple(HEADS["hand_far"]),
+              "_foot_near":feet[0] if feet else (55+x,-34),
+              "_foot_far":feet[1] if feet else (-76+x,-35)}
+    for name,value in kwargs.items():
+        values[name] = value if isinstance(value,tuple) else (value,)
     return values
 
-def pose(drop=0, **kwargs):
-    result = leg_pose(drop) if drop else {}
-    for name, value in kwargs.items():
-        result[name] = value if isinstance(value, tuple) else (value,)
+# World-space hand/ankle targets are authored in the same painted anatomy as
+# the rest pose. The Blender bake solves connected, fixed-length limbs at EVERY
+# sample, rather than interpolating independently rotated knees and elbows.
+ACTIONS = {
+ "idle":(3.2,-1,[(0,pose()),(.8,pose(spine=-.65,head=.45,near=(100,-220),cloak_lower=1.7)),
+     (1.6,pose(spine=.45,head=-.4,near=(100,-217),cloak_lower=-1.2)),
+     (2.4,pose(spine=.6,head=-.3,cloak_upper=-.6)),(3.2,pose())]),
+ "iron_strike":(3.1,2.2,[
+     (0,pose()),(.35,pose(near=(96,-295),head=1.5)),
+     (1.3,pose(near=(98,-300),spine=-2,head=2)),
+     (1.5,pose(12,near=(55,-371),spine=-4,head=3,cloak_lower=-3)),
+     (1.83,pose(23,near=(50,-419),far=(-82,-262),spine=-7,head=4,cloak_lower=-6)),
+     (2.03,pose(-9,116,near=(152,-352),far=(-83,-258),spine=7,head=-3,
+                    feet=((181,-48),(17,-59)),cloak_lower=-14)),
+     (2.2,pose(12,184,near=(194,-303),far=(-92,-251),spine=9,head=-5,
+                   feet=((264,-34),(105,-35)),cloak_lower=-16)),
+     (2.39,pose(10,184,near=(174,-258),spine=6,head=-3,
+                    feet=((264,-34),(105,-35)),cloak_lower=-10)),
+     (2.6,pose(5,117,near=(132,-255),spine=3,feet=((221,-65),(105,-35)),cloak_lower=5)),
+     (2.83,pose(8,30,near=(106,-241),spine=1,feet=((70,-34),(-12,-56)),cloak_lower=6)),
+     (3.1,pose())]),
+ "throw":(1.7,.95,[
+     (0,pose()),(.25,pose(near=(103,-291),head=2)),
+     (.42,pose(10,near=(128,-405),spine=-3,head=2)),
+     (.52,pose(12,near=(42,-436),far=(-80,-258),spine=-5,head=3,cloak_lower=-4)),
+     (.67,pose(9,near=(123,-416),spine=-1,head=1)),
+     (.76,pose(6,near=(177,-330),spine=6,head=-3)),
+     (.95,pose(7,near=(184,-309),spine=7,head=-3)),
+     (1.22,pose(4,near=(158,-259),spine=3,cloak_lower=4)),
+     (1.7,pose())]),
+ "channel":(2.7,2.4,[
+     (0,pose()),(.5,pose(near=(111,-291),far=(-74,-290),head=-3,spine=-1)),
+     (1.25,pose(near=(121,-303),far=(-66,-303),head=-4,spine=-2,cloak_lower=2)),
+     (2.15,pose(near=(118,-300),far=(-69,-299),head=-3,spine=-1.5)),
+     (2.4,pose(near=(109,-271),far=(-85,-266),head=-2)),(2.7,pose())]),
+ "crown":(2.1,1.7,[(0,pose()),(.4,pose(head=2,spine=1,near=(109,-253))),
+     (1,pose(head=-4,spine=-2,near=(120,-270),far=(-86,-260))),
+     (1.7,pose(head=-2,spine=-1,near=(114,-257))),(2.1,pose())]),
+ "bell":(3,2.5,[(0,pose()),(.4,pose(6,near=(111,-312),far=(-64,-311),head=-2)),
+     (.85,pose(7,near=(118,-317),far=(-61,-315),head=-3,spine=.6)),
+     (1.3,pose(6,near=(114,-314),far=(-64,-312),head=-2,spine=-.6)),
+     (1.8,pose(7,near=(118,-317),far=(-61,-315),head=-3,spine=.6)),
+     (2.25,pose(6,near=(114,-314),far=(-64,-312),head=-2,spine=-.6)),
+     (2.5,pose(10,near=(108,-287),far=(-74,-289),spine=-2)),(3,pose())]),
+ "block":(1.8,1.1,[(0,pose()),(.4,pose(14,near=(100,-302),far=(-67,-297),head=2,spine=-3)),
+     (1.1,pose(12,near=(103,-300),far=(-71,-292),head=1.5,spine=-2.5)),
+     (1.4,pose(5,near=(109,-258),far=(-87,-253))),(1.8,pose())]),
+ "hit":(.55,-1,[(0,pose()),(.12,pose(8,spine=-7,head=-5,near=(100,-239),cloak_lower=5)),
+     (.32,pose(3,spine=-3,head=-1)),(.55,pose())]),
+ "guard_hit":(.5,-1,[(0,pose()),(.1,pose(11,near=(104,-301),far=(-72,-292),spine=-4)),
+     (.3,pose(4,near=(109,-264),far=(-88,-252),spine=-1)),(.5,pose())]),
+ "fall":(1.1,-1,[(0,pose()),(.35,pose(30,spine=9,head=7,near=(111,-233))),
+     (1.1,pose(59,spine=23,head=12,near=(132,-246),cloak_lower=7))]),
+ "heavy":(3.3,2.2,[(0,pose()),(.5,pose(near=(66,-405),far=(-52,-352),spine=-3,head=-2)),
+     (1.4,pose(13,near=(27,-411),far=(-40,-350),spine=-6,head=-3)),
+     (1.85,pose(23,near=(30,-406),far=(-37,-351),spine=-5)),
+     (2.2,pose(16,130,near=(169,-273),far=(-68,-273),spine=12,head=-5,
+                    feet=((217,-34),(47,-35)),cloak_lower=-13)),
+     (2.46,pose(13,130,near=(151,-250),spine=8,feet=((217,-34),(47,-35)),cloak_lower=-6)),
+     (2.75,pose(5,80,near=(119,-250),spine=4,feet=((154,-58),(47,-35)),cloak_lower=4)),
+     (3.03,pose(5,18,near=(109,-238),spine=1,feet=((57,-34),(-46,-53)))),(3.3,pose())])
+}
+
+def monotone_sample(keys, t):
+    # PCHIP Hermite tangents: velocity is continuous across key poses without
+    # Bezier overshoot, knee reversal, or a stop at every intermediate pose.
+    times=[k[0] for k in keys]
+    labels=set(BONES[i][0] for i in range(len(BONES))) | {"_near","_far","_foot_near","_foot_far"}
+    defaults=pose()
+    result={}
+    interval=min(len(keys)-2,max(0,next((i-1 for i,x in enumerate(times) if x>t),len(keys)-2)))
+    interval=max(0,interval)
+    h=times[interval+1]-times[interval]
+    u=max(0,min(1,(t-times[interval])/h))
+    for name in labels:
+        count=2 if name.startswith("_") else 3
+        rows=[]
+        for _,p in keys:
+            v=p.get(name,defaults.get(name,(0,0,0)))
+            rows.append(list(v)+[0]*(count-len(v)))
+        if name in ("_near", "_far"):
+            shoulder=HEADS["arm"+name]
+            polar=[]
+            last_angle=None
+            for row in rows:
+                delta=Vector(row)-shoulder
+                angle=math.atan2(delta.y,delta.x)
+                if last_angle is not None:
+                    angle=last_angle+math.atan2(math.sin(angle-last_angle),math.cos(angle-last_angle))
+                polar.append([delta.length,angle])
+                last_angle=angle
+            rows=polar
+        vals=[]
+        for c in range(count):
+            slopes=[(rows[i+1][c]-rows[i][c])/(times[i+1]-times[i]) for i in range(len(keys)-1)]
+            tangents=[0.0]*len(keys)
+            for j in range(1,len(keys)-1):
+                left,right=slopes[j-1],slopes[j]
+                if left*right>0:
+                    hl,hr=times[j]-times[j-1],times[j+1]-times[j]
+                    w1,w2=2*hr+hl,hr+2*hl
+                    tangents[j]=(w1+w2)/(w1/left+w2/right)
+            v=(2*u**3-3*u*u+1)*rows[interval][c]+(u**3-2*u*u+u)*h*tangents[interval]
+            v+=(-2*u**3+3*u*u)*rows[interval+1][c]+(u**3-u*u)*h*tangents[interval+1]
+            vals.append(v)
+        if name in ("_near", "_far"):
+            shoulder=HEADS["arm"+name]
+            result[name]=tuple(shoulder+Vector((math.cos(vals[1]),math.sin(vals[1])))*vals[0])
+        else:
+            result[name]=tuple(vals)
     return result
 
-# Times are literal seconds at normal animation speed. Each pose is authored in
-# Blender as transform keyframes, interpolated there, then sampled for Godot.
-ACTIONS = {
-    "idle": (3.2, -1, [
-        (0, pose()), (0.8, pose(spine=-1.3, head=1.1, arm_near=-1.8, forearm_near=2.5, cloak_lower=2.8)),
-        (1.6, pose(spine=0.5, head=-1.2, arm_far=1.5, hand_near=-2, cloak_lower=-1.8)),
-        (2.4, pose(spine=1, head=-0.5, forearm_far=-1.5, cloak_upper=-1.5)), (3.2, pose())]),
-    "iron_strike": (3.1, 2.2, [
-        (0, pose()), (0.35, pose(arm_near=-18, forearm_near=-48, hand_near=-9, head=3)),
-        (1.3, pose(arm_near=-22, forearm_near=-55, hand_near=-12, spine=-3)),
-        (1.5, pose(drop=12, arm_near=22, forearm_near=-103, head=7, spine=-7, cloak_lower=-7)),
-        (1.85, pose(drop=40, arm_near=69, forearm_near=-117, arm_far=22, spine=-12, head=13, cloak_lower=-12)),
-        (2.05, pose(root=(0, 174, -16), thigh_near=-34, shin_near=37, foot_near=-3, thigh_far=35, shin_far=-35, arm_near=-65, forearm_near=-22, spine=12, head=-8, cloak_lower=-24)),
-        (2.2, pose(root=(0, 226, 3), thigh_near=-23, shin_near=26, foot_near=-3, thigh_far=38, shin_far=-34, arm_near=-78, forearm_near=61, hand_near=17, spine=15, head=-10, cloak_lower=-29)),
-        (2.42, pose(root=(0, 226, 5), thigh_near=-18, shin_near=22, foot_near=-4, thigh_far=32, shin_far=-30, arm_near=-48, forearm_near=42, spine=9, cloak_lower=-15)),
-        (2.78, pose(drop=13, arm_near=-14, forearm_near=20, spine=1, cloak_lower=14)), (3.1, pose())]),
-    "throw": (1.7, 0.95, [
-        (0, pose()), (0.24, pose(arm_near=-23, forearm_near=-53, head=3)),
-        (0.55, pose(drop=17, spine=-10, arm_near=76, forearm_near=-112, hand_near=-23, head=8, cloak_lower=-9)),
-        (0.77, pose(drop=7, spine=11, arm_near=-91, forearm_near=26, hand_near=18, head=-7, arm_far=13)),
-        (0.95, pose(drop=5, spine=8, arm_near=-87, forearm_near=25, hand_near=9, head=-5)),
-        (1.28, pose(arm_near=-34, forearm_near=-7, spine=2, cloak_lower=8)), (1.7, pose())]),
-    "channel": (2.7, 2.4, [
-        (0, pose()), (0.5, pose(arm_near=-39, forearm_near=-34, arm_far=28, forearm_far=40, head=-6, spine=-2)),
-        (1.25, pose(arm_near=-46, forearm_near=-37, arm_far=33, forearm_far=46, head=-8, spine=-4, cloak_lower=6)),
-        (2.15, pose(arm_near=-41, forearm_near=-33, arm_far=29, forearm_far=43, head=-6, spine=-3)),
-        (2.4, pose(spine=-1, head=-3, arm_near=-17, forearm_near=-22)), (2.7, pose())]),
-    "crown": (2.1, 1.7, [
-        (0, pose()), (0.4, pose(head=6, spine=4, arm_near=-12, forearm_near=-18)),
-        (1.0, pose(head=-9, spine=-5, arm_near=-30, forearm_near=-15, arm_far=21, forearm_far=12)),
-        (1.7, pose(head=-5, spine=-2, arm_near=-20, forearm_near=-12)), (2.1, pose())]),
-    "bell": (3.0, 2.5, [
-        (0, pose()), (0.4, pose(drop=8, arm_near=-52, forearm_near=-53, arm_far=41, forearm_far=49, head=-4)),
-        (0.85, pose(drop=9, arm_near=-55, forearm_near=-56, arm_far=44, forearm_far=51, head=-7, spine=2)),
-        (1.3, pose(drop=8, arm_near=-52, forearm_near=-53, arm_far=41, forearm_far=49, head=-4, spine=-2)),
-        (1.8, pose(drop=10, arm_near=-55, forearm_near=-56, arm_far=44, forearm_far=51, head=-7, spine=2)),
-        (2.25, pose(drop=8, arm_near=-52, forearm_near=-53, arm_far=41, forearm_far=49, head=-4, spine=-2)),
-        (2.5, pose(drop=14, arm_near=-22, forearm_near=-68, arm_far=19, forearm_far=53, spine=-3)), (3.0, pose())]),
-    "block": (1.8, 1.1, [
-        (0, pose()), (0.4, pose(drop=18, arm_near=-39, forearm_near=-72, arm_far=21, forearm_far=65, head=4, spine=-6)),
-        (1.1, pose(drop=16, arm_near=-36, forearm_near=-69, arm_far=19, forearm_far=61, head=3, spine=-5)),
-        (1.4, pose(drop=8, arm_near=-20, forearm_near=-30, arm_far=8, forearm_far=21)), (1.8, pose())]),
-    "hit": (0.55, -1, [(0, pose()), (0.12, pose(drop=10, spine=-13, head=-11, arm_near=13, forearm_near=-17, cloak_lower=11)), (0.32, pose(drop=5, spine=-6, head=-3)), (0.55, pose())]),
-    "guard_hit": (0.5, -1, [(0, pose()), (0.1, pose(drop=13, spine=-8, arm_near=-31, forearm_near=-75, arm_far=16, forearm_far=61)), (0.3, pose(drop=5, spine=-3, arm_near=-19, forearm_near=-40)), (0.5, pose())]),
-    "fall": (1.1, -1, [(0, pose()), (0.35, pose(drop=37, spine=17, head=12, arm_near=28, forearm_near=-35)), (1.1, pose(drop=77, spine=35, head=20, arm_near=14, forearm_near=-28, cloak_lower=11))]),
-}
-# Heavy weapon is a distinct slower armature action with a planted overhead
-# anticipation, while keeping the same contact convention as Iron Strike.
-ACTIONS["heavy"] = (3.3, 2.2, [
-    (0, pose()), (0.5, pose(arm_near=-102, forearm_near=-66, arm_far=77, forearm_far=63, spine=-6, head=-5)),
-    (1.4, pose(drop=18, arm_near=-123, forearm_near=-68, arm_far=89, forearm_far=58, spine=-13, head=-8)),
-    (1.85, pose(drop=39, arm_near=-124, forearm_near=-66, arm_far=83, forearm_far=59, spine=-10)),
-    (2.2, pose(root=(0, 160, 15), thigh_near=-27, shin_near=39, thigh_far=25, shin_far=-20, arm_near=-30, forearm_near=-12, spine=24, head=-12, cloak_lower=-23)),
-    (2.5, pose(root=(0,160,15), thigh_near=-23, shin_near=32, thigh_far=24, shin_far=-20, arm_near=-27, forearm_near=-10, spine=18)),
-    (2.9, pose(drop=14, spine=5, arm_near=-20, forearm_near=-9)), (3.3, pose())])
+def two_bone(first, second, end, target, sign):
+    v1,v2=HEADS[second]-HEADS[first],HEADS[end]-HEADS[second]
+    l1,l2=v1.length,v2.length
+    distance=max(.01,(target).length)
+    minimum=math.sqrt(l1*l1+l2*l2+2*l1*l2*math.cos(math.radians(112)))
+    distance=max(minimum,min(l1+l2-.01,distance))
+    theta=math.atan2(target.y,target.x)
+    alpha=math.acos(max(-1,min(1,(l1*l1+distance*distance-l2*l2)/(2*l1*distance))))
+    direction=theta-sign*alpha
+    knee=Vector((math.cos(direction),math.sin(direction)))*l1
+    goal=Vector((math.cos(theta),math.sin(theta)))*distance
+    direction2=math.atan2((goal-knee).y,(goal-knee).x)
+    r1=direction-math.atan2(v1.y,v1.x)
+    r2=direction2-math.atan2(v2.y,v2.x)-r1
+    return tuple(math.degrees(math.atan2(math.sin(v),math.cos(v))) for v in (r1,r2))
+
+def solved_pose(values):
+    out={k:v for k,v in values.items() if not k.startswith("_")}
+    root=Vector((values["root"][1],values["root"][2]))
+    for side in ("near","far"):
+        first,second,end="thigh_"+side,"shin_"+side,"foot_"+side
+        v1,v2=HEADS[second]-HEADS[first],HEADS[end]-HEADS[second]
+        sign=1 if v1.cross(v2)>0 else -1
+        target=Vector(values["_foot_"+side])-HEADS[first]-root
+        r1,r2=two_bone(first,second,end,target,sign)
+        out[first]=(r1,);out[second]=(r2,);out[end]=(-r1-r2,)
+    for side in ("near","far"):
+        first,second,end="arm_"+side,"forearm_"+side,"hand_"+side
+        # Targets follow the chest, while elbows retain one anatomical bend.
+        target=Vector(values["_"+side])-HEADS[first]
+        r1,r2=two_bone(first,second,end,target,1 if side=="near" else -1)
+        out[first]=(r1,);out[second]=(r2,)
+        out[end]=(max(-15,min(15,values[end][0])),)
+    return out
 
 rig.animation_data_create()
 animation_records = {}
@@ -297,7 +376,9 @@ for action_name, (duration, contact, poses) in ACTIONS.items():
     action = bpy.data.actions.new(action_name)
     action.use_fake_user = True
     rig.animation_data.action = action
-    for time, pose_values in poses:
+    for frame in range(round(duration * FPS) + 1):
+        time = frame / FPS
+        pose_values = solved_pose(monotone_sample(poses,time))
         for name, parent, p in BONES:
             pb = rig.pose.bones[name]
             values = pose_values.get(name, (0, 0, 0))
@@ -317,7 +398,7 @@ for action_name, (duration, contact, poses) in ACTIONS.items():
                 if bag:
                     for curve in bag.fcurves:
                         for point in curve.keyframe_points:
-                            point.interpolation = "BEZIER"
+                            point.interpolation = "LINEAR"
                             point.handle_left_type = "AUTO_CLAMPED"
                             point.handle_right_type = "AUTO_CLAMPED"
     samples = []
@@ -333,9 +414,9 @@ for action_name, (duration, contact, poses) in ACTIONS.items():
         samples.append(sample)
     animation_records[action_name] = {"duration": duration, "contact": contact, "frames": samples}
 
-record = {"format": "overkill_blender_skin_v1", "fps": FPS,
-          "authoring": "Blender armature modifier; 18 bones; weighted 16-part painted cutout meshes",
-          "atlas_size": [aw, ah], "bounds": [-128, -484, 264, 489],
+record = {"format": "overkill_blender_skin_v2", "fps": FPS,
+          "authoring": "Blender armature modifier; 18 bones; connected IK limbs; weighted joint overlaps; 60 Hz motion",
+          "atlas_size": [aw, ah], "bounds": [-128, -484, 264, 489], "motion_quality":{"continuous_ik":True,"elbow_max_degrees":112,"grounded_anticipation":True},
           "bones": [],
           "meshes": mesh_records, "actions": animation_records}
 # Keep the metadata readable and the main data a resource script so exported PCKs
@@ -360,9 +441,9 @@ scene.camera = camera
 rig.animation_data.action = bpy.data.actions["idle"]
 scene.frame_set(1)
 scene.frame_start = 1
-scene.frame_end = 97
+scene.frame_end = round(3.2*FPS)+1
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT / "source/executioner_relic_rig.blend"))
-review_poses = [] if "--skip-renders" in sys.argv else [("idle",0), ("iron_strike",1.85), ("iron_strike",2.2), ("throw",0.55), ("throw",0.95), ("block",0.65)]
+review_poses = [] if "--skip-renders" in sys.argv else [("idle",0), ("iron_strike",1.83), ("iron_strike",2.2), ("throw",0.52), ("throw",0.95), ("block",0.65), ("heavy",1.4), ("heavy",2.2)]
 for action_name, time in review_poses:
     rig.animation_data.action = bpy.data.actions[action_name]
     scene.frame_set(round(time * FPS) + 1)

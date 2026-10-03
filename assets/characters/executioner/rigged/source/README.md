@@ -2,7 +2,7 @@
 
 `executioner_relic_rig.blend` contains an editable Blender 5.2 armature with **18 bones**, **16 painted cutout meshes**, normalized vertex groups, armature modifiers, and **11 actions**. The cloak and torso have blended weights; the armored limbs use separate upper-arm, forearm, hand, thigh, shin, and foot bones. Anticipation bends both knees with planted ankles.
 
-The runtime `RelicRigActor` reconstructs the same hierarchy with Godot `Skeleton2D`/`Bone2D` and binds the textured `Polygon2D` meshes using those vertex weights. It samples Blender-exported transforms at 30 Hz and interpolates between frames at the rendering frame rate. It does not render or warp the former full-character sprite.
+The runtime `RelicRigActor` reconstructs the same hierarchy with Godot `Skeleton2D`/`Bone2D` and binds the textured `Polygon2D` meshes using those vertex weights. It samples Blender-exported transforms at 60 Hz and interpolates between frames at the rendering frame rate. It does not render or warp the former full-character sprite.
 
 Rebuild from the repository root:
 
@@ -10,7 +10,7 @@ Rebuild from the repository root:
 & 'C:/Program Files/Blender Foundation/Blender 5.2/blender.exe' --background --python scripts/art/build_relic_rig.py
 ```
 
-The build writes the native `.blend`, packed art, a readable manifest, six transparent pose-review renders, and `../rig_data.gd`. The generated GDScript resource includes the runtime mesh, UV, weights, bone hierarchy, and action data automatically in exported PCK files. This source directory has `.gdignore` so Godot does not attempt automatic Blender import or ship authoring previews.
+The build writes the native `.blend`, packed art, a readable manifest, eight transparent pose-review renders, and `../rig_data.gd`. The generated GDScript resource includes the runtime mesh, UV, weights, bone hierarchy, and action data automatically in exported PCK files. This source directory has `.gdignore` so Godot does not attempt automatic Blender import or ship authoring previews.
 
 | Action | Contact time | Duration |
 | --- | ---: | ---: |
@@ -33,3 +33,5 @@ Public anchor methods expose animated hand, hood-top, chest, and feet positions 
 The transparent `../parts_atlas.png` was generated with the built-in ImageGen tool from the existing Executioner reference. Art direction: preserve the faceless hood, black leather and antique bronze armor, cyan crystals on the far side and ember-orange details on the near side; provide 16 isolated, transparent, rounded-joint cutouts in a 4×4 atlas (head, torso, pelvis, cloak, paired upper arms, forearms, hands, thighs, shins, boots). `build_relic_rig.py` maps each part's alpha bounds to authored mesh surfaces. The established original sprite remains untouched.
 
 Verification: Blender successfully saved the authoring source and rendered idle, bent-knee anticipation, strike contact, throw anticipation/contact, and guard poses. Runtime skin construction was observed with 18 bones and 16 meshes. An initial Godot preview exposed a rear-layer sort defect; the runtime z ordering was corrected. Final integrated runtime verification belongs to the release fixture and its recorded screenshots.
+
+0.43 adds continuous hand/ankle IK targets, bounded elbow flexion, planted support, softened vertex weights across joints, and smooth idle/action recovery. Both throw props and melee weapons follow the animated wrist; thrown release occurs at 0.76 s.

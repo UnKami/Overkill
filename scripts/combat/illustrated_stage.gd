@@ -8,13 +8,28 @@ var _shadows: Dictionary = {}
 var _last_attack_profile: Dictionary = {}
 var _has_configured_enemy: bool = false
 
+func _process(_delta: float) -> void:
+	for actor: IllustratedActor in [player, enemy]:
+		if not is_instance_valid(actor) or not actor.has_method("anchor_position"):
+			continue
+		var shadow_value: Variant = _shadows.get(actor.get_instance_id())
+		if not is_instance_valid(shadow_value):
+			continue
+		var shadow: Polygon2D = shadow_value as Polygon2D
+		var feet: Vector2 = get_global_transform().affine_inverse() * (actor.call("anchor_position", "feet", true) as Vector2)
+		shadow.position.x = feet.x
+		var height: float = maxf(0.0, shadow.position.y - feet.y)
+		var grounded: float = clampf(1.0-height/90.0,0.45,1.0)
+		shadow.scale = Vector2(lerpf(0.72,1.0,grounded),lerpf(0.6,1.0,grounded))
+		shadow.modulate.a = actor.modulate.a*grounded
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	player = _actor("res://assets/characters/executioner/combat_sprite.png", 1.0, Vector2(-221, -5))
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
-	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else IllustratedActor.new()
+	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
 		actor.target_height = 432.0
@@ -32,9 +47,14 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 	shadow.position = at + Vector2(276,574)
 	add_child(shadow)
 	add_child(actor)
-	_shadows[actor] = shadow
-	actor.tree_exiting.connect(shadow.queue_free)
+	_shadows[actor.get_instance_id()] = shadow
+	actor.tree_exiting.connect(_release_shadow.bind(actor.get_instance_id()))
 	return actor
+
+func _release_shadow(actor_id: int) -> void:
+	var shadow_value: Variant = _shadows.get(actor_id)
+	_shadows.erase(actor_id)
+	if is_instance_valid(shadow_value): shadow_value.queue_free()
 
 func configure_enemy(kind: String, art_id: String = "") -> void:
 	_kind = kind
@@ -59,8 +79,8 @@ func _animate_reinforcement(departing: IllustratedActor, incoming: IllustratedAc
 	var departure := departing.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	departure.tween_property(departing, "modulate:a", 0.0, 0.15)
 	departure.tween_property(departing, "position:y", departing.position.y + 20.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	var departing_shadow: CanvasItem = _shadows.get(departing)
-	if departing_shadow != null:
+	var departing_shadow: Variant = _shadows.get(departing.get_instance_id())
+	if is_instance_valid(departing_shadow):
 		departure.tween_property(departing_shadow, "modulate:a", 0.0, 0.15)
 	departure.chain().tween_callback(departing.queue_free)
 	incoming.pivot_offset = incoming.size * Vector2(0.5, 0.82)
@@ -119,13 +139,13 @@ func finish_delay() -> float:
 func set_intro_hidden() -> void:
 	for actor: IllustratedActor in [player, enemy]:
 		actor.hide()
-		var shadow: CanvasItem = _shadows.get(actor)
+		var shadow: CanvasItem = _shadows.get(actor.get_instance_id())
 		if shadow != null: shadow.hide()
 
 
 func reveal_combatant(from_player: bool) -> void:
 	var actor: IllustratedActor = player if from_player else enemy
-	var shadow: CanvasItem = _shadows.get(actor)
+	var shadow: CanvasItem = _shadows.get(actor.get_instance_id())
 	actor.show()
 	if shadow != null: shadow.show()
 	actor.modulate.a = 1.0

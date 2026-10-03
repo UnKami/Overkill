@@ -1,0 +1,14 @@
+{
+  "blender": "5.2.2 LTS",
+  "fps": 60,
+  "bones": 5,
+  "actions": [
+    "idle",
+    "attack",
+    "heavy",
+    "flurry",
+    "hit",
+    "guard",
+    "fall"
+  ]
+}

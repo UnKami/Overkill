@@ -18,6 +18,8 @@ The prior 0.41 rows were coordination reservations required by this repository, 
 
 Published playtest: [v0.42.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.42.0-test), exact tested source `cb28d2851fc1dff235b87064ccedef1dad043b2f`. Documentation PR [#27](https://github.com/UnKami/Overkill/pull/27) is merged. Reviewed cumulative source integration is tracked in PR [#26](https://github.com/UnKami/Overkill/pull/26).
 
+The same active motion scope also owns `scripts/art/build_enemy_motion.py`, `assets/animations/enemies/`, and `scripts/combat/enemy_rig_actor.gd` for the enemy deformation rig.
+
 ---
 ## 2. How to Claim a Task (Instructions for Developers & AIs)
 
