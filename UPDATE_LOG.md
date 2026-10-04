@@ -2,6 +2,18 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.45.0 playtest — 2026-10-04
+
+- Opens close to the entrance wheel, then tracks the current wheel and its upward choices. Direction selection eases toward the chosen branch; travel follows the destination and holds the visible landing before the encounter curtain.
+- Drag with left/middle/right mouse buttons to plan ahead; mouse-wheel panning honors high-resolution input. The view stays where released and Recenter returns to the current decision. Future wheels recede during decisions and become readable while planning; each wheel's tooltip lists its encounter seats.
+- Corrects player/event anchors to the measured circular holes in the canonical painting. Timing catches the nearest hole even with imperfect input. The smaller centered player replaces its occupied event icon and has a cyan socket outline.
+- **Installer:** [OverkillSetup-0.45.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe). **Portable ZIP:** [Overkill-0.45.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/Overkill-0.45.0-Windows.zip). [Release and verification](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test) · [SHA-256 manifest](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.sha256).
+- **Source:** immutable tag `v0.45.0-test`, branch `feat/yonatan-045-follow-map-camera`. Exact source/review links and publication results are recorded at delivery.
+- **Compatibility:** saves retain encounter sequences, seat IDs, layout version and shared drive phase. Combat values and the Blender animation pipeline are unchanged. Reduced motion applies camera framing directly and shortens transfer/landing.
+- **Verification at source freeze:** geometry, camera, actual painted socket anchors, old/new saves, GUI drag dispatch and seven-stage transfers are covered. Native mouse/keyboard entry, drag, Recenter and Space-to-prebattle were inspected. Exact export, screen presets, installation and public hashes remain delivery gates; the release report records their results.
+- **Limits:** unsigned playtest. Seven-stage encounter pacing still needs human balance review; no final human visual approval, full campaign or realtime FPS target is claimed. Previous releases remain available.
+
+
 ## 0.44.0 playtest — 2026-10-04
 
 - Rebuilds the map around the concept diamond: sixteen wheels in seven rows, bottom-to-top travel, physically meshed upward/downward teeth, two interior routes and one route on narrowing outer edges. Every wheel uses one shared drive angle with complementary counterrotation. Selection preserves the phase; timed landings move the Executioner along a smooth arc.

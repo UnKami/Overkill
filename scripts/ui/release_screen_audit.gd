@@ -126,7 +126,8 @@ func _maps() -> void:
 		_check(resumed._reachable_gears.size() == 2 and resumed._current_node.id == first.id, "Act %d cog resume restores landing and two onward choices" % act)
 		resumed._on_gear_selected(resumed._reachable_gears[1])
 		await _capture("cog-act-%d-branches" % act)
-		resumed._scroll.scroll_vertical = 0
+		var boss: String = resumed._map.layers[-1][0]
+		resumed._move_camera(resumed._gear_centers[boss], resumed._map_zoom, false)
 		await _capture("cog-act-%d-guardian" % act)
 		RunManager.current_node_id = ""
 		RunManager.visited_nodes.clear()

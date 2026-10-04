@@ -4,6 +4,16 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-10-04 | Yonatan / Codex — 0.45 focused camera and precise sockets
+
+- **Branch:** `feat/yonatan-045-follow-map-camera`; source/export freeze and publication are recorded at delivery.
+- **Completed:** Single world canvas under a clipped camera viewport; close entrance framing, current/next-wheel follow, eased branch lead and destination travel. Drag threshold and release handling prevent click-through and stuck captures; left/middle/right planning, high-resolution wheel panning, stable manual view and Recenter. Future wheels fade during decisions and regain clarity while planning. Tooltips name each seat. Overview remains optional.
+- **Landing:** Measured canonical hole centers drive timing, icons, player and transfer endpoint. Cropped 42-unit player art fits its socket; occupied event icon hides, cyan outline marks position. Shared mechanism aligns before transfer; a brief settled landing and pulse precede scene handoff. Reduced motion removes camera sweeps and shortens transfer/hold.
+- **Files:** Cog map screen, generator socket constants, geometry/review/screen fixtures, layout notes, 0.45 player/release documentation and VERSION/project version. No combat rules or Blender motion assets changed.
+- **Verification:** Source geometry/camera/save checks and actual painted socket alpha centers, seven-stage transfer and real GUI drag dispatch, checkpoint/map/artifact/UI regressions. Native source mouse entry/drag/recenter/Space reached the actual prebattle choice. Exact packaged verification and all publication/installer results follow in the final handoff.
+- **Handoff / limits:** Existing saves preserve encounter/seat IDs and machine phase. The previous seven-stage pacing still needs balance review. Complete exact-source Windows delivery before clearing the reservation. No final human art acceptance, full human campaign or realtime FPS target is implied. Preserve unrelated sidecars, old checksum, concepts and Blender backups.
+
+
 ## 2026-10-04 | Yonatan / Codex — 0.44 concept-led meshed cog apparatus
 - **Branch / PR / release:** `feat/yonatan-044-meshed-cog-map`; reviewed source PR [#30](https://github.com/UnKami/Overkill/pull/30); public prerelease [v0.44.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.44.0-test). Immutable playable source `333954f87ccf948e0c0c90e6a664895b6eb1aac4`. Final delivery metadata changes only documentation, coordination and checksum records after that source.
 - **Completed:** Seven-row 1/2/3/4/3/2/1 diamond climbs bottom to top. Generator positions derive physical branch contacts; narrowing outer edges offer one choice. Native 24-tooth involute geometry meshes at a 260-unit pitch distance, with 52.5-degree contact axes and same-row clearance. All wheels share one drive angle and alternate rotation direction with complementary phase. Selection never accelerates a single wheel. Arrival pointers face actual contacts, icons remain upright, and the character follows an eased transfer arc. Overview fits the apparatus; Follow frames current/next choices after layout. Circular hit regions and guarded direction/timing shortcuts are included.

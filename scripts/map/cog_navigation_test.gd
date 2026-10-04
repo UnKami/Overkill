@@ -17,7 +17,9 @@ func _ready() -> void:
 	add_child(screen)
 	await get_tree().process_frame
 	await get_tree().process_frame
+	await get_tree().create_timer(0.10).timeout
 	_check(screen._gear_surfaces.size() == 16, "New screen has the sixteen-wheel concept diamond")
+	_check(not screen._overview and screen._map_zoom > 1.5, "Entrance opens close to its three seats instead of the whole apparatus")
 	_check(screen._reachable_gears.size() == 1 and not screen._advance_button.disabled, "Bottom entrance is actionable")
 	_check(screen._gear_centers[screen._map.layers[0][0]].y > screen._gear_centers[screen._map.layers[-1][0]].y, "Progression climbs from bottom to top")
 	_check(screen._seat_summary.get_child_count() == 3, "Timing outcomes remain explained")
@@ -34,22 +36,36 @@ func _ready() -> void:
 	add_child(resumed)
 	await get_tree().process_frame
 	await get_tree().process_frame
+	await get_tree().create_timer(0.10).timeout
 	_check(resumed._current_node.id == first_node.id and resumed._reachable_gears.size() == 2, "Landing restores two physically adjacent upward choices")
+	var current_surface: Node2D = resumed._gear_surfaces[resumed._current_gear_id]
+	var player: Sprite2D = current_surface.get_node("ExecutionerMarker") as Sprite2D
+	_check(player.position.distance_to((CogNavigationGenerator.SEAT_CENTERS[0] - Vector2.ONE * 0.5) * CogMapScreen.GEAR_SIZE) < 0.001, "Player is centered on the measured faceplate hole")
+	_check(not resumed._seat_markers[first_node.id].visible, "Occupied socket does not show an event symbol through the player")
+	var source: Image = (load("res://assets/map/cog_navigation/wheel.png") as Texture2D).get_image()
+	for center: Vector2 in CogNavigationGenerator.SEAT_CENTERS:
+		var pixel: Vector2i = Vector2i(center * Vector2(source.get_size()))
+		_check(source.get_pixelv(pixel).a < 0.05, "Seat anchor lies inside its actual transparent circular hole")
+		_check(absf((center - Vector2.ONE * 0.5).angle() - CogNavigationGenerator.SEAT_ANGLES[CogNavigationGenerator.SEAT_CENTERS.find(center)]) < 0.001, "Timing angle and rendered socket share one anchor")
 	var phase_before: float = resumed._machine_angle
 	resumed._on_gear_selected(resumed._reachable_gears[1])
 	_check(is_equal_approx(resumed._machine_angle, phase_before), "Choosing a direction does not rotate an individual gear")
 	_check_phase(resumed)
+	var reduced_before: bool = AudioManager.reduced_motion
+	AudioManager.reduced_motion = true
+	resumed._on_gear_selected(resumed._reachable_gears[0])
+	_check(resumed._camera_tween == null or not resumed._camera_tween.is_running(), "Reduced motion applies framing without a camera sweep")
+	AudioManager.reduced_motion = reduced_before
 	resumed._toggle_overview()
-	await get_tree().process_frame
-	await get_tree().process_frame
+	await get_tree().create_timer(0.60).timeout
 	_check(resumed._overview and resumed._map_zoom < 1.0, "Overview fits the whole machine")
-	_check(resumed._canvas.custom_minimum_size.y <= resumed._scroll.size.y + 1.0, "Overview fits all seven rows vertically")
+	_check(resumed._world.size.y * resumed._map_zoom <= resumed._scroll.size.y + 1.0, "Overview fits all seven rows vertically")
 	for gear_id: String in resumed._gears:
 		var button: Button = resumed._gear_buttons[gear_id]
 		_check(not button._has_point(Vector2.ZERO) and button._has_point(Vector2.ONE * 143.0), "Round gear hit region excludes overlapping square corners")
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
-		var folder: String = ProjectSettings.globalize_path("res://.test-artifacts/044")
+		var folder: String = ProjectSettings.globalize_path("res://.test-artifacts/045")
 		DirAccess.make_dir_recursive_absolute(folder)
 		_check(get_viewport().get_texture().get_image().save_png(folder.path_join("machine-overview.png")) == OK, "Capture actual overview")
 	resumed.queue_free()

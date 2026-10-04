@@ -10,7 +10,14 @@ offer one. The final singleton is the act guardian.
 The generator owns physical positions and derives connections from their pitch
 distance. The view uses those same positions; it does not spread every row across
 the screen or substitute route lines for tooth contacts. Overview fits the whole
-apparatus; Follow frames the current wheel and its next choices. The gold arrival
+apparatus on request; the initial view focuses the entrance wheel. Follow frames
+the current wheel and its next choices and moves with each climb. Drag with the
+left, middle or right mouse button to inspect future nodes; the wheel scrolls the
+planning view vertically. Planning stays where released; Recenter returns to the
+current decision. Direction selection eases the framing toward that branch.
+Future wheels recede during decisions and become fully readable while planning.
+The camera transforms a single world canvas; zoom never rebuilds the gears or
+changes their mesh, phase or hit regions. The gold arrival
 pointer faces the actual contact with the current wheel. Click a reachable wheel
 or use Left/Right to choose; click Advance or press Space to catch its nearest
 seat. Enter advances when the map or an advance/gear control has keyboard focus.
@@ -33,8 +40,14 @@ One shared drive angle rotates alternate rows in opposite directions, with a
 7.5-degree complementary offset on odd rows. Selecting a destination never
 accelerates or rotates that wheel independently. Catching a seat aligns the
 entire mechanism together before the character transfers along a eased arc.
+Timing, seat icons and the overhead character share the measured transparent
+hole centers in the canonical faceplate. The player fits within the circular
+socket, replaces its event icon and has a cyan socket outline. Even imperfect
+timing selects the nearest hole and transfers exactly to that anchor. A short
+landing pulse/hold makes the arrival readable before the encounter curtain.
 Seat icons and the overhead character remain upright while following their
-physical seat positions. The canonical wheel painting remains the faceplate;
+physical seat positions. Reduced motion applies camera framing directly and
+shortens transfer/hold. The canonical wheel painting remains the faceplate;
 native tooth geometry replaces its irregular illustrated rim.
 
 ## Encounters and existing saves

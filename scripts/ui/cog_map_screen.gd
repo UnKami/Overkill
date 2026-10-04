@@ -36,7 +36,9 @@ const NODE_COLORS := {
 	MapGenerator.NodeType.TREASURE: Color("f2d58a"),
 	MapGenerator.NodeType.BOSS: Color("ffb96f"),
 }
-const SEAT_CENTERS: Array[Vector2] = [Vector2(0.5, 0.145), Vector2(0.755, 0.735), Vector2(0.245, 0.735)]
+const SEAT_CENTERS: Array[Vector2] = CogNavigationGenerator.SEAT_CENTERS
+const PLAYER_SIZE: float = 42.0
+const DRAG_THRESHOLD: float = 8.0
 const POINTER_ANGLE: float = -PI * 0.5
 const PERFECT_WINDOW_RADIANS: float = 0.22
 static var _icon_cache: Dictionary = {}
@@ -76,6 +78,17 @@ var _transfer_progress: float = -1.0
 var _transfer_start: Vector2
 var _transfer_end: Vector2
 var _transfer_bend: Vector2
+var _world: Control
+var _camera_center: Vector2 = Vector2.ZERO
+var _camera_tween: Tween
+var _camera_initialized: bool = false
+var _manual_pan: bool = false
+var _drag_button: MouseButton = MOUSE_BUTTON_NONE
+var _drag_origin: Vector2
+var _drag_camera: Vector2
+var _dragging: bool = false
+var _suppress_map_click: bool = false
+var _landing_time: float = 0.0
 
 
 class GearChoiceButton extends Button:
@@ -92,6 +105,8 @@ func _ready() -> void:
 	resized.connect(_layout)
 	_layout()
 	_scroll_to_current_layer.call_deferred()
+	_world.modulate.a = 0.0
+	create_tween().tween_property(_world, "modulate:a", 1.0, 0.15 if AudioManager.reduced_motion else 0.35)
 
 
 func _process(delta: float) -> void:
@@ -101,6 +116,13 @@ func _process(delta: float) -> void:
 	if not _travel_locked:
 		_machine_angle += delta * 0.36
 	_apply_machine_rotation()
+	_apply_camera()
+	for id: String in _gear_controls:
+		var highlighted: bool = _manual_pan or _overview or id == _current_gear_id or _reachable_gears.has(id)
+		var target: Color = Color.WHITE if highlighted else Color(0.52, 0.62, 0.68, 0.72)
+		var root: Control = _gear_controls[id]
+		root.modulate = root.modulate.lerp(target, minf(1.0, delta * 8.0))
+	_landing_time = maxf(0.0, _landing_time - delta)
 	if _transfer_progress >= 0.0 and is_instance_valid(_transfer_marker):
 		var t: float = _transfer_progress
 		_transfer_marker.position = (1.0 - t) * (1.0 - t) * _transfer_start + 2.0 * (1.0 - t) * t * _transfer_bend + t * t * _transfer_end
@@ -114,7 +136,7 @@ func _load_map_art() -> void:
 	_gears = _map.gears
 	_machine_angle = RunManager.cog_machine_angle
 	var current_id: String = RunManager.current_node_id
-	_overview = current_id.is_empty()
+	_overview = false
 	if not current_id.is_empty() and current_id.begins_with("cogmap-"):
 		_current_node = _map.nodes.get(current_id) as MapGenerator.MapNode
 		_current_gear_id = CogNavigationGenerator.gear_id_from_node(current_id)
@@ -126,6 +148,13 @@ func _load_map_art() -> void:
 			_reachable_gears.assign(current_gear.connections)
 	if not _reachable_gears.is_empty():
 		_selected_gear_id = _reachable_gears[0]
+	_update_route_instructions()
+
+
+func _update_route_instructions() -> void:
+	_route_hint.text = "CHOOSE LEFT OR RIGHT  ·  TIME YOUR ARRIVAL  ·  DRAG THE MAP TO PLAN AHEAD"
+	if _current_node == null:
+		_route_hint.text = "TIME YOUR FIRST SEAT  ·  DRAG TO EXPLORE THE CLIMB  ·  RECENTER RETURNS TO YOUR CHOICE"
 
 
 func _load_map_artwork() -> void:
@@ -172,9 +201,7 @@ func _build_header() -> void:
 	margin.add_child(row)
 	header.resized.connect(_layout_route_hint)
 	_route_hint = %RouteHint
-	_route_hint.text = "CLIMB THE MACHINE  ·  CHOOSE LEFT OR RIGHT  ·  TIME YOUR ARRIVAL AT THE MESH"
-	if _current_node == null:
-		_route_hint.text = "ENTER AT THE BOTTOM  ·  TIME YOUR FIRST SEAT  ·  OVERVIEW SHOWS THE WHOLE MACHINE"
+	_update_route_instructions()
 
 
 func _build_footer() -> void:
@@ -188,19 +215,24 @@ func _build_footer() -> void:
 
 
 func _build_map() -> void:
-	for child: Node in _canvas.get_children():
-		child.queue_free()
+	if is_instance_valid(_world):
+		_world.queue_free()
+	_world = Control.new()
+	_world.name = "CogMachine"
+	_world.mouse_filter = Control.MOUSE_FILTER_PASS
+	_canvas.add_child(_world)
 	_gear_controls.clear()
 	_gear_surfaces.clear()
 	_gear_buttons.clear()
 	_gear_centers.clear()
 	_seat_markers.clear()
-	var viewport_width: float = get_viewport_rect().size.x
-	_canvas_width = maxf(CANVAS_MIN_WIDTH, viewport_width - 128.0)
+	_canvas_width = CANVAS_MIN_WIDTH
 	var layer_count: int = _map.layers.size()
 	var machine_height: float = (layer_count - 1) * GEAR_PITCH_Y + GEAR_SIZE
-	_map_zoom = minf(1.0, maxf(0.2, (_scroll.size.y - 30.0) / (machine_height + GEAR_TOP * 2.0))) if _overview else 1.0
-	_canvas.custom_minimum_size = Vector2(_canvas_width, (machine_height + GEAR_TOP * 2.0) * _map_zoom)
+	_world.size = Vector2(_canvas_width, machine_height + GEAR_TOP * 2.0)
+	_canvas.custom_minimum_size = Vector2.ZERO
+	_canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_build_path_lines()
 	_add_layer_labels()
 	for layer_index: int in layer_count:
@@ -224,7 +256,7 @@ func _build_path_lines() -> void:
 	# The map canvas already follows the backdrop in drawing order. A negative
 	# z index would put these links behind that backdrop, not only behind gears.
 	layer_lines.z_index = 0
-	_canvas.add_child(layer_lines)
+	_world.add_child(layer_lines)
 	_path_lines = layer_lines
 
 
@@ -250,11 +282,134 @@ func _arrival_angle(gear_id: String) -> float:
 func _toggle_overview() -> void:
 	if _travel_locked:
 		return
-	_overview = not _overview
-	_overview_button.text = "FOLLOW" if _overview else "OVERVIEW"
-	_build_map()
-	_scroll_to_current_layer.call_deferred()
-	_update_destination_summary()
+	if _manual_pan:
+		_overview = false
+	else:
+		_overview = not _overview
+	_manual_pan = false
+	_focus_decision(true)
+	_update_camera_button()
+
+
+func _update_camera_button() -> void:
+	_overview_button.text = "RECENTER" if _manual_pan else ("FOLLOW" if _overview else "OVERVIEW")
+
+
+func _apply_camera() -> void:
+	if not is_instance_valid(_world) or not _camera_initialized:
+		return
+	_world.scale = Vector2.ONE * _map_zoom
+	_world.position = _scroll.size * 0.5 - _camera_center * _map_zoom
+
+
+func _focus_decision(animated: bool) -> void:
+	if _gear_centers.is_empty():
+		return
+	var frame: Rect2
+	var radius: Vector2 = Vector2.ONE * GEAR_SIZE * 0.5
+	if _overview:
+		frame = Rect2(_gear_centers[_map.layers[0][0]] - radius, radius * 2.0)
+		for id: String in _gear_centers:
+			frame = frame.merge(Rect2(_gear_centers[id] - radius, radius * 2.0))
+	elif _current_gear_id.is_empty():
+		# The initial decision is the three seats on the entrance wheel.
+		frame = Rect2(_gear_centers[_selected_gear_id] - radius, radius * 2.0)
+	else:
+		frame = Rect2(_gear_centers[_current_gear_id] - radius, radius * 2.0)
+		for id: String in _reachable_gears:
+			frame = frame.merge(Rect2(_gear_centers[id] - radius, radius * 2.0))
+	var available: Vector2 = _scroll.size - Vector2(112.0, 56.0)
+	var zoom: float = minf(available.x / frame.size.x, available.y / frame.size.y)
+	zoom = clampf(zoom, 0.25, 1.90 if _current_gear_id.is_empty() or _reachable_gears.is_empty() else 1.48)
+	var center: Vector2 = frame.get_center()
+	if not _overview and not _current_gear_id.is_empty() and not _selected_gear_id.is_empty():
+		# A small lateral lead acknowledges the choice while retaining both routes.
+		var spare: float = maxf(0.0, (_scroll.size.x / zoom - frame.size.x) * 0.5 - 28.0)
+		center.x += clampf((_gear_centers[_selected_gear_id].x - center.x) * 0.16, -spare, spare)
+	_move_camera(center, zoom, animated)
+
+
+func _move_camera(center: Vector2, zoom: float, animated: bool, duration: float = 0.45) -> void:
+	if _camera_tween != null and _camera_tween.is_valid():
+		_camera_tween.kill()
+	_manual_pan = false
+	_update_camera_button()
+	if not animated or not _camera_initialized or AudioManager.reduced_motion:
+		_camera_center = center
+		_map_zoom = zoom
+	else:
+		_camera_tween = create_tween().set_parallel(true)
+		_camera_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		_camera_tween.tween_property(self, "_camera_center", center, duration)
+		_camera_tween.tween_property(self, "_map_zoom", zoom, duration)
+	_camera_initialized = true
+	_apply_camera()
+
+
+func _clamp_camera(center: Vector2) -> Vector2:
+	# Keep every edge wheel reachable by panning, with a little framing margin.
+	var half_view: Vector2 = _scroll.size / (2.0 * _map_zoom)
+	var min_point := Vector2(INF, INF)
+	var max_point := Vector2(-INF, -INF)
+	for id: String in _gear_centers:
+		var point: Vector2 = _gear_centers[id]
+		min_point = min_point.min(point - Vector2.ONE * (GEAR_SIZE * 0.5 + 48.0))
+		max_point = max_point.max(point + Vector2.ONE * (GEAR_SIZE * 0.5 + 48.0))
+	var middle: Vector2 = (min_point + max_point) * 0.5
+	return Vector2(clampf(center.x, minf(middle.x, min_point.x + half_view.x), maxf(middle.x, max_point.x - half_view.x)), clampf(center.y, minf(middle.y, min_point.y + half_view.y), maxf(middle.y, max_point.y - half_view.y)))
+
+
+func _input(event: InputEvent) -> void:
+	if _travel_locked or get_tree().paused or GameFlow._active_deck_view_overlay != null or GameFlow._active_settings_overlay != null:
+		_drag_button = MOUSE_BUTTON_NONE
+		_dragging = false
+		return
+	if event is InputEventMouseButton:
+		var mouse: InputEventMouseButton = event as InputEventMouseButton
+		if mouse.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_MIDDLE, MOUSE_BUTTON_RIGHT]:
+			if mouse.pressed and _scroll.get_global_rect().has_point(mouse.position):
+				_drag_button = mouse.button_index
+				_drag_origin = mouse.position
+				_drag_camera = _camera_center
+				_dragging = false
+			elif not mouse.pressed and mouse.button_index == _drag_button:
+				if _dragging:
+					_suppress_map_click = true
+					get_viewport().set_input_as_handled()
+					_clear_drag_click.call_deferred()
+				_drag_button = MOUSE_BUTTON_NONE
+				_dragging = false
+		elif mouse.pressed and _scroll.get_global_rect().has_point(mouse.position) and mouse.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			_cancel_camera_for_pan()
+			_camera_center = _clamp_camera(_camera_center + Vector2(0.0, -100.0 if mouse.button_index == MOUSE_BUTTON_WHEEL_UP else 100.0) * maxf(0.1, absf(mouse.factor)) / _map_zoom)
+			_apply_camera()
+			get_viewport().set_input_as_handled()
+	elif event is InputEventMouseMotion and _drag_button != MOUSE_BUTTON_NONE:
+		var motion: InputEventMouseMotion = event as InputEventMouseMotion
+		if (motion.button_mask & (1 << (_drag_button - 1))) == 0:
+			_drag_button = MOUSE_BUTTON_NONE
+			_dragging = false
+			return
+		if not _dragging and motion.position.distance_to(_drag_origin) > DRAG_THRESHOLD:
+			_dragging = true
+			_cancel_camera_for_pan()
+			for id: String in _gear_buttons:
+				(_gear_buttons[id] as Button).set_pressed_no_signal(false)
+		if _dragging:
+			_camera_center = _clamp_camera(_drag_camera - (motion.position - _drag_origin) / _map_zoom)
+			_apply_camera()
+			get_viewport().set_input_as_handled()
+
+
+func _cancel_camera_for_pan() -> void:
+	if _camera_tween != null and _camera_tween.is_valid():
+		_camera_tween.kill()
+	_manual_pan = true
+	_update_camera_button()
+
+
+func _clear_drag_click() -> void:
+	_suppress_map_click = false
 
 
 func _shortcut_input(event: InputEvent) -> void:
@@ -280,34 +435,47 @@ func _begin_transfer(seat: MapGenerator.MapNode) -> void:
 	var destination: Vector2 = _gear_centers[_selected_gear_id]
 	var surface: Node2D = _gear_surfaces[_selected_gear_id]
 	var local_seat: Vector2 = _seat_position(CogNavigationGenerator.seat_index_from_node(seat.id)) - Vector2.ONE * GEAR_SIZE * 0.5
-	_transfer_end = destination + local_seat.rotated(surface.rotation) * _map_zoom
-	_transfer_start = destination + Vector2(0.0, GEAR_SIZE * 0.7) * _map_zoom
+	_transfer_end = destination + local_seat.rotated(surface.rotation)
+	_transfer_start = destination + Vector2(0.0, GEAR_SIZE * 0.7)
 	if not _current_gear_id.is_empty():
 		var current_surface: Node2D = _gear_surfaces[_current_gear_id]
 		var current_marker: Sprite2D = current_surface.get_node("ExecutionerMarker") as Sprite2D
-		_transfer_start = _gear_centers[_current_gear_id] + current_marker.position.rotated(current_surface.rotation) * _map_zoom
+		_transfer_start = _gear_centers[_current_gear_id] + current_marker.position.rotated(current_surface.rotation)
 		current_marker.visible = false
-	_transfer_bend = (_transfer_start + _transfer_end) * 0.5 + Vector2(0.0, -36.0) * _map_zoom
+	_transfer_bend = (_transfer_start + _transfer_end) * 0.5 + Vector2(0.0, -36.0)
 	_transfer_marker = Sprite2D.new()
 	_transfer_marker.name = "TravellingExecutioner"
-	_transfer_marker.texture = load(EXECUTIONER_ART)
-	_transfer_marker.scale = _sprite_scale(_transfer_marker.texture, 64.0) * _map_zoom
+	_transfer_marker.texture = _centered_icon(EXECUTIONER_ART)
+	_transfer_marker.scale = _sprite_scale(_transfer_marker.texture, PLAYER_SIZE)
 	_transfer_marker.position = _transfer_start
 	_transfer_marker.z_index = 8
-	_canvas.add_child(_transfer_marker)
+	_world.add_child(_transfer_marker)
+	var travel_zoom: float = minf(1.75, (_scroll.size.y - 72.0) / GEAR_SIZE)
+	_move_camera(destination, travel_zoom, true, 0.70)
 	_transfer_progress = 0.0
 	var travel := create_tween()
 	travel.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	travel.tween_property(self, "_transfer_progress", 1.0, 0.25 if AudioManager.reduced_motion else 0.70)
-	travel.tween_callback(_resolve_seat.bind(seat))
+	travel.tween_callback(_settle_landing.bind(seat))
+
+
+func _settle_landing(seat: MapGenerator.MapNode) -> void:
+	# Keep the arrival visible before the encounter transition covers the map.
+	_transfer_marker.position = _transfer_end
+	_transfer_progress = 1.0
+	_landing_time = 0.40
+	_seat_markers[seat.id].visible = false
+	var settle := create_tween()
+	settle.tween_interval(0.16 if AudioManager.reduced_motion else 0.38)
+	settle.tween_callback(_resolve_seat.bind(seat))
 
 
 func _add_layer_labels() -> void:
 	for layer_index: int in _map.layers.size():
 		var layer_name: String = "ACT GUARDIAN" if layer_index == _map.layers.size() - 1 else "STAGE %02d" % (layer_index + 1)
-		var label := ScreenDesign.label(_canvas, layer_name, 13, ScreenDesign.MUTED)
+		var label := ScreenDesign.label(_world, layer_name, 13, ScreenDesign.MUTED)
 		# Stage headings stay in the clear rail to the right of the apparatus.
-		label.position = Vector2(_canvas_width * 0.5 + (CogNavigationGenerator.COLUMN_PITCH * 1.5 + GEAR_SIZE * 0.5) * _map_zoom + 24.0, _layer_y(layer_index) + GEAR_SIZE * _map_zoom * 0.5 - 13.0)
+		label.position = Vector2(_canvas_width * 0.5 + CogNavigationGenerator.COLUMN_PITCH * 1.5 + GEAR_SIZE * 0.5 + 24.0, _layer_y(layer_index) + GEAR_SIZE * 0.5 - 13.0)
 		label.size = Vector2(130.0, 26.0)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -316,12 +484,11 @@ func _add_layer_labels() -> void:
 func _add_gear(gear: CogNavigationGenerator.Gear, center: Vector2) -> void:
 	var root := Control.new()
 	root.name = gear.id.replace("-", "_")
-	root.position = center - Vector2.ONE * GEAR_SIZE * _map_zoom * 0.5
+	root.position = center - Vector2.ONE * GEAR_SIZE * 0.5
 	root.size = Vector2.ONE * GEAR_SIZE
-	root.scale = Vector2.ONE * _map_zoom
 	root.mouse_filter = Control.MOUSE_FILTER_PASS
 	root.z_index = 1
-	_canvas.add_child(root)
+	_world.add_child(root)
 	_gear_controls[gear.id] = root
 
 	var clickable := GearChoiceButton.new()
@@ -379,8 +546,8 @@ func _add_gear(gear: CogNavigationGenerator.Gear, center: Vector2) -> void:
 
 	var marker := Sprite2D.new()
 	marker.name = "ExecutionerMarker"
-	marker.texture = load(EXECUTIONER_ART)
-	marker.scale = _sprite_scale(marker.texture, 64.0)
+	marker.texture = _centered_icon(EXECUTIONER_ART)
+	marker.scale = _sprite_scale(marker.texture, PLAYER_SIZE)
 	marker.visible = false
 	surface.add_child(marker)
 	if gear.id == _current_gear_id and _current_node != null:
@@ -389,11 +556,22 @@ func _add_gear(gear: CogNavigationGenerator.Gear, center: Vector2) -> void:
 			var marker_point: Vector2 = _seat_position(current_seat)
 			marker.position = marker_point - Vector2.ONE * GEAR_SIZE * 0.5
 			marker.visible = true
+			_seat_markers[_current_node.id].visible = false
+			var halo := Node2D.new()
+			halo.name = "PlayerSocketHalo"
+			halo.position = marker.position
+			halo.draw.connect(func() -> void:
+				halo.draw_arc(Vector2.ZERO, 23.0, 0.0, TAU, 48, Color("8ce6e8"), 1.5, true)
+			)
+			surface.add_child(halo)
+			surface.move_child(marker, surface.get_child_count() - 1)
 
 	_gear_surfaces[gear.id] = surface
 
 
 func _draw_links(layer: Control) -> void:
+	if _landing_time > 0.0:
+		layer.draw_arc(_transfer_end, 25.0 + (0.40 - _landing_time) * 12.0, 0.0, TAU, 48, Color("f1cc7f", _landing_time * 1.5), 1.5, true)
 	for gear_id: String in _gears:
 		var gear: CogNavigationGenerator.Gear = _gears[gear_id]
 		var from_center: Vector2 = _gear_centers.get(gear_id, Vector2.ZERO)
@@ -415,12 +593,10 @@ func _layout() -> void:
 	_scroll.anchor_top = 0.0
 	_scroll.offset_top = maxf(162.0, _route_hint.offset_bottom + 14.0)
 	_scroll.offset_bottom = -194.0
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	var desired_width: float = maxf(CANVAS_MIN_WIDTH, get_viewport_rect().size.x - 128.0)
-	if not _gears.is_empty() and (absf(desired_width - _canvas_width) > 1.0 or _overview):
-		_build_map()
-		_update_destination_summary()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	if not _gears.is_empty():
+		_scroll_to_current_layer.call_deferred()
 
 
 func _layout_route_hint() -> void:
@@ -434,25 +610,23 @@ func _layout_route_hint() -> void:
 
 
 func _scroll_to_current_layer() -> void:
-	# Scroll ranges update after the overview/follow canvas is laid out. Applying
-	# the offset earlier clamps it to the previous (overview) range of zero.
+	# Framing uses the settled viewport, including large-text header/footer size.
 	await get_tree().process_frame
 	await get_tree().process_frame
 	if not is_instance_valid(_scroll):
 		return
-	var layer_index: int = 0 if _current_node == null else _current_node.row
-	var target: int = 0 if _overview else maxi(0, roundi(_layer_y(layer_index) + GEAR_SIZE * 0.5 - _scroll.size.y * 0.76))
-	_scroll.scroll_vertical = target
+	if not _manual_pan:
+		_focus_decision(_camera_initialized)
 
 
 func _position_for_gear(layer_index: int, gear_index: int) -> Vector2:
 	var y: float = _layer_y(layer_index) + GEAR_SIZE * 0.5
 	var gear: CogNavigationGenerator.Gear = _gears[_map.layers[layer_index][gear_index]]
-	return Vector2(_canvas_width * 0.5 + gear.machine_position.x * _map_zoom, y - GEAR_SIZE * (1.0 - _map_zoom) * 0.5)
+	return Vector2(_canvas_width * 0.5 + gear.machine_position.x, y)
 
 
 func _layer_y(layer_index: int) -> float:
-	return (GEAR_TOP + float(_map.layers.size() - 1 - layer_index) * GEAR_PITCH_Y) * _map_zoom
+	return GEAR_TOP + float(_map.layers.size() - 1 - layer_index) * GEAR_PITCH_Y
 
 
 func _seat_position(seat_index: int) -> Vector2:
@@ -461,14 +635,14 @@ func _seat_position(seat_index: int) -> Vector2:
 
 
 func _on_gear_selected(gear_id: String) -> void:
-	if _travel_locked or not _reachable_gears.has(gear_id):
+	if _travel_locked or _dragging or _suppress_map_click or not _reachable_gears.has(gear_id):
 		return
 	_selected_gear_id = gear_id
 	for current_id: String in _gear_controls:
 		_apply_gear_state(current_id)
 	_update_destination_summary()
 	if not _overview:
-		_scroll_to_current_layer()
+		_focus_decision(true)
 
 
 func _apply_gear_state(gear_id: String) -> void:
@@ -480,9 +654,10 @@ func _apply_gear_state(gear_id: String) -> void:
 	var button: Button = _gear_buttons[gear_id]
 	button.disabled = not reachable
 	button.focus_mode = Control.FOCUS_ALL if reachable else Control.FOCUS_NONE
-	button.tooltip_text = "Destination gear · click to select this route" if reachable and not selected else ("Current location" if current else "This wheel lies beyond your available routes")
+	var location: String = "Selected route" if selected else ("Destination wheel" if reachable else ("Current location" if current else "Upcoming wheel"))
+	button.tooltip_text = "%s · Stage %02d\nSeat 1: %s\nSeat 2: %s\nSeat 3: %s" % [location, gear.layer + 1, NODE_NAMES[gear.seats[0].type], NODE_NAMES[gear.seats[1].type], NODE_NAMES[gear.seats[2].type]]
 	var wheel: CogGearView = _gear_surfaces[gear_id].get_node("WheelArt") as CogGearView
-	wheel.modulate = Color.WHITE if reachable else Color(0.72, 0.82, 0.86, 0.86)
+	wheel.modulate = Color.WHITE
 	var pointer: Polygon2D = _gear_controls[gear_id].get_node("ArrivalPointer") as Polygon2D
 	pointer.visible = selected
 	var arrival_angle: float = _arrival_angle(gear_id)
@@ -529,7 +704,7 @@ func _update_destination_summary() -> void:
 
 
 func _update_timing_hint() -> void:
-	if _selected_gear_id.is_empty() or not _gear_surfaces.has(_selected_gear_id):
+	if _travel_locked or _selected_gear_id.is_empty() or not _gear_surfaces.has(_selected_gear_id):
 		return
 	var gear: CogNavigationGenerator.Gear = _gears[_selected_gear_id]
 	var surface: Node2D = _gear_surfaces[_selected_gear_id]
@@ -565,6 +740,10 @@ func _on_advance_pressed() -> void:
 	var signed_error: float = wrapf(pointer_angle - (CogNavigationGenerator.SEAT_ANGLES[seat_index] + surface.rotation), -PI, PI)
 	var final_angle: float = _machine_angle + signed_error / CogNavigationGenerator.rotation_sign(gear.layer)
 	_travel_locked = true
+	_drag_button = MOUSE_BUTTON_NONE
+	_dragging = false
+	_overview = false
+	_focus_decision(true)
 	_advance_button.disabled = true
 	_timing_hint.text = ("CLEAN LANDING  ·  %s" if float(arrival.error) <= PERFECT_WINDOW_RADIANS else "SNAPPED TO NEAREST SEAT  ·  %s") % NODE_NAMES[seat.type]
 	var tween := create_tween()
