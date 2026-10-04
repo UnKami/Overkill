@@ -8,12 +8,13 @@
 
 ## 1. Active Locks
 
-No active reservations remain from the completed 0.43 motion refinement.
+0.44 meshed cog-map correction is active. No 0.43 reservations remain.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
+| Yonatan / Codex | `feat/yonatan-044-meshed-cog-map` | Concept-led bottom-to-top tooth-meshed machine, physical branches and synchronized motion | `scripts/map/cog_navigation_generator.gd`, `scripts/map/cog_navigation_test.gd`, `scripts/ui/cog_map_screen.gd`, `scripts/ui/cog_gear_view.gd`, `scripts/ui/release_screen_audit.gd`, `scenes/cog_map_screen.tscn`, `scripts/autoload/game_flow.gd`, `scripts/autoload/run_manager.gd`, `scripts/run/resume_checkpoint_test.gd`, `VERSION`, `project.godot`, `README.md`, `installer/README.md`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `ACTIVE_WORK.md`, `docs/encounter-044.md`, `docs/cog-machine-layout.md` | 2026-10-04 |
 
 Published playtest: [v0.43.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.43.0-test), exact tested source `45367f8991bec1e6f01ac9ca090d2b64a5474431`. Documentation PR [#29](https://github.com/UnKami/Overkill/pull/29) is merged. Reviewed motion integration is tracked in source PR [#28](https://github.com/UnKami/Overkill/pull/28); GitHub records its current merge status. The previous 0.42 source and documentation PRs (#26 and #27) are merged.
 
