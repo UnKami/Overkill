@@ -1,4 +1,4 @@
-﻿# ACTIVE_WORK.md — Live AI Coordination & Lock Table
+# ACTIVE_WORK.md — Live AI Coordination & Lock Table
 
 > **CRITICAL INSTRUCTION FOR ALL AI ASSISTANTS**:
 > Before making changes, you **MUST inspect this table**.
@@ -8,15 +8,14 @@
 
 ## 1. Active Locks
 
-0.45 focused map camera and refined landings are active. The 0.44 delivery remains available.
+No active reservations remain. The 0.45 focused camera delivery is published and verified.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| Yonatan / Codex | `feat/yonatan-045-follow-map-camera` | Focused tracking camera, draggable planning view, precise seat anchors and map transitions | `scripts/ui/cog_map_screen.gd`, `scenes/cog_map_screen.tscn`, `scripts/map/cog_navigation_generator.gd`, `scripts/map/cog_navigation_test.gd`, `scripts/map/cog_machine_review.gd`, `scripts/ui/release_screen_audit.gd`, `VERSION`, `project.godot`, `README.md`, `installer/README.md`, `UPDATE_LOG.md`, `CHANGELOG_AI.md`, `ACTIVE_WORK.md`, `docs/cog-machine-layout.md`, `docs/encounter-045.md` | 2026-10-04 |
 
-Published playtest: [v0.44.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.44.0-test), exact tested source `333954f87ccf948e0c0c90e6a664895b6eb1aac4`. Reviewed map integration is tracked in source PR [#30](https://github.com/UnKami/Overkill/pull/30); GitHub records its current merge status. The previous 0.42 and 0.43 source/documentation PRs (#26 through #29) are merged. All three 0.44 public downloads, sizes and SHA-256 digests passed verification.
+Published playtest: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test), exact tested source `a6b060de43a5509796e3ad6acbb68c3aa07b5408`. Reviewed camera integration is tracked in source PR [#32](https://github.com/UnKami/Overkill/pull/32); GitHub records its authoritative merge status. The previous 0.42 through 0.44 source/documentation PRs (#26 through #31) are merged. All three 0.45 public downloads, sizes and SHA-256 digests passed verification. Previous releases remain available.
 
 ---
 ## 2. How to Claim a Task (Instructions for Developers & AIs)

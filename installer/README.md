@@ -10,4 +10,4 @@ Compiled installers are attached to GitHub Releases rather than committed as lar
 
 Launch **Overkill** for the 0.45.0 playtest: a close tracking camera follows each climb. Drag to plan ahead, Recenter to return, and catch the nearest socket with precisely anchored player art and a visible landing beat. Existing saves retain their current encounter sequence. The default Compatibility renderer matches native visual testing. See [detailed changes and limitations](../docs/encounter-045.md). Exact source and package verification appear with the release.
 
-Exact gameplay source: see the immutable `v0.45.0-test` tag and release notes. Later changes on `main` do not alter that download. The installer is unsigned; prior releases remain available for rollback.
+Exact gameplay source: `a6b060de43a5509796e3ad6acbb68c3aa07b5408`, immutable `v0.45.0-test` tag, and [reviewed source PR #32](https://github.com/UnKami/Overkill/pull/32). Later changes on `main` do not alter that download. The installer is unsigned; prior releases remain available for rollback.

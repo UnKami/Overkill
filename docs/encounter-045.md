@@ -30,3 +30,10 @@ The immutable `v0.45.0-test` tag identifies the exact tested download from
 source/export tests, visual/input checks, installation and public download hashes.
 Previous releases remain available. This unsigned playtest does not claim final
 human visual approval, a full human campaign or a realtime FPS target.
+
+The exact exported build passed eight regression suites, seven-stage movement
+review (212 checks), and four screen presets (288 captures / 744 checks). All
+24 screen sheets and the movement captures were visually inspected. Actual
+mouse/keyboard planning, Recenter and advancement reached the real prebattle
+offer. Isolated installation, installed payload hashes and uninstall passed;
+all three public downloads and their sizes/SHA-256 digests are verified.
