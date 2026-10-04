@@ -10,7 +10,10 @@ const MESH_DISTANCE: float = 260.0
 const CONTACT_ANGLE: float = PI * 7.0 / 24.0
 const COLUMN_PITCH: float = 2.0 * MESH_DISTANCE * cos(CONTACT_ANGLE)
 const ROW_PITCH: float = MESH_DISTANCE * sin(CONTACT_ANGLE)
-const SEAT_ANGLES: Array[float] = [-PI * 0.5, atan2(0.235, 0.255), PI - atan2(0.235, 0.255)]
+# Centers of the three circular transparent sockets in the canonical faceplate.
+# Timing, event icons and the player use these same measured art coordinates.
+const SEAT_CENTERS: Array[Vector2] = [Vector2(0.4994, 0.1737), Vector2(0.8017, 0.6529), Vector2(0.1970, 0.6528)]
+const SEAT_ANGLES: Array[float] = [atan2(-0.3263, -0.0006), atan2(0.1529, 0.3017), atan2(0.1528, -0.3030)]
 
 
 class Gear:
