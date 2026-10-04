@@ -19,6 +19,8 @@ func _ready() -> void:
 	for legacy: bool in [false, true]:
 		for act: int in range(1, 4):
 			await _boss_checkpoint(act, legacy)
+	for act: int in range(1, 4):
+		await _boss_checkpoint(act, false, true)
 	await _reward_checkpoint()
 	await _prebattle_checkpoint()
 	await _altar_and_final_checkpoint()
@@ -36,12 +38,15 @@ func _reset(act: int = 1) -> void:
 
 
 func _boss_node(act: int, legacy: bool) -> String:
-	return "act%d_row6_node0" % act if legacy else "cogmap-a%d-r7-g0-s0" % act
+	var last_row: int = CogNavigationGenerator.LEGACY_LAYER_GEAR_COUNTS.size() - 1 if RunManager.cog_layout_version == 1 else CogNavigationGenerator.LAYER_GEAR_COUNTS.size() - 1
+	return "act%d_row6_node0" % act if legacy else "cogmap-a%d-r%d-g0-s0" % [act, last_row]
 
 
-func _boss_checkpoint(act: int, legacy: bool) -> void:
+func _boss_checkpoint(act: int, legacy: bool, old_cog: bool = false) -> void:
 	await _clear()
 	_reset(act)
+	if old_cog:
+		RunManager.cog_layout_version = 1
 	RunManager.commit_map_node(_boss_node(act, legacy))
 	var boss: EnemyData = ContentDatabase.get_enemy("act%d_boss" % act)
 	# Genuine pre-checkpoint save migration: no phase or completed-fight flag.

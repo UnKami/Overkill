@@ -2,6 +2,16 @@
 
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
+## 0.44.0 playtest — 2026-10-04
+
+- Rebuilds the map around the concept diamond: sixteen wheels in seven rows, bottom-to-top travel, physically meshed upward/downward teeth, two interior routes and one route on narrowing outer edges. Every wheel uses one shared drive angle with complementary counterrotation. Selection preserves the phase; timed landings move the Executioner along a smooth arc.
+- Adds Overview/Follow framing, contact-facing arrival pointers, circular gear selection and direction/timing shortcuts. Keeps the canonical painted faceplates inside regular native tooth geometry. Same-row clearance avoids triangular external-gear loops.
+- **Installer:** [OverkillSetup-0.44.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.44.0-test/OverkillSetup-0.44.0.exe). **Portable ZIP:** [Overkill-0.44.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.44.0-test/Overkill-0.44.0-Windows.zip). [Release and verification](https://github.com/UnKami/Overkill/releases/tag/v0.44.0-test) · [SHA-256 manifest](https://github.com/UnKami/Overkill/releases/download/v0.44.0-test/OverkillSetup-0.44.0.sha256).
+- **Source:** exact commit identified by immutable tag `v0.44.0-test`, branch `feat/yonatan-044-meshed-cog-map`. Download links become live only after the versioned release is published; source and documentation review links will be recorded at delivery.
+- **Compatibility:** existing cog saves preserve their current eight-stage encounters and seat IDs, then adopt seven rows in the next act. New runs use seven stages. Legacy route saves remain on their prior map. Shared phase and layout version are additive save fields. Combat/relic values and the 0.43 Blender motion pipeline are unchanged.
+- **Verification at source freeze:** 8,636 cog geometry/route/save checks, including 48 tooth-polygon collision samples, passed. Seven-stage production transfer fixture passed 156 headless checks and 173 native checks with 17 inspected captures. Four additional save/map/artifact/UI suites passed, including 153 checkpoint assertions. Native mouse entry reached the prebattle choice and battle transition. Export, screen-preset, installer and public-download verification remain required before delivery; their results appear in the release verification report.
+- **Limits:** unsigned playtest; shortened new-run pacing needs human balance review. The transfer fixture marks encounters cleared without fighting; it is not a full campaign. Final human visual approval is not claimed. Selected fixture shutdowns retain a non-fatal ObjectDB notice. Previous releases remain available for rollback.
+
 ## 0.43.0 playtest — 2026-10-04
 
 - Refines the Executioner's joints with continuous hand/ankle IK, bounded elbow flexion, planted anticipation, softer joint weights, smaller crouches and gradual recovery. Blender actions now export at 60 Hz. Weapons follow the wrist and thrown relics follow the hand until release.

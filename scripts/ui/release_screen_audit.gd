@@ -117,7 +117,7 @@ func _maps() -> void:
 		RunManager.act_number = act
 		var cog: CogMapScreen = load("res://scenes/cog_map_screen.tscn").instantiate()
 		await _show(cog)
-		_check(cog._gear_surfaces.size() == 18 and not cog._advance_button.disabled, "Act %d cog route has eighteen gears and an actionable arrival" % act)
+		_check(cog._gear_surfaces.size() == 16 and not cog._advance_button.disabled, "Act %d cog route has the sixteen-gear concept diamond and an actionable arrival" % act)
 		await _capture("cog-act-%d-entrance" % act)
 		var first: MapGenerator.MapNode = (cog._gears[cog._selected_gear_id] as CogNavigationGenerator.Gear).seats[0]
 		RunManager.commit_map_node(first.id)
@@ -126,7 +126,7 @@ func _maps() -> void:
 		_check(resumed._reachable_gears.size() == 2 and resumed._current_node.id == first.id, "Act %d cog resume restores landing and two onward choices" % act)
 		resumed._on_gear_selected(resumed._reachable_gears[1])
 		await _capture("cog-act-%d-branches" % act)
-		resumed._scroll.scroll_vertical = int(resumed._scroll.get_v_scroll_bar().max_value)
+		resumed._scroll.scroll_vertical = 0
 		await _capture("cog-act-%d-guardian" % act)
 		RunManager.current_node_id = ""
 		RunManager.visited_nodes.clear()

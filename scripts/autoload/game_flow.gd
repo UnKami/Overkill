@@ -237,7 +237,7 @@ func resume_saved_run() -> void:
 	# the guardian conservatively, preserving inventory/currency, rather than
 	# skip its fight or strand the player on a node without forward connections.
 	if kind.is_empty():
-		var generated: Dictionary = CogNavigationGenerator.generate(RunManager.seed_value, RunManager.act_number) if RunManager.current_node_id.begins_with("cogmap-") else MapGenerator.generate(RunManager.seed_value, RunManager.act_number)
+		var generated: Dictionary = CogNavigationGenerator.generate(RunManager.seed_value, RunManager.act_number, RunManager.cog_layout_version) if RunManager.current_node_id.begins_with("cogmap-") else MapGenerator.generate(RunManager.seed_value, RunManager.act_number)
 		var node: MapGenerator.MapNode = generated.nodes.get(RunManager.current_node_id) as MapGenerator.MapNode
 		if node != null and node.type == MapGenerator.NodeType.BOSS:
 			var boss: EnemyData = ContentDatabase.get_enemy(node.enemy_id)
