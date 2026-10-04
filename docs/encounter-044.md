@@ -29,6 +29,10 @@ The immutable `v0.44.0-test` tag identifies the exact tested download, assembled
 on `feat/yonatan-044-meshed-cog-map`. [Layout and save details](cog-machine-layout.md)
 explain the geometry. Previous releases remain available for rollback.
 
-The release verification report records source and packaged tests, native screen
-inspection, installer checks and public download hashes. This unsigned playtest
-does not claim final human visual approval or a full human campaign.
+Eight packaged suites passed, including geometry, save recovery, all 29 relics
+and live forecast comparisons. Four exported screen presets passed 288 captures
+and 744 checks; all contact sheets were inspected. Installed payload hashes,
+checkpoint recovery and uninstall passed. All three public downloads match
+their local sizes and SHA-256 hashes. The release includes the detailed report.
+This unsigned playtest does not claim final human visual approval or a full
+human campaign; the shorter encounter pacing still needs human balance review.
