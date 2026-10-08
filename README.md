@@ -1,6 +1,18 @@
 # Overkill
 
-## Download and test
+## Latest character playtest - 0.50.0
+
+**[Download the Windows installer - Meshy lighting playtest](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe)**
+
+[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Windows.zip) · [Release notes, screenshot and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test) · [Editable Meshy assets](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Meshy-Assets.zip)
+
+This **focused battle preview** adds the Meshy hero, clock entrance, directional cyan/fire lighting, metal reflections and grounding shadows. It opens directly into a playable battle and uses a separate install/save folder. Attack/hit/death gestures are still interim; this is not a full-campaign update. [Changes, verification and limits](docs/encounter-050.md).
+
+The downloadable prerelease is built from [exact source 0b675b5](https://github.com/UnKami/Overkill/commit/0b675b5af4ddd7246637210d52f14af27d62bd65) on `feat/yonatan-meshy-character`, tagged `v0.50.0-test`. **Main has download documentation only; this experimental gameplay has not been merged.** Extract the editable asset ZIP into the tagged source checkout to reproduce the model import.
+
+
+
+## Previous full-game release - 0.45.0
 
 **[Download the Windows installer — 0.45.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**
 

@@ -1,5 +1,19 @@
 # Windows installers
 
+## Latest character playtest - 0.50.0
+
+**[Download OverkillSetup-0.50.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe)**
+
+[Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Windows.zip) · [Release and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test)
+
+Installs **Overkill Meshy Preview** separately and opens directly into the battle. Choose relics normally; use Restart battle preview or Play again to replay it. Existing Overkill saves are untouched. The portable ZIP needs Overkill.exe and Overkill.pck together; no Godot installation is needed.
+
+This is a focused character/lighting prerelease with interim combat gestures. [Scope and verification](../docs/encounter-050.md). Source: `0b675b5af4ddd7246637210d52f14af27d62bd65`, branch `feat/yonatan-meshy-character`, tag `v0.50.0-test`. Main's gameplay remains unchanged. The installer is unsigned.
+
+## Previous full-game playtest - 0.45.0
+
+
+
 **[Download OverkillSetup-0.45.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**
 
 [Portable game folder ZIP](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/Overkill-0.45.0-Windows.zip) · [44-second gameplay trailer](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test) · [Update log](../UPDATE_LOG.md)
