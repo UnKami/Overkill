@@ -8,7 +8,6 @@
 
 ## 1. Active Locks
 
-No active reservations remain. The 0.45 focused camera delivery is published and verified.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
@@ -43,3 +42,6 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Cards & Content Data** | `data/cards/`, `data/relics/`, `data/enemies/` | Adding new cards, balance adjustments, new relic effects |
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
 | **Audio & SFX** | `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
+
+
+2026-10-08: User explicitly authorized publishing the polished Meshy release. The prior hold is lifted for this release only.

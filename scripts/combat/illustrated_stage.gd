@@ -21,7 +21,7 @@ func _process(_delta: float) -> void:
 		var height: float = maxf(0.0, shadow.position.y - feet.y)
 		var grounded: float = clampf(1.0-height/90.0,0.45,1.0)
 		shadow.scale = Vector2(lerpf(0.72,1.0,grounded),lerpf(0.6,1.0,grounded))
-		shadow.modulate.a = actor.modulate.a*grounded
+		shadow.modulate.a = actor.modulate.a * actor._front.modulate.a * grounded
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -29,7 +29,7 @@ func _ready() -> void:
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
-	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
+	var actor: IllustratedActor = preload("res://scripts/combat/meshy_battle_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
 		actor.target_height = 432.0
@@ -43,7 +43,11 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 		var angle: float = TAU * i / 32.0
 		points.append(Vector2(cos(angle) * 82, sin(angle) * 11))
 	shadow.polygon = points
-	shadow.color = Color(0.015,0.02,0.025,0.38)
+	if facing > 0.0:
+		var contact_material: ShaderMaterial = ShaderMaterial.new()
+		contact_material.shader = preload("res://assets/shaders/meshy_contact_shadow.gdshader")
+		shadow.material = contact_material
+	shadow.color = Color.WHITE if facing > 0.0 else Color(0.015,0.02,0.025,0.38)
 	shadow.position = at + Vector2(276,574)
 	add_child(shadow)
 	add_child(actor)
@@ -149,6 +153,11 @@ func reveal_combatant(from_player: bool) -> void:
 	actor.show()
 	if shadow != null: shadow.show()
 	actor.modulate.a = 1.0
+	if from_player and actor.has_method("begin_entrance"):
+		var battle: Node = get_parent().get_parent().get_parent()
+		var clock: Control = battle.get_node("CombatArena/PlayerChronometer")
+		actor.call("begin_entrance", clock.global_position + Vector2(clock.size.x * 0.5, clock.size.y * 0.25))
+		return
 	if AudioManager.reduced_motion: return
 	actor.scale = Vector2(0.82, 0.82)
 	actor.modulate.a = 0.0

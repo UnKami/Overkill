@@ -1,0 +1,82 @@
+{
+  "inputs": {
+    "Meshy_AI_Clockwork_Rogue_Chara_1007234329_image-to-3d-texture.glb": "372068c1d42dd33dcd13498e0bfc80a13b3c630c917720d19fa77757bc075f45",
+    "Meshy_AI_Clockwork_Rogue_Remes_1007234314_texture.glb": "161fa179d799d4a56a89986256f21cb32a3e2ed9a6b86d2566baa3e1e93900d4",
+    "Meshy_AI_Clockwork_Rogue_Rigge_All_Animations.glb": "29a6f74b3fcbabdb585dfca16f52ab2bab90a3b56f1b961b4264bb180751d170"
+  },
+  "scope": "Editable Meshy preparation and deformation review; no live gameplay replacement.",
+  "material_repair": {
+    "uv_triangle_sets_match": true,
+    "rig_geometry_skin_animation_metadata_preserved": true,
+    "restored_maps": [
+      "base_color",
+      "metallic_roughness"
+    ],
+    "normal_map": "Not transferred: original high-poly UV layout differs."
+  },
+  "bone_display_repair": {
+    "rest_matrix_max_difference": 7.62939453125e-06,
+    "joint_count": 23
+  },
+  "locomotion_floor_correction": {
+    "Walking": {
+      "max_upward_correction_m": 0.03430320864915848,
+      "modified_tracks": "Hips translation only; limb motion retained."
+    },
+    "Running": {
+      "max_upward_correction_m": 0.05380882865190506,
+      "modified_tracks": "Hips translation only; limb motion retained."
+    }
+  },
+  "controls": [
+    {
+      "target": "CTRL_LeftHand",
+      "pole": "POLE_LeftArm",
+      "neutral_pole_error_m": 0.0013325156636862898
+    },
+    {
+      "target": "CTRL_LeftFoot",
+      "pole": "POLE_LeftLeg",
+      "neutral_pole_error_m": 0.0006265907260588922
+    },
+    {
+      "target": "CTRL_RightHand",
+      "pole": "POLE_RightArm",
+      "neutral_pole_error_m": 0.002388806348023368
+    },
+    {
+      "target": "CTRL_RightFoot",
+      "pole": "POLE_RightLeg",
+      "neutral_pole_error_m": 0.0006164672907781254
+    }
+  ],
+  "animations": [
+    {
+      "name": "Guard_Raise",
+      "duration_seconds": 1.2
+    },
+    {
+      "name": "Idle",
+      "duration_seconds": 3.0
+    },
+    {
+      "name": "Jump_Down",
+      "duration_seconds": 1.8
+    },
+    {
+      "name": "Running",
+      "duration_seconds": 1.0
+    },
+    {
+      "name": "Walking",
+      "duration_seconds": 1.0
+    }
+  ],
+  "limits": [
+    "No finger or cloth deformation bones added in this preparation pass.",
+    "Jump_Down and Guard_Raise are initial motion studies, not final combat choreography.",
+    "No attack or relic-specific interaction clips included yet.",
+    "Normal map from high-poly source requires a separate bake.",
+    "IK controls are for editing in Blender; export uses baked animation."
+  ]
+}

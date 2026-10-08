@@ -1,0 +1,6 @@
+*.glb
+*.glb.import
+/review/
+/source/*.blend*
+/source/*.glb
+meshy_character_texture*.png*
