@@ -497,3 +497,29 @@ Every delivered gameplay update appears here with its installer and matching sou
 ## Distribution documentation — 2026-09-18
 
 Added prominent downloads on the repository homepage and inside `installer/`, this shared update log, and mandatory release handoff instructions for future assistants. Same 0.13.0 game binaries; no gameplay change.
+
+## 2026-10-08 - Meshy character preparation (local asset candidate)
+- Version: no playable version bump. Existing downloadable build remains [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test), [installer](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe).
+- Branch: `feat/yonatan-meshy-character`; no release tag or new installer. Editable Meshy source, restored materials, five animation clips, and isolated review delivered locally in `character 3d concept image - meshi/Prepared_Meshy_Character/`.
+- Save compatibility: gameplay and player saves unchanged; standalone review has no gameplay autoloads.
+- Verification: 149 saved-source checks; native 23-bone/five-clip import and 300-frame playback; exact delivered-project startup; video decode; original input hashes unchanged.
+- Known limits: first jump/guard studies, no finger/cloth extension or complete combat/entrance choreography, no live actor replacement, no production/FPS acceptance. Publication hold retained; this is not a delivered gameplay release. Details: `docs/meshy-character.md` on the feature branch.
+## 2026-10-08 - 0.49.0-meshy-preview (LOCAL ONLY)
+Meshy hero is integrated into the actual battle arena with clock entrance, hand anchors and playable relic choices.
+Branch: feat/yonatan-meshy-character. Exact local commit and asset hashes: SOURCE_COMMIT.txt and SHA256.json in Prepared_Meshy_Character/Battle_Preview_0.49.0.
+Windows executable/PCK and Overkill-Meshy-Preview-0.49.0.exe are available locally in that folder.
+Save compatibility: independent Overkill-Meshy-Preview user directory; existing game saves are untouched.
+Verification: native exported payload passed 29 relic timing checks, guard selection/resolution, 6-damage strike, both playback speeds, reduced-motion entry, death and replay rendering. Installer compiled, not installed.
+Known limits: interim combat gestures, baseline relic props/enemy, no full campaign/FPS review, excludes other unpublished 0.46-0.48 work.
+Publication remains blocked by the existing hold; no release URL or default-branch download-link update exists for this preview.
+Current public installer: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+
+## 2026-10-08 - 0.50.0 Meshy lighting battle playtest
+
+- Changes: Meshy hero in the real battle arena, clock entrance, cyan and firelight directions, environment reflections for metal, self-shadowing and soft contact shadow.
+- [Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Windows.zip) · [Release / checksums / editable assets](https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test).
+- Source: `0b675b5af4ddd7246637210d52f14af27d62bd65`; `v0.50.0-test`; `feat/yonatan-meshy-character`. Gameplay stays on the feature branch; main receives documentation links only.
+- Saves: independent Overkill-Meshy-Preview profile and installer identity; existing Overkill saves and previous releases preserved.
+- Verification: source and exported native checks passed; 29 relic contacts/recoveries; real guard resolution; 6-damage strike; simultaneous-hit handling at both speeds; reduced-motion entry; death/replay; reviewed 720p and 1080p lighting captures. Installer compiled. All five published asset sizes/SHA-256 digests matched and download endpoints returned HTTP 200. Portable executable/PCK entries matched the tested files.
+- Limits: focused battle preview, not full campaign; interim attack/hit/death gestures and baseline enemy/relic presentation. Installation/uninstallation, full human playthrough and stable FPS are not certified. The unsigned installer may trigger Windows warnings.
+- Publication was explicitly authorized for this release, superseding the earlier hold. [Detailed notes](docs/encounter-050.md).
