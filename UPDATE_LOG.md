@@ -497,3 +497,10 @@ Every delivered gameplay update appears here with its installer and matching sou
 ## Distribution documentation — 2026-09-18
 
 Added prominent downloads on the repository homepage and inside `installer/`, this shared update log, and mandatory release handoff instructions for future assistants. Same 0.13.0 game binaries; no gameplay change.
+
+## 2026-10-08 - Meshy character preparation (local asset candidate)
+- Version: no playable version bump. Existing downloadable build remains [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test), [installer](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe).
+- Branch: `feat/yonatan-meshy-character`; no release tag or new installer. Editable Meshy source, restored materials, five animation clips, and isolated review delivered locally in `character 3d concept image - meshi/Prepared_Meshy_Character/`.
+- Save compatibility: gameplay and player saves unchanged; standalone review has no gameplay autoloads.
+- Verification: 149 saved-source checks; native 23-bone/five-clip import and 300-frame playback; exact delivered-project startup; video decode; original input hashes unchanged.
+- Known limits: first jump/guard studies, no finger/cloth extension or complete combat/entrance choreography, no live actor replacement, no production/FPS acceptance. Publication hold retained; this is not a delivered gameplay release. Details: `docs/meshy-character.md` on the feature branch.

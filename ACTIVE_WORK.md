@@ -8,7 +8,6 @@
 
 ## 1. Active Locks
 
-No active reservations remain. The 0.45 focused camera delivery is published and verified.
 
 The prior 0.41 rows were coordination reservations required by this repository, not Windows/Godot file locks or technical release restrictions. They were cleared at Yonatan's request. Both divergent source histories and the cog-map work are preserved in the reviewed 0.42 integration.
 
