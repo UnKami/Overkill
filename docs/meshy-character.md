@@ -58,3 +58,10 @@ installer/meshy-preview.iss with Inno Setup 6. The installer has a separate AppI
 
 
 Verification: final exported Windows runtime exited 0 with MESHY_BATTLE_QA_OK; stderr empty. Controlled guard offer exercised the actual selection/resolution path (75 HP unchanged, 7 Block absorbed 4, leaving 3; turn advanced to 2). The strike applied exactly 6 enemy HP damage. All 29 markers/recoveries, simultaneous hits at both speeds, actual hand anchors, reduced-motion entrance skip and death completion passed. Native 1440x810 captures of perch, drop, ready battlefield, guard result and replay panel were inspected. Installer compilation and packaged hashes are recorded with the local delivery; no installer installation, full campaign or stable FPS claim.
+
+## Lighting release 0.50.0
+The user authorized publication on 2026-10-08. The hold no longer applies to this release.
+The transparent 3D world now supplies a cyan/warm reflection sky for metal, three directional lights with self-shadowing, reduced ambient fill, and a soft canvas contact shadow. No material map or combat rule changed.
+The battle remains a focused preview with separate saves. See encounter-050.md for release scope and unfinished animation work.
+
+Final 0.50.0 source and exported native checks passed with empty stderr. Native lighting captures were inspected at 1280x720 and 1920x1080. The 29-profile timing suite, actual guard choice, 6-damage strike, hand anchors, both speeds, reduced-motion entrance skip, death completion and replay remained correct.

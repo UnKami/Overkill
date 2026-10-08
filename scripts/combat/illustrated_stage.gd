@@ -21,7 +21,7 @@ func _process(_delta: float) -> void:
 		var height: float = maxf(0.0, shadow.position.y - feet.y)
 		var grounded: float = clampf(1.0-height/90.0,0.45,1.0)
 		shadow.scale = Vector2(lerpf(0.72,1.0,grounded),lerpf(0.6,1.0,grounded))
-		shadow.modulate.a = actor.modulate.a*grounded
+		shadow.modulate.a = actor.modulate.a * actor._front.modulate.a * grounded
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -43,7 +43,11 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 		var angle: float = TAU * i / 32.0
 		points.append(Vector2(cos(angle) * 82, sin(angle) * 11))
 	shadow.polygon = points
-	shadow.color = Color(0.015,0.02,0.025,0.38)
+	if facing > 0.0:
+		var contact_material: ShaderMaterial = ShaderMaterial.new()
+		contact_material.shader = preload("res://assets/shaders/meshy_contact_shadow.gdshader")
+		shadow.material = contact_material
+	shadow.color = Color.WHITE if facing > 0.0 else Color(0.015,0.02,0.025,0.38)
 	shadow.position = at + Vector2(276,574)
 	add_child(shadow)
 	add_child(actor)
@@ -160,4 +164,3 @@ func reveal_combatant(from_player: bool) -> void:
 	var reveal := actor.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	reveal.tween_property(actor, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	reveal.tween_property(actor, "modulate:a", 1.0, 0.16)
-

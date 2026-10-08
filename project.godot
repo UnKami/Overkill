@@ -13,7 +13,7 @@ config_version=5
 config/name="Overkill Meshy Preview"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Overkill-Meshy-Preview"
-config/version="0.49.0-meshy-preview"
+config/version="0.50.0"
 run/main_scene="res://scenes/meshy_battle_preview.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/image="res://assets/screens/cinematic/loading_crystalline_passage.png"
@@ -53,4 +53,3 @@ import/use_multiple_threads=false
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-

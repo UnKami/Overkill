@@ -978,3 +978,11 @@ This file provides asynchronous context sharing between developers and their AI 
 - Publication: existing hold retained. GitHub release, reviewed default-branch download-link PR and remote asset verification are pending; this is not a delivered public gameplay update. Existing v0.45.0-test remains the public installer.
 - Locks released for this Meshy integration.
 
+
+## 2026-10-08 | Yonatan / Codex - Meshy lighting release 0.50.0
+- Branch: feat/yonatan-meshy-character. User explicitly authorized lighting polish and GitHub release; prior hold lifted for this release.
+- Completed: cyan/warm directional lighting, metal environment reflections, reduced ambient fill, self-shadowing and a soft grounded contact shadow with visibility fade. Prepared skin/material maps and combat mechanics unchanged.
+- Files: scripts/combat/meshy_battle_actor.gd, illustrated_stage.gd, meshy_battle_preview.gd; assets/shaders/meshy_contact_shadow.gdshader; VERSION, project.godot, export_presets.cfg; installer/meshy-preview.iss; scripts/release/publish_meshy_release.ps1; docs/encounter-050.md and meshy-character.md.
+- Verification: source and exported native MESHY_BATTLE_QA_OK, no final stderr, 29 markers/recoveries, guard choice/outcome, 6-damage strike, simultaneous hits at both speeds, reduced-motion entry and death/replay. Lighting captures reviewed at 720p and 1080p.
+- Handoff: focused battle playtest with separate saves, not a full-campaign release. Interim attack/hit/death gestures and baseline relic/enemy presentation remain documented. Full campaign/FPS and installer installation not claimed.
+- Release: v0.50.0-test is prepared for publication from this exact feature commit. Installer, portable ZIP, editable assets ZIP, screenshot and checksum list; remote verification and documentation-only PR follow publication. No gameplay merge into main.

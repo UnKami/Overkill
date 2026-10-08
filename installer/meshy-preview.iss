@@ -2,12 +2,12 @@
 [Setup]
 AppId={{EDD577A6-95C2-476D-8136-BB1E314507B8}
 AppName={#AppName}
-AppVersion=0.49.0
+AppVersion=0.50.0
 DefaultDirName={localappdata}\Overkill Meshy Preview
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=..\build\installer
-OutputBaseFilename=Overkill-Meshy-Preview-0.49.0
+OutputBaseFilename=OverkillSetup-0.50.0
 Compression=lzma2/fast
 SolidCompression=yes
 WizardStyle=modern
@@ -20,4 +20,3 @@ Source: "GODOT-LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Name: "{autodesktop}\Overkill Meshy Preview"; Filename: "{app}\Overkill.exe"
 [Run]
 Filename: "{app}\Overkill.exe"; Description: "Open the Meshy battle preview"; Flags: nowait postinstall skipifsilent
-

@@ -33,8 +33,20 @@ func _ready() -> void:
 	var env: Environment = Environment.new()
 	env.background_mode = Environment.BG_CLEAR_COLOR
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("bccddd")
-	env.ambient_light_energy = 0.45
+	env.ambient_light_color = Color("83b9c7")
+	env.ambient_light_energy = 0.18
+	# Metallic armor needs an environment to reflect; the transparent viewport
+	# otherwise supplies black reflections regardless of the painted arena.
+	var sky_material: ProceduralSkyMaterial = ProceduralSkyMaterial.new()
+	sky_material.sky_top_color = Color("3b6f87")
+	sky_material.sky_horizon_color = Color("b5d3cf")
+	sky_material.ground_horizon_color = Color("8f7862")
+	sky_material.ground_bottom_color = Color("182731")
+	sky_material.sky_energy_multiplier = 0.65
+	sky_material.ground_energy_multiplier = 0.35
+	env.sky = Sky.new()
+	env.sky.sky_material = sky_material
+	env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
 	env_node.environment = env
 	world.add_child(env_node)
 	model = MODEL.instantiate() as Node3D
@@ -45,13 +57,17 @@ func _ready() -> void:
 	animator.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	for clip: String in ["Idle", "Walking", "Running"]:
 		animator.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
-	for spec: Array in [[Vector3(-3,4,4), Color("d8e8ff"), 1.05], [Vector3(3,2,2), Color("fce0bc"), 0.5], [Vector3(0,3,-3), Color("94bdce"), 0.45]]:
+	for spec: Array in [[Vector3(-3,4,2), Color("86dcf0"), 1.5], [Vector3(3,2,-2), Color("ffc07a"), 1.8], [Vector3(0,2,4), Color("cfddde"), 0.30]]:
 		var light: DirectionalLight3D = DirectionalLight3D.new()
 		world.add_child(light)
 		light.position = spec[0]
 		light.light_color = spec[1]
 		light.light_energy = spec[2]
 		light.look_at(Vector3(0,1,0))
+		light.shadow_enabled = true
+		light.directional_shadow_max_distance = 10.0
+		light.shadow_bias = 0.015
+		light.shadow_normal_bias = 0.2
 	camera = Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera.size = 4.0
@@ -221,6 +237,3 @@ func contact_ready() -> bool:
 
 func set_pose(_frame: int) -> void:
 	pass
-
-
-

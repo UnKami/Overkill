@@ -71,6 +71,11 @@ func _verify() -> void:
 	battle._choice_overlay.hide()
 	await get_tree().create_timer(.4).timeout
 	await _capture("04-battlefield")
+	for resolution: Vector2i in [Vector2i(1280,720), Vector2i(1920,1080)]:
+		get_window().size = resolution
+		await get_tree().create_timer(.3).timeout
+		await _capture("lighting-%dx%d" % [resolution.x, resolution.y])
+	get_window().size = Vector2i(1440,810)
 	# Controlled QA offer; the interactive preview keeps the real random draft.
 	var chosen_guard: ClockRelicData = ContentDatabase.get_clock_relic("REL-04")
 	battle.current_draft_selection.assign([chosen_guard])
@@ -128,10 +133,3 @@ func _verify() -> void:
 	_finished("PREVIEW COMPLETE")
 	await _capture("07-replay")
 	get_tree().quit()
-
-
-
-
-
-
-

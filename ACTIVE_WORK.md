@@ -43,3 +43,6 @@ To minimize any possibility of merge conflicts in Godot, the following domains a
 | **Frontend Menus & UI** | `scenes/title_screen.tscn`, `scenes/deck_view.tscn`, `scripts/ui/` | Screen polish, animations, settings, audio integration |
 | **Audio & SFX** | `scripts/autoload/audio_manager.gd`, `assets/audio/` | Sound buses, event triggers, music switching |
 
+
+| Yonatan / Codex lighting release | feat/yonatan-meshy-character | Authorized Meshy lighting polish and GitHub prerelease | scripts/combat/meshy_battle_actor.gd; scripts/combat/illustrated_stage.gd; scripts/combat/meshy_battle_preview.gd; assets/shaders/meshy_contact_shadow.gdshader; scripts/release/publish_meshy_release.ps1; docs/meshy-character.md; docs/encounter-050.md; VERSION; project.godot; export_presets.cfg; installer/meshy-preview.iss; README.md; installer/README.md | 2026-10-08 |
+2026-10-08: User explicitly authorized publishing the polished Meshy release. The prior hold is lifted for this release only.
