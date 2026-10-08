@@ -12,8 +12,6 @@ This is a focused character/lighting prerelease with interim combat gestures. [S
 
 ## Previous full-game playtest - 0.45.0
 
-
-
 **[Download OverkillSetup-0.45.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**
 
 [Portable game folder ZIP](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/Overkill-0.45.0-Windows.zip) · [44-second gameplay trailer](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test) · [Update log](../UPDATE_LOG.md)

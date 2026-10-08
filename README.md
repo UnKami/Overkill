@@ -10,8 +10,6 @@ This **focused battle preview** adds the Meshy hero, clock entrance, directional
 
 The downloadable prerelease is built from [exact source 0b675b5](https://github.com/UnKami/Overkill/commit/0b675b5af4ddd7246637210d52f14af27d62bd65) on `feat/yonatan-meshy-character`, tagged `v0.50.0-test`. **Main has download documentation only; this experimental gameplay has not been merged.** Extract the editable asset ZIP into the tagged source checkout to reproduce the model import.
 
-
-
 ## Previous full-game release - 0.45.0
 
 **[Download the Windows installer — 0.45.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**
