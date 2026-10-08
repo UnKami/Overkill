@@ -29,7 +29,7 @@ func _ready() -> void:
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
-	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
+	var actor: IllustratedActor = preload("res://scripts/combat/meshy_battle_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
 		actor.target_height = 432.0
@@ -149,9 +149,15 @@ func reveal_combatant(from_player: bool) -> void:
 	actor.show()
 	if shadow != null: shadow.show()
 	actor.modulate.a = 1.0
+	if from_player and actor.has_method("begin_entrance"):
+		var battle: Node = get_parent().get_parent().get_parent()
+		var clock: Control = battle.get_node("CombatArena/PlayerChronometer")
+		actor.call("begin_entrance", clock.global_position + Vector2(clock.size.x * 0.5, clock.size.y * 0.25))
+		return
 	if AudioManager.reduced_motion: return
 	actor.scale = Vector2(0.82, 0.82)
 	actor.modulate.a = 0.0
 	var reveal := actor.create_tween().set_parallel(true).set_speed_scale(AudioManager.combat_animation_speed_scale())
 	reveal.tween_property(actor, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	reveal.tween_property(actor, "modulate:a", 1.0, 0.16)
+

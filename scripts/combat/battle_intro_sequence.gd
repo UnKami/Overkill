@@ -50,6 +50,7 @@ func play() -> void:
 	_spawn_ground_burst(_battle._enemy_portrait, Color("e08b69"))
 	await get_tree().create_timer(0.14 / speed).timeout
 	await _reveal_status(_battle._enemy_portrait, _enemy_target_hp, speed)
+	if _stage.has_method("await_player_recovery"): await _stage.await_player_recovery()
 	_battle._battle_info.show()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	queue_free()
@@ -136,3 +137,4 @@ func _spawn_ground_burst(portrait: Control, color: Color) -> void:
 	pulse.tween_property(burst, "scale", Vector2(1.35, 1.0), 0.28).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	pulse.tween_property(burst, "modulate:a", 0.0, 0.30).set_delay(0.06)
 	pulse.chain().tween_callback(burst.queue_free)
+

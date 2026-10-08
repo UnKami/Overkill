@@ -30,3 +30,31 @@ This branch contains the preparation/validation scripts, isolated review scene/s
 The model is now an editable animation base. Individual finger articulation, independent coat/scarf rigging, joint/garment self-intersection cleanup, hand grips, complete entrance choreography, attacks, hit reactions, relic-specific motion, and live combat integration remain. The high-poly normal map uses a different UV layout and must be baked before it can be transferred. Bounds tests do not prove that all self-intersections are absent. Visual quality and complete motion acceptance remain open.
 
 No gameplay release was built or published. Existing public installer: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test). Existing publication/push/merge hold is preserved.
+## In-game preview integration (2026-10-08)
+The isolated branch now substitutes MeshyBattleActor for the player in IllustratedStage.
+The real CombatController, nine-socket clocks, relic choices, enemies and combat math remain unchanged.
+The preview boots directly into a disposable seeded encounter; choices remain user controlled.
+The title is Overkill Meshy Preview and user data is isolated in Overkill-Meshy-Preview.
+The older dirty working checkout and reserved relic scripts are not integration inputs.
+
+The actor uses a transparent 960px SubViewport, original 23-joint skin and prepared material maps.
+Idle, Walking and Jump_Down provide the perch/drop/walk entrance. The intro waits for the
+actor to settle before opening choices; reduced motion skips the entrance.
+Hand/chest/head anchors project actual skeleton joints into the existing effect canvas.
+The prepared Guard_Raise clip and small bone overlays provide interim combat gestures.
+Attack contact and recovery use existing relic markers. Hit feedback cannot cancel outgoing contact.
+
+Limitations: this is the first in-game visual preview, not a completed combat animation library.
+Specific weapon grips, fingers, cloth, polished recovery blends, death animation and relic-specific
+motion still need authored work. Relic props retain the baseline 2D choreography.
+The preview is based on clean main plus the character branch, not the other unpublished 0.46-0.48 work.
+Existing publication/push/merge hold remains in force; no public release is claimed.
+
+Run source: Godot --path <worktree> (main scene opens the battle).
+Native verification: add -- --qa (test-only, exits after assertions and captures).
+Local installer recipe: export the Windows Desktop pack to build/windows/Overkill.pck,
+copy the tested Godot 4.5.1 runtime to build/windows/Overkill.exe, then compile
+installer/meshy-preview.iss with Inno Setup 6. The installer has a separate AppId and user directory.
+
+
+Verification: final exported Windows runtime exited 0 with MESHY_BATTLE_QA_OK; stderr empty. Controlled guard offer exercised the actual selection/resolution path (75 HP unchanged, 7 Block absorbed 4, leaving 3; turn advanced to 2). The strike applied exactly 6 enemy HP damage. All 29 markers/recoveries, simultaneous hits at both speeds, actual hand anchors, reduced-motion entrance skip and death completion passed. Native 1440x810 captures of perch, drop, ready battlefield, guard result and replay panel were inspected. Installer compilation and packaged hashes are recorded with the local delivery; no installer installation, full campaign or stable FPS claim.

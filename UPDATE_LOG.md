@@ -504,3 +504,13 @@ Added prominent downloads on the repository homepage and inside `installer/`, th
 - Save compatibility: gameplay and player saves unchanged; standalone review has no gameplay autoloads.
 - Verification: 149 saved-source checks; native 23-bone/five-clip import and 300-frame playback; exact delivered-project startup; video decode; original input hashes unchanged.
 - Known limits: first jump/guard studies, no finger/cloth extension or complete combat/entrance choreography, no live actor replacement, no production/FPS acceptance. Publication hold retained; this is not a delivered gameplay release. Details: `docs/meshy-character.md` on the feature branch.
+## 2026-10-08 - 0.49.0-meshy-preview (LOCAL ONLY)
+Meshy hero is integrated into the actual battle arena with clock entrance, hand anchors and playable relic choices.
+Branch: feat/yonatan-meshy-character. Exact local commit and asset hashes: SOURCE_COMMIT.txt and SHA256.json in Prepared_Meshy_Character/Battle_Preview_0.49.0.
+Windows executable/PCK and Overkill-Meshy-Preview-0.49.0.exe are available locally in that folder.
+Save compatibility: independent Overkill-Meshy-Preview user directory; existing game saves are untouched.
+Verification: native exported payload passed 29 relic timing checks, guard selection/resolution, 6-damage strike, both playback speeds, reduced-motion entry, death and replay rendering. Installer compiled, not installed.
+Known limits: interim combat gestures, baseline relic props/enemy, no full campaign/FPS review, excludes other unpublished 0.46-0.48 work.
+Publication remains blocked by the existing hold; no release URL or default-branch download-link update exists for this preview.
+Current public installer: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+
