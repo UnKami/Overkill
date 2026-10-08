@@ -986,3 +986,13 @@ This file provides asynchronous context sharing between developers and their AI 
 - Verification: source and exported native MESHY_BATTLE_QA_OK, no final stderr, 29 markers/recoveries, guard choice/outcome, 6-damage strike, simultaneous hits at both speeds, reduced-motion entry and death/replay. Lighting captures reviewed at 720p and 1080p.
 - Handoff: focused battle playtest with separate saves, not a full-campaign release. Interim attack/hit/death gestures and baseline relic/enemy presentation remain documented. Full campaign/FPS and installer installation not claimed.
 - Release: v0.50.0-test is prepared for publication from this exact feature commit. Installer, portable ZIP, editable assets ZIP, screenshot and checksum list; remote verification and documentation-only PR follow publication. No gameplay merge into main.
+
+## 2026-10-08 | Yonatan / Codex - 0.50.0 publication verified
+- Published prerelease: https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test
+- Exact tested/tagged gameplay source: 0b675b5af4ddd7246637210d52f14af27d62bd65. Draft source PR: https://github.com/UnKami/Overkill/pull/34 (not merged).
+- All five public assets returned HTTP 200 and matching GitHub/local byte sizes and SHA-256 digests. Portable archive executable and PCK matched the tested files.
+- Installer: OverkillSetup-0.50.0.exe, 388966735 bytes, SHA-256 e90fadf70f1cb72f34516fcf87185a07617e7938d95b812c3aa102a8ea7efeed.
+- Documentation-only PR https://github.com/UnKami/Overkill/pull/35 reviewed and merged at 8a98d9e8ef471c83c4e94d3fc343bb10d0626abc. Main's README, installer README, UPDATE_LOG and encounter-050 notes verified after merge.
+- Final scope: lighting-polished focused Meshy battle playtest; provisional combat gestures and other limits remain explicit. No gameplay merge, full campaign/FPS claim, or installer-installation claim.
+- All locks for this lighting/release task are released. Prior relic reservations and the other dirty checkout remain preserved.
+

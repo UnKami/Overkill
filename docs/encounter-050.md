@@ -32,3 +32,9 @@ Combat math, relic balance, enemy logic and clock rules are unchanged.
 Attack, hit and death gestures remain interim; individual weapon grips, finger/cloth animation,
 and a complete authored combat library are not finished. Enemy art and relic props retain baseline presentation.
 The installer is unsigned. A full human campaign and stable-FPS certification are not claimed.
+
+## Published build
+Release: https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test
+Exact tested source: 0b675b5af4ddd7246637210d52f14af27d62bd65.
+All five public download endpoints returned HTTP 200 and GitHub asset sizes/SHA-256 digests matched the local packages. Portable executable and PCK archive entries also matched the tested files.
+Source review is draft PR #34; experimental gameplay is not merged into main.

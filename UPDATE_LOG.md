@@ -514,3 +514,12 @@ Known limits: interim combat gestures, baseline relic props/enemy, no full campa
 Publication remains blocked by the existing hold; no release URL or default-branch download-link update exists for this preview.
 Current public installer: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
 
+## 2026-10-08 - 0.50.0 Meshy lighting battle playtest
+
+- Changes: Meshy hero in the real battle arena, clock entrance, cyan and firelight directions, environment reflections for metal, self-shadowing and soft contact shadow.
+- [Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Windows.zip) · [Release / checksums / editable assets](https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test).
+- Source: `0b675b5af4ddd7246637210d52f14af27d62bd65`; `v0.50.0-test`; `feat/yonatan-meshy-character`. Gameplay stays on the feature branch; main receives documentation links only.
+- Saves: independent Overkill-Meshy-Preview profile and installer identity; existing Overkill saves and previous releases preserved.
+- Verification: source and exported native checks passed; 29 relic contacts/recoveries; real guard resolution; 6-damage strike; simultaneous-hit handling at both speeds; reduced-motion entry; death/replay; reviewed 720p and 1080p lighting captures. Installer compiled. All five published asset sizes/SHA-256 digests matched and download endpoints returned HTTP 200. Portable executable/PCK entries matched the tested files.
+- Limits: focused battle preview, not full campaign; interim attack/hit/death gestures and baseline enemy/relic presentation. Installation/uninstallation, full human playthrough and stable FPS are not certified. The unsigned installer may trigger Windows warnings.
+- Publication was explicitly authorized for this release, superseding the earlier hold. [Detailed notes](docs/encounter-050.md).
