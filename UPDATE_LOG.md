@@ -1,6 +1,6 @@
 # Update log
 
-## 2026-10-17 — 0.48.0 Archetype Synergy & Chronometer Depth Overhaul (local; unpublished)
+## 2026-10-17 — 0.48.0 Archetype Synergy & Chronometer Depth Overhaul (playtest release)
 
 Major overhaul of Overkill's relic builds, combat loop, progression economy, and tactical explainability to match the strategic depth, repeatable variety, and instant clarity of *Slay the Spire*.
 
@@ -10,7 +10,7 @@ Major overhaul of Overkill's relic builds, combat loop, progression economy, and
 - **80 Max HP Progression & Economy**: Player Vitality rebalanced to 80 Max HP (StS standard). Starter loadout set to 10 relics (`3x REL-01, 3x REL-04, 1x REL-02, 1x REL-08, 1x REL-13, 1x REL-14`), leaving 2 open slots (10/12). Shop 12/12 inventory bug resolved with an in-place relic replacement picker, plus a new "Dismantle Relic (15 OK)" option. Expanded `EventCatalog` to 6 rich risk/reward events with full-inventory replacement. Boss Zenith relics made 100% free (0 OK), with an optional 20-OK pre-upgrade bonus. Strategic Cog Navigation map routes differentiate Left (aggressive/elites), Center (balanced), and Right (economy/utility) paths.
 - **3D Relic Assets & Choreography**: Validated in Blender 5.2 & Godot 4.7.2. Tightened post-contact choreography in `build_relic_choreography.py` / `relic_tracks.gd`. 280,042 motion checks pass with 0 failures. Includes dedicated handoff notes for future visual AI models (Gemini 4 Argon / ChatGPT 6).
 
-Branch: `feat/yonatan-046-relic-feedback`. [Detailed changes and handoff notes](docs/encounter-048.md). Publication remains held per standing multi-AI protocol; current public download remains [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+Branch: `feat/yonatan-046-relic-feedback`. Exact commit: `421bec75c13e418209e953bbe2ba18af272a0c2e`. Tag: [v0.48.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.48.0-test). Windows installer: [OverkillSetup-0.48.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/OverkillSetup-0.48.0.exe). Portable ZIP: [Overkill-0.48.0-Windows.zip](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/Overkill-0.48.0-Windows.zip). [Detailed changes and handoff notes](docs/encounter-048.md).
 
 ## 2026-10-08 — 0.47.0 character refinement (local; unpublished)
 

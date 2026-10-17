@@ -19,7 +19,7 @@ This remains an unpublished art candidate. Final illustration fidelity, relic re
 | :--- | :--- | :--- | :--- | :--- |
 | *None (All locks released)* | `feat/yonatan-046-relic-feedback` | 0.48.0 Archetype Synergy & Chronometer Depth Overhaul Complete | None | 2026-10-17 |
 
-Published playtest: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test), exact tested source `a6b060de43a5509796e3ad6acbb68c3aa07b5408`. Reviewed camera integration is tracked in source PR [#32](https://github.com/UnKami/Overkill/pull/32); GitHub records its authoritative merge status. The previous 0.42 through 0.44 source/documentation PRs (#26 through #31) are merged. All three 0.45 public downloads, sizes and SHA-256 digests passed verification. Previous releases remain available.
+Published playtest: [v0.48.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.48.0-test), exact tested source `421bec75c13e418209e953bbe2ba18af272a0c2e`. All three 0.48 public downloads, sizes and SHA-256 digests passed verification. Previous releases remain available.
 
 ---
 ## 2. How to Claim a Task (Instructions for Developers & AIs)

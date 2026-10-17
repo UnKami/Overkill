@@ -1,14 +1,14 @@
 # Overkill
 
-**Local 0.48.0 Archetype Synergy & Chronometer Depth candidate:** 4 distinct relic archetypes, Sector-First progressive combo sweeps, Slay-the-Spire-caliber Smart Hover live math inspector, 80 Max HP economy rebalance, and tightened 3D relic choreography. Publication is held for review. The published download below remains 0.45.0. [Details](docs/encounter-048.md).
+**0.48.0 Archetype Synergy & Chronometer Depth Playtest:** 4 distinct relic archetypes, Sector-First progressive combo sweeps, Slay-the-Spire-caliber Smart Hover live math inspector, 80 Max HP economy rebalance, and tightened 3D relic choreography. [Details](docs/encounter-048.md).
 
 ## Download and test
 
-**[Download the Windows installer — 0.45.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**
+**[Download the Windows installer — 0.48.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/OverkillSetup-0.48.0.exe)**
 
-[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/Overkill-0.45.0-Windows.zip) · [44-second gameplay trailer (MP4)](https://github.com/UnKami/Overkill/releases/download/v0.35.0-test/Overkill_Cinematic_Gameplay_Trailer_2026-09-30.mp4) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test) · **[Update log](UPDATE_LOG.md)**
+[Portable Windows ZIP](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/Overkill-0.48.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.48.0-test) · **[Update log](UPDATE_LOG.md)**
 
-Play the **0.45.0 focused ascent playtest**: start close to the entrance wheel, choose a connected route, and follow the camera as you climb. Drag to inspect upcoming nodes and use Recenter to return to your decision. The player lands precisely inside the nearest wheel socket, with eased travel and a visible landing beat. Existing saves retain their current encounter sequence; the next act adopts the new layout. The shorter new-run pacing still needs human balance review. See [changes and testing limits](docs/encounter-045.md).
+Play the **0.48.0 playtest**: assemble your clock sector in any order, trigger immediate progressive combo sweeps (`1`, `1 → 2`, `1 → 2 → 3`), inspect live damage and block calculations on hover, and explore four build archetypes (Chrono-Overdrive, Iron Bastion, Crimson Hemorrhage, and Overkill Harvest). See [release notes](docs/encounter-048.md).
 
 ## Partner sync
 
