@@ -6,9 +6,10 @@
 script = ExtResource("1_script")
 id = "REL-06"
 name = "Reinforced Wall"
-tier = 0
+tier = 1
 role = 1
 primary_essence = 1
-description = "Gain 10 Block. Lasts until absorbed or battle ends."
+description = "Gain 7 Block. Multiply your Block by 1.5×."
 art_id = "rel_06_reinforced_wall"
-base_block = 10
+base_block = 7
+multiply_current_block = 1.5

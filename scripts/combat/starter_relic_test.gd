@@ -4,14 +4,14 @@ func _ready() -> void:
 	AudioManager.set_master_volume(0)
 	AudioManager.fast_mode = true
 	RunManager.start_new_run([], [], 80, 123)
-	assert(RunManager.clock_inventory.size() == 12)
+	assert(RunManager.clock_inventory.size() == 10)
 	var counts: Dictionary = {}
 	var uids: Dictionary = {}
 	for entry: Dictionary in RunManager.clock_inventory:
 		counts[entry.id] = int(counts.get(entry.id, 0)) + 1
 		assert(not uids.has(entry.uid))
 		uids[entry.uid] = true
-	assert(counts == {"REL-01": 5, "REL-04": 5, "REL-13": 1, "REL-14": 1})
+	assert(counts == {"REL-01": 3, "REL-04": 3, "REL-02": 1, "REL-08": 1, "REL-13": 1, "REL-14": 1})
 	var copy: ClockRelicData = ClockInventory.resolve(RunManager.clock_inventory[0])
 	copy.base_damage = 99
 	assert(ClockInventory.resolve(RunManager.clock_inventory[1]).base_damage == 6)
@@ -26,8 +26,7 @@ func _ready() -> void:
 	assert(battle.get_node("CombatArena").offset_bottom == -24)
 	assert(battle.enemy_sockets.size() == 9)
 	for i: int in 9:
-		assert(battle.enemy_sockets[i].intent_revealed == (i == 0))
-		if i > 0: assert(battle._enemy_chrono.get_socket_view(i + 1)._value_label.text == "?")
+		assert(battle.enemy_sockets[i].intent_revealed)
 	battle._resolving = true
 	battle._clear_pedestals()
 	for socket: ClockSocketData in battle.enemy_sockets:
@@ -37,17 +36,19 @@ func _ready() -> void:
 		socket.intent_bleed = 0
 		socket.intent_vulnerable = 0
 		socket.intent_weak = 0
+	for p_sock: ClockSocketData in battle.player_sockets:
+		p_sock.multiplier = 1.0
 	battle.player_sockets[0].slotted_relic = ContentDatabase.get_clock_relic("REL-04")
 	await battle._resolve_tick(1)
-	assert(battle.player_block == 7, "Guard Plate now gives early blue relics a meaningful defense floor")
+	assert(battle.player_block == 6, "Guard Plate grants 6 Block")
 	await battle._resolve_tick(2)
-	assert(battle.player_block == 7, "Unused block must persist across ticks")
+	assert(battle.player_block == 6, "Unused block must persist across ticks")
 	battle.enemy_sockets[2].intent_damage = 4
 	await battle._resolve_tick(3)
-	assert(battle.player_block == 3 and battle.player_hp == 80)
+	assert(battle.player_block == 2 and battle.player_hp == 80)
 	battle.player_sockets[3].slotted_relic = ContentDatabase.get_clock_relic("REL-06")
 	await battle._resolve_tick(4)
-	assert(battle.player_block == 13, "Reinforced Wall now adds 10 to remaining block")
+	assert(battle.player_block == 13, "Reinforced Wall adds 7 and multiplies by 1.5x -> floor(9 * 1.5) = 13")
 	battle.player_sockets[4].slotted_relic = ContentDatabase.get_clock_relic("REL-02")
 	var hp_before: int = battle.enemy_hp
 	await battle._resolve_tick(5)
@@ -56,6 +57,7 @@ func _ready() -> void:
 	hp_before = battle.enemy_hp
 	await battle._resolve_tick(6)
 	assert(battle.enemy_hp == hp_before - 4 and battle.player_next_attack_multiplier == 2)
+	battle.player_sockets[6].multiplier = 1.0
 	await battle._resolve_tick(2)
 	assert(battle.player_next_attack_multiplier == 2, "Empty and Guard hours preserve charge")
 	battle.player_sockets[6].slotted_relic = ContentDatabase.get_clock_relic("REL-01")
@@ -67,10 +69,10 @@ func _ready() -> void:
 	battle.player_hp = 60
 	battle.enemy_block = 2
 	await battle._resolve_tick(8)
-	assert(battle.player_hp == 61, "Lifesteal heals only unblocked HP damage")
+	assert(battle.player_hp == 62, "Lifesteal heals only unblocked HP damage (4 - 2 = 2)")
 	battle.enemy_block = 20
 	await battle._resolve_tick(8)
-	assert(battle.player_hp == 61, "Fully blocked hits do not heal")
+	assert(battle.player_hp == 62, "Fully blocked hits do not heal")
 	battle.enemy_block = 0
 	battle.player_hp = 79
 	await battle._resolve_tick(8)

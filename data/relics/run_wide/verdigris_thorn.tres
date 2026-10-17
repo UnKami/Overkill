@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Weak"]
 script = ExtResource("2_effect")
 effect_type = 4
-value = 1
+value = 2
 status_id = "weak"
 
 [resource]
@@ -16,5 +16,5 @@ display_name = "Verdigris Thorn"
 trigger = 4
 effects = Array[Resource]([SubResource("Weak")])
 condition_data = {"essence": "green", "once_per_combat": true}
-flavor_text = "Its first thorn clouds the opening strike of each battle."
+flavor_text = "At battle start, clouds the adversary's opening strikes with 2 Weak."
 art_id = "run_wide/verdigris_thorn"

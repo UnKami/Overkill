@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 10
+value = 11
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "rusted_bite"
 intent_type = 0
-intent_value = 10
+intent_value = 11
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "act2_trash"
 display_name = "Rustlurker"
 tier = 0
-max_hp = 30
-hp_variance = Vector2i(20, 40)
+max_hp = 54
+hp_variance = Vector2i(48, 62)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 24
+overkill_death_threshold = 28
 art_id = "rustlurker_crystalline"

@@ -1,0 +1,94 @@
+{
+  "bones": 63,
+  "meshes": 28,
+  "actions": {
+    "idle": {
+      "duration": 3.2,
+      "contact": -1,
+      "source": "authored 3D anatomical gesture"
+    },
+    "iron_strike": {
+      "duration": 3.1,
+      "contact": 2.2,
+      "source": "Authored weapon-specific full-body mechanics"
+    },
+    "twin_right": {
+      "duration": 3.1,
+      "contact": 2.2,
+      "source": "Authored weapon-specific full-body mechanics"
+    },
+    "twin_left": {
+      "duration": 3.1,
+      "contact": 2.2,
+      "source": "Authored weapon-specific full-body mechanics"
+    },
+    "heavy": {
+      "duration": 3.3,
+      "contact": 2.2,
+      "source": "Authored weapon-specific full-body mechanics"
+    },
+    "throw": {
+      "duration": 1.7,
+      "contact": 0.95,
+      "source": "CMU recorded throw + 3D fitting"
+    },
+    "piston": {
+      "duration": 2.2,
+      "contact": 0.95,
+      "source": "CMU recorded throw + 3D fitting"
+    },
+    "siphon": {
+      "duration": 4.2,
+      "contact": 0.95,
+      "source": "CMU recorded throw + 3D fitting"
+    },
+    "channel": {
+      "duration": 3.5,
+      "contact": 2.4,
+      "source": "authored 3D anatomical gesture"
+    },
+    "chalice": {
+      "duration": 3.35,
+      "contact": 2.4,
+      "source": "authored 3D anatomical gesture"
+    },
+    "bell": {
+      "duration": 3.8,
+      "contact": 2.5,
+      "source": "authored 3D anatomical gesture"
+    },
+    "crown": {
+      "duration": 2.8,
+      "contact": 1.7,
+      "source": "authored 3D anatomical gesture"
+    },
+    "block": {
+      "duration": 2.5,
+      "contact": 1.1,
+      "source": "authored 3D anatomical gesture"
+    },
+    "hit": {
+      "duration": 0.55,
+      "contact": -1,
+      "source": "authored 3D anatomical gesture"
+    },
+    "guard_hit": {
+      "duration": 0.5,
+      "contact": -1,
+      "source": "authored 3D anatomical gesture"
+    },
+    "fall": {
+      "duration": 1.1,
+      "contact": -1,
+      "source": "authored 3D anatomical gesture"
+    }
+  },
+  "capture_peaks": {
+    "strike": 1178,
+    "lift": 711,
+    "throw": 156,
+    "swing": 337
+  },
+  "body_vertices": 13380,
+  "runtime_meshes": 2
+}

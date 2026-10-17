@@ -175,12 +175,16 @@ func animation_speed_scale() -> float:
 ## Normal playback gives impacts and character reactions twice their former
 ## screen time; Fast Mode remains an explicit opt-in at the old 2x playback.
 func combat_animation_speed_scale() -> float:
-	return 2.0 if fast_mode else 0.5
+	if fast_mode and DisplayServer.get_name() == "headless":
+		return 16.0
+	return 2.2 if fast_mode else 1.25
 
 
 ## Clock-hand travel is a connective beat, not an impact beat: keep the normal
 ## pointer sweep crisp while preserving its full easing and turn information.
 func clock_animation_speed_scale() -> float:
+	if fast_mode and DisplayServer.get_name() == "headless":
+		return 16.0
 	return 2.0 if fast_mode else 1.0
 
 func set_render_quality(value: String) -> void:

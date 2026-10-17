@@ -84,6 +84,12 @@ static func for_relic(relic: ClockRelicData) -> Dictionary:
 	return profile
 
 
+static func for_relic_hit(relic: ClockRelicData, hit_index: int) -> Dictionary:
+	var profile: Dictionary = for_relic(relic)
+	if relic != null and relic.id == "REL-02":
+		profile["rig_action"] = "twin_right" if hit_index % 2 == 0 else "twin_left"
+	return profile
+
 ## Enemy intent gets its own readable signature: fast, compact multi-hit
 ## flurries; a clear extra wind-up and stronger recoil for a heavy blow.
 static func for_enemy(intent: ClockSocketData) -> Dictionary:

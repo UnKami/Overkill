@@ -17,8 +17,11 @@ func _process(_delta: float) -> void:
 			continue
 		var shadow: Polygon2D = shadow_value as Polygon2D
 		var feet: Vector2 = get_global_transform().affine_inverse() * (actor.call("anchor_position", "feet", true) as Vector2)
-		shadow.position.x = feet.x
-		var height: float = maxf(0.0, shadow.position.y - feet.y)
+		var ground: Vector2 = Vector2(feet.x,shadow.position.y)
+		if actor.has_method("get_shadow_global_position"):
+			ground = get_global_transform().affine_inverse()*(actor.call("get_shadow_global_position") as Vector2)
+		shadow.position = ground
+		var height: float = maxf(0.0, ground.y - feet.y)
 		var grounded: float = clampf(1.0-height/90.0,0.45,1.0)
 		shadow.scale = Vector2(lerpf(0.72,1.0,grounded),lerpf(0.6,1.0,grounded))
 		shadow.modulate.a = actor.modulate.a*grounded
@@ -29,7 +32,7 @@ func _ready() -> void:
 	_replace_enemy()
 
 func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
-	var actor: IllustratedActor = preload("res://scripts/combat/relic_rig_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
+	var actor: IllustratedActor = preload("res://scripts/combat/executioner_3d_actor.gd").new() if facing > 0.0 else preload("res://scripts/combat/enemy_rig_actor.gd").new()
 	if ResourceLoader.exists(path):
 		actor.atlas = load(path)
 		actor.target_height = 432.0
@@ -43,7 +46,7 @@ func _actor(path: String, facing: float, at: Vector2) -> IllustratedActor:
 		var angle: float = TAU * i / 32.0
 		points.append(Vector2(cos(angle) * 82, sin(angle) * 11))
 	shadow.polygon = points
-	shadow.color = Color(0.015,0.02,0.025,0.38)
+	shadow.color = Color(0.015,0.02,0.025,0.16 if facing > 0.0 else 0.38)
 	shadow.position = at + Vector2(276,574)
 	add_child(shadow)
 	add_child(actor)
@@ -108,7 +111,10 @@ func _enemy_art_path(enemy_id: String) -> String:
 
 func attack(from_player: bool, profile: Dictionary = {}) -> void:
 	_last_attack_profile = profile
-	(player if from_player else enemy).attack(profile)
+	var directed: Dictionary = profile.duplicate()
+	if from_player and enemy.has_method("anchor_position"):
+		directed["target_position"] = enemy.call("anchor_position","chest",true)
+	(player if from_player else enemy).attack(directed)
 
 func impact(on_player: bool, blocked: bool, _profile: Dictionary = {}) -> void:
 	(player if on_player else enemy).hit(blocked, _profile)

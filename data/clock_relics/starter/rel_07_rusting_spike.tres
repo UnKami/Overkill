@@ -6,11 +6,12 @@
 script = ExtResource("1_script")
 id = "REL-07"
 name = "Rusting Spike"
-tier = 0
+tier = 1
 role = 3
 primary_essence = 0
 secondary_essence = 3
-description = "Deal 3 Damage; apply 2 Vulnerable."
+description = "Deal 4 damage. Apply 2 Vulnerable. Apply 2 Bleed."
 art_id = "rel_07_rusting_spike"
-base_damage = 3
+base_damage = 4
 apply_vulnerable = 2
+apply_bleed = 2

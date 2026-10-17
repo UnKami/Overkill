@@ -63,15 +63,24 @@ func _ready() -> void:
 		button.custom_minimum_size.y = 66
 		button.add_theme_font_size_override("font_size", 20)
 		button.tooltip_text = ""
-		var full_clock: bool = choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
-		button.disabled = RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost or full_clock
+		var is_random_upgrade: bool = choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and choice.relic_id == "UPGRADE_RANDOM"
+		var is_grant_relic: bool = choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and not is_random_upgrade
+		var full_clock: bool = is_grant_relic and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
+		var hp_blocked: bool = (RunManager.max_hp <= choice.hp_cost) if choice.card_id == "MAX_HP_COST" else (RunManager.current_hp <= choice.hp_cost)
+		var upgrade_blocked: bool = is_random_upgrade and not _has_upgradable_clock_relic()
+		button.disabled = hp_blocked or OKRunState.current_ok < choice.ok_cost or upgrade_blocked
 		button.pressed.connect(func() -> void: _on_choice_pressed(choice))
 		_choice_box.add_child(button)
-		var detail := ScreenDesign.label(_choice_box, choice.consequence_summary, 15, ScreenDesign.MUTED)
+		var summary_text: String = choice.consequence_summary
+		if is_grant_relic and not summary_text.contains("Replaces a basic relic if at 12/12"):
+			summary_text += " (Replaces a basic relic if at 12/12)"
+		var detail := ScreenDesign.label(_choice_box, summary_text, 15, ScreenDesign.MUTED)
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		detail.custom_minimum_size = Vector2(0, 24)
 		if full_clock:
-			detail.text = "Chronometer full (12/12). Visit the Reliquary to free a slot before taking this bargain."
+			detail.add_theme_color_override("font_color", Color("e7b96f"))
+		elif upgrade_blocked:
+			detail.text = "All equipped relics are already upgraded."
 			detail.add_theme_color_override("font_color", Color("e7b96f"))
 	var footer := ScreenDesign.label(stack, "THE CLOCK REMEMBERS WHAT YOU CHOOSE", 13, ScreenDesign.MUTED)
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -90,19 +99,68 @@ func _load_background() -> void:
 		AmbientMotion.apply_cinematic_backdrop(self, _background, 48.0, 0.75)
 
 
+func _has_upgradable_clock_relic() -> bool:
+	for entry: Dictionary in RunManager.clock_inventory:
+		if int(entry.get("level", 0)) == 0:
+			return true
+	return false
+
+
+func _find_replacement_uid_for_event() -> int:
+	for entry: Dictionary in RunManager.clock_inventory:
+		var id: String = str(entry.get("id", ""))
+		if int(entry.get("level", 0)) == 0 and (id == "REL-01" or id == "REL-04"):
+			return int(entry.get("uid", -1))
+	for entry: Dictionary in RunManager.clock_inventory:
+		var id: String = str(entry.get("id", ""))
+		if id == "REL-01" or id == "REL-04":
+			return int(entry.get("uid", -1))
+	for entry: Dictionary in RunManager.clock_inventory:
+		if int(entry.get("level", 0)) == 0:
+			return int(entry.get("uid", -1))
+	if not RunManager.clock_inventory.is_empty():
+		return int(RunManager.clock_inventory[0].get("uid", -1))
+	return -1
+
+
 func _on_choice_pressed(choice: EventData.EventChoice) -> void:
-	if _resolved or RunManager.current_hp <= choice.hp_cost or OKRunState.current_ok < choice.ok_cost: return
-	if choice.effect_type == EventData.ChoiceEffectType.GRANT_CLOCK_RELIC and RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE: return
+	var hp_blocked: bool = (RunManager.max_hp <= choice.hp_cost) if choice.card_id == "MAX_HP_COST" else (RunManager.current_hp <= choice.hp_cost)
+	if _resolved or hp_blocked or OKRunState.current_ok < choice.ok_cost:
+		return
 	_resolved = true
-	if choice.hp_cost > 0: RunManager.apply_run_hp_change(-choice.hp_cost)
-	if choice.ok_cost > 0: OKRunState.spend_ok(choice.ok_cost, "event:%s" % _event.id)
+	if choice.hp_cost > 0:
+		if choice.card_id == "MAX_HP_COST":
+			RunManager.apply_max_hp_change(-choice.hp_cost)
+		else:
+			RunManager.apply_run_hp_change(-choice.hp_cost)
+	if choice.ok_cost > 0:
+		OKRunState.spend_ok(choice.ok_cost, "event:%s" % _event.id)
 	match choice.effect_type:
 		EventData.ChoiceEffectType.GRANT_CLOCK_RELIC:
-			if not RunManager.add_clock_relic(choice.relic_id):
-				_resolved = false
-				return
+			if choice.relic_id == "UPGRADE_RANDOM":
+				var candidates: Array[int] = []
+				for entry: Dictionary in RunManager.clock_inventory:
+					if int(entry.get("level", 0)) == 0:
+						candidates.append(int(entry.get("uid", -1)))
+				if candidates.is_empty():
+					_resolved = false
+					return
+				candidates.shuffle()
+				RunManager.upgrade_clock_relic(candidates[0])
+			elif RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE:
+				var replace_uid: int = _find_replacement_uid_for_event()
+				if replace_uid < 0 or not RunManager.replace_clock_relic(replace_uid, choice.relic_id):
+					_resolved = false
+					return
+			else:
+				if not RunManager.add_clock_relic(choice.relic_id):
+					_resolved = false
+					return
 		EventData.ChoiceEffectType.HP_DELTA:
-			RunManager.apply_run_hp_change(choice.value)
+			if choice.card_id == "MAX_HP":
+				RunManager.apply_max_hp_change(choice.value)
+			else:
+				RunManager.apply_run_hp_change(choice.value)
 		EventData.ChoiceEffectType.OK_DELTA:
 			if choice.value > 0:
 				OKRunState.gain_ok(choice.value, "event:%s" % _event.id)

@@ -1,5 +1,72 @@
 # Update log
 
+## 2026-10-17 — 0.48.0 Archetype Synergy & Chronometer Depth Overhaul (local; unpublished)
+
+Major overhaul of Overkill's relic builds, combat loop, progression economy, and tactical explainability to match the strategic depth, repeatable variety, and instant clarity of *Slay the Spire*.
+
+- **4 Synergistic Relic Archetypes (29 Clock Relics)**: Re-authored all 29 clock relics into four deep, viable archetypes: Chrono-Overdrive (multi-hit / tempo / socket multiplier / positional), Iron Bastion (Block retention / Thorns / kinetic slam), Crimson Hemorrhage (Bleed / rupture / lifesteal), and Overkill Harvest (sector finisher / banked-OK scaling / extraction). Added positional triggers (`charge_next_socket_multiplier`, `echo_previous_hour`, `sector_finisher_bonus_damage`, `sector_finisher_hits_bonus`, `resonance_essence_bonus`) and archetype payoffs. All Bleed ticks and Rupture excess damage now convert 1:1 into Overkill points.
+- **Sector-First Chronometer Combat Loop**: All 9 enemy hours revealed upfront. Players assemble their 3-hour sector in any order by clicking active sector sockets. Filled hours sweep in progressive combo chains (`1`, `1 -> 2`, `1 -> 2 -> 3`). Added "Overcharge & Sweep" to skip assembly, boost the middle socket (+0.25x multiplier), and bank +3 Overkill.
+- **Slay-the-Spire-Caliber Smart Hover & HUD UX**: Instant `SmartHoverInspector` anchored to sockets/pedestals without obscuring the hovered item. Displays live math formulas (e.g. `Base 6 + Str 2 * Socket 1.5x = 12 DMG`), contextual keyword sub-cards (spawning only active keywords), and per-hour clash forecast timeline strips. Sockets show live green `#67E68D` / coral `#FF7A7A` numbers, Sector Finisher gold crown markers on Hours 3/6/9, and compound enemy intent badges (`8⚔ 3🛡`). Reserve Draw/Discard counters show remaining relics on hover.
+- **80 Max HP Progression & Economy**: Player Vitality rebalanced to 80 Max HP (StS standard). Starter loadout set to 10 relics (`3x REL-01, 3x REL-04, 1x REL-02, 1x REL-08, 1x REL-13, 1x REL-14`), leaving 2 open slots (10/12). Shop 12/12 inventory bug resolved with an in-place relic replacement picker, plus a new "Dismantle Relic (15 OK)" option. Expanded `EventCatalog` to 6 rich risk/reward events with full-inventory replacement. Boss Zenith relics made 100% free (0 OK), with an optional 20-OK pre-upgrade bonus. Strategic Cog Navigation map routes differentiate Left (aggressive/elites), Center (balanced), and Right (economy/utility) paths.
+- **3D Relic Assets & Choreography**: Validated in Blender 5.2 & Godot 4.7.2. Tightened post-contact choreography in `build_relic_choreography.py` / `relic_tracks.gd`. 280,042 motion checks pass with 0 failures. Includes dedicated handoff notes for future visual AI models (Gemini 4 Argon / ChatGPT 6).
+
+Branch: `feat/yonatan-046-relic-feedback`. [Detailed changes and handoff notes](docs/encounter-048.md). Publication remains held per standing multi-AI protocol; current public download remains [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+
+## 2026-10-08 — 0.47.0 character refinement (local; unpublished)
+
+Deeper closed hood, recessed faceless mask, longer coat and lapels, detailed 4K
+materials, and a seamless expressive idle loop. Combat timing, active animation
+clips and save formats are unchanged. Current native quality checks and exported
+motion checks pass; ten exported combat sequences were captured. This remains
+an art candidate: finer reference fidelity and performance acceptance are open.
+
+Branch: `feat/yonatan-046-relic-feedback`, uncommitted continuation of the prior
+candidate; no new source tag/commit, installer or release was published.
+[Verification and local review artifacts](docs/verification-048-character.md).
+The existing publication hold remains; the current public download is still
+[v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+
+## 2026-10-06 — 0.47.0 3D character and relics (local; unpublished)
+
+Rebuilt the Executioner as a volumetric human mesh with 63 deformation joints,
+articulated fingers, fitted armor, connected skin and editable Blender IK controls.
+Recorded human strike/throw motion is fitted to the rig, with planted feet,
+bounded joint rotation, blade-leading forearm roll and a visible launch/recovery.
+All 29 battle relics now have volumetric models and a real six-joint prop rig.
+Siphon uses a 3D hose, moving life mass and matching bulge. Bell, Chalice, Crown,
+Block and Piston preserve their readable activation beats and reward feedback.
+
+The arena backdrop and enemies remain illustrated. Combat rules, balance, forge
+behavior, statuses and save format are preserved. Source branch is
+`feat/yonatan-046-relic-feedback`; this uncommitted local candidate has no release
+tag or source commit claiming immutability. Publication is held at the user's
+request. Prior published downloads are unchanged. [Details](docs/executioner-3d.md).
+
+## 2026-10-06 — 0.46.1 character/relic rig review (local; unpublished)
+
+Corrected the active elbow IK branch, added collarbones and rigid shoulder caps,
+oriented/connected Blender bones anatomically, smoothed casting and held spell
+poses through activation. Added individual relic source models, actual runtime
+prop skeletons, grip metadata and exact-time projectile release.
+45,504 saved Blender skin comparisons and 85,676 exported motion checks passed;
+native payload checks and reviewed close-up/battle footage are documented in
+[rig review evidence](docs/rig-review-046.md). Local installer and portable ZIP
+are built and hashed. Publication remains on hold for visual acceptance.
+
+## 2026-10-05 — 0.46.0 relic feedback (local candidate; unpublished)
+
+Forge stays open after upgrading with the same scroll position. Twin Blades
+uses two Iron Strike swords and independent right/left melee contacts. Siphon
+transfers one green life mass through a bulging purple tube, with healing
+feedback on arrival. Strength is purple; status gains pulse without redraw resets.
+Existing stats, upgrade allowance, combat order and save schema are preserved.
+
+Local installer and portable ZIP are built. Source branch:
+`feat/yonatan-046-relic-feedback`. No GitHub release or PR yet: publication
+requires approval following automatic approval review's rejection.
+[Changes](docs/encounter-046.md) · [Package checks and SHA-256](docs/verification-046.md).
+Interactive installation and full campaign/visual acceptance remain open.
+
 Every delivered gameplay update appears here with its installer and matching source. Playtest releases remain marked as such until reviewed. Documentation-only updates use the existing installer and do not imply a new game build.
 
 ## 0.45.0 playtest — 2026-10-04
@@ -497,3 +564,39 @@ Every delivered gameplay update appears here with its installer and matching sou
 ## Distribution documentation — 2026-09-18
 
 Added prominent downloads on the repository homepage and inside `installer/`, this shared update log, and mandatory release handoff instructions for future assistants. Same 0.13.0 game binaries; no gameplay change.
+
+### 0.46.2 — local motion study, 2026-10-06
+
+User rejected the previous candidate's animation polish. Revised casting arcs,
+planted weight shifts, body/cloth timing and arm extension. Local installer:
+`installer/OverkillSetup-0.46.2.exe`. No public download, tag or source commit
+is being claimed. Saves/combat rules unchanged. Native payload checked;
+installation/full campaign and cinematic visual acceptance remain open.
+See [motion study](docs/motion-polish-0462.md). Publication held.
+
+## 2026-10-08 - Meshy character preparation (local asset candidate)
+- Version: no playable version bump. Existing downloadable build remains [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test), [installer](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe).
+- Branch: `feat/yonatan-meshy-character`; no release tag or new installer. Editable Meshy source, restored materials, five animation clips, and isolated review delivered locally in `character 3d concept image - meshi/Prepared_Meshy_Character/`.
+- Save compatibility: gameplay and player saves unchanged; standalone review has no gameplay autoloads.
+- Verification: 149 saved-source checks; native 23-bone/five-clip import and 300-frame playback; exact delivered-project startup; video decode; original input hashes unchanged.
+- Known limits: first jump/guard studies, no finger/cloth extension or complete combat/entrance choreography, no live actor replacement, no production/FPS acceptance. Publication hold retained; this is not a delivered gameplay release. Details: `docs/meshy-character.md` on the feature branch.
+## 2026-10-08 - 0.49.0-meshy-preview (LOCAL ONLY)
+Meshy hero is integrated into the actual battle arena with clock entrance, hand anchors and playable relic choices.
+Branch: feat/yonatan-meshy-character. Exact local commit and asset hashes: SOURCE_COMMIT.txt and SHA256.json in Prepared_Meshy_Character/Battle_Preview_0.49.0.
+Windows executable/PCK and Overkill-Meshy-Preview-0.49.0.exe are available locally in that folder.
+Save compatibility: independent Overkill-Meshy-Preview user directory; existing game saves are untouched.
+Verification: native exported payload passed 29 relic timing checks, guard selection/resolution, 6-damage strike, both playback speeds, reduced-motion entry, death and replay rendering. Installer compiled, not installed.
+Known limits: interim combat gestures, baseline relic props/enemy, no full campaign/FPS review, excludes other unpublished 0.46-0.48 work.
+Publication remains blocked by the existing hold; no release URL or default-branch download-link update exists for this preview.
+Current public installer: [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test).
+
+## 2026-10-08 - 0.50.0 Meshy lighting battle playtest
+
+- Changes: Meshy hero in the real battle arena, clock entrance, cyan and firelight directions, environment reflections for metal, self-shadowing and soft contact shadow.
+- [Windows installer](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe) · [Portable ZIP](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/Overkill-0.50.0-Windows.zip) · [Release / checksums / editable assets](https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test).
+- Source: `0b675b5af4ddd7246637210d52f14af27d62bd65`; `v0.50.0-test`; `feat/yonatan-meshy-character`. Gameplay stays on the feature branch; main receives documentation links only.
+- Saves: independent Overkill-Meshy-Preview profile and installer identity; existing Overkill saves and previous releases preserved.
+- Verification: source and exported native checks passed; 29 relic contacts/recoveries; real guard resolution; 6-damage strike; simultaneous-hit handling at both speeds; reduced-motion entry; death/replay; reviewed 720p and 1080p lighting captures. Installer compiled. All five published asset sizes/SHA-256 digests matched and download endpoints returned HTTP 200. Portable executable/PCK entries matched the tested files.
+- Limits: focused battle preview, not full campaign; interim attack/hit/death gestures and baseline enemy/relic presentation. Installation/uninstallation, full human playthrough and stable FPS are not certified. The unsigned installer may trigger Windows warnings.
+- Publication was explicitly authorized for this release, superseding the earlier hold. [Detailed notes](docs/encounter-050.md).
+

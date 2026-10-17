@@ -13,6 +13,16 @@ var _artifact_offers: Array[RelicData] = []
 var _artifact_grid: GridContainer
 var _artifact_purchase_made: bool = false
 var _upgrade_preview: UpgradePreviewDialog
+var _inventory_scroll: ScrollContainer
+var _shop_inventory_panel: PanelContainer
+var _shop_inventory_prompt: Label
+var _shop_inventory_grid: GridContainer
+var _shop_dismantle_button: Button
+var _shop_cancel_button: Button
+var _shop_dismantle_active: bool = false
+var _pending_shop_relic: ClockRelicData = null
+var _pending_shop_price: int = 0
+const SHOP_DISMANTLE_COST: int = 15
 const Pedestal := preload("res://scenes/relic_pedestal_view.tscn")
 
 func _ready() -> void:
@@ -52,7 +62,7 @@ func _ready() -> void:
 	stage.add_child(column)
 
 	var kicker := Label.new()
-	kicker.text = {"collection":"ACTIVE CHRONOMETER INVENTORY", "shop":"FIVE OBJECTS  ·  ONE PRICE", "upgrade":"ONE RELIC MAY BE UPGRADED", "removal":"BREAK ONE BINDING"}.get(mode, "ACTIVE CHRONOMETER INVENTORY")
+	kicker.text = {"collection":"ACTIVE CHRONOMETER INVENTORY", "shop":"FIVE OBJECTS  ·  TIERED PRICING", "upgrade":"ONE RELIC MAY BE UPGRADED", "removal":"BREAK ONE BINDING"}.get(mode, "ACTIVE CHRONOMETER INVENTORY")
 	kicker.add_theme_font_size_override("font_size", 16)
 	kicker.add_theme_color_override("font_color", ScreenDesign.CYAN)
 	column.add_child(kicker)
@@ -77,8 +87,27 @@ func _ready() -> void:
 	_add_legend_token(legend, "BUFF", ClockRelicData.Essence.BUFF)
 	_add_legend_token(legend, "DEBUFF", ClockRelicData.Essence.DEBUFF)
 	_add_legend_token(legend, "OVERKILL", ClockRelicData.Essence.OVERKILL)
+	if mode == "shop":
+		var spacer := Control.new()
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		legend.add_child(spacer)
+		_shop_dismantle_button = Button.new()
+		_shop_dismantle_button.name = "DismantleToggleButton"
+		_shop_dismantle_button.custom_minimum_size = Vector2(260, 40)
+		_shop_dismantle_button.pressed.connect(_toggle_shop_dismantle)
+		ScreenDesign.add_actionable_fx(_shop_dismantle_button, Color("cf5e5b"), true)
+		legend.add_child(_shop_dismantle_button)
+		_shop_cancel_button = Button.new()
+		_shop_cancel_button.name = "CancelShopActionButton"
+		_shop_cancel_button.text = "CANCEL"
+		_shop_cancel_button.custom_minimum_size = Vector2(140, 40)
+		_shop_cancel_button.pressed.connect(_cancel_shop_selection)
+		_shop_cancel_button.hide()
+		legend.add_child(_shop_cancel_button)
+
 	var scroll := ScrollContainer.new()
 	scroll.name = "InventoryScroll"
+	_inventory_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	# The shop's artifact row sits below its five clock offers. Keep a visible
@@ -96,6 +125,24 @@ func _ready() -> void:
 	scroll_content.add_theme_constant_override("separation", 22)
 	scroll_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(scroll_content)
+	if mode == "shop":
+		_shop_inventory_panel = PanelContainer.new()
+		_shop_inventory_panel.name = "ShopEquippedInventoryPanel"
+		_shop_inventory_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var inv_box := VBoxContainer.new()
+		inv_box.add_theme_constant_override("separation", 10)
+		_shop_inventory_panel.add_child(inv_box)
+		_shop_inventory_prompt = ScreenDesign.label(inv_box, "", 17, Color("f3c27e"), true)
+		_shop_inventory_prompt.name = "ShopInventoryPrompt"
+		_shop_inventory_prompt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_shop_inventory_grid = GridContainer.new()
+		_shop_inventory_grid.name = "ShopEquippedInventoryGrid"
+		_shop_inventory_grid.columns = 6
+		_shop_inventory_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_shop_inventory_grid.add_theme_constant_override("h_separation", 10)
+		_shop_inventory_grid.add_theme_constant_override("v_separation", 8)
+		inv_box.add_child(_shop_inventory_grid)
+		scroll_content.add_child(_shop_inventory_panel)
 	scroll_content.add_child(_grid)
 	if mode == "shop":
 		var artifact_heading := ScreenDesign.label(scroll_content, "RUN-WIDE ARTIFACTS  ·  ONE UNIQUE PURCHASE", 20, Color("e8c994"), true)
@@ -115,6 +162,8 @@ func _ready() -> void:
 		_grid.columns = maxi(1, mini(maximum, int((scroll.size.x + 12.0) / card_width)))
 		if mode == "shop" and is_instance_valid(_artifact_grid):
 			_artifact_grid.columns = maxi(1, mini(3, int((scroll.size.x + 26.0) / 270.0)))
+		if mode == "shop" and is_instance_valid(_shop_inventory_grid):
+			_shop_inventory_grid.columns = maxi(2, mini(6, int((scroll.size.x + 10.0) / 210.0)))
 	)
 	var back := Button.new()
 	back.text = "ENTER BATTLE  ›" if pre_battle else ("CLOSE RELIQUARY" if overlay else "RETURN TO MAP")
@@ -147,9 +196,7 @@ func _ready() -> void:
 	witness_copy.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	witness_copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	witness_copy.custom_minimum_size.y = 70
-	_offers = ContentDatabase.all_clock_relics().duplicate()
-	_offers.shuffle()
-	_offers = _offers.slice(0, 5)
+	_offers = _roll_shop_clock_relics()
 	for relic: RelicData in ContentDatabase.all_relics(true):
 		if relic.id.begins_with("artifact_") and not RunManager.has_relic(relic.id):
 			_artifact_offers.append(relic)
@@ -159,6 +206,23 @@ func _ready() -> void:
 	ScreenDesign.apply_text_size(self)
 	modulate.a = 0
 	create_tween().tween_property(self, "modulate:a", 1.0, 0.25)
+
+
+func _roll_shop_clock_relics() -> Array:
+	var pool: Array = []
+	if ContentDatabase.has_method("shop_clock_relics"):
+		pool = (ContentDatabase.call("shop_clock_relics") as Array).duplicate()
+	else:
+		for relic: ClockRelicData in ContentDatabase.all_clock_relics():
+			if relic.id != "REL-01" and relic.id != "REL-04" and relic.tier != ClockRelicData.Tier.STARTER:
+				pool.append(relic)
+	pool.shuffle()
+	return pool.slice(0, 5)
+
+
+func _shop_price_for_relic(relic: ClockRelicData) -> int:
+	var base_price: int = 25 if relic != null and relic.tier == ClockRelicData.Tier.RARE else 15
+	return RunManager.price_for("clock_relic", base_price)
 
 
 func _add_legend_token(parent: HBoxContainer, text: String, essence: int) -> void:
@@ -189,8 +253,13 @@ func _rebuild() -> void:
 		for child: Node in _artifact_grid.get_children():
 			_artifact_grid.remove_child(child)
 			child.queue_free()
+	if is_instance_valid(_shop_inventory_grid):
+		for child: Node in _shop_inventory_grid.get_children():
+			_shop_inventory_grid.remove_child(child)
+			child.queue_free()
 	_summary.text = "%d relics  /  9 clock sockets  /  %d reserves     •     %d OVERKILL" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), OKRunState.current_ok]
-	if mode == "shop": _summary.text = "%d OVERKILL AVAILABLE     ·     CLOCK RELICS COST 15     ·     ARTIFACTS ARE UNIQUE AND RUN-WIDE" % OKRunState.current_ok
+	if mode == "shop":
+		_summary.text = "%d OVERKILL AVAILABLE     ·     COMMON 15 OK  /  RARE 25 OK     ·     EQUIPPED %d / %d" % [OKRunState.current_ok, RunManager.clock_inventory.size(), ClockInventory.MAX_SIZE]
 	if mode == "upgrade": _summary.text += "     •     One free upgrade this visit."
 	if mode == "removal": _summary.text += "     •     Keep at least 10 relics."
 	if mode == "collection":
@@ -220,6 +289,7 @@ func _rebuild() -> void:
 			if int(owned.get("level", 0)) == 0:
 				ready_count += 1
 		_summary.text = "%d INDIVIDUAL RELICS  /  9 CLOCK SOCKETS  /  %d RESERVES     •     %d READY TO UPGRADE" % [RunManager.clock_inventory.size(), maxi(0, RunManager.clock_inventory.size() - 9), ready_count]
+		_summary.text += "     •     " + ("Free upgrade used. Continue browsing." if _committed else "One free upgrade this visit.")
 		for entry: Dictionary in RunManager.clock_inventory:
 			var relic_id: String = str(entry.get("id", ""))
 			var copy_number: int = int(design_seen.get(relic_id, 0)) + 1
@@ -235,6 +305,7 @@ func _rebuild() -> void:
 			view.bind_relic(relic, action)
 			view._role_badge.text += "    ·    COPY %d / %d" % [copy_number, copy_total]
 			view._slot_button.disabled = not is_ready
+			if is_ready and _committed: view._slot_button.text = "INSPECT COPY  %d / %d" % [copy_number, copy_total]
 			if is_ready:
 				var upgraded: Dictionary = entry.duplicate()
 				upgraded.level = 1
@@ -246,16 +317,23 @@ func _rebuild() -> void:
 				view.tooltip_text += "\n\nINSTANCE\n%s" % ClockInventory.instance_identity(entry)
 		return
 	if mode == "shop":
+		_rebuild_shop_inventory_bar()
+		var is_full: bool = RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
 		for relic: ClockRelicData in _offers:
-			var price := RunManager.price_for("clock_relic", 15)
+			var price: int = _shop_price_for_relic(relic)
 			var view: RelicPedestalView = Pedestal.instantiate()
 			_grid.add_child(view)
 			view.use_shop_layout()
-			view.bind_relic(relic, "Buy · %d Overkill" % price)
-			view._slot_button.disabled = OKRunState.current_ok < price or RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
+			var cta: String = ("Buy & Replace · %d OK" if is_full else "Buy · %d Overkill") % price
+			if _pending_shop_relic == relic:
+				cta = "SELECT SLOT ABOVE (%d OK)" % price
+			view.bind_relic(relic, cta)
+			view._slot_button.disabled = OKRunState.current_ok < price
 			if view._slot_button.disabled:
-				view._slot_button.text = "CHRONOMETER FULL" if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Need %d more" % (price - OKRunState.current_ok)
-				view._slot_button.tooltip_text = "Dismantle or replace a relic before adding another." if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE else "Not enough Overkill."
+				view._slot_button.text = "Need %d more" % (price - OKRunState.current_ok)
+				view._slot_button.tooltip_text = "Not enough Overkill."
+			elif is_full:
+				view._slot_button.tooltip_text = "Your chronometer is at 12/12. Clicking this lets you choose an equipped relic above to replace."
 			view.selected.connect(func(_r: ClockRelicData) -> void: _buy(relic, price))
 		for relic: RelicData in _artifact_offers:
 			_build_artifact_offer(relic)
@@ -274,23 +352,141 @@ func _rebuild() -> void:
 				var upgraded := entry.duplicate()
 				upgraded.level = 1
 				view.tooltip_text = "TARGET INSTANCE\n%s\n\nCURRENT\n%s\n\nAFTER UPGRADE\n%s" % [ClockInventory.instance_identity(entry), relic.description, ClockInventory.resolve(upgraded).description]
-		elif mode == "removal": action = "DISMANTLE  /  25 OK"
+		elif mode == "removal": action = "DISMANTLE  /  %d OK" % SHOP_DISMANTLE_COST
 		view.bind_relic(relic, action)
-		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < 25))
+		view._slot_button.disabled = mode == "collection" or (mode == "upgrade" and int(entry.level) > 0) or (mode == "removal" and (RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < SHOP_DISMANTLE_COST))
 		if mode == "collection":
 			# A collection card is already self-evidently owned. Removing the
 			# disabled pseudo-action gives the art and useful rules room to breathe.
 			view._slot_button.hide()
 		if mode == "removal" and RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE:
 			view._slot_button.text = "MINIMUM DECK SIZE"
-		elif mode == "removal" and OKRunState.current_ok < 25:
-			view._slot_button.text = "Need %d more Overkill" % (25 - OKRunState.current_ok)
+		elif mode == "removal" and OKRunState.current_ok < SHOP_DISMANTLE_COST:
+			view._slot_button.text = "Need %d more Overkill" % (SHOP_DISMANTLE_COST - OKRunState.current_ok)
 		view.selected.connect(func(_r: ClockRelicData) -> void: _choose(int(entry.uid)))
 
+func _rebuild_shop_inventory_bar() -> void:
+	if not is_instance_valid(_shop_inventory_panel) or not is_instance_valid(_shop_inventory_grid):
+		return
+	var can_dismantle: bool = RunManager.clock_inventory.size() > ClockInventory.MINIMUM_SIZE and OKRunState.current_ok >= SHOP_DISMANTLE_COST
+	if not can_dismantle and _shop_dismantle_active:
+		_shop_dismantle_active = false
+	if is_instance_valid(_shop_dismantle_button):
+		if _shop_dismantle_active:
+			_shop_dismantle_button.text = "DISMANTLING ACTIVE (CLICK SLOT)"
+			_shop_dismantle_button.disabled = false
+		else:
+			_shop_dismantle_button.text = "DISMANTLE RELIC (%d OK)" % SHOP_DISMANTLE_COST
+			_shop_dismantle_button.disabled = not can_dismantle
+			if RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE:
+				_shop_dismantle_button.tooltip_text = "Minimum chronometer size (%d relics) reached." % ClockInventory.MINIMUM_SIZE
+			elif OKRunState.current_ok < SHOP_DISMANTLE_COST:
+				_shop_dismantle_button.tooltip_text = "Requires %d Overkill to dismantle a relic." % SHOP_DISMANTLE_COST
+			else:
+				_shop_dismantle_button.tooltip_text = "Pay %d Overkill to permanently remove a relic (minimum %d)." % [SHOP_DISMANTLE_COST, ClockInventory.MINIMUM_SIZE]
+	var interactive: bool = _pending_shop_relic != null or _shop_dismantle_active
+	if is_instance_valid(_shop_cancel_button):
+		_shop_cancel_button.visible = interactive
+	var border_color: Color = Color("e7c48a") if _pending_shop_relic != null else (Color("cf5e5b") if _shop_dismantle_active else Color("3b526688"))
+	var panel_bg: Color = Color("162432f2") if interactive else Color("0a141ee0")
+	var panel_style: StyleBoxFlat = ScreenDesign.box(panel_bg, border_color, 2 if interactive else 1)
+	panel_style.set_corner_radius_all(6)
+	panel_style.content_margin_left = 14
+	panel_style.content_margin_right = 14
+	panel_style.content_margin_top = 10
+	panel_style.content_margin_bottom = 10
+	_shop_inventory_panel.add_theme_stylebox_override("panel", panel_style)
+	if _pending_shop_relic != null:
+		_shop_inventory_prompt.text = "SELECT AN EQUIPPED RELIC ABOVE TO REPLACE WITH %s (%d OK)  ·  OR CLICK CANCEL" % [_pending_shop_relic.name.to_upper(), _pending_shop_price]
+		_shop_inventory_prompt.add_theme_color_override("font_color", Color("f6d28b"))
+	elif _shop_dismantle_active:
+		_shop_inventory_prompt.text = "SELECT AN EQUIPPED RELIC BELOW TO DISMANTLE FOR %d OVERKILL (OR CLICK CANCEL)" % SHOP_DISMANTLE_COST
+		_shop_inventory_prompt.add_theme_color_override("font_color", Color("f08a84"))
+	else:
+		_shop_inventory_prompt.text = "EQUIPPED CHRONOMETER (%d / %d)  ·  At 12/12, buying any relic below lets you replace an equipped slot" % [RunManager.clock_inventory.size(), ClockInventory.MAX_SIZE]
+		_shop_inventory_prompt.add_theme_color_override("font_color", Color("9fb4c0"))
+	for entry: Dictionary in RunManager.clock_inventory:
+		var owned: ClockRelicData = ClockInventory.resolve(entry)
+		if owned == null:
+			continue
+		var slot_btn := Button.new()
+		slot_btn.custom_minimum_size = Vector2(180.0, 58.0)
+		slot_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slot_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		slot_btn.icon = RelicArt.load_texture(owned.art_id)
+		slot_btn.expand_icon = true
+		slot_btn.add_theme_constant_override("icon_max_width", 38)
+		slot_btn.add_theme_font_size_override("font_size", 14)
+		var tag: String = "REPLACE" if _pending_shop_relic != null else ("DISMANTLE" if _shop_dismantle_active else ClockInventory.instance_identity(entry))
+		slot_btn.text = "%s\n%s" % [owned.name.to_upper(), tag]
+		slot_btn.tooltip_text = "%s\n%s\n\n%s" % [ClockInventory.instance_identity(entry), owned.name, owned.description]
+		slot_btn.disabled = not interactive
+		var uid: int = int(entry.get("uid", -1))
+		if interactive:
+			var accent: Color = Color("e7c48a") if _pending_shop_relic != null else Color("cf5e5b")
+			ScreenDesign.add_actionable_fx(slot_btn, accent, false)
+			slot_btn.pressed.connect(func() -> void: _on_shop_inventory_slot_pressed(uid))
+		_shop_inventory_grid.add_child(slot_btn)
+
+func _toggle_shop_dismantle() -> void:
+	_pending_shop_relic = null
+	_pending_shop_price = 0
+	_shop_dismantle_active = not _shop_dismantle_active
+	_rebuild()
+
+func _cancel_shop_selection() -> void:
+	_pending_shop_relic = null
+	_pending_shop_price = 0
+	_shop_dismantle_active = false
+	_rebuild()
+
+func _on_shop_inventory_slot_pressed(uid: int) -> void:
+	if _pending_shop_relic != null:
+		if not _offers.has(_pending_shop_relic) or OKRunState.current_ok < _pending_shop_price:
+			_cancel_shop_selection()
+			return
+		if not OKRunState.spend_ok(_pending_shop_price, "clock_relic"):
+			return
+		if not RunManager.replace_clock_relic(uid, _pending_shop_relic.id):
+			OKRunState.gain_ok(_pending_shop_price, "clock_relic_rollback")
+			return
+		RunManager.record_purchase("clock_relic")
+		_offers.erase(_pending_shop_relic)
+		_pending_shop_relic = null
+		_pending_shop_price = 0
+		SaveManager.save_run()
+		_rebuild()
+		return
+	if _shop_dismantle_active:
+		if RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < SHOP_DISMANTLE_COST:
+			_shop_dismantle_active = false
+			_rebuild()
+			return
+		if RunManager.remove_clock_relic(uid):
+			OKRunState.spend_ok(SHOP_DISMANTLE_COST, "clock_dismantle")
+			if RunManager.clock_inventory.size() <= ClockInventory.MINIMUM_SIZE or OKRunState.current_ok < SHOP_DISMANTLE_COST:
+				_shop_dismantle_active = false
+			SaveManager.save_run()
+			_rebuild()
+
 func _buy(relic: ClockRelicData, price: int) -> void:
-	if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE: return
-	if not _offers.has(relic) or not OKRunState.spend_ok(price, "clock_relic"): return
-	if not RunManager.add_clock_relic(relic.id): return
+	if not _offers.has(relic) or OKRunState.current_ok < price:
+		return
+	if RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE:
+		_shop_dismantle_active = false
+		_pending_shop_relic = relic
+		_pending_shop_price = price
+		_rebuild()
+		if is_instance_valid(_inventory_scroll):
+			_inventory_scroll.scroll_vertical = 0
+		return
+	if not OKRunState.spend_ok(price, "clock_relic"):
+		return
+	if not RunManager.add_clock_relic(relic.id):
+		OKRunState.gain_ok(price, "clock_relic_rollback")
+		return
+	_pending_shop_relic = null
+	_pending_shop_price = 0
 	RunManager.record_purchase("clock_relic")
 	_offers.erase(relic)
 	SaveManager.save_run()
@@ -337,6 +533,7 @@ func _build_artifact_offer(relic: RelicData) -> void:
 	detail.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail.custom_minimum_size.y = 48.0
+	detail.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var price: int = RunManager.price_for("run_artifact", 30)
 	var buy := Button.new()
 	buy.custom_minimum_size.y = 48.0
@@ -408,7 +605,7 @@ func _artifact_description(relic: RelicData) -> String:
 	return "%s: %s%s" % [when_text, effect_text, limit_text]
 
 func _choose(uid: int) -> void:
-	if _committed: return
+	if _committed and mode != "upgrade": return
 	if mode == "upgrade":
 		for entry in RunManager.clock_inventory:
 			if int(entry.uid) != uid or int(entry.level) > 0: continue
@@ -417,13 +614,13 @@ func _choose(uid: int) -> void:
 			var upgraded := entry.duplicate()
 			upgraded.level = 1
 			var tempered: ClockRelicData = ClockInventory.resolve(upgraded)
-			UpgradePreviewDialog.show_relic_dialog(self, current, tempered, func() -> void: _commit_upgrade(uid))
+			UpgradePreviewDialog.show_relic_dialog(self, current, tempered, func() -> void: _commit_upgrade(uid), not _committed)
 			_upgrade_preview = get_child(get_child_count() - 1) as UpgradePreviewDialog
-			_upgrade_preview.completed.connect(_close)
+			_upgrade_preview.completed.connect(_return_to_relics)
 			return
-	elif mode == "removal" and OKRunState.current_ok >= 25:
+	elif mode == "removal" and OKRunState.current_ok >= SHOP_DISMANTLE_COST:
 		if RunManager.remove_clock_relic(uid):
-			OKRunState.spend_ok(25, "clock_dismantle")
+			OKRunState.spend_ok(SHOP_DISMANTLE_COST, "clock_dismantle")
 			SaveManager.save_run()
 			_rebuild()
 
@@ -433,9 +630,21 @@ func _commit_upgrade(uid: int) -> void:
 	if RunManager.upgrade_clock_relic(uid):
 		SaveManager.save_run()
 		if is_instance_valid(_upgrade_preview): _upgrade_preview.show_relic_success()
+		var completed_preview: UpgradePreviewDialog = _upgrade_preview
+		await get_tree().create_timer(0.75).timeout
+		if _upgrade_preview == completed_preview: _return_to_relics()
 	else:
 		_committed = false
 		if is_instance_valid(_upgrade_preview): _upgrade_preview.show_relic_failure()
+
+func _return_to_relics() -> void:
+	if is_instance_valid(_upgrade_preview):
+		_upgrade_preview.queue_free()
+		_upgrade_preview = null
+	var previous_scroll: int = _inventory_scroll.scroll_vertical
+	_rebuild()
+	await get_tree().process_frame
+	_inventory_scroll.scroll_vertical = previous_scroll
 
 func _close() -> void:
 	if pre_battle: resolved.emit()

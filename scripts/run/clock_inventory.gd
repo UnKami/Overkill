@@ -1,7 +1,14 @@
 class_name ClockInventory extends RefCounted
 ## Each entry is a physical copy. Resource copies are isolated for combat/upgrades.
-const STARTER_COUNTS: Dictionary = {"REL-01": 5, "REL-04": 5, "REL-13": 1, "REL-14": 1}
-const MINIMUM_SIZE := 10
+const STARTER_COUNTS: Dictionary = {
+	"REL-01": 3,
+	"REL-04": 3,
+	"REL-02": 1,
+	"REL-08": 1,
+	"REL-13": 1,
+	"REL-14": 1,
+}
+const MINIMUM_SIZE := 6
 const MAX_SIZE := 12
 
 static func starter() -> Array[Dictionary]:
@@ -16,37 +23,34 @@ static func resolve(entry: Dictionary) -> ClockRelicData:
 	if source == null:
 		return null
 	var copy: ClockRelicData = source.duplicate(true)
-	if int(entry.get("level", 0)) > 0:
+	var level: int = int(entry.get("level", 0))
+	if level > 0:
 		copy.name += " +"
-		if copy.base_damage > 0: copy.base_damage += 3
-		if copy.base_block > 0: copy.base_block += 3
-		if copy.conditional_damage > 0: copy.conditional_damage += 3
-		if copy.apply_strength > 0: copy.apply_strength += 1
-		if copy.apply_thorns > 0: copy.apply_thorns += 1
-		if copy.apply_bleed > 0: copy.apply_bleed += 1
-		if copy.apply_weak > 0: copy.apply_weak += 1
-		if copy.apply_vulnerable > 0: copy.apply_vulnerable += 1
-		if copy.grant_overkill > 0: copy.grant_overkill += 1
-		if copy.bonus_damage_next_hit > 0: copy.bonus_damage_next_hit += 2
-		copy.description = describe(copy)
+		if copy.base_damage > 0: copy.base_damage += 3 * level
+		if copy.base_block > 0: copy.base_block += 3 * level
+		if copy.conditional_damage > 0: copy.conditional_damage += 4 * level
+		if copy.apply_strength > 0: copy.apply_strength += 1 * level
+		if copy.apply_thorns > 0: copy.apply_thorns += 2 * level
+		if copy.apply_bleed > 0: copy.apply_bleed += 1 * level
+		if copy.apply_weak > 0: copy.apply_weak += 1 * level
+		if copy.apply_vulnerable > 0: copy.apply_vulnerable += 1 * level
+		if copy.grant_overkill > 0: copy.grant_overkill += 2 * level
+		if copy.bonus_damage_next_hit > 0: copy.bonus_damage_next_hit += 2 * level
+		if copy.sector_finisher_bonus_damage > 0: copy.sector_finisher_bonus_damage += 4 * level
+		if copy.charge_next_socket_multiplier > 0.0: copy.charge_next_socket_multiplier += 0.5 * float(level)
+		if copy.resonance_essence_bonus > 0: copy.resonance_essence_bonus += 2 * level
+		if copy.trigger_bleed_times > 0: copy.trigger_bleed_times += 1 * level
+		if copy.multiply_current_block > 1.0: copy.multiply_current_block += 0.5 * float(level)
+		if copy.multiply_enemy_bleed > 1.0: copy.multiply_enemy_bleed += 0.5 * float(level)
+		if copy.damage_per_enemy_bleed > 0: copy.damage_per_enemy_bleed += 1 * level
+		if copy.damage_per_banked_overkill_div > 1: copy.damage_per_banked_overkill_div = maxi(2, copy.damage_per_banked_overkill_div - level)
+	copy.description = copy.live_description()
 	return copy
 
 static func describe(relic: ClockRelicData) -> String:
-	var parts: PackedStringArray = []
-	if relic.base_damage > 0:
-		parts.append("Deal %d damage%s." % [relic.base_damage, " × %d" % relic.hits if relic.hits > 1 else ""])
-	if relic.lifesteal: parts.append("Heal HP damage dealt.")
-	if relic.next_attack_multiplier > 1: parts.append("Next attack ×%d damage." % relic.next_attack_multiplier)
-	if relic.base_block > 0: parts.append("Gain %d Block. Lasts until absorbed or battle ends." % relic.base_block)
-	if relic.grant_overkill > 0: parts.append("Gain %d Overkill." % relic.grant_overkill)
-	for pair in [[relic.apply_strength, "Strength"], [relic.apply_thorns, "Thorns"]]:
-		if pair[0] > 0: parts.append("Gain %d %s." % pair)
-	for pair in [[relic.apply_bleed, "Bleed"], [relic.apply_weak, "Weak"], [relic.apply_vulnerable, "Vulnerable"]]:
-		if pair[0] > 0: parts.append("Apply %d %s." % pair)
-	if relic.bonus_damage_next_hit > 0: parts.append("Next attack +%d damage." % relic.bonus_damage_next_hit)
-	if relic.conditional_damage > 0: parts.append("%d damage below %d%% enemy HP." % [relic.conditional_damage, int(relic.conditional_hp_threshold_pct * 100)])
-	if relic.recoil_block_on_overkill: parts.append("Overkill becomes guard.")
-	return " ".join(parts)
+	if relic == null:
+		return ""
+	return relic.live_description()
 
 static func instance_identity(entry: Dictionary) -> String:
 	var level_text: String = "UPGRADED" if int(entry.get("level", 0)) > 0 else "BASE FORM"

@@ -6,9 +6,10 @@
 script = ExtResource("1_script")
 id = "REL-09"
 name = "Corrosive Oil"
-tier = 0
+tier = 1
 role = 3
 primary_essence = 3
-description = "Apply 3 Bleed (deals true damage at tick start)."
+description = "Apply 4 Bleed. Multiply enemy Bleed by 1.5×."
 art_id = "rel_09_corrosive_oil"
-apply_bleed = 3
+apply_bleed = 4
+multiply_enemy_bleed = 1.5

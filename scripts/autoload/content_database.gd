@@ -6,6 +6,8 @@ extends Node
 ## hand-built path - go through here so there is one place that knows where
 ## content data lives.
 
+const BASIC_STARTER_RELIC_IDS: Array[String] = ["REL-01", "REL-04"]
+
 var _cards_by_id: Dictionary = {}   # String -> CardData
 var _relics_by_id: Dictionary = {}  # String -> RelicData
 var _enemies_by_id: Dictionary = {} # String -> EnemyData
@@ -24,12 +26,69 @@ func get_clock_relic(relic_id: String) -> ClockRelicData:
 
 
 func all_clock_relics(include_zenith: bool = false) -> Array:
-	# Generic rewards and the Clockwright share this pool. Zenith relics are
-	# reserved for the act-boss Overkill altar, which looks them up by ID.
+	# Generic catalog query; Zenith relics are reserved for the act-boss Overkill altar.
 	var result: Array = []
 	for relic: ClockRelicData in _clock_relics_by_id.values():
 		if include_zenith or relic.tier != ClockRelicData.Tier.ZENITH:
 			result.append(relic)
+	return result
+
+
+func reward_clock_relics(elite_reward: bool = false) -> Array[ClockRelicData]:
+	## Returns non-basic clock relics ordered so the first 3 choices follow
+	## Slay-the-Spire rarity weighting (Normal: 75% Common / 25% Rare;
+	## Elite: 50% Common / 50% Rare with at least 1 Rare guaranteed in the top 3).
+	var commons: Array[ClockRelicData] = []
+	var rares: Array[ClockRelicData] = []
+	for relic: ClockRelicData in _clock_relics_by_id.values():
+		if relic.tier == ClockRelicData.Tier.ZENITH or relic.tier == ClockRelicData.Tier.STARTER:
+			continue
+		if relic.id in BASIC_STARTER_RELIC_IDS:
+			continue
+		if relic.tier == ClockRelicData.Tier.RARE:
+			rares.append(relic)
+		else:
+			commons.append(relic)
+	commons.shuffle()
+	rares.shuffle()
+
+	var drafted: Array[ClockRelicData] = []
+	var rare_chance: float = 0.50 if elite_reward else 0.25
+	var picked_rare: bool = false
+	for slot_idx: int in range(3):
+		var force_rare: bool = elite_reward and slot_idx == 2 and not picked_rare
+		var choose_rare: bool = force_rare or (randf() < rare_chance)
+		if choose_rare and not rares.is_empty():
+			drafted.append(rares.pop_back())
+			picked_rare = true
+		elif not commons.is_empty():
+			drafted.append(commons.pop_back())
+		elif not rares.is_empty():
+			drafted.append(rares.pop_back())
+			picked_rare = true
+	drafted.shuffle()
+
+	var remainder: Array[ClockRelicData] = []
+	remainder.append_array(commons)
+	remainder.append_array(rares)
+	remainder.shuffle()
+
+	var result: Array[ClockRelicData] = []
+	result.append_array(drafted)
+	result.append_array(remainder)
+	return result
+
+
+func shop_clock_relics() -> Array[ClockRelicData]:
+	## Excludes basic starter filler (REL-01, REL-04) and Zenith boss relics.
+	var result: Array[ClockRelicData] = []
+	for relic: ClockRelicData in _clock_relics_by_id.values():
+		if relic.tier == ClockRelicData.Tier.ZENITH or relic.tier == ClockRelicData.Tier.STARTER:
+			continue
+		if relic.id in BASIC_STARTER_RELIC_IDS:
+			continue
+		result.append(relic)
+	result.shuffle()
 	return result
 
 

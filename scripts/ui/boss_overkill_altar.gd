@@ -3,7 +3,8 @@ class_name BossOverkillAltar extends Control
 ## currency and 12-copy inventory rules as the rest of the game.
 
 const OFFER_IDS := ["REL-27", "REL-28", "REL-29"]
-const PRICES := {"REL-27": 25, "REL-28": 35, "REL-29": 45}
+const UPGRADE_COST: int = 20
+const PRICES := {"REL-27": 0, "REL-28": 0, "REL-29": 0}
 const BACKDROP := "res://assets/screens/cinematic/boss_overkill_altar.jpg"
 
 var _boss: EnemyData
@@ -38,7 +39,7 @@ func _ready() -> void:
 	_build_main_panel()
 	_build_modal()
 	if _purchased:
-		_status_label.text = "ZENITH ALREADY BOUND. Continue with the relic you purchased."
+		_status_label.text = "ZENITH ALREADY BOUND. Continue with the relic you claimed."
 		_leave_button.text = "CARRY THIS POWER FORWARD  ›"
 	_refresh_balance()
 	_show_arrival()
@@ -81,17 +82,17 @@ func _build_main_panel() -> void:
 	var kicker := _make_label("ACT GUARDIAN FALLEN    /    THE OVERKILL ALTAR", 16, Color("e3bb82"))
 	kicker.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(kicker)
-	var title := _make_label("POWER HAS A PRICE", 49, Color("f8e9cf"), true)
+	var title := _make_label("CLAIM YOUR ZENITH", 49, Color("f8e9cf"), true)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
-	var premise := _make_label("The damage you dealt beyond death has become power. Bind one Zenith relic before the next descent.", 22, Color("c2d5da"))
+	var premise := _make_label("Claim one Boss Zenith relic for FREE (0 Overkill). If you hold 20+ Overkill, it is automatically ascended to its Upgraded form for 20 Overkill.", 22, Color("c2d5da"))
 	premise.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	premise.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	premise.custom_minimum_size.y = 48.0
 	column.add_child(premise)
 	var rule := ScreenDesign.rule(column, Color("d7b680"))
 	rule.custom_minimum_size.y = 2.0
-	_balance_label = _make_label("", 27, Color("f3c27e"))
+	_balance_label = _make_label("", 25, Color("f3c27e"))
 	_balance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_balance_label)
 	var offer_row := HBoxContainer.new()
@@ -102,8 +103,8 @@ func _build_main_panel() -> void:
 	for id: String in OFFER_IDS:
 		var relic: ClockRelicData = ContentDatabase.get_clock_relic(id)
 		if relic != null:
-			_build_offer(offer_row, relic, int(PRICES[id]))
-	_status_label = _make_label("One purchase at this altar. You may leave and keep your Overkill Points.", 18, Color("afc3c9"))
+			_build_offer(offer_row, relic)
+	_status_label = _make_label("One Zenith relic may be bound at this altar. Base form is free; 20 Overkill tempers it immediately.", 18, Color("afc3c9"))
 	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(_status_label)
@@ -116,7 +117,7 @@ func _build_main_panel() -> void:
 	column.add_child(_leave_button)
 
 
-func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> void:
+func _build_offer(parent: HBoxContainer, relic: ClockRelicData) -> void:
 	var card := PanelContainer.new()
 	card.name = relic.id
 	var card_width: float = minf(410.0, (get_viewport_rect().size.x - 180.0) / 3.0)
@@ -146,7 +147,7 @@ func _build_offer(parent: HBoxContainer, relic: ClockRelicData, price: int) -> v
 	inner.add_child(effect)
 	var buy := Button.new()
 	buy.name = "BuyButton"
-	buy.text = "BIND  ·  %d OVERKILL" % price
+	buy.text = "CLAIM FREE  ·  0 OVERKILL"
 	buy.custom_minimum_size.y = 56.0
 	buy.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	buy.pressed.connect(func() -> void: _open_purchase(relic.id))
@@ -220,10 +221,14 @@ func _build_modal() -> void:
 func _open_purchase(id: String) -> void:
 	if _purchased or _departed:
 		return
-	var relic: ClockRelicData = ContentDatabase.get_clock_relic(id)
-	var price: int = int(PRICES.get(id, 0))
-	if relic == null or price <= 0 or OKRunState.current_ok < price:
+	var base_relic: ClockRelicData = ContentDatabase.get_clock_relic(id)
+	if base_relic == null:
 		return
+	var will_upgrade: bool = OKRunState.current_ok >= UPGRADE_COST
+	var price: int = UPGRADE_COST if will_upgrade else 0
+	var display_relic: ClockRelicData = ClockInventory.resolve({"id": id, "level": 1 if will_upgrade else 0})
+	if display_relic == null:
+		display_relic = base_relic
 	_pending_id = id
 	_selected_replacement_uid = -1
 	_selected_replacement_button = null
@@ -233,16 +238,17 @@ func _open_purchase(id: String) -> void:
 	var full: bool = RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
 	_replacement_scroll.visible = full
 	_selection_label.visible = full
+	var cost_line: String = ("Upgraded Zenith Ascent: %d Overkill  ·  Bank after binding: %d" % [price, OKRunState.current_ok - price]) if will_upgrade else ("Base Zenith Claim: FREE (0 Overkill)  ·  Bank remains: %d" % OKRunState.current_ok)
 	if full:
 		_modal_kicker.text = "ZENITH REPLACEMENT  ·  A BINDING MUST BE CHOSEN"
 		_modal_title.text = "CHOOSE A RELIC TO REPLACE"
-		_modal_detail.text = "%s\n\nBinding %s costs %d Overkill; your bank will be %d." % [relic.description, relic.name, price, OKRunState.current_ok - price]
-		_selection_label.text = "Choose one of your individual relic copies. The selected relic will be lost."
+		_modal_detail.text = "%s\n\n%s" % [display_relic.description, cost_line]
+		_selection_label.text = "Choose one of your individual relic copies. The selected relic will be replaced."
 		_build_replacement_choices()
 	else:
-		_modal_kicker.text = "SEAL THE BARGAIN"
-		_modal_title.text = relic.name.to_upper()
-		_modal_detail.text = "%s\n\nCost: %d Overkill  ·  Bank after purchase: %d" % [relic.description, price, OKRunState.current_ok - price]
+		_modal_kicker.text = "SEAL THE ZENITH"
+		_modal_title.text = display_relic.name.to_upper()
+		_modal_detail.text = "%s\n\n%s" % [display_relic.description, cost_line]
 	_update_confirm_state()
 	_main_panel.hide()
 	_modal.show()
@@ -318,29 +324,32 @@ func _cancel_purchase() -> void:
 
 func _update_confirm_state() -> void:
 	var full: bool = RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
-	_confirm_button.text = "SPEND OVERKILL & REPLACE RELIC" if full else "SPEND OVERKILL & BIND RELIC"
+	var will_upgrade: bool = OKRunState.current_ok >= UPGRADE_COST
+	if full:
+		_confirm_button.text = ("BIND UPGRADED (20 OK) & REPLACE RELIC" if will_upgrade else "CLAIM FREE (0 OK) & REPLACE RELIC")
+	else:
+		_confirm_button.text = ("BIND UPGRADED ZENITH (20 OK)" if will_upgrade else "CLAIM FREE ZENITH (0 OK)")
 	_confirm_button.disabled = full and _selected_replacement_uid < 0
 
 
 func _confirm_purchase() -> void:
 	if _pending_id.is_empty() or _purchased or _departed:
 		return
-	var price: int = int(PRICES.get(_pending_id, 0))
-	if price <= 0 or OKRunState.current_ok < price:
-		_modal.hide()
-		_refresh_balance()
-		return
+	var will_upgrade: bool = OKRunState.current_ok >= UPGRADE_COST
+	var price: int = UPGRADE_COST if will_upgrade else 0
+	var target_level: int = 1 if will_upgrade else 0
 	var full: bool = RunManager.clock_inventory.size() >= ClockInventory.MAX_SIZE
 	var replacement_uid: int = -1
 	if full:
 		if _selected_replacement_uid < 0:
 			return
 		replacement_uid = _selected_replacement_uid
-	if not OKRunState.spend_ok(price, "boss_zenith:%s" % _pending_id):
+	if price > 0 and not OKRunState.spend_ok(price, "boss_zenith:%s" % _pending_id):
 		return
-	var accepted: bool = RunManager.replace_clock_relic(replacement_uid, _pending_id) if full else RunManager.add_clock_relic(_pending_id)
+	var accepted: bool = RunManager.replace_clock_relic(replacement_uid, _pending_id, target_level) if full else RunManager.add_clock_relic(_pending_id, target_level)
 	if not accepted:
-		OKRunState.gain_ok(price, "boss_zenith_refund")
+		if price > 0:
+			OKRunState.gain_ok(price, "boss_zenith_refund")
 		_modal.hide()
 		_main_panel.show()
 		_refresh_balance()
@@ -350,8 +359,10 @@ func _confirm_purchase() -> void:
 		RunManager.resume_context = {"kind": "altar", "enemy_id": _boss.id, "purchased": true}
 	_modal.hide()
 	_main_panel.show()
-	var bound: ClockRelicData = ContentDatabase.get_clock_relic(_pending_id)
-	_status_label.text = "%s BOUND. The next act begins with a different clock." % bound.name.to_upper()
+	var bound: ClockRelicData = ClockInventory.resolve({"id": _pending_id, "level": target_level})
+	if bound == null:
+		bound = ContentDatabase.get_clock_relic(_pending_id)
+	_status_label.text = "%s BOUND%s. The next act begins with a different clock." % [bound.name.to_upper(), " (UPGRADED)" if target_level > 0 else ""]
 	for button: Button in _offer_buttons:
 		button.disabled = true
 	_leave_button.text = "CARRY THIS POWER FORWARD  ›"
@@ -360,13 +371,16 @@ func _confirm_purchase() -> void:
 
 
 func _refresh_balance() -> void:
-	_balance_label.text = "YOUR OVERKILL BANK     %d" % OKRunState.current_ok
+	var will_upgrade: bool = OKRunState.current_ok >= UPGRADE_COST
+	_balance_label.text = "YOUR OVERKILL BANK: %d     ·     %s" % [
+		OKRunState.current_ok,
+		"20+ OK: CLAIMS AS UPGRADED (20 OK)" if will_upgrade else "CLAIMS BASE FORM FOR FREE (0 OK)"
+	]
 	for index: int in _offer_buttons.size():
-		var price: int = int(PRICES[OFFER_IDS[index]])
 		var button: Button = _offer_buttons[index]
-		button.disabled = _purchased or OKRunState.current_ok < price
+		button.disabled = _purchased
 		if not _purchased:
-			button.text = "BIND  ·  %d OVERKILL" % price if OKRunState.current_ok >= price else "NEED %d MORE OVERKILL" % (price - OKRunState.current_ok)
+			button.text = "BIND UPGRADED  ·  %d OVERKILL" % UPGRADE_COST if will_upgrade else "CLAIM FREE  ·  0 OVERKILL"
 
 
 func _show_arrival() -> void:

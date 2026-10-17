@@ -1,14 +1,17 @@
 [gd_resource type="Resource" script_class="ClockRelicData" load_steps=2 format=3]
+
 [ext_resource type="Script" path="res://scripts/data/clock_relic_data.gd" id="1_script"]
+
 [resource]
 script = ExtResource("1_script")
 id = "REL-13"
 name = "Vital Siphon"
-tier = 0
+tier = 1
 role = 0
 primary_essence = 0
 secondary_essence = 2
-description = "Deal 3 damage. Heal HP damage dealt."
+description = "Deal 4 damage. +1 damage per enemy Bleed stack. Lifesteal (heal unblocked HP damage dealt)."
 art_id = "rel_13_blood_siphon"
-base_damage = 3
+base_damage = 4
 lifesteal = true
+damage_per_enemy_bleed = 1

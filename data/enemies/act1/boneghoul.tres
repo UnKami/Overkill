@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 7
+value = 8
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "claw_swipe"
 intent_type = 0
-intent_value = 7
+intent_value = 8
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "boneghoul"
 display_name = "Boneghoul"
 tier = 0
-max_hp = 16
-hp_variance = Vector2i(10, 16)
+max_hp = 32
+hp_variance = Vector2i(28, 38)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 15
+overkill_death_threshold = 18
 art_id = "boneghoul_crystalline"

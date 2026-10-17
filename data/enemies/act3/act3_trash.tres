@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 13
+value = 14
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "shard_slash"
 intent_type = 0
-intent_value = 13
+intent_value = 14
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "act3_trash"
 display_name = "Shattered Husk"
 tier = 0
-max_hp = 45
-hp_variance = Vector2i(35, 55)
+max_hp = 80
+hp_variance = Vector2i(70, 90)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 36
+overkill_death_threshold = 40
 art_id = "shattered_husk_crystalline"

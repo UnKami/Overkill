@@ -1,0 +1,43 @@
+{
+  "source_meshes": 28,
+  "runtime_meshes": 2,
+  "bones": 63,
+  "actions": 16,
+  "painted_faces": 354,
+  "retained_surface_faces": 51658,
+  "map_resolution": 4096,
+  "cloth_material": "Separate cloth color atlas and zero-metal woven PBR prevent cross-material mip bleeding",
+  "map_channels": [
+    "base",
+    "orm",
+    "emission",
+    "normal",
+    "cloth_base"
+  ],
+  "normal_space": "TANGENT",
+  "projection_excluded_surfaces": [
+    "woven cloth",
+    "Reference etched aged armor",
+    "Reference engraved coat panels",
+    "Antique warm bronze",
+    "Worn brass edges",
+    "Recessed faceless obsidian",
+    "Inlaid cyan fracture",
+    "Inlaid amber fracture",
+    "Supple charcoal leather undersuit",
+    "Scuffed charcoal boot leather"
+  ],
+  "source_bounds": [
+    298,
+    165,
+    720,
+    1307
+  ],
+  "paint_bounds": [
+    281,
+    39,
+    790,
+    1393
+  ],
+  "pose_and_geometry_changed": false
+}

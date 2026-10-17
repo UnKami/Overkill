@@ -62,7 +62,7 @@ func _ready() -> void:
 	quality.custom_minimum_size.y = 44
 	quality_box.add_child(quality)
 	var explanation: Label = Label.new()
-	explanation.text = "Lower settings reduce animated scenery and showcase rendering load.\nText, relics and clocks remain sharp. Changes apply immediately."
+	explanation.text = "Lower settings reduce scene and character rendering load.\nBattle UI and clock text stay sharp. Changes apply immediately."
 	explanation.add_theme_font_size_override("font_size",18)
 	explanation.add_theme_color_override("font_color", ScreenDesign.MUTED)
 	quality_box.add_child(explanation)

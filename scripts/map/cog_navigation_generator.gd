@@ -34,24 +34,26 @@ static func generate(seed_value: int, act_number: int, layout_version: int = LAY
 	var counts: Array[int] = LEGACY_LAYER_GEAR_COUNTS if layout_version < LAYOUT_VERSION else LAYER_GEAR_COUNTS
 	for layer_index: int in counts.size():
 		var layer_ids: Array[String] = []
-		for gear_index: int in counts[layer_index]:
+		var gear_count_in_layer: int = counts[layer_index]
+		for gear_index: int in gear_count_in_layer:
 			var gear := Gear.new()
 			gear.layer = layer_index
 			gear.index = gear_index
 			gear.id = _gear_id(act_number, layer_index, gear_index)
-			var column: float = gear_index - (counts[layer_index] - 1) * 0.5
+			var column: float = gear_index - (gear_count_in_layer - 1) * 0.5
 			# Keep old seat IDs/encounters while staggering the repeated two-wheel
 			# row. The top bearing shifts half a column; every edge remains meshed.
 			if layout_version < LAYOUT_VERSION and layer_index >= 6:
 				column += 0.5
 			gear.machine_position = Vector2(column * COLUMN_PITCH, -layer_index * ROW_PITCH)
 			layer_ids.append(gear.id)
+			var seat_types: Array[int] = _assign_seat_types(layer_index, gear_index, gear_count_in_layer, counts.size(), rng)
 			for seat_index: int in 3:
 				var node := MapGenerator.MapNode.new()
 				node.id = _seat_id(act_number, layer_index, gear_index, seat_index)
 				node.row = layer_index
 				node.col = gear_index * 3 + seat_index
-				node.type = _seat_type(layer_index, seat_index, rng, counts.size())
+				node.type = seat_types[seat_index]
 				_assign_encounter(node, act_number, layer_index, rng)
 				gear.seats.append(node)
 				nodes[node.id] = node
@@ -70,18 +72,45 @@ static func generate(seed_value: int, act_number: int, layout_version: int = LAY
 	return {"gears": gears, "layers": layers, "nodes": nodes, "layout_version": layout_version}
 
 
-static func _seat_type(layer_index: int, seat_index: int, rng: RandomNumberGenerator, layer_count: int) -> int:
-	if layer_index <= 1:
-		return MapGenerator.NodeType.COMBAT
-	if layer_index < layer_count - 3:
-		# Early approaches guarantee combat, with an optional elite seat
-		# on selected fourth-stage wheels.
-		return MapGenerator.NodeType.ELITE if layer_index == 3 and seat_index == 2 and rng.randf() < 0.42 else MapGenerator.NodeType.COMBAT
-	if layer_index == layer_count - 3:
-		return [MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.ELITE, MapGenerator.NodeType.TREASURE][seat_index]
+## Assigns distinct strategic route identities across Layers 1-5:
+## - Layer 0: COMBAT
+## - Left Gears (gear_index == 0): Aggressive / High-Reward (ELITE, TREASURE, COMBAT)
+## - Center Gears (0 < gear_index < gear_count - 1): Balanced (COMBAT, EVENT, REST)
+## - Right Gears (gear_index == gear_count - 1): Economy / Utility (SHOP, EVENT, COMBAT / REST)
+## - Final Layer (layer_count - 1): BOSS
+static func _assign_seat_types(layer_index: int, gear_index: int, gear_count: int, layer_count: int, rng: RandomNumberGenerator) -> Array[int]:
+	if layer_index <= 0:
+		return [MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.COMBAT]
+	if layer_index >= layer_count - 1:
+		return [MapGenerator.NodeType.BOSS, MapGenerator.NodeType.BOSS, MapGenerator.NodeType.BOSS]
 	if layer_index == layer_count - 2:
-		return [MapGenerator.NodeType.REST, MapGenerator.NodeType.SHOP, MapGenerator.NodeType.EVENT][seat_index]
-	return MapGenerator.NodeType.BOSS
+		# Guardian approach: seat 0 is guaranteed REST before the boss; remaining seats offer Elite/Treasure (Left) or Shop/Event (Right)
+		if gear_index == 0:
+			return [MapGenerator.NodeType.REST, MapGenerator.NodeType.ELITE, MapGenerator.NodeType.EVENT]
+		else:
+			return [MapGenerator.NodeType.REST, MapGenerator.NodeType.SHOP, MapGenerator.NodeType.EVENT]
+	var base_seats: Array[int] = []
+	if gear_index == 0:
+		# Left Gears: Aggressive / High-Reward route
+		base_seats = [MapGenerator.NodeType.ELITE, MapGenerator.NodeType.TREASURE, MapGenerator.NodeType.COMBAT]
+	elif gear_index == gear_count - 1:
+		# Right Gears: Economy / Utility route
+		base_seats = [MapGenerator.NodeType.SHOP, MapGenerator.NodeType.EVENT, MapGenerator.NodeType.REST if layer_index % 2 == 1 else MapGenerator.NodeType.COMBAT]
+	else:
+		# Center Gears: Balanced route
+		base_seats = [MapGenerator.NodeType.COMBAT, MapGenerator.NodeType.EVENT, MapGenerator.NodeType.REST]
+	var offset: int = (layer_index + gear_index + rng.randi_range(0, 2)) % 3
+	var rotated: Array[int] = [
+		base_seats[offset % 3],
+		base_seats[(offset + 1) % 3],
+		base_seats[(offset + 2) % 3],
+	]
+	return rotated
+
+
+static func _seat_type(layer_index: int, seat_index: int, rng: RandomNumberGenerator, layer_count: int, gear_index: int = 0, gear_count: int = 1) -> int:
+	var seats: Array[int] = _assign_seat_types(layer_index, gear_index, gear_count, layer_count, rng)
+	return seats[clampi(seat_index, 0, 2)]
 
 
 static func _assign_encounter(node: MapGenerator.MapNode, act_number: int, layer_index: int, rng: RandomNumberGenerator) -> void:

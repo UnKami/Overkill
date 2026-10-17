@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Vitality"]
 script = ExtResource("2_effect")
 effect_type = 8
-value = 6
+value = 2
 
 [resource]
 script = ExtResource("1_relic")
@@ -14,6 +14,6 @@ id = "artifact_tideward_clapper"
 display_name = "Tideward Clapper"
 trigger = 8
 effects = Array[Resource]([SubResource("Vitality")])
-condition_data = {"essence": "blue", "once_per_combat": true}
-flavor_text = "When a bound ward rises, the clapper calls six stolen heartbeats home."
+condition_data = {"essence": "blue"}
+flavor_text = "Whenever a bound ward rises to grant Block, the clapper calls 2 stolen heartbeats home."
 art_id = "run_wide/tideward_clapper"

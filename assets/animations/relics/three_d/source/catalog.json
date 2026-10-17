@@ -1,0 +1,205 @@
+{
+  "REL-01": {
+    "kind": "sword",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "iron_strike"
+  },
+  "REL-02": {
+    "kind": "blades",
+    "meshes": 2,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "twin_right"
+  },
+  "REL-03": {
+    "kind": "hammer",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "heavy"
+  },
+  "REL-04": {
+    "kind": "guard",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-05": {
+    "kind": "thorns",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-06": {
+    "kind": "wall",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-07": {
+    "kind": "needle",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-08": {
+    "kind": "spring",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "crown"
+  },
+  "REL-09": {
+    "kind": "oil",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "channel"
+  },
+  "REL-10": {
+    "kind": "battery",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-11": {
+    "kind": "wedge",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "heavy"
+  },
+  "REL-12": {
+    "kind": "piston",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-13": {
+    "kind": "siphon",
+    "meshes": 2,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "siphon"
+  },
+  "REL-14": {
+    "kind": "piston",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "piston"
+  },
+  "REL-15": {
+    "kind": "bell",
+    "meshes": 4,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "bell"
+  },
+  "REL-16": {
+    "kind": "crown",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "crown"
+  },
+  "REL-17": {
+    "kind": "censer",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "channel"
+  },
+  "REL-18": {
+    "kind": "tithe",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "crown"
+  },
+  "REL-19": {
+    "kind": "abacus",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-20": {
+    "kind": "reservoir",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-21": {
+    "kind": "bloom",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "crown"
+  },
+  "REL-22": {
+    "kind": "ward",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "block"
+  },
+  "REL-23": {
+    "kind": "needle",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-24": {
+    "kind": "prism",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-25": {
+    "kind": "chalice",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "chalice"
+  },
+  "REL-26": {
+    "kind": "leech",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "channel"
+  },
+  "REL-27": {
+    "kind": "bell",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "bell"
+  },
+  "REL-28": {
+    "kind": "siphon",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  },
+  "REL-29": {
+    "kind": "prism",
+    "meshes": 1,
+    "rig": 6,
+    "grip": "origin",
+    "actor_action": "throw"
+  }
+}

@@ -6,10 +6,11 @@
 script = ExtResource("1_script")
 id = "REL-02"
 name = "Twin Blades"
-tier = 0
+tier = 1
 role = 0
 primary_essence = 0
-description = "Deal 4 damage twice (8 total)."
+description = "Deal 4 damage 2 times. Sector Finisher (Hour 3/6/9): +1 extra hit(s)."
 art_id = "rel_02_twin_blades"
 base_damage = 4
 hits = 2
+sector_finisher_hits_bonus = 1

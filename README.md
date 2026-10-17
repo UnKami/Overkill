@@ -1,5 +1,7 @@
 # Overkill
 
+**Local 0.48.0 Archetype Synergy & Chronometer Depth candidate:** 4 distinct relic archetypes, Sector-First progressive combo sweeps, Slay-the-Spire-caliber Smart Hover live math inspector, 80 Max HP economy rebalance, and tightened 3D relic choreography. Publication is held for review. The published download below remains 0.45.0. [Details](docs/encounter-048.md).
+
 ## Download and test
 
 **[Download the Windows installer — 0.45.0 playtest](https://github.com/UnKami/Overkill/releases/download/v0.45.0-test/OverkillSetup-0.45.0.exe)**

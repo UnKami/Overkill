@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Block"]
 script = ExtResource("2_effect")
 effect_type = 1
-value = 8
+value = 10
 
 [resource]
 script = ExtResource("1_relic")
@@ -15,5 +15,5 @@ display_name = "Aegis Seed"
 trigger = 4
 effects = Array[Resource]([SubResource("Block")])
 condition_data = {"essence": "blue", "once_per_combat": true}
-flavor_text = "At the first bell of each battle, its shell unfolds into a ward."
+flavor_text = "At the first bell of each battle, its shell unfolds into a 10-Block Bastion ward."
 art_id = "run_wide/aegis_seed"

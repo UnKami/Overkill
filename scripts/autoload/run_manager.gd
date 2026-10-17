@@ -27,8 +27,8 @@ var cog_machine_angle: float = 0.0
 var resume_context: Dictionary = {}
 
 ## Run-persistent HP (distinct from PlayerState.hp, which resets every fight)
-var current_hp: int = 0
-var max_hp: int = 0
+var current_hp: int = 80
+var max_hp: int = 80
 
 ## Run-persistent deck and inventory
 var deck: Array[RunCardEntry] = []
@@ -43,7 +43,7 @@ var purchase_counts: Dictionary = {}  # category String -> int
 var _next_card_instance_id: int = 0
 
 
-func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicData] = [], starting_max_hp: int = 500, map_seed: int = -1) -> void:
+func start_new_run(starting_deck: Array[CardData], starting_relics: Array[RelicData] = [], starting_max_hp: int = 80, map_seed: int = -1) -> void:
 	OKRunState.reset_for_new_run()
 	deck.clear()
 	clock_inventory = ClockInventory.starter()
@@ -98,13 +98,13 @@ func load_from_save(data: Dictionary) -> void:
 
 	potions_held.assign(data.get("potions_held", []))
 	purchase_counts = data.get("purchase_counts", {}).duplicate()
-	current_hp = int(data.get("current_hp", 75))
-	max_hp = int(data.get("max_hp", 75))
-	if int(data.get("health_balance_version", 0)) < 1:
+	current_hp = int(data.get("current_hp", 80))
+	max_hp = int(data.get("max_hp", 80))
+	if int(data.get("health_balance_version", 0)) < 2:
 		var previous_max_hp: int = maxi(max_hp, 1)
-		var hp_bonus: int = maxi(0, max_hp - 75)
-		max_hp = 500 + hp_bonus
-		current_hp = roundi(float(clampi(current_hp, 0, previous_max_hp)) / float(previous_max_hp) * float(max_hp))
+		var hp_bonus: int = maxi(0, max_hp - 500) if previous_max_hp >= 250 else maxi(0, max_hp - 75)
+		max_hp = 80 + clampi(hp_bonus, 0, 120)
+		current_hp = maxi(1, roundi(float(clampi(current_hp, 0, previous_max_hp)) / float(previous_max_hp) * float(max_hp)))
 
 	var map_data: Dictionary = data.get("map", {})
 	seed_value = map_data.get("seed", randi())
@@ -134,7 +134,7 @@ func to_save_dict() -> Dictionary:
 		"deck": deck_data,
 		"current_hp": current_hp,
 		"max_hp": max_hp,
-		"health_balance_version": 1,
+		"health_balance_version": 2,
 		"relics_held": relic_ids,
 		"potions_held": potions_held.duplicate(),
 		"purchase_counts": purchase_counts.duplicate(),
@@ -154,24 +154,24 @@ func ensure_clock_inventory() -> void:
 	if clock_inventory.is_empty(): clock_inventory = ClockInventory.starter()
 
 
-func add_clock_relic(relic_id: String) -> bool:
+func add_clock_relic(relic_id: String, level: int = 0) -> bool:
 	if ContentDatabase.get_clock_relic(relic_id) == null: return false
 	if clock_inventory.size() >= ClockInventory.MAX_SIZE: return false
 	var uid := 0
 	for entry in clock_inventory: uid = maxi(uid, int(entry.uid) + 1)
-	clock_inventory.append({"uid": uid, "id": relic_id, "level": 0})
+	clock_inventory.append({"uid": uid, "id": relic_id, "level": clampi(level, 0, 1)})
 	clock_inventory_changed.emit()
 	return true
 
 
-func replace_clock_relic(uid: int, relic_id: String) -> bool:
+func replace_clock_relic(uid: int, relic_id: String, level: int = 0) -> bool:
 	if ContentDatabase.get_clock_relic(relic_id) == null: return false
 	for index: int in clock_inventory.size():
 		if int(clock_inventory[index].get("uid", -1)) != uid: continue
 		var next_uid: int = 0
 		for entry: Dictionary in clock_inventory:
 			next_uid = maxi(next_uid, int(entry.get("uid", -1)) + 1)
-		clock_inventory[index] = {"uid": next_uid, "id": relic_id, "level": 0}
+		clock_inventory[index] = {"uid": next_uid, "id": relic_id, "level": clampi(level, 0, 1)}
 		clock_inventory_changed.emit()
 		return true
 	return false

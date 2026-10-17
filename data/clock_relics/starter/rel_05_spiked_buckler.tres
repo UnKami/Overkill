@@ -6,11 +6,12 @@
 script = ExtResource("1_script")
 id = "REL-05"
 name = "Spiked Buckler"
-tier = 0
+tier = 1
 role = 1
 primary_essence = 1
 secondary_essence = 2
-description = "Gain 4 Block. Deal 4 Thorns on enemy attack."
+description = "Gain 5 Block. Gain +4 Thorns. Resonance (matching previous Hour Essence): +3 power."
 art_id = "rel_05_spiked_buckler"
-base_block = 4
+base_block = 5
 apply_thorns = 4
+resonance_essence_bonus = 3

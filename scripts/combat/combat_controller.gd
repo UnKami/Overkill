@@ -6,6 +6,8 @@ const TICK_RECOVERY_DELAY: float = 0.12
 
 signal combat_won(enemies_data: Array[EnemyData])
 signal combat_lost
+var _pending_lifesteal_visual: int = 0
+var _twin_relic_motion: Node2D
 
 enum Phase { ASSEMBLY, QUADRANT }
 const Presentation := preload("res://scripts/combat/clock_battle_presentation.gd")
@@ -32,8 +34,13 @@ const RelicMotion := preload("res://scripts/combat/relic_choreography.gd")
 @onready var _relic_bar: HBoxContainer = %RelicBar
 
 var phase: Phase = Phase.ASSEMBLY
+var current_phase: Phase:
+	get: return phase
+	set(v): phase = v
 var turn_number: int = 1
 var active_quadrant: int = 1
+var selected_assembly_hour: int = 1
+var _swap_source_hour: int = 0
 
 var player_hp: int = 80
 var player_max_hp: int = 80
@@ -314,12 +321,44 @@ func _configure_enemy_clock() -> void:
 
 
 # -------------------------------------------------------------
-# PHASE 1: ASSEMBLY CYCLE (Turns 1 - 9)
+# PHASE 1: SECTOR ASSEMBLY & IMMEDIATE COMBO SWEEP (Turns 1 - 9)
 # -------------------------------------------------------------
 func _start_phase_one() -> void:
 	phase = Phase.ASSEMBLY
 	turn_number = 1
+	active_quadrant = 1
+	selected_assembly_hour = 1
+	# Reveal all 9 enemy hours at combat start so the player can plan positional
+	# synergies (Finishers on 3/6/9, Resonance chains, Socket Chargers) across all 3 sectors.
+	for h: int in range(1, 10):
+		_reveal_enemy_hour(h)
 	_prompt_phase_one_draft()
+
+
+func get_target_assembly_hour() -> int:
+	if phase == Phase.ASSEMBLY:
+		return clampi(selected_assembly_hour, 1, 9)
+	return ChronometerView.get_quadrant_hours(active_quadrant)[0]
+
+
+func _next_empty_sector_hour(quadrant: int) -> int:
+	for h: int in ChronometerView.get_quadrant_hours(quadrant):
+		if player_sockets[h - 1].slotted_relic == null and not player_sockets[h - 1].is_locked:
+			return h
+	for h: int in range(1, 10):
+		if player_sockets[h - 1].slotted_relic == null and not player_sockets[h - 1].is_locked:
+			return h
+	return clampi(turn_number, 1, 9)
+
+
+func _filled_sector_chain_hours(quadrant: int, include_hour: int = 0) -> Array[int]:
+	var result: Array[int] = []
+	for h: int in ChronometerView.get_quadrant_hours(quadrant):
+		if h == include_hour or (player_sockets[h - 1].slotted_relic != null):
+			result.append(h)
+	if result.is_empty() and include_hour > 0:
+		result.append(include_hour)
+	return result
 
 
 func _prompt_phase_one_draft() -> void:
@@ -329,11 +368,23 @@ func _prompt_phase_one_draft() -> void:
 
 	_resolving = false
 	OKRunState.start_new_turn()
-	_player_chrono.mark_hour(turn_number)
-	_enemy_chrono.mark_hour(EnemyClockPattern.hour_for(turn_number, _active_enemy()))
-	_reveal_enemy_hour(EnemyClockPattern.hour_for(turn_number, _active_enemy()))
-	if EnemyClockPattern.has_twin(_active_enemy()) and turn_number % 3 == 0:
-		_reveal_enemy_hour(((EnemyClockPattern.hour_for(turn_number, _active_enemy()) + 3) % 9) + 1)
+	active_quadrant = clampi(int((turn_number - 1) / 3) + 1, 1, 3)
+	selected_assembly_hour = _next_empty_sector_hour(active_quadrant)
+	var sector_hours := ChronometerView.get_quadrant_hours(active_quadrant)
+
+	_player_chrono.highlight_quadrant(active_quadrant, Color("#EF9F27"))
+	var enemy_q := 4 - active_quadrant if _enemy_chrono.rotation_direction < 0 else active_quadrant
+	_enemy_chrono.highlight_quadrant(enemy_q, Color("#E74C3C"))
+	_player_chrono.set_interactive_quadrant(active_quadrant, true)
+	_sync_assembly_target_reticles()
+
+	for h: int in sector_hours:
+		_reveal_enemy_hour(EnemyClockPattern.hour_for(h, _active_enemy()))
+	if EnemyClockPattern.has_twin(_active_enemy()):
+		_reveal_enemy_hour(((EnemyClockPattern.hour_for(sector_hours[2], _active_enemy()) + 3) % 9) + 1)
+
+	_player_chrono.mark_hour(selected_assembly_hour)
+	_enemy_chrono.mark_hour(EnemyClockPattern.hour_for(selected_assembly_hour, _active_enemy()))
 	_refresh_guidance()
 	TutorialCallout.trigger("first_intent")
 	_skip_button.hide()
@@ -345,20 +396,39 @@ func _prompt_phase_one_draft() -> void:
 		var ped: RelicPedestalView = pedestal_scene.instantiate()
 		_pedestal_row.add_child(ped)
 		ped.use_battle_layout()
-		ped.bind_relic(relic, "BIND TO %d O'CLOCK" % turn_number)
+		ped.bind_relic(relic, "BIND TO %d O'CLOCK" % selected_assembly_hour)
 		ped.previewed.connect(_preview_allocation)
 		ped.preview_ended.connect(_refresh_guidance)
 		ped.selected.connect(_on_phase_one_relic_chosen)
 	_choice_overlay.present(self)
+	_update_stats_display()
+
+
+func _sync_assembly_target_reticles() -> void:
+	var sector_hours := ChronometerView.get_quadrant_hours(active_quadrant)
+	for h: int in range(1, 10):
+		var s_view: ClockSocketView = _player_chrono.get_socket_view(h)
+		if s_view != null and s_view.has_method("set_targetable_empty"):
+			var can_target: bool = phase == Phase.ASSEMBLY and not _resolving and sector_hours.has(h) and player_sockets[h - 1].slotted_relic == null and not player_sockets[h - 1].is_locked
+			s_view.set_targetable_empty(can_target, can_target and h == selected_assembly_hour)
+
+
+func _on_relic_chosen_for_assembly(chosen: ClockRelicData) -> void:
+	if chosen != null and not current_draft_selection.has(chosen):
+		current_draft_selection.append(chosen)
+	await _on_phase_one_relic_chosen(chosen)
 
 
 func _on_phase_one_relic_chosen(chosen: ClockRelicData) -> void:
 	if _resolving or _combat_over or not current_draft_selection.has(chosen):
 		return
 	_resolving = true
-	var target_hour := turn_number
+	var target_hour: int = selected_assembly_hour
+	if target_hour < 1 or target_hour > 9 or player_sockets[target_hour - 1].slotted_relic != null:
+		target_hour = _next_empty_sector_hour(active_quadrant)
 	_guidance.clear()
-	await _animate_placement(chosen,target_hour)
+	_player_chrono.set_interactive_quadrant(active_quadrant, false)
+	await _animate_placement(chosen, target_hour)
 	_clear_pedestals()
 
 	# 1. Socket Relic into Player Chronometer
@@ -372,13 +442,19 @@ func _on_phase_one_relic_chosen(chosen: ClockRelicData) -> void:
 	current_draft_selection.clear()
 	player_deck.shuffle()
 
-	# 3. Snap hands to Hour N & Resolve clash
-	_player_chrono.snap_hand_to_hour(target_hour)
-	await _enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(target_hour, _active_enemy()))
-	await _resolve_tick(target_hour)
-
-	if _check_combat_end():
-		return
+	# 3. Immediate Sector Combo Sweep: fire all filled hours in the active sector in sequence!
+	var chain_hours: Array[int] = _filled_sector_chain_hours(active_quadrant, target_hour)
+	if chain_hours.size() >= 2:
+		var chain_str: PackedStringArray = []
+		for ch: int in chain_hours:
+			chain_str.append(str(ch))
+		_show_turn_banner("SECTOR %d COMBO SWEEP  ·  %s" % [active_quadrant, " → ".join(chain_str)])
+	for h: int in chain_hours:
+		_player_chrono.snap_hand_to_hour(h)
+		await _enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(h, _active_enemy()))
+		await _resolve_tick(h)
+		if _check_combat_end():
+			return
 
 	if turn_number < 9:
 		turn_number += 1
@@ -394,6 +470,7 @@ func _transition_to_phase_two() -> void:
 	phase = Phase.QUADRANT
 	turn_number = 10
 	active_quadrant = 1
+	_swap_source_hour = 0
 	AmbientMotion.punch_scale(_nexus_sigil, 1.18, 0.5)
 	CombatVFX.play_shield_pulse(self, _nexus_sigil.global_position + _nexus_sigil.size * 0.5)
 	await get_tree().create_timer(0.4 / AudioManager.combat_animation_speed_scale()).timeout
@@ -406,9 +483,10 @@ func _prompt_phase_two_turn() -> void:
 		return
 
 	_resolving = false
+	_swap_source_hour = 0
 	OKRunState.start_new_turn()
 	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
-	_phase_label.text = "SECTOR %s  /  HOURS %02d–%02d     ·     Select a lit socket to replace its relic, or sweep" % [str(active_quadrant), hours[0], hours[2]]
+	_phase_label.text = "SECTOR %s  /  HOURS %02d–%02d     ·     Replace a socket with the reserve relic, or Overcharge & Sweep" % [str(active_quadrant), hours[0], hours[2]]
 
 	_player_chrono.highlight_quadrant(active_quadrant, Color("#EF9F27"))
 	for upcoming_hour: int in hours:
@@ -433,16 +511,37 @@ func _prompt_phase_two_turn() -> void:
 		_choice_overlay._style_button(ped._slot_button)
 		ped._slot_button.disabled = true
 	else:
-		_phase_label.text = "SECTOR %d  /  HOURS %02d–%02d     ·     All relics are bound. Sweep to activate this wedge." % [active_quadrant, hours[0], hours[2]]
+		_phase_label.text = "SECTOR %d  /  HOURS %02d–%02d     ·     Click two sockets to swap positions, or Overcharge & Sweep." % [active_quadrant, hours[0], hours[2]]
 
 	_skip_button.show()
-	_skip_button.text = "KEEP ALL · DISCARD DRAWN · SWEEP %d → %d → %d" % hours
+	_skip_button.text = "OVERCHARGE (+0.25× H%d & +3 OK) · KEEP & SWEEP %d → %d → %d" % [hours[1], hours[0], hours[1], hours[2]]
 	_choice_overlay.present(self)
 	_refresh_guidance()
 
 
-func _on_player_socket_pressed(hour_index: int, socket_view: ClockSocketView) -> void:
-	if _resolving or _combat_over or phase != Phase.QUADRANT or current_drawn_relic == null:
+func swap_sockets_in_active_sector(hour_a: int, hour_b: int) -> bool:
+	if _resolving or _combat_over or hour_a == hour_b:
+		return false
+	var q_hours := ChronometerView.get_quadrant_hours(active_quadrant)
+	if not q_hours.has(hour_a) or not q_hours.has(hour_b):
+		return false
+	var sock_a: ClockSocketData = player_sockets[hour_a - 1]
+	var sock_b: ClockSocketData = player_sockets[hour_b - 1]
+	if sock_a.is_locked or sock_b.is_locked:
+		return false
+	var tmp: ClockRelicData = sock_a.slotted_relic
+	sock_a.slotted_relic = sock_b.slotted_relic
+	sock_b.slotted_relic = tmp
+	AudioManager.play_clock_sound("slot")
+	_player_chrono.bind_sockets(player_sockets)
+	if is_instance_valid(_choice_overlay) and _choice_overlay.visible:
+		_choice_overlay.present(self)
+	_refresh_guidance()
+	return true
+
+
+func _on_player_socket_pressed(hour_index: int, _socket_view: ClockSocketView) -> void:
+	if _resolving or _combat_over:
 		return
 
 	var q_hours := ChronometerView.get_quadrant_hours(active_quadrant)
@@ -452,9 +551,41 @@ func _on_player_socket_pressed(hour_index: int, socket_view: ClockSocketView) ->
 	var socket_data: ClockSocketData = player_sockets[hour_index - 1]
 	if socket_data.is_locked:
 		return
+
+	# Phase 1: allow choosing which empty socket in the active sector receives the next drafted relic!
+	if phase == Phase.ASSEMBLY:
+		if socket_data.slotted_relic == null:
+			selected_assembly_hour = hour_index
+			AudioManager.play_clock_sound("tick")
+			_sync_assembly_target_reticles()
+			_player_chrono.mark_hour(selected_assembly_hour)
+			_enemy_chrono.mark_hour(EnemyClockPattern.hour_for(selected_assembly_hour, _active_enemy()))
+			for child in _pedestal_row.get_children():
+				if child is RelicPedestalView:
+					(child as RelicPedestalView)._slot_button.text = "BIND TO %d O'CLOCK" % selected_assembly_hour
+			if is_instance_valid(_choice_overlay) and is_instance_valid(_choice_overlay._heading):
+				_choice_overlay._heading.text = "BIND A RELIC · SECTOR %d (HOUR %02d)" % [active_quadrant, selected_assembly_hour]
+			_refresh_guidance()
+		return
+
+	# Phase 2 when no reserve relic is drawn: clicking two sockets in the active sector swaps their relics
+	if current_drawn_relic == null:
+		if _swap_source_hour == 0:
+			_swap_source_hour = hour_index
+			AudioManager.play_clock_sound("tick")
+			_phase_label.text = "SWAP FROM HOUR %02d  ·  Select another socket in Sector %d to swap positions." % [hour_index, active_quadrant]
+		elif _swap_source_hour == hour_index:
+			_swap_source_hour = 0
+			_refresh_guidance()
+		else:
+			var from_h: int = _swap_source_hour
+			_swap_source_hour = 0
+			swap_sockets_in_active_sector(from_h, hour_index)
+		return
+
 	_resolving = true
 	_guidance.clear()
-	await _animate_placement(current_drawn_relic,hour_index)
+	await _animate_placement(current_drawn_relic, hour_index)
 	AudioManager.play_clock_sound("slot")
 
 	# Hot-swap: displace old relic to discard, slot new relic
@@ -480,6 +611,13 @@ func _on_skip_button_pressed() -> void:
 	if current_drawn_relic != null:
 		player_discard.append(current_drawn_relic)
 		current_drawn_relic = null
+
+	# Overcharge & Sweep: reward keeping your sector clock by boosting the middle socket (+0.25x) and banking +3 Overkill
+	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
+	var mid_hour: int = hours[1]
+	player_sockets[mid_hour - 1].multiplier = minf(4.0, player_sockets[mid_hour - 1].multiplier + 0.25)
+	_player_chrono.bind_sockets(player_sockets)
+	_gain_overkill(3, "combat:overcharge_sweep", true)
 
 	_clear_pedestals()
 	_skip_button.hide()
@@ -539,7 +677,7 @@ func _resolve_tick(hour: int) -> void:
 		Presentation.relay(self, e_view, _enemy_portrait, Color("e99778"))
 	await get_tree().create_timer(TICK_STARTUP_DELAY / AudioManager.combat_animation_speed_scale()).timeout
 
-	# 1. Resolve Bleed (true unblockable damage at start of tick)
+	# 1. Resolve Bleed (true unblockable damage at start of tick, with Overkill conversion on excess)
 	if player_bleed > 0:
 		player_hp -= player_bleed
 		_spawn_damage_number(_player_portrait, player_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
@@ -547,51 +685,107 @@ func _resolve_tick(hour: int) -> void:
 		var target_was_alive: bool = enemy_hp > 0
 		enemy_hp -= enemy_bleed
 		_spawn_damage_number(_enemy_portrait, enemy_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
-		_notify_enemy_killed(target_was_alive)
+		if enemy_hp <= 0:
+			var bleed_excess: int = maxi(0, -enemy_hp)
+			enemy_hp = 0
+			_notify_enemy_killed(target_was_alive)
+			if bleed_excess > 0:
+				_handle_overkill(bleed_excess)
 	_update_stats_display()
 	if _check_combat_end() or starting_enemy != _enemy_index: return
 
-	# 2. Resolve Shields & Buffs
-	# Present the authored preparation before its result is exposed. Simulation
-	# order remains shields/statuses, player attacks, then surviving enemies.
+	# Build active relics for this hour (including Echo of previous hour if applicable)
+	var prev_h: int = ((hour - 2 + 9) % 9) + 1
+	var prev_relic: ClockRelicData = player_sockets[prev_h - 1].slotted_relic
+	var active_relics: Array[ClockRelicData] = []
+	if p_socket.slotted_relic != null:
+		if p_socket.slotted_relic.echo_previous_hour and prev_relic != null and not prev_relic.echo_previous_hour:
+			active_relics.append(prev_relic)
+		active_relics.append(p_socket.slotted_relic)
+
+	var player_attacks_this_tick: bool = false
+	for ar: ClockRelicData in active_relics:
+		if ar.base_damage > 0:
+			player_attacks_this_tick = true
+			break
+
+	# 2. Resolve Shields, Buffs, Resonance, Bleed Multiplication/Detonation & Socket Charging
 	var support_motion: Node2D = null
 	if p_socket.slotted_relic != null and p_socket.slotted_relic.base_damage <= 0:
 		support_motion = _new_relic_motion(p_socket.slotted_relic)
 		await support_motion.play_prepare()
-	if p_socket.slotted_relic != null:
-		var relic := p_socket.slotted_relic
+
+	var total_support_block_gained: int = 0
+	var total_support_str_gained: int = 0
+	var total_support_ok_gained: int = 0
+
+	for relic: ClockRelicData in active_relics:
+		var has_resonance: bool = relic.resonance_essence_bonus > 0 and prev_relic != null and relic.shares_essence_with(prev_relic)
 		if relic.base_block > 0:
-			player_block += relic.base_block
-			_spawn_damage_number(_player_portrait, relic.base_block, false, Color("7bd6de"), "BLOCK", false)
+			var raw_blk: int = relic.base_block + (relic.resonance_essence_bonus if has_resonance else 0)
+			var gained_blk: int = int(floor(float(raw_blk) * p_socket.multiplier))
+			player_block += gained_blk
+			total_support_block_gained += gained_blk
+			_spawn_damage_number(_player_portrait, gained_blk, false, Color("7bd6de"), "BLOCK", false)
 			CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
 			_apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
+		if relic.multiply_current_block > 1.0 and player_block > 0:
+			var multiplied_blk: int = int(floor(float(player_block) * relic.multiply_current_block))
+			var bonus_blk: int = maxi(0, multiplied_blk - player_block)
+			player_block = multiplied_blk
+			total_support_block_gained += bonus_blk
+			if bonus_blk > 0:
+				_spawn_damage_number(_player_portrait, bonus_blk, false, Color("7bd6de"), "BLOCK", false)
+				CombatVFX.play_shield_pulse(self, _player_portrait.global_position + _player_portrait.size * 0.5)
+				_apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
 		if relic.apply_strength > 0:
 			player_strength += relic.apply_strength
+			total_support_str_gained += relic.apply_strength
 		if relic.apply_thorns > 0:
 			player_thorns += relic.apply_thorns
 		if relic.apply_vulnerable > 0:
-			enemy_vulnerable += relic.apply_vulnerable
+			enemy_vulnerable += relic.apply_vulnerable + (1 if not player_attacks_this_tick else 0)
 		if relic.apply_weak > 0:
-			enemy_weak += relic.apply_weak
+			enemy_weak += relic.apply_weak + (1 if e_socket.intent_damage <= 0 else 0)
 		if relic.apply_bleed > 0:
-			enemy_bleed += relic.apply_bleed
+			enemy_bleed += int(floor(float(relic.apply_bleed) * p_socket.multiplier))
+		if relic.multiply_enemy_bleed > 1.0 and enemy_bleed > 0:
+			enemy_bleed = int(floor(float(enemy_bleed) * relic.multiply_enemy_bleed))
+		if relic.trigger_bleed_times > 0 and enemy_bleed > 0:
+			for _b_i: int in range(relic.trigger_bleed_times):
+				var target_was_alive: bool = enemy_hp > 0
+				enemy_hp -= enemy_bleed
+				_spawn_damage_number(_enemy_portrait, enemy_bleed, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.DEBUFF), "BLEED")
+				if enemy_hp <= 0:
+					var det_excess: int = maxi(0, -enemy_hp)
+					enemy_hp = 0
+					_notify_enemy_killed(target_was_alive)
+					if det_excess > 0:
+						_handle_overkill(det_excess)
 		if relic.bonus_damage_next_hit > 0:
 			player_next_hit_bonus += relic.bonus_damage_next_hit
+		if relic.base_damage <= 0 and relic.next_attack_multiplier > 1:
+			player_next_attack_multiplier = maxi(player_next_attack_multiplier, relic.next_attack_multiplier)
 		if relic.grant_overkill > 0:
-			OKRunState.gain_ok(relic.grant_overkill, "clock_relic:%s" % relic.id)
-			_spawn_damage_number(_player_portrait, relic.grant_overkill, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL), "OVERKILL", false)
-			CombatVFX.play_hit_sparks(self, _player_portrait.global_position + _player_portrait.size * 0.5, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.2), 9)
-			TutorialCallout.trigger("first_ok")
+			total_support_ok_gained += relic.grant_overkill
+			_gain_overkill(relic.grant_overkill, "clock_relic:%s" % relic.id, false)
+		if relic.charge_next_socket_multiplier > 0.0:
+			var next_h: int = (hour % 9) + 1
+			player_sockets[next_h - 1].multiplier = minf(4.0, player_sockets[next_h - 1].multiplier + relic.charge_next_socket_multiplier)
+			_player_chrono.bind_sockets(player_sockets)
+
 	if is_instance_valid(support_motion):
-		var support_relic: ClockRelicData = p_socket.slotted_relic
 		_update_stats_display()
 		await support_motion.play_resolve({
-			"block_gained": support_relic.base_block,
-			"strength_gained": support_relic.apply_strength,
-			"overkill_gained": support_relic.grant_overkill,
+			"block_gained": total_support_block_gained,
+			"strength_gained": total_support_str_gained,
+			"overkill_gained": total_support_ok_gained,
 		})
 		support_motion.dispose()
 		await _stage.await_player_recovery()
+
+	_update_stats_display()
+	if _check_combat_end() or starting_enemy != _enemy_index: return
 
 	if e_socket.intent_block > 0:
 		enemy_block += e_socket.intent_block
@@ -600,24 +794,43 @@ func _resolve_tick(hour: int) -> void:
 	if e_socket.intent_strength > 0:
 		enemy_strength += e_socket.intent_strength
 	player_bleed += e_socket.intent_bleed
-	player_weak += e_socket.intent_weak
-	player_vulnerable += e_socket.intent_vulnerable
+	if e_socket.intent_weak > 0:
+		player_weak += e_socket.intent_weak + (1 if not player_attacks_this_tick else 0)
+	if e_socket.intent_vulnerable > 0:
+		player_vulnerable += e_socket.intent_vulnerable + (1 if e_socket.intent_damage <= 0 else 0)
 
 	_update_stats_display()
 
 	# 3. Resolve Attacks
-	# Player Attacks Enemy
-	if p_socket.slotted_relic != null and p_socket.slotted_relic.base_damage > 0:
-		var relic := p_socket.slotted_relic
+	# Player Attacks Enemy (supports Echo + Sector Finisher + Resonance + Archetype Payoffs)
+	for relic: ClockRelicData in active_relics:
+		if relic.base_damage <= 0:
+			continue
 		_apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_ATTACK)
+		var has_resonance: bool = relic.resonance_essence_bonus > 0 and prev_relic != null and relic.shares_essence_with(prev_relic)
 		var strike_bonus: int = player_next_hit_bonus
-		var dmg := relic.base_damage + player_strength + strike_bonus
 		player_next_hit_bonus = 0
 
+		var raw_base: int = relic.base_damage
 		# Execution Wedge condition
-		if relic.conditional_hp_threshold_pct > 0.0 and float(enemy_hp) / float(enemy_max_hp) <= relic.conditional_hp_threshold_pct:
-			dmg = relic.conditional_damage + player_strength + strike_bonus
+		if relic.conditional_hp_threshold_pct > 0.0 and float(enemy_hp) / maxf(float(enemy_max_hp), 1.0) <= relic.conditional_hp_threshold_pct:
+			raw_base = relic.conditional_damage
+		if has_resonance:
+			raw_base += relic.resonance_essence_bonus
+		if hour in [3, 6, 9] and relic.sector_finisher_bonus_damage > 0:
+			raw_base += relic.sector_finisher_bonus_damage
 
+		var arch_bonus: int = 0
+		if relic.damage_per_current_block_pct > 0.0:
+			arch_bonus += int(floor(float(player_block) * relic.damage_per_current_block_pct))
+		if relic.thorns_to_damage_multiplier > 0.0:
+			arch_bonus += int(floor(float(player_thorns) * relic.thorns_to_damage_multiplier))
+		if relic.damage_per_enemy_bleed > 0:
+			arch_bonus += enemy_bleed * relic.damage_per_enemy_bleed
+		if relic.damage_per_banked_overkill_div > 0:
+			arch_bonus += int(OKRunState.current_ok / relic.damage_per_banked_overkill_div)
+
+		var dmg: int = raw_base + player_strength + strike_bonus + arch_bonus
 		if enemy_vulnerable > 0:
 			dmg = int(floor(dmg * 1.5))
 		if player_weak > 0:
@@ -625,8 +838,9 @@ func _resolve_tick(hour: int) -> void:
 		dmg = int(floor(dmg * p_socket.multiplier)) * player_next_attack_multiplier
 		player_next_attack_multiplier = maxi(1, relic.next_attack_multiplier)
 
-		for hit_index: int in range(relic.hits):
-			await _apply_damage_to_enemy(dmg, p_socket, hit_index, relic.hits)
+		var total_hits: int = relic.hits + (relic.sector_finisher_hits_bonus if hour in [3, 6, 9] else 0)
+		for hit_index: int in range(total_hits):
+			await _apply_damage_to_enemy(dmg, p_socket, hit_index, total_hits, relic)
 			# Keep this relic's hit sequence on the defeated target. A killing hit
 			# ends the enemy's ability to retaliate, but remaining hits are still
 			# real executions and bank their full damage as Overkill.
@@ -671,12 +885,13 @@ func _resolve_tick(hour: int) -> void:
 	await get_tree().create_timer(TICK_RECOVERY_DELAY / AudioManager.combat_animation_speed_scale()).timeout
 
 
-func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: int = 0, hit_count: int = 1) -> void:
-	var profile: Dictionary = AttackPresentation.for_relic(p_socket.slotted_relic)
+func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: int = 0, hit_count: int = 1, active_relic: ClockRelicData = null) -> void:
+	var relic_used: ClockRelicData = active_relic if active_relic != null else p_socket.slotted_relic
+	var profile: Dictionary = AttackPresentation.for_relic_hit(relic_used, hit_index)
 	profile["hit_index"] = hit_index
 	profile["hit_count"] = hit_count
 	var target_was_alive: bool = enemy_hp > 0
-	var relic_motion: Node2D = _new_relic_motion(p_socket.slotted_relic)
+	var relic_motion: Node2D = _new_relic_motion(relic_used)
 	if _stage.has_method("prepare_defense"): _stage.prepare_defense(false, enemy_block >= amount)
 	_stage.attack(true, profile)
 	relic_motion.start_attack(profile)
@@ -720,7 +935,7 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 			_spawn_damage_number(_enemy_portrait, hp_damage, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 			enemy_hp = 0
 			_notify_enemy_killed(target_was_alive)
-			if p_socket.slotted_relic != null and p_socket.slotted_relic.recoil_block_on_overkill:
+			if relic_used != null and relic_used.recoil_block_on_overkill:
 				player_block += overkill
 				recoil_block_gained = overkill
 			_handle_overkill(overkill)
@@ -728,13 +943,21 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 			enemy_hp -= unblocked
 			_spawn_damage_number(_enemy_portrait, unblocked, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.ATTACK))
 
+		# Overkill Extraction payoff on unblocked attack damage
+		if unblocked > 0 and relic_used != null and relic_used.overkill_extraction_pct > 0.0:
+			var extracted_ok: int = maxi(1, int(floor(float(unblocked) * relic_used.overkill_extraction_pct)))
+			_gain_overkill(extracted_ok, "combat:extraction:%s" % relic_used.id, true)
+
 	var healed: int = 0
-	if p_socket.slotted_relic != null and p_socket.slotted_relic.lifesteal and player_hp > 0:
+	if relic_used != null and relic_used.lifesteal and player_hp > 0:
 		healed = mini(hp_damage, maxi(player_max_hp - player_hp, 0))
 		player_hp += healed
 		if healed > 0:
-			AudioManager.play_combat_sound("heal")
-			_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL", false)
+			if relic_used.id == "REL-13":
+				_pending_lifesteal_visual = healed
+				relic_motion.transfer_arrived.connect(_finish_lifesteal_feedback.bind(healed), CONNECT_ONE_SHOT)
+			else:
+				_finish_lifesteal_feedback(healed)
 	# Thorns check
 	if target_was_alive and enemy_thorns > 0:
 		player_hp -= enemy_thorns
@@ -744,17 +967,28 @@ func _apply_damage_to_enemy(amount: int, p_socket: ClockSocketData, hit_index: i
 	await relic_motion.play_resolve({
 		"damage_dealt": hp_damage,
 		"healed": healed,
-		"block_gained": (p_socket.slotted_relic.base_block if hit_index == 0 else 0) + recoil_block_gained,
-		"strength_gained": p_socket.slotted_relic.apply_strength if hit_index == 0 else 0,
-		"overkill_gained": p_socket.slotted_relic.grant_overkill if hit_index == 0 else 0,
+		"block_gained": (relic_used.base_block if relic_used != null and hit_index == 0 else 0) + recoil_block_gained,
+		"strength_gained": relic_used.apply_strength if relic_used != null and hit_index == 0 else 0,
+		"overkill_gained": relic_used.grant_overkill if relic_used != null and hit_index == 0 else 0,
 		"next_attack_multiplier": player_next_attack_multiplier if hit_index == hit_count - 1 else 1,
 	})
-	relic_motion.dispose()
+	if relic_used == null or relic_used.id != "REL-02" or hit_index == hit_count - 1 or player_hp <= 0:
+		relic_motion.dispose()
+		_twin_relic_motion = null
 	await _stage.await_player_recovery()
 
 
+func _finish_lifesteal_feedback(healed: int) -> void:
+	_pending_lifesteal_visual = 0
+	AudioManager.play_combat_sound("heal")
+	_spawn_damage_number(_player_portrait, healed, false, Color("7ce0ac"), "HEAL")
+	_update_stats_display()
+
 func _new_relic_motion(relic: ClockRelicData) -> Node2D:
+	if relic.id == "REL-02" and is_instance_valid(_twin_relic_motion):
+		return _twin_relic_motion
 	var motion: Node2D = RelicMotion.create(_stage, self, relic)
+	if relic.id == "REL-02": _twin_relic_motion = motion
 	motion.buff_target_global = _player_core_strip.get_global_rect().get_center()
 	return motion
 
@@ -796,15 +1030,29 @@ func _apply_damage_to_player(amount: int, e_socket: ClockSocketData) -> void:
 			var drained := int(floor(OKRunState.current_ok * 0.25))
 			OKRunState.current_ok = max(0, OKRunState.current_ok - drained)
 
-	# Thorns check
+	# Thorns check (with 1:1 Overkill conversion if Thorns reduces enemy_hp below 0)
 	if player_thorns > 0:
 		var target_was_alive: bool = enemy_hp > 0
 		enemy_hp -= player_thorns
 		_spawn_damage_number(_enemy_portrait, player_thorns, false, ClockRelicData.essence_to_color(ClockRelicData.Essence.BUFF), "THORNS")
-		_notify_enemy_killed(target_was_alive)
+		if enemy_hp <= 0:
+			var thorns_excess: int = maxi(0, -enemy_hp)
+			enemy_hp = 0
+			_notify_enemy_killed(target_was_alive)
+			if thorns_excess > 0:
+				_handle_overkill(thorns_excess)
 
 	_update_stats_display()
 	await get_tree().create_timer((_stage.recovery_delay() if _stage.has_method("recovery_delay") else 0.24) / AudioManager.combat_animation_speed_scale()).timeout
+
+
+func _gain_overkill(amount: int, source: String = "combat:extraction", show_visual: bool = true) -> void:
+	if amount <= 0:
+		return
+	OKRunState.gain_ok(amount, source)
+	_spawn_damage_number(_player_portrait, amount, true, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL), "OVERKILL", show_visual)
+	CombatVFX.play_hit_sparks(self, _player_portrait.global_position + _player_portrait.size * 0.5, ClockRelicData.essence_to_color(ClockRelicData.Essence.OVERKILL).lightened(0.2), 9)
+	TutorialCallout.trigger("first_ok")
 
 
 func _handle_overkill(overkill: int) -> void:
@@ -979,19 +1227,28 @@ func _finish_presentation(won: bool) -> void:
 
 
 func _update_stats_display() -> void:
-	_player_stats_label.text = "%d / %d  ·  %d" % [maxi(player_hp, 0), player_max_hp, player_block]
-	_player_stats_label.tooltip_text = "Vitality: %d / %d\nBlock: %d" % [maxi(player_hp, 0), player_max_hp, player_block]
+	var visible_player_hp: int = maxi(player_hp - _pending_lifesteal_visual, 0)
+	_player_stats_label.text = "%d / %d  ·  %d" % [visible_player_hp, player_max_hp, player_block]
+	_player_stats_label.tooltip_text = "Vitality: %d / %d\nBlock: %d" % [visible_player_hp, player_max_hp, player_block]
 	_enemy_stats_label.text = "%d / %d  ·  %d" % [maxi(enemy_hp, 0), enemy_max_hp, enemy_block]
 	_enemy_stats_label.tooltip_text = "Vitality: %d / %d\nBlock: %d" % [maxi(enemy_hp, 0), enemy_max_hp, enemy_block]
-	_update_core_strip(_player_core_strip, maxi(player_hp, 0), player_max_hp, player_block, player_next_attack_multiplier)
+	_update_core_strip(_player_core_strip, visible_player_hp, player_max_hp, player_block, player_next_attack_multiplier)
 	_update_core_strip(_enemy_core_strip, maxi(enemy_hp, 0), enemy_max_hp, enemy_block, 1)
 	_update_status_strip(_player_status_strip, player_strength, player_bleed, player_thorns, player_weak, player_vulnerable)
 	_update_status_strip(_enemy_status_strip, enemy_strength, enemy_bleed, enemy_thorns, enemy_weak, enemy_vulnerable)
-	_hud.bind_clock_state(player_hp, player_max_hp)
-	for entry in [[_player_portrait, player_hp, player_max_hp], [_enemy_portrait, enemy_hp, enemy_max_hp]]:
+	_hud.bind_clock_state(visible_player_hp, player_max_hp)
+	for entry in [[_player_portrait, visible_player_hp, player_max_hp], [_enemy_portrait, enemy_hp, enemy_max_hp]]:
 		var bar: ProgressBar = entry[0].get_node("Vitality")
 		bar.max_value = entry[2]
 		bar.value = maxi(entry[1], 0)
+	_sync_assembly_target_reticles()
+	for h: int in range(1, 10):
+		var p_sview: ClockSocketView = _player_chrono.get_socket_view(h)
+		if p_sview != null and p_sview.has_method("refresh_live_from_context"):
+			p_sview.refresh_live_from_context(self)
+		var e_sview: ClockSocketView = _enemy_chrono.get_socket_view(h)
+		if e_sview != null and e_sview.has_method("refresh_live_from_context"):
+			e_sview.refresh_live_from_context(self)
 
 
 func _build_combatant_stat_ui() -> void:
@@ -1019,24 +1276,59 @@ func _make_stat_row(parent: Control, row_name: String, left: float, top: float, 
 
 
 func _update_core_strip(row: HBoxContainer, hp: int, max_hp: int, block: int, next_attack_multiplier: int) -> void:
-	for child: Node in row.get_children():
-		row.remove_child(child)
-		child.queue_free()
-	_add_stat_chip(row, "res://assets/icons/ui/icon_hp.png", "♥", "%d/%d" % [hp, max_hp], "Vitality: %d of %d" % [hp, max_hp], Color("f08a83"))
-	_add_stat_chip(row, "res://assets/icons/ui/icon_block.png", "◇", str(block), "Block absorbs incoming damage before Vitality.", Color("76d9ee"))
+	_sync_battle_chip(row, "HP", "res://assets/icons/ui/icon_hp.png", "♥", "%d/%d" % [hp,max_hp], hp, "Vitality: %d of %d" % [hp,max_hp], Color("f08a83"))
+	_sync_battle_chip(row, "Block", "res://assets/icons/ui/icon_block.png", "◇", str(block), block, "Block absorbs incoming damage before Vitality.", Color("76d9ee"))
 	if next_attack_multiplier > 1:
-		_add_stat_chip(row, "res://assets/icons/ui/icon_overkill.png", "×", "×%d" % next_attack_multiplier, "Your next attack deals %d times damage." % next_attack_multiplier, Color("f0b765"))
-
+		_sync_battle_chip(row, "Overdrive", "res://assets/icons/ui/icon_overkill.png", "×", "×%d" % next_attack_multiplier, next_attack_multiplier, "Your next attacking relic is empowered.", Color("b76cff"))
+	else:
+		_remove_battle_chip(row,"Overdrive")
 
 func _update_status_strip(row: HBoxContainer, strength: int, bleed: int, thorns: int, weak: int, vulnerable: int) -> void:
-	for child: Node in row.get_children():
-		row.remove_child(child)
-		child.queue_free()
-	if strength > 0: _add_status_chip(row, "res://assets/icons/status/status_strength.png", "✦", strength, "Strength adds damage to each attack.")
-	if bleed > 0: _add_status_chip(row, "", "⌁", bleed, "Bleed deals Vitality damage at the end of each hour.")
-	if thorns > 0: _add_status_chip(row, "", "❖", thorns, "Thorns return damage when struck.")
-	if weak > 0: _add_status_chip(row, "res://assets/icons/status/status_weak.png", "↓", weak, "Weak reduces outgoing attack damage.")
-	if vulnerable > 0: _add_status_chip(row, "res://assets/icons/status/status_vulnerable.png", "⌖", vulnerable, "Vulnerable increases incoming damage.")
+	var entries: Array = [
+		["Strength", strength, "res://assets/icons/status/status_strength.png", "✦", Color("b76cff"), "Strength adds damage to each attack."],
+		["Bleed", bleed, "", "⌁", Color("f08a83"), "Bleed removes Vitality each tick."],
+		["Thorns", thorns, "", "❖", Color("b76cff"), "Thorns return damage when struck."],
+		["Weak", weak, "res://assets/icons/status/status_weak.png", "↓", Color("84c8ae"), "Weak reduces outgoing damage."],
+		["Vulnerable", vulnerable, "res://assets/icons/status/status_vulnerable.png", "⌖", Color("efb477"), "Vulnerable increases incoming damage."]]
+	for entry: Array in entries:
+		if int(entry[1]) > 0:
+			_sync_battle_chip(row,str(entry[0]),str(entry[2]),str(entry[3]),str(entry[1]),int(entry[1]),str(entry[5]),entry[4])
+		else:
+			_remove_battle_chip(row,str(entry[0]))
+
+func _remove_battle_chip(row: HBoxContainer, key: String) -> void:
+	row.set_meta("previous_"+key,0)
+	var chip: Node = row.get_node_or_null(NodePath(key))
+	if chip != null:
+		row.remove_child(chip)
+		chip.queue_free()
+
+func _sync_battle_chip(row: HBoxContainer, key: String, icon_path: String, glyph: String, value: String, amount: int, explanation: String, tint: Color) -> void:
+	var chip: Control = row.get_node_or_null(NodePath(key)) as Control
+	var previous: int = int(row.get_meta("previous_"+key, 0))
+	if chip == null:
+		_add_stat_chip(row,icon_path,glyph,value,explanation,tint)
+		chip = row.get_child(row.get_child_count()-1) as Control
+		chip.name = key
+		if key == "Strength" and chip.get_child(0) is TextureRect:
+			var material := ShaderMaterial.new()
+			material.shader = preload("res://assets/ui/combat/status_tint.gdshader")
+			material.set_shader_parameter("status_color",tint)
+			(chip.get_child(0) as TextureRect).material = material
+	chip.tooltip_text = explanation + "\nCurrent: " + value
+	(chip.get_child(chip.get_child_count()-1) as Label).text = value
+	row.set_meta("previous_"+key,amount)
+	if amount > previous and (key != "HP" or previous > 0):
+		var old_tween: Tween = (chip.get_meta("gain_tween") as Tween) if chip.has_meta("gain_tween") else null
+		if old_tween != null and old_tween.is_valid(): old_tween.kill()
+		chip.pivot_offset = chip.size*.5
+		chip.scale = Vector2.ONE if AudioManager.reduced_motion else Vector2(1.22,1.22)
+		chip.modulate = tint.lightened(.65)
+		chip.set_meta("gain_count",int(chip.get_meta("gain_count",0))+1)
+		var tween: Tween = chip.create_tween().set_speed_scale(AudioManager.animation_speed_scale())
+		chip.set_meta("gain_tween",tween)
+		tween.tween_property(chip,"scale",Vector2.ONE,.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.parallel().tween_property(chip,"modulate",Color.WHITE,.7)
 
 
 func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: String, value: String, explanation: String, tint: Color) -> void:
@@ -1055,7 +1347,7 @@ func _add_stat_chip(row: HBoxContainer, icon_path: String, fallback_glyph: Strin
 		glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		chip.add_child(glyph)
 	else:
-		icon.custom_minimum_size = Vector2(25, 25)
+		icon.custom_minimum_size = Vector2(30, 30)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1130,17 +1422,22 @@ func _refresh_guidance() -> void:
 	_refresh_intent_readout()
 	if _resolving or _combat_over: return
 	if phase == Phase.ASSEMBLY:
-		_player_chrono.snap_hand_to_hour(turn_number,0.18)
-		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(turn_number,_active_enemy()),0.18)
-		_phase_label.text = "Choose one relic for hour %d. Unchosen relics return to the draw pile." % turn_number
-		_guidance.point_to(_player_chrono,_player_chrono.get_socket_view(turn_number),[turn_number],"NEXT SLOT\n%d O'CLOCK" % turn_number)
+		var target_h: int = get_target_assembly_hour()
+		var chain_hours: Array[int] = _filled_sector_chain_hours(active_quadrant, target_h)
+		var chain_labels: PackedStringArray = []
+		for ch: int in chain_hours:
+			chain_labels.append(str(ch))
+		_player_chrono.snap_hand_to_hour(target_h, 0.18)
+		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(target_h, _active_enemy()), 0.18)
+		_phase_label.text = "SECTOR %d · Bind a relic to Hour %d (or click another open socket in Sector %d), then chain %s." % [active_quadrant, target_h, active_quadrant, " → ".join(chain_labels)]
+		_guidance.point_to(_player_chrono, _player_chrono.get_socket_view(target_h), chain_hours, "NEXT SLOT\n%d O'CLOCK" % target_h)
 	else:
 		var hours := ChronometerView.get_quadrant_hours(active_quadrant)
-		_player_chrono.snap_hand_to_hour(hours[0],0.18)
-		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(hours[0],_active_enemy()),0.18)
-		_phase_label.text = "Replace one pulsing slot, then activate hours %d → %d → %d. Keep & Sweep discards the drawn relic." % hours
-		if current_drawn_relic == null: _phase_label.text = "No reserve relic available. Sweep hours %d → %d → %d with your equipped relics." % hours
-		_guidance.point_to(_player_chrono,null,hours,"NEXT SWEEP\n%d → %d → %d" % hours)
+		_player_chrono.snap_hand_to_hour(hours[0], 0.18)
+		_enemy_chrono.snap_hand_to_hour(EnemyClockPattern.hour_for(hours[0], _active_enemy()), 0.18)
+		_phase_label.text = "Replace one pulsing slot, then activate hours %d → %d → %d. Overcharge & Sweep boosts Hour %d (+0.25×) & +3 Overkill." % [hours[0], hours[1], hours[2], hours[1]]
+		if current_drawn_relic == null: _phase_label.text = "No reserve relic available. Click two sockets in Sector %d to swap positions, or Overcharge & Sweep %d → %d → %d." % [active_quadrant, hours[0], hours[1], hours[2]]
+		_guidance.point_to(_player_chrono, null, hours, "NEXT SWEEP\n%d → %d → %d" % hours)
 
 func _refresh_intent_readout() -> void:
 	_enemy_chrono.set_readout_clearance(true)
@@ -1148,7 +1445,7 @@ func _refresh_intent_readout() -> void:
 		_intent_clock_label.text = "DEFEATED" if enemy_hp <= 0 else "BATTLE OVER"
 		return
 	if enemy_sockets.is_empty(): return
-	var hours: Array = [turn_number] if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
+	var hours: Array = _filled_sector_chain_hours(active_quadrant, get_target_assembly_hour()) if phase == Phase.ASSEMBLY else ChronometerView.get_quadrant_hours(active_quadrant)
 	var clock_hours: PackedStringArray = []
 	for hour: int in hours:
 		var index: int = EnemyClockPattern.hour_for(hour,_active_enemy())
@@ -1164,25 +1461,33 @@ func _refresh_intent_text_size(_settings: Dictionary = {}) -> void:
 
 func _preview_allocation(view: RelicPedestalView) -> void:
 	if _resolving or _combat_over or phase != Phase.ASSEMBLY: return
-	_phase_label.text = "%s → hour %d. Resolve your hour %d against enemy hour %d." % [view.relic.name,turn_number,turn_number,EnemyClockPattern.hour_for(turn_number,_active_enemy())]
-	_phase_label.text += "\n" + DecisionPreview.forecast(self,[turn_number],turn_number,view.relic)
-	_guidance.point_to(_player_chrono,_player_chrono.get_socket_view(turn_number),[turn_number],"BIND HERE\n%d O'CLOCK" % turn_number,view._art_rect,view._art_rect.texture)
+	var target_h: int = get_target_assembly_hour()
+	var chain_hours: Array[int] = _filled_sector_chain_hours(active_quadrant, target_h)
+	var eval_info: Dictionary = DecisionPreview.evaluate_relic_on_hour(self, view.relic, target_h)
+	var tags: Array = eval_info.get("active_tags", [])
+	var tag_suffix: String = ("  ·  [" + " + ".join(tags) + "]") if not tags.is_empty() else ""
+	_phase_label.text = "%s → hour %d%s. Resolve Sector %d chain against enemy hour %d." % [view.relic.name, target_h, tag_suffix, active_quadrant, EnemyClockPattern.hour_for(target_h, _active_enemy())]
+	_phase_label.text += "\n" + DecisionPreview.forecast(self, chain_hours, target_h, view.relic)
+	_guidance.point_to(_player_chrono, _player_chrono.get_socket_view(target_h), chain_hours, "BIND HERE\n%d O'CLOCK" % target_h, view._art_rect, view._art_rect.texture)
 
 func _preview_swap(socket: ClockSocketView) -> void:
 	if _resolving or _combat_over or phase != Phase.QUADRANT or not socket.is_interactive or current_drawn_relic == null: return
 	var previous := socket.data.slotted_relic.name if socket.data.slotted_relic else "empty slot"
 	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
-	_phase_label.text = "Hour %d: %s → %s. Old relic is discarded; sweep %d → %d → %d." % [socket.data.hour_index,previous,current_drawn_relic.name,hours[0],hours[1],hours[2]]
-	_phase_label.text += "\n" + DecisionPreview.forecast(self,hours,socket.data.hour_index,current_drawn_relic)
+	var eval_info: Dictionary = DecisionPreview.evaluate_relic_on_hour(self, current_drawn_relic, socket.data.hour_index)
+	var tags: Array = eval_info.get("active_tags", [])
+	var tag_suffix: String = (" [" + " + ".join(tags) + "]") if not tags.is_empty() else ""
+	_phase_label.text = "Hour %d: %s → %s%s. Old relic is discarded; sweep %d → %d → %d." % [socket.data.hour_index, previous, current_drawn_relic.name, tag_suffix, hours[0], hours[1], hours[2]]
+	_phase_label.text += "\n" + DecisionPreview.forecast(self, hours, socket.data.hour_index, current_drawn_relic)
 	var ped: RelicPedestalView = _pedestal_row.get_child(0)
-	_guidance.point_to(_player_chrono,socket,hours,"REPLACE\n%d O'CLOCK" % socket.data.hour_index,ped._art_rect,ped._art_rect.texture)
+	_guidance.point_to(_player_chrono, socket, hours, "REPLACE\n%d O'CLOCK" % socket.data.hour_index, ped._art_rect, ped._art_rect.texture)
 
 func _preview_sweep() -> void:
 	if _resolving or _combat_over or phase != Phase.QUADRANT: return
 	var hours := ChronometerView.get_quadrant_hours(active_quadrant)
-	_phase_label.text = "KEEP YOUR CLOCK · Discard the drawn relic and activate %d → %d → %d." % hours
-	_phase_label.text += "\n" + DecisionPreview.forecast(self,hours)
-	_guidance.point_to(_player_chrono,null,hours,"KEEP & SWEEP\n%d → %d → %d" % hours)
+	_phase_label.text = "OVERCHARGE & KEEP YOUR CLOCK · Boost Hour %d (+0.25×) & +3 Overkill, then activate %d → %d → %d." % [hours[1], hours[0], hours[1], hours[2]]
+	_phase_label.text += "\n" + DecisionPreview.forecast(self, hours)
+	_guidance.point_to(_player_chrono, null, hours, "OVERCHARGE & SWEEP\n%d → %d → %d" % hours)
 
 func _animate_placement(relic: ClockRelicData, hour: int) -> void:
 	var origin: TextureRect

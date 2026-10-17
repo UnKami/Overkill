@@ -1,6 +1,6 @@
 class_name ChronometerView extends Control
 ## ChronometerView - Renders the 9-hour circular battle mechanism.
-## Manages circular layout, quadrant lighting, socket dispatch, and sweeping hands.
+## Manages circular layout, quadrant lighting, socket dispatch, live socket numbers, and sweeping hands.
 const DEFAULT_HAND_TRAVEL_DURATION: float = 0.18
 
 signal socket_pressed(hour_index: int, socket_view: ClockSocketView)
@@ -86,25 +86,29 @@ func _style_chassis() -> void:
 		_dial_texture.material.set_shader_parameter("tint", Color(0.95, 0.65, 0.48) if _is_enemy else Color(0.7, 0.9, 0.95))
 	_update_hand_geometry()
 
+
 ## During decisions, leave the center readable while retaining an hour pointer.
 ## The full mechanical hand returns when the player's guidance is cleared.
 func set_readout_clearance(enabled: bool) -> void:
-	if _readout_clearance == enabled: return
+	if _readout_clearance == enabled:
+		return
 	_readout_clearance = enabled
 	_update_hand_geometry()
 
+
 func _update_hand_geometry() -> void:
-	if not is_instance_valid(_hand_line): return
-	var inner: float = size.x*0.45
-	var outer: float = size.x*0.49
-	_hand_line.points = PackedVector2Array([Vector2(inner,0),Vector2(outer,0)]) if _readout_clearance else PackedVector2Array([Vector2(-22,0),Vector2(145,0)])
+	if not is_instance_valid(_hand_line):
+		return
+	var inner: float = size.x * 0.45
+	var outer: float = size.x * 0.49
+	_hand_line.points = PackedVector2Array([Vector2(inner, 0), Vector2(outer, 0)]) if _readout_clearance else PackedVector2Array([Vector2(-22, 0), Vector2(145, 0)])
 	var hand: Polygon2D = _center_hand_pivot.get_node_or_null("ForgedHand")
 	if hand:
-		hand.polygon = PackedVector2Array([Vector2(outer,-6),Vector2(inner,0),Vector2(outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-30,0),Vector2(-12,-7),Vector2(100,-3),Vector2(156,0),Vector2(100,3),Vector2(-12,7)])
+		hand.polygon = PackedVector2Array([Vector2(outer, -6), Vector2(inner, 0), Vector2(outer, 6)]) if _readout_clearance else PackedVector2Array([Vector2(-30, 0), Vector2(-12, -7), Vector2(100, -3), Vector2(156, 0), Vector2(100, 3), Vector2(-12, 7)])
 	_center_hub.visible = not _readout_clearance
 	var twin: Polygon2D = _center_hand_pivot.get_node_or_null("TwinHand")
 	if twin:
-		twin.polygon = PackedVector2Array([Vector2(-inner,0),Vector2(-outer,-6),Vector2(-outer,6)]) if _readout_clearance else PackedVector2Array([Vector2(-146,0),Vector2(-95,-4),Vector2(0,-2),Vector2(0,2),Vector2(-95,4)])
+		twin.polygon = PackedVector2Array([Vector2(-inner, 0), Vector2(-outer, -6), Vector2(-outer, 6)]) if _readout_clearance else PackedVector2Array([Vector2(-146, 0), Vector2(-95, -4), Vector2(0, -2), Vector2(0, 2), Vector2(-95, 4)])
 
 
 func _create_clock_sockets() -> void:
@@ -132,6 +136,17 @@ func bind_sockets(sockets_data: Array) -> void:
 		var socket: ClockSocketData = s_data as ClockSocketData
 		if socket != null and _socket_views.has(socket.hour_index):
 			_socket_views[socket.hour_index].bind_socket(socket, _is_enemy)
+	call_deferred("refresh_live_values")
+
+
+func refresh_live_values(battle: Object = null) -> void:
+	var resolved_battle: Object = battle if battle != null else SmartHoverInspector.find_combat_controller(self)
+	if resolved_battle == null:
+		return
+	for h: int in _socket_views.keys():
+		var s_view: ClockSocketView = _socket_views[h]
+		if is_instance_valid(s_view):
+			s_view.refresh_live_from_context(resolved_battle)
 
 
 func get_socket_view(hour: int) -> ClockSocketView:
@@ -143,9 +158,11 @@ func snap_hand_to_hour(hour: int, duration: float = DEFAULT_HAND_TRAVEL_DURATION
 	var target_deg := (hour * 40.0) - 90.0
 	var target_rad := deg_to_rad(target_deg)
 	if rotation_direction > 0:
-		while target_rad < _center_hand_pivot.rotation - 0.001: target_rad += TAU
+		while target_rad < _center_hand_pivot.rotation - 0.001:
+			target_rad += TAU
 	else:
-		while target_rad > _center_hand_pivot.rotation + 0.001: target_rad -= TAU
+		while target_rad > _center_hand_pivot.rotation + 0.001:
+			target_rad -= TAU
 	_engraving.active_hour = hour
 
 	if _hand_tween and _hand_tween.is_valid():
@@ -191,7 +208,9 @@ func mark_hour(hour: int) -> void:
 
 func set_interactive_quadrant(quadrant_index: int, interactive: bool) -> void:
 	for h in _socket_views:
-		_socket_views[h].is_interactive = false
+		var sv: ClockSocketView = _socket_views[h]
+		sv.set_targetable_empty(false, false)
+		sv.is_interactive = false
 
 	if interactive:
 		var hours := get_quadrant_hours(quadrant_index)
@@ -200,6 +219,22 @@ func set_interactive_quadrant(quadrant_index: int, interactive: bool) -> void:
 				var s_view: ClockSocketView = _socket_views[h]
 				if s_view.data != null and not s_view.data.is_locked:
 					s_view.is_interactive = true
+
+
+func set_interactive_assembly_sector(sector_index: int, selected_hour: int, interactive: bool) -> void:
+	for h in _socket_views:
+		var sv: ClockSocketView = _socket_views[h]
+		sv.set_targetable_empty(false, false)
+		sv.is_interactive = false
+
+	if interactive:
+		_engraving.quadrant = sector_index
+		var hours := get_quadrant_hours(sector_index)
+		for h in hours:
+			if _socket_views.has(h):
+				var s_view: ClockSocketView = _socket_views[h]
+				if s_view.data != null and not s_view.data.is_locked and s_view.data.slotted_relic == null:
+					s_view.set_targetable_empty(true, h == selected_hour)
 
 
 static func get_quadrant_hours(q: int) -> Array[int]:

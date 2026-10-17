@@ -6,11 +6,12 @@
 script = ExtResource("1_script")
 id = "REL-11"
 name = "Execution Wedge"
-tier = 0
+tier = 1
 role = 0
 primary_essence = 0
-description = "Deal 8 Damage. If Target HP <= 50%, deal 14."
+description = "Deal 8 damage. (16 damage if target HP <= 50%). Harvest 50% of unblocked damage as Overkill."
 art_id = "rel_11_execution_wedge"
 base_damage = 8
-conditional_damage = 14
+conditional_damage = 16
 conditional_hp_threshold_pct = 0.5
+overkill_extraction_pct = 0.5

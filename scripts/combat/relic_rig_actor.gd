@@ -44,7 +44,7 @@ func _ready() -> void:
 		var bone: Bone2D = Bone2D.new()
 		bone.name = str(entry.name)
 		bone.set_autocalculate_length_and_angle(false)
-		bone.length = 36.0
+		bone.length = float(entry.get("length",36.0))
 		var rest_xy: Array = entry.rest
 		bone.position = Vector2(float(rest_xy[0]), float(rest_xy[1]))
 		bone.rest = bone.transform
@@ -252,3 +252,28 @@ func sample_action_for_review(action_name: String, time: float) -> void:
 	set_process(false)
 	_blend_time = 1.0
 	_apply_sample(action_name, time)
+
+
+func sample_grip_transform(action_name: String, time: float, hand: String = "hand_near") -> Transform2D:
+	# Evaluate the exported Blender skeleton without changing the displayed pose.
+	# Projectile release therefore uses the authored instant, independent of FPS.
+	var action: Dictionary = RIG_DATA.actions[action_name]
+	var cursor: float = clampf(time*float(RIG_DATA.fps),0.0,float(action.frames.size()-1))
+	var left: int = int(cursor)
+	var right: int = mini(left+1,action.frames.size()-1)
+	var frames: Array = action.frames
+	var transforms: Dictionary = {}
+	for index: int in RIG_DATA.bones.size():
+		var bone: Dictionary = RIG_DATA.bones[index]
+		var a: Array = frames[left][index]
+		var b: Array = frames[right][index]
+		var position: Vector2 = Vector2(float(a[0]),float(a[1])).lerp(Vector2(float(b[0]),float(b[1])),cursor-left)
+		var angle: float = lerp_angle(float(a[2]),float(b[2]),cursor-left)
+		if AudioManager.reduced_motion:
+			position = Vector2(float(bone.rest[0]),float(bone.rest[1])).lerp(position,.28)
+			angle *= .35
+		var local_pose := Transform2D(angle,position)
+		transforms[str(bone.name)] = local_pose if str(bone.parent).is_empty() else (transforms[str(bone.parent)] as Transform2D)*local_pose
+	var result: Transform2D = _rig_root.global_transform*(transforms[hand] as Transform2D)
+	result.origin = result*Vector2(5,14) if hand == "hand_near" else result*Vector2(0,12)
+	return result

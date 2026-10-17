@@ -6,10 +6,11 @@
 script = ExtResource("1_script")
 id = "REL-03"
 name = "Heavy Hammer"
-tier = 0
+tier = 1
 role = 0
 primary_essence = 0
-description = "Deal 14 Physical Damage."
+description = "Deal 11 damage. Sector Finisher (Hour 3/6/9): +8 damage."
 art_id = "rel_03_heavy_hammer"
-base_damage = 14
+base_damage = 11
 hits = 1
+sector_finisher_bonus_damage = 8

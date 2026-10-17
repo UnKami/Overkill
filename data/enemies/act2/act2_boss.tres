@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 22
+value = 20
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "choral_overflow"
 intent_type = 0
-intent_value = 22
+intent_value = 20
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "act2_boss"
 display_name = "The Overflowing Choir"
 tier = 2
-max_hp = 100
-hp_variance = Vector2i(220, 280)
+max_hp = 145
+hp_variance = Vector2i(138, 152)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 200
+overkill_death_threshold = 70
 art_id = "overflowing_choir_crystalline"

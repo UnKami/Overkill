@@ -34,6 +34,23 @@ enum Essence { ATTACK, BLOCK, BUFF, DEBUFF, OVERKILL }
 @export var next_attack_multiplier: int = 1
 @export var bonus_damage_next_hit: int = 0 # e.g. Kinetic Battery
 
+@export_group("Clock & Positional Mechanics")
+@export var charge_next_socket_multiplier: float = 0.0 # Permanently adds +X to the next hour socket's multiplier
+@export var echo_previous_hour: bool = false # Re-triggers the relic effects of the preceding hour
+@export var sector_finisher_bonus_damage: int = 0 # Bonus damage when slotted in Hour 3, 6, or 9
+@export var sector_finisher_hits_bonus: int = 0 # Extra hits when slotted in Hour 3, 6, or 9
+@export var resonance_essence_bonus: int = 0 # Bonus damage/block if previous hour shares an Essence
+
+@export_group("Archetype Payoffs")
+@export var damage_per_current_block_pct: float = 0.0 # Adds floor(player_block * pct) to attack damage
+@export var multiply_current_block: float = 1.0 # Multiplies player_block (e.g. 1.5x or 2.0x)
+@export var thorns_to_damage_multiplier: float = 0.0 # Adds floor(player_thorns * mult) to attack damage
+@export var trigger_bleed_times: int = 0 # Immediately triggers enemy_bleed damage N times
+@export var multiply_enemy_bleed: float = 1.0 # Multiplies enemy_bleed stacks (e.g. 1.5x or 2.0x)
+@export var damage_per_enemy_bleed: int = 0 # Adds +X damage per enemy_bleed stack
+@export var damage_per_banked_overkill_div: int = 0 # Adds +1 damage per N banked Overkill points
+@export var overkill_extraction_pct: float = 0.0 # Generates floor(unblocked_damage * pct) Overkill on hit
+
 
 static func role_to_name(r: Role) -> String:
 	match r:
@@ -105,3 +122,76 @@ func compact_affinity_name() -> String:
 	if secondary_essence >= 0:
 		label += " + " + essence_to_short_name(secondary_essence)
 	return label
+
+
+func shares_essence_with(other: ClockRelicData) -> bool:
+	if other == null:
+		return false
+	if int(primary_essence) == int(other.primary_essence) or int(primary_essence) == other.secondary_essence:
+		return true
+	if secondary_essence >= 0 and (secondary_essence == int(other.primary_essence) or secondary_essence == other.secondary_essence):
+		return true
+	return false
+
+
+func live_description() -> String:
+	var clauses: Array[String] = []
+	if base_damage > 0:
+		if hits > 1:
+			clauses.append("Deal %d damage %d times" % [base_damage, hits])
+		else:
+			clauses.append("Deal %d damage" % base_damage)
+	if conditional_damage > 0 and conditional_hp_threshold_pct > 0.0:
+		clauses.append("(%d damage if target HP <= %d%%)" % [conditional_damage, int(round(conditional_hp_threshold_pct * 100.0))])
+	if damage_per_current_block_pct > 0.0:
+		clauses.append("+%d%% of your current Block as bonus damage" % int(round(damage_per_current_block_pct * 100.0)))
+	if thorns_to_damage_multiplier > 0.0:
+		clauses.append("+%d× your Thorns as bonus damage" % int(round(thorns_to_damage_multiplier)))
+	if damage_per_enemy_bleed > 0:
+		clauses.append("+%d damage per enemy Bleed stack" % damage_per_enemy_bleed)
+	if damage_per_banked_overkill_div > 0:
+		clauses.append("+1 damage per %d banked Overkill" % damage_per_banked_overkill_div)
+	if sector_finisher_bonus_damage > 0:
+		clauses.append("Sector Finisher (Hour 3/6/9): +%d damage" % sector_finisher_bonus_damage)
+	if sector_finisher_hits_bonus > 0:
+		clauses.append("Sector Finisher (Hour 3/6/9): +%d extra hit(s)" % sector_finisher_hits_bonus)
+	if base_block > 0:
+		clauses.append("Gain %d Block" % base_block)
+	if multiply_current_block > 1.0:
+		clauses.append("Multiply your Block by %.1f×" % multiply_current_block)
+	if apply_strength > 0:
+		clauses.append("Gain +%d Strength" % apply_strength)
+	if apply_thorns > 0:
+		clauses.append("Gain +%d Thorns" % apply_thorns)
+	if apply_vulnerable > 0:
+		clauses.append("Apply %d Vulnerable" % apply_vulnerable)
+	if apply_weak > 0:
+		clauses.append("Apply %d Weak" % apply_weak)
+	if apply_bleed > 0:
+		clauses.append("Apply %d Bleed" % apply_bleed)
+	if multiply_enemy_bleed > 1.0:
+		clauses.append("Multiply enemy Bleed by %.1f×" % multiply_enemy_bleed)
+	if trigger_bleed_times > 0:
+		clauses.append("Trigger enemy Bleed %d time(s) immediately" % trigger_bleed_times)
+	if bonus_damage_next_hit > 0:
+		clauses.append("Next attack deals +%d damage per hit" % bonus_damage_next_hit)
+	if next_attack_multiplier > 1:
+		clauses.append("Next attack deals %d× damage" % next_attack_multiplier)
+	if charge_next_socket_multiplier > 0.0:
+		clauses.append("Charge next Hour socket by +%.1f× multiplier" % charge_next_socket_multiplier)
+	if resonance_essence_bonus > 0:
+		clauses.append("Resonance (matching previous Hour Essence): +%d power" % resonance_essence_bonus)
+	if echo_previous_hour:
+		clauses.append("Echo: Re-triggers the preceding Hour's relic")
+	if lifesteal:
+		clauses.append("Lifesteal (heal unblocked HP damage dealt)")
+	if recoil_block_on_overkill:
+		clauses.append("Gain Block equal to Overkill dealt")
+	if overkill_extraction_pct > 0.0:
+		clauses.append("Harvest %d%% of unblocked damage as Overkill" % int(round(overkill_extraction_pct * 100.0)))
+	if grant_overkill > 0:
+		clauses.append("Gain %d Overkill" % grant_overkill)
+	if clauses.is_empty():
+		return description
+	return ". ".join(clauses) + "."
+

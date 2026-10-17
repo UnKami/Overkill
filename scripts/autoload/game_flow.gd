@@ -177,12 +177,21 @@ func _finish_pre_battle() -> void:
 func goto_reward_screen(reward_context: Dictionary) -> void:
 	if _transitioning: return
 	var enemy: EnemyData = reward_context.get("enemy_data") as EnemyData
-	RunManager.resume_context = {"kind": "reward", "enemy_id": enemy.id if enemy != null else "", "offer_ids": reward_context.get("offer_ids", []).duplicate()}
+	var is_elite: bool = bool(reward_context.get("is_elite", enemy != null and enemy.tier == EnemyData.Tier.ELITE))
+	RunManager.resume_context = {
+		"kind": "reward",
+		"enemy_id": enemy.id if enemy != null else "",
+		"is_elite": is_elite,
+		"offer_ids": reward_context.get("offer_ids", []).duplicate(),
+		"elite_spoils_claimed": bool(reward_context.get("elite_spoils_claimed", false)),
+		"elite_artifact_id": str(reward_context.get("elite_artifact_id", "")),
+	}
 	SaveManager.save_run()
 	var scene: PackedScene = load(REWARD_SCENE_PATH)
 	var instance := scene.instantiate()
+	reward_context["is_elite"] = is_elite
 	instance.set_reward_context(reward_context)
-	_swap_scene(instance, "REWARD")
+	_swap_scene(instance, "ELITE SPOILS" if is_elite else "REWARD")
 
 
 func goto_boss_overkill_altar(enemy_data: EnemyData, purchased: bool = false) -> void:
@@ -225,7 +234,14 @@ func resume_saved_run() -> void:
 				goto_combat(enemies, str(context.get("background", "")))
 			return
 	elif kind == "reward":
-		goto_reward_screen({"enemy_data": ContentDatabase.get_enemy(str(context.get("enemy_id", ""))), "offer_ids": context.get("offer_ids", [])})
+		var restored_enemy: EnemyData = ContentDatabase.get_enemy(str(context.get("enemy_id", "")))
+		goto_reward_screen({
+			"enemy_data": restored_enemy,
+			"is_elite": bool(context.get("is_elite", restored_enemy != null and restored_enemy.tier == EnemyData.Tier.ELITE)),
+			"offer_ids": context.get("offer_ids", []),
+			"elite_spoils_claimed": bool(context.get("elite_spoils_claimed", false)),
+			"elite_artifact_id": str(context.get("elite_artifact_id", "")),
+		})
 		return
 	elif kind in ["altar", "boss_exit"]:
 		var boss: EnemyData = ContentDatabase.get_enemy(str(context.get("enemy_id", "")))
@@ -387,7 +403,7 @@ func _on_combat_won(defeated_enemies_data: Array) -> void:
 	elif enemy_data.tier == EnemyData.Tier.BOSS:
 		goto_boss_overkill_altar(enemy_data)
 	else:
-		goto_reward_screen({"enemy_data": enemy_data})
+		goto_reward_screen({"enemy_data": enemy_data, "is_elite": enemy_data.tier == EnemyData.Tier.ELITE})
 
 
 func _on_combat_lost() -> void:
@@ -396,9 +412,39 @@ func _on_combat_lost() -> void:
 	goto_run_summary(false)
 
 
+func _on_combat_overkill_dealt(threshold: int) -> void:
+	_on_excess_threshold_crossed(threshold)
+
+
 func _on_excess_threshold_crossed(threshold: int) -> void:
-	var scene: PackedScene = load(EXCESS_CELEBRATION_SCENE_PATH)
-	var celebration: Control = scene.instantiate() as Control
-	celebration.call("set_threshold", threshold)
-	celebration.theme = ScreenDesign.build_theme()
-	_overlay_layer.add_child(celebration)
+	if threshold in [20, 35, 60] or threshold > 0:
+		OKRunState.gain_ok(5, "overkill_milestone_%d" % threshold)
+	var banner := PanelContainer.new()
+	banner.name = "OverkillMilestoneBanner"
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.theme = ScreenDesign.build_theme()
+	var style: StyleBoxFlat = ScreenDesign.box(Color("091622ee"), Color("e8c994"), 2)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 22
+	style.content_margin_right = 22
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
+	banner.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.text = "OVERKILL MILESTONE (%d+ SINGLE HIT)  ·  +5 BONUS OVERKILL" % threshold
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 18)
+	label.add_theme_color_override("font_color", Color("f6d28b"))
+	banner.add_child(label)
+	_overlay_layer.add_child(banner)
+	banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	banner.offset_left = -310
+	banner.offset_right = 310
+	banner.offset_top = 28
+	banner.offset_bottom = 78
+	banner.modulate.a = 0.0
+	var tween := banner.create_tween()
+	tween.tween_property(banner, "modulate:a", 1.0, 0.2)
+	tween.tween_interval(2.0)
+	tween.tween_property(banner, "modulate:a", 0.0, 0.35)
+	tween.tween_callback(banner.queue_free)

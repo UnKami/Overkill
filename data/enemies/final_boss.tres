@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 32
+value = 28
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "undying_excess"
 intent_type = 0
-intent_value = 32
+intent_value = 28
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "final_boss"
 display_name = "The Undying Excess"
 tier = 2
-max_hp = 100
-hp_variance = Vector2i(400, 550)
+max_hp = 240
+hp_variance = Vector2i(230, 250)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 380
+overkill_death_threshold = 120
 art_id = "final_boss_crystal_warden"

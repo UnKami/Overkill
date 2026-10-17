@@ -4,6 +4,101 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-10-17 | Yonatan / Antigravity Multi-Agent — Slay-the-Spire Archetypes & Chronometer Overhaul
+
+- **Branch / PR:** `feat/yonatan-046-relic-feedback` (Release lock released in `ACTIVE_WORK.md`).
+- **Completed in this pass:**
+  1. **Relic Archetypes & Content Engine (`data/clock_relics/**`, `scripts/run/clock_inventory.gd`, `scripts/autoload/content_database.gd`)**:
+     - Re-authored all 29 clock relics into 4 synergistic archetypes: Chrono-Overdrive (multi-hit / tempo / socket multiplier / positional), Iron Bastion (Block retention / Thorns / kinetic slam), Crimson Hemorrhage (Bleed / rupture / lifesteal), and Overkill Harvest (sector finisher / banked-OK scaling / extraction).
+     - Expanded `ClockRelicData` schema with positional clock properties (`charge_next_socket_multiplier`, `echo_previous_hour`, `sector_finisher_bonus_damage`, `sector_finisher_hits_bonus`, `resonance_essence_bonus`) and archetype payoff properties (`damage_per_current_block_pct`, `multiply_current_block`, `thorns_to_damage_multiplier`, `trigger_bleed_times`, `multiply_enemy_bleed`, `damage_per_enemy_bleed`, `damage_per_banked_overkill_div`, `overkill_extraction_pct`).
+     - Added `shares_essence_with()` and `live_description()` formatting methods.
+     - Starter loadout rebalanced to 10 relics (`3× REL-01, 3× REL-04, 1× REL-02, 1× REL-08, 1× REL-13, 1× REL-14`), leaving 2 open slots (10/12) for immediate draft agency.
+     - Upgrades scale all new fields deterministically in `ClockInventory.resolve()`.
+     - Reward and shop pools exclude basic starter strikes/guards; elites guarantee at least 1 Rare clock relic in rewards; Run-wide passive artifacts are recurring combat engines.
+  2. **Sector-First Combat Loop & Positional Resolution (`scripts/combat/combat_controller.gd`, `decision_preview.gd`)**:
+     - All 9 enemy hours revealed upfront at combat start.
+     - Sector-First Assembly: Players freely click sockets within active 3-hour sector in any order.
+     - Progressive combo sweeps: filled hours sweep sequentially (`Hour 1`, `Hours 1 → 2`, `Hours 1 → 2 → 3`), generating immediate board impact.
+     - Overcharge & Sweep: Skip button overcharges middle socket (+0.25× multiplier) and banks +3 Overkill, sweeping sector without manual assembly.
+     - All Bleed and Thorns excess damage converts 1:1 into Overkill points.
+     - `DecisionPreview` synchronized with 100% parity across all 59 live-resolution test comparisons.
+  3. **Slay-the-Spire-Caliber Smart Hover & HUD UX (`scripts/ui/smart_hover_inspector.gd`, `clock_socket_view.gd`, `relic_pedestal_view.gd`, `chronometer_view.gd`, `clock_battle_presentation.gd`)**:
+     - Created `SmartHoverInspector`: instant tooltip card anchored beside hovered control without screen clipping or socket obstruction; live step-by-step arithmetic formulas (e.g. `Base 6 + Str 2 × Socket 1.5× = 12 DMG`); contextual keyword callout sub-cards for active keywords only; per-hour clash outcome timeline strip (`H1 -> H2 -> H3`).
+     - `ClockSocketView`: live calculated damage/block numbers in `#67E68D` green (buffed) and `#FF7A7A` coral (weakened); Sector Finisher gold crown markers on Hours 3/6/9; compound enemy intent readouts (`8⚔ 3🛡`) with dual-colored rings.
+     - Reserve Draw/Discard badges displaying remaining relic lists on hover; hoverable combatant status bars.
+  4. **Progression, Economy & Strategic Map Routing (`scripts/autoload/run_manager.gd`, `scripts/ui/`, `scripts/map/cog_navigation_generator.gd`)**:
+     - Player Vitality rebalanced to 80 Max HP (StS standard) across `RunManager`, `PlayerState`, and `ClassSelectScreen`.
+     - Shop 12/12 inventory bug resolved with in-place replacement picker; added "Dismantle Relic (15 OK)" button to thin basic strikes/guards.
+     - Expanded `EventCatalog` to 6 rich risk/reward events with full-inventory replacement.
+     - Boss Zenith relics made 100% free (0 OK), with an optional 20-OK pre-upgrade bonus.
+     - Strategic Cog Navigation map routing: Left gears (aggressive/elites/treasure), Center gears (balanced), Right gears (economy/shops/rest).
+  5. **3D Relic Assets & Blender Choreography (`scripts/art/build_relic_choreography.py`, `relic_tracks.gd`, `relics.glb`)**:
+     - Validated 3D meshes in Blender 5.2 & Godot 4.7.2. Tightened post-contact choreography. 280,042 motion quality checks pass with 0 failures.
+- **NOTE FOR FUTURE GRAPHICAL / 3D AI SPECIALISTS (Gemini 4 Argon / ChatGPT 6)**:
+  The underlying gameplay logic, math formulas, node hierarchies, and timing contracts are 100% verified and pass all automated suites. The visual assets (3D relic meshes in `assets/animations/relics/three_d/relics.glb`, Siphon tether shader in `scripts/combat/relic_3d_view.gd`, Sector Finisher crown polygon and dual-intent arc drawing in `scripts/ui/clock_socket_view.gd`, and Obsidian/Brass stylebox frames in `scripts/ui/smart_hover_inspector.gd`) were implemented for bug-free functional legibility. Future visual AI models are invited to inspect, polish, and elevate the materials, shaders, mesh bevels, and CanvasItem rendering without modifying timing contracts, node structures, or test assertions.
+- **Files Modified / Added**:
+  - Added: `scripts/ui/smart_hover_inspector.gd`, `scenes/overhaul_verification_test.tscn`, `scripts/combat/overhaul_verification_test.gd`, `docs/encounter-048.md`.
+  - Modified: `scripts/data/clock_relic_data.gd`, `scripts/run/clock_inventory.gd`, `scripts/autoload/content_database.gd`, `scripts/autoload/run_manager.gd`, `scripts/autoload/game_flow.gd`, `scripts/autoload/audio_manager.gd`, `scripts/combat/combat_controller.gd`, `scripts/combat/decision_preview.gd`, `scripts/combat/player_state.gd`, `scripts/combat/clock_battle_presentation.gd`, `scripts/combat/relic_3d_view.gd`, `scripts/ui/clock_socket_view.gd`, `scripts/ui/relic_pedestal_view.gd`, `scripts/ui/clock_collection_screen.gd`, `scripts/ui/event_screen.gd`, `scripts/ui/reward_screen.gd`, `scripts/ui/boss_overkill_altar.gd`, `scripts/ui/rest_site_screen.gd`, `scripts/ui/pre_battle_offer.gd`, `scripts/ui/class_select_screen.gd`, `scripts/map/cog_navigation_generator.gd`, `scripts/data/event_catalog.gd`, `data/clock_relics/**` (29 relics), `data/relics/run_wide/**`, `data/enemies/**`, `VERSION`, `project.godot`.
+- **Verification**:
+  - `overhaul_verification_test.tscn`: PASSED (all archetypes, positional mechanics, combo sweeps, SmartHoverInspector, shop replacement/dismantle, 6 events, free boss altar, map routing).
+  - `starter_relic_test.tscn`: PASSED (10-relic starter loadout, block retention, twin hit, next-attack charge, lifesteal caps).
+  - `run_artifact_test.tscn`: PASSED (eight artifacts, Bleed/Thorns lethal triggers, save data, shop purchase, trigger limits).
+  - `ux_017_test.tscn`: PASSED (59 live-resolution comparisons, 100% DecisionPreview parity).
+  - `motion_quality_test.tscn`: PASSED (280,042 checks, 0 failures).
+  - `relic_animation_test.tscn`: PASSED (all 29 relics, prop skeletons, lifesteal/block outcomes).
+  - `map_determinism_test.tscn`: PASSED (36 seeded maps, RNG isolation).
+  - `cog_navigation_test.tscn`: PASSED (8,646 checks, guardian approach rest guarantee, mesh contacts).
+  - `boss_overkill_altar_test.tscn`: PASSED (Zenith free claiming / replacement).
+  - `enemy_intent_readout_test.tscn`: PASSED (30 roster sweeps, compound intents, choice clearance).
+- **Handoff & Next Steps**:
+  - Full playable build 0.48.0 is ready for interactive playthrough and balance feeling.
+  - Active lock released in `ACTIVE_WORK.md`.
+
+## 2026-10-07 | Yonatan / Codex — Forged armor relief and matte cloth atlas padding
+
+- **Branch / delivery:** `feat/yonatan-046-relic-feedback`; ongoing local character production. Publication/push/merge held; no current installer delivery claim.
+- **Completed in this pass:** Wardrobe v7 adds sloping brass bevel faces to shaped armor plates. Chest ornament follows the outermost overlapping breastplate and shares its skin weights; the old fixed depth hid most ornament. Physical brass/bronze retain their material color through the bake. Initialized unused ORM texels to matte/nonmetal defaults after UV-corner review found unintended zero-roughness gaps.
+- **Files:** Wardrobe/material builders; rebuilt base/painted Blender sources, GLBs and four material maps/manifests; character/verification documents. Existing reservations remain active during production.
+- **Verification:** Neutral frontal ray check improves visible eligible ornament faces from 89/742 (12%) to 999/1016 (98%); five metal batches pass closed manifold/bevel checks. Source skin/pose/control checks pass 156178 and animated bounds pass 2240. All 16 actions/anchors/contact/rest data exactly unchanged. Bilinear checks at 41684 cloth UV corners find zero metallic/glossy samples after padding correction. Current exported payload passes 280042 motion, 1917 preset and 1991 native feedback checks with zero failures/errors; all exit 0.
+- **Visual evidence:** 96 final native views; sampled front/side/rear/impact/hammer return/chalice poses inspected. `Armor-Relief-Before-After.png`, three sampled exported preset captures, and ten-sequence `Executioner-Forged-Armor-Review.mp4` (1591 decoded frames/53.03s). All four overview and three denser Twin sheets inspected. Current hashes/evidence under `.test-artifacts/047/proper-character/`.
+- **Next / limits:** Remaining relic volume/art work, overall character/motion acceptance, clean FPS and installer validation remain open. Ray/texel checks do not prove all-pose visual acceptance or every GPU mip. Fixed simulation FPS is not measured performance. Installed session/save untouched; all QA profiles isolated. No gameplay rules or save schema changed.
+
+## 2026-10-07 | Yonatan / Codex — Melee weight transfer and asymmetric legs
+
+- **Branch / delivery:** `feat/yonatan-046-relic-feedback`; ongoing local character production. Publication/push/merge held; no installer delivery claim.
+- **Completed in this pass:** Distinct lead/trailing foot flight arcs and ankle pitches, forward knee tracking during compression, smooth horizontal travel ramps, and staged anticipation/landing compression in four Blender melee actions. Hammer support-hand release retains these leg/foot channels. No damage/contact timing or gameplay rules changed.
+- **Files:** Character Blender builder, rebuilt base/painted Blender sources and GLBs/motion data; surface and motion review fixtures; character/verification documents. Existing reservations remain active while production continues.
+- **Verification:** Exact unchanged skeleton, all 16 durations/contact marks and all 12 unrelated actions. Painted refresh verifies identical geometry/weights/rest and retains four material maps. Source skin/pose checks pass 156790; 389120 actual boot samples cover every melee frame without added ground penetration; dense foot enclosure passes 342016 samples per side. Baked horizontal root acceleration peak reduced from 105.79 to 51.32m/s2. Current exported payload passes 280042 motion checks, complete catalog/fast/reduced recovery, and 1406 native feedback checks, zero failures/errors, exit 0.
+- **Visual evidence:** 240 native angle/pose views; sampled anticipation/flight/impact/recovery inspected. Ten-sequence `Executioner-Weight-Transfer-Review.mp4`, 1591 decoded frames/53.03s; all four overview and three denser Twin sheets inspected. Evidence/current hashes under `.test-artifacts/047/proper-character/`.
+- **Next / limits:** Armor/silhouette and remaining relic models still need art work; final motion acceptance, clean FPS and installer validation remain open. Fixed simulation FPS is not measured performance. Installed session/save untouched; all QA profiles isolated.
+
+## 2026-10-07 | Yonatan / Codex — Woven normal relief and current exported review
+
+- **Branch / delivery:** `feat/yonatan-046-relic-feedback`; local production continues. Publication/push/merge held; current installer not rebuilt.
+- **Completed in this pass:** Authored crossed-fiber cloth bump in Blender and baked a fourth tangent-space normal map. Runtime retains normal texture and skin tangents across all quality presets. Added isolated normal comparison and preset checks; stopped pending JPG capture before terminal fixture cleanup.
+- **Files:** Wardrobe/material builders, rebuilt character Blender sources/GLBs/material maps and manifest; actor/surface/quality/movie review fixtures; character/verification documents. Existing reservations remain active while production continues.
+- **Verification:** Exact unchanged 16-action motion/anchor/contact data; 156790 saved-source checks pass. Current payload passes 280038 motion, 1375 native feedback and 1917 quality checks, zero failures/errors, all exit 0. Native enabled/disabled surface comparisons and sampled preset captures inspected.
+- **Visual evidence:** `Woven-Relief-Before-After.png`; ten-sequence `Executioner-Woven-Character-Review.mp4`, 1591 decoded frames/53.03s. All four overview and three denser Twin sheets inspected; final battle frame has no gray cleanup artifact. Current evidence/hashes under `.test-artifacts/047/proper-character/`.
+- **Next / limits:** Character armor/silhouette still simpler than enemy art; weight/follow-through and remaining relic modeling need work. Clean FPS, final art/motion acceptance and installer validation remain open. Fixed simulation FPS is not measured performance. Installed session/save untouched; QA profiles isolated. No gameplay rules or save schema changed.
+
+## 2026-10-07 | Yonatan / Codex — Anatomical boots and garment inertia
+
+- **Branch / delivery:** `feat/yonatan-046-relic-feedback`; local character production continues. Publication/push/merge held; no current installer/public delivery claim.
+- **Completed in this pass:** Wardrobe v6 fits boots around measured feet using narrower D-shaped sections, a shorter toe, physical outsole and fitted straps/sabatons. Reduced knee plate protrusion. Added a softer lower-cloak response to acceleration and delayed idle sway, retaining firmer shoulder/hip attachments. These are actual Blender garment-bone channels.
+- **Files:** Character wardrobe/build scripts, rebuilt GLBs/editable Blender sources/material maps/motion data, visual capture option in `relic_animation_test.gd`, character/verification documents. Existing exact reservations remain active while production continues.
+- **Verification:** 342016 deformed shoe-covered foot samples per side across all 16 actions and movement markers, no exposure beyond 2mm tolerance. Exact boot-only motion parity; cloth update preserves every non-garment bone/anchor, rest skeleton and all 16 durations/contact marks. Painted animation refresh verifies identical static geometry/weights/rest and retains material maps. Saved-source checks pass 156790; animated bounds pass 2240. Current exported payload passes 280038 motion checks, complete catalog/fast/reduced recovery and 1378 native feedback checks, zero errors; all exit 0.
+- **Visual evidence:** `Boot-Proportions-Before-After.png`, 96 native current angle/pose views, sampled front/side/rear/impact/recovery inspection. Ten-sequence exported `Executioner-Fitted-Character-Review.mp4` includes both Twin Blades contacts, 1592 decoded gameplay frames/53.07s. Raw capture includes one terminal fixture-cleanup frame removed from review media. All four overview sheets and three denser Twin sheets inspected. Evidence/hashes under `.test-artifacts/047/proper-character/`.
+- **Next / limits:** Finer surface detail, remaining relic volume review, overall art/motion acceptance, clean FPS and installer validation remain open. Fixed-FPS recording is not performance evidence. All QA saves isolated; installed game/session untouched. No combat rules, save schema or progression changed.
+
+## 2026-10-07 | Yonatan / Codex — Woven drape and physical hammer correction
+
+- **Branch / delivery:** `feat/yonatan-046-relic-feedback`; local character production continues. Publication, push and merge held. No installer/release completion claim.
+- **Completed in this pass:** Broader cloak folds, shoulder gathering and sewn returns; restrained woven navy material across hood/scarf/cape; neutral, lighter armor tint. Replaced the hammer's flattened artwork extrusion with a modeled shaft, molten twin cores, open octagonal rings and a circumferential cage. Fully visible relic materials now render opaque with correct depth; reveal/fade retains alpha blending.
+- **Files:** Character wardrobe/material builder, actor, expanded surface/equipped review fixtures; relic reference builder, targeted relic build option, physical-depth validation and relic view; rebuilt character/relic GLBs, editable Blender sources, maps and manifests. Exact reservations remain in `ACTIVE_WORK.md` while production continues.
+- **Verification:** Character source skin/pose checks and 2240 animated mesh samples pass. Exact unchanged character motion/anchors/contact data. All non-hammer geometry/UV/skin, six rest bones and 29 relic actions unchanged. Native 96 angle/pose views and 36 equipped poses captured; sampled visual inspection exposed and corrected capped collars and alpha surface sorting. Current exported payload passes 280038 motion checks, complete catalog/fast/reduced recovery, and 1633 native feedback checks with zero errors; all exit 0.
+- **Visual evidence:** `Hammer-Recovery-Before-After.png`; `woven-drape-turns/`; `volume-hammer-depth-weapons/`; current nine-sequence `Executioner-Current-Character-Review.mp4`, 1359 decoded frames/45.30s. All three one-second overview sheets inspected. Evidence/hashes under `.test-artifacts/047/proper-character/`.
+- **Next / limits:** Armor/boot proportions, finer cloth/hammer surface detail, remaining artwork-derived relic relief models and animation transitions still need visual work. Clean performance, final art/motion acceptance and installer validation remain open. Fixed-FPS video is not performance evidence. Every test used isolated QA saves; installed game/session untouched.
+
 ## 2026-10-04 | Yonatan / Codex — 0.45 focused camera and precise sockets
 
 - **Branch / PR / release:** `feat/yonatan-045-follow-map-camera`; reviewed source PR [#32](https://github.com/UnKami/Overkill/pull/32); public prerelease [v0.45.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.45.0-test). Immutable playable source `a6b060de43a5509796e3ad6acbb68c3aa07b5408`. Later commits change delivery documentation, coordination and checksum records only.
@@ -960,3 +1055,194 @@ This file provides asynchronous context sharing between developers and their AI 
 - **Visual review:** Four actual exported presets (1080p/720p, normal/large text) passed 72 states and 186 checks each: 288 images and 744 checks. All 24 contact sheets were reviewed. The exact exported MovieMaker review passed nine signature/melee sequences, 1,326 frames at fixed 30 FPS (44.2 seconds); all four movie contact sheets were inspected. Local review movie: `.test-artifacts/043/exported-motion-review.mp4`. Fixed movie FPS is not real-time performance.
 - **Public verification:** Installer 338,549,783 bytes, SHA256 `a9dad541edbf63591799a1f16ed48a050d1f042e86c6e2624472ee93f483112d`; ZIP 365,636,194 bytes, SHA256 `f6ae83cae2df4eade611d2f93cec9f9ba403a9c7520d486ea07efc5dafcf2801`; manifest 187 bytes, SHA256 `9711ef7b6a72ee53d16b0b2334b212884f9faf78b8c0e5818950fd276dd6c30f`. All three remote size/digest checks and public HTTP 200 downloads passed, with immutable source-tag verification. Main links were verified after documentation merge.
 - **Files / limits / handoff:** Final `ACTIVE_WORK.md`, `CHANGELOG_AI.md`, `UPDATE_LOG.md`, `installer/OverkillSetup-0.43.0.sha256`; production files are listed above. Native 1080p under current background load averaged about 35-37 FPS; the current 0.42 comparison averaged about 32 with differing load, so no controlled uplift or locked-60 claim is made. Enemy rigs deform existing paintings; separately painted limbs remain future art work. Movie shutdown retains an ObjectDB warning. No final human art approval, full human campaign or universal AAA claim. Complete source PR #28 against its reviewed final metadata head; GitHub is the authoritative merge record. Unrelated audio/card sidecars, old checksum, map concepts, trailer UIDs and Blender backup/cache remain unstaged.
+
+
+## 2026-10-05 | Yonatan / Codex | local relic feedback candidate
+
+- Branch: feat/yonatan-046-relic-feedback; no remote branch/PR/release created.
+- Completed: preserve forge browsing/scroll and one-upgrade allowance; refresh
+  upgraded instance; independent Blender-authored dual-wield sword actions and
+  calibrated sword contact; single green orb with deforming purple tube; arrival
+  synchronized heal feedback; larger persistent status chips and purple Strength.
+- Mechanics: preserve post-Block lifesteal caps, heal-before-thorns ordering,
+  damage and multiplier values, all 29 relic rules, progression and save schema.
+- Files: art builders and regenerated .blend/rig/cue data, attack presentation,
+  combat controller/choreography, collection/upgrade dialog, status shader,
+  focused regression scene, motion test extension, version metadata and docs.
+- Verification: Blender rig/cue generation, source catalog, 56,114 motion checks,
+  4,395 exported focused checks, 1,442 actual native payload checks, preserved
+  popup and artifact checks, 153 saved-run checks; native frames visually reviewed.
+  Installer/ZIP built and hashed. See docs/verification-046.md for exact evidence.
+- Handoff: local implementation is reviewable; GitHub publication blocked by
+  auto-review pending explicit approval. Published 0.45 links remain intact.
+  Do not claim a new delivered release. Do not stage unrelated pre-existing
+  imports, map/concept files, Blender backup or old installer manifest.
+
+
+## 2026-10-06 | Yonatan / Codex | unpublished rig revision 0.46.1
+
+- Branch: feat/yonatan-046-relic-feedback. User asked to hold publication and
+  review character/prop rigging and natural casting motion.
+- Completed: corrected elbow branch/rest joint, clavicles, rigid shoulder caps,
+  anatomical source bone axes/connectivity, explicit neutral-axis retargeting,
+  parent-space IK, smoother cast trajectories and activation holds/recovery.
+  Individual weighted prop source models, six-bone runtime skeleton, canonical
+  grip metadata, exact release sampling and corrected 60-FPS timeline markers.
+- Added: scripts/art/validate_relic_pipeline.py; native close-up review scene;
+  docs/rig-review-046.md. Regenerated .blend, rig and cue resources.
+- Verification: 45,504 evaluated Blender skin vertices, 50,720 bone-retarget
+  samples, 85,676 motion checks, 5,096 close-up checks, all 29 source relics,
+  4,403 exported focused checks and 1,800 clean native Windows payload checks.
+  Reviewed native PNGs; produced corrected-aspect close-up/battle MP4s.
+- Local installer/ZIP built and hashed. 0.46.0 local build is superseded by
+  0.46.1. No remote publication; human cinematic acceptance remains open.
+- Handoff: keep public 0.45 links intact. See rig review document for artifact
+  hashes, limits and intermittent source movie shutdown warnings. Unrelated
+  pre-existing files remain untouched and unstaged.
+
+## 2026-10-06 | Yonatan / Codex — local motion study
+
+Branch: feat/yonatan-046-relic-feedback; no publication.
+
+User rejected the prior motion as amateurish despite rig parity passing.
+Reauthored throw, Channel/Chalice and Bell gestures; planted lateral weight
+shift; phase-staggered body/head/hands/cloth; added arm extension reserve.
+Rebuilt character and prop Blender sources/runtime data. Preserved contacts,
+mechanics, durations and saves.
+
+Files: scripts/art/build_relic_rig.py and generated character/relic assets;
+VERSION/project/export configuration; docs/motion-polish-0462.md and local
+release documentation.
+
+Verification: saved skin parity 45,504, motion 85,676, close-up 5,096, source
+feedback 4,412, actual native Windows feedback 1,509; zero assertion failures.
+Reviewed pose sequences and video composition. Movies fixed 60 FPS; no
+real-time FPS claim. Remaining cutout art limitations and human visual
+acceptance are explicitly open. See motion study for final payload status.
+
+## 2026-10-06 | Yonatan / Codex | 0.47 local 3D review candidate
+- Branch: feat/yonatan-046-relic-feedback. Publication, push, merge and release held by user.
+- Completed: anatomical 63-joint main-character rig, 16 actions, editable Blender IK controls; reference-derived hood/coat/asymmetric armor; 29 canonical relics on six-joint prop skeleton; native palm sockets, independently swinging bell, physical Siphon conduit and energy; crown seating and purple/green lighting corrections; short-lived cyan/amber crystalline action particles respecting reduced motion, transparent viewport clear and softened ground shadow.
+- Files: scripts/art/*3d.py and reference helpers, assets/characters/executioner/three_d, assets/animations/relics/three_d, native actor/view/review scripts and QAProfileGuard, scenes/reviews, docs/executioner-3d.md and verification-047.md.
+- Verification: Blender hero 230217, relics 445111 and controls 72 checks; native motion 194250 checks; final source feedback 6233 checks, zero errors; nine rendered signature sequences; all-catalog native regression passed. Pre-particle Intel GL benchmark mean 41.47 FPS, p95 38.29ms. See verification-047.md for exported payload checks and evidence.
+- Limitation: single-view textures prioritize battle-camera fidelity, hidden surfaces approximated; enemies/backdrop remain illustrated, cinematic visual acceptance open. Reported afterimage not reproduced in fresh captured sequences; user confirmation pending.
+- Save incident: earlier fixture overwrote normal auto-saved run. Project files intact, no exact earlier run recovered; current QA scenes refuse unisolated profiles. No normal save reset or substitute performed.
+- Handoff: local 0.47 installer only. Keep old releases. Do not claim a finished cinematic standard or stable 60 FPS.
+
+## 2026-10-06 | Yonatan / Codex | Afterimage diagnosis continuation
+- User clarified a separate full-body copy stays behind during motion. Earlier clear/shadow changes did not resolve the reported symptom.
+- Compared full model, hidden underbody, hidden mantle and backface culling. Corrected duplicated painted back surfaces and excessive rear shell depth in reference_surface.py / executioner_reference_wardrobe.py; rebuilt source Blender/glTF. Saved skin validator still passes 230217 checks.
+- Added isolated native surface review and render-history test. Moving the model out of its old position leaves zero old-character pixels. Thus retained frames are not reproduced by this renderer test; the actual separate-copy issue remains OPEN pending user screenshot/clip.
+- Current source-only backing geometry adjustment is not in the previously linked 0.47 installer/video. No publication/build claim for this continuation.
+
+## 2026-10-06 | Yonatan / Codex | Screenshot-guided dark silhouette correction
+- Branch feat/yonatan-046-relic-feedback, local 0.47 candidate only; publication remains held.
+- Completed: isolated geometry layers using screenshot and native ablation; removed oversized dark backing contour with 8mm hood/12mm torso shells, restrained volumetric limb depth, and masked covered anatomical torso. Real hands, skin rig, motion, relics and crystalline particles preserved.
+- Files: scripts/art/reference_surface.py, executioner_reference_wardrobe.py, validate_body_coverage.py, character Blender/glTF assets, surface review diagnostics, verification/pipeline documentation.
+- Verification: 230217 saved skin/pose checks; 5776 covered torso faces hidden, 3142 hand faces visible; fresh nine-signature animation capture; exported native graphics review 1824 checks/zero failures. New evidence Overkill-047-Silhouette-Fix.mp4. Earlier open-diagnosis notes are superseded by this correction, with human visual acceptance still open.
+- Handoff: rebuilt local installer contains the geometry correction. No publication, push or merge; no normal save access during this follow-up.
+
+## 2026-10-06 | Yonatan / Codex | Rotation separation repair
+- Branch feat/yonatan-046-relic-feedback; local 0.47 candidate, publication held.
+- Reversed covered-torso masking and replaced the visible undersuit with a continuous canonically textured skin. Retained stable armor details; one closed tapered hood with matte side cloth. Main character retains 63 bones, 17 skinned meshes and 16 actions. No experimental skin transfer or separate head-core mesh is included.
+- Verification: source 230217 skin/pose checks, all-action deformation bounds (1360 evaluated mesh samples), continuous torso/hand coverage; front/45/90/135-degree views and fresh nine-sequence battle recording. Exported feedback: 5516 checks, zero errors. See verification-047.md for rendered lifecycle diagnostic scope.
+- Files: executioner_reference_wardrobe.py, validate_body_coverage.py, executioner_3d_actor.gd, executioner_surface_review.gd, executioner_3d_review.gd, relic_animation_test.gd capture path, generated character Blender/glTF assets, pipeline/verification docs.
+- Limitation: side/back shapes and UV appearance remain simplified and require art polish. Human visual acceptance remains open. Source/video/local installer updated; no publication/push/merge and no normal-profile writes.
+
+Rotation handoff completion: final exported native review clean (1824 checks, zero failures), local installer rebuilt. Anatomy-only review skips unused material overrides; production behavior unchanged. See rotation-final-hashes.json. Human visual acceptance and side/back art refinement remain open.
+
+## 2026-10-06 | Yonatan / Codex | Black hood backing repair
+- Branch: feat/yonatan-046-relic-feedback; publication held.
+- Completed: reduced closed hood depth/recess, textured the hood side walls, removed the unlit black side-material override.
+- Files: scripts/art/executioner_reference_wardrobe.py; scripts/combat/executioner_3d_actor.gd; regenerated character GLB, Blender source and motion export; docs/verification-047.md.
+- Verification: native four-angle visual comparison; renderer history remnants=0; Blender coverage 1360 samples and saved-source 230217 checks pass. All fixtures isolated.
+- Handoff: source only. Installer/video from previous turn are stale for this correction. Side texture stretching and final visual acceptance remain open. No release or normal save modification.
+
+## 2026-10-07 | Yonatan / Codex | Local character motion continuation
+- Branch: `feat/yonatan-046-relic-feedback`; publication, push and merge remain held. No new commit or PR.
+- Completed: melee upper-body recovery during return flight; bounded forearm pronation and pre-idle finger relaxation; neutral knee-pole matching; breathing during sword summon; damped movement-driven cloak/tasset channels; bowed closed hood with relaxed contour and cloth sides; spine-distributed cuirass skin. Canonical detailed limb/boot silhouettes preserved after rejecting bulky smooth-shell experiments.
+- Files modified: `scripts/art/build_executioner_3d.py`, `executioner_reference_wardrobe.py`, `validate_body_coverage.py`; `scripts/combat/motion_quality_test.gd`, `executioner_surface_review.gd`; generated character GLB, motion data, Blender source/manifest; `docs/executioner-3d.md`, `verification-047.md`, `encounter-047.md`; rebuilt local Windows pack and installer.
+- Verification: saved Blender 230217 skin/pose checks, 1360 evaluated mesh samples, closed outward-facing hood, 72 control checks; native motion 199068 checks with zero failures; 24 rendered angle/pose views; nine real relic sequences and fresh battle video; exported native live review 1824 checks, zero failures; exported relic feedback 6417 checks, zero errors. All 16 durations/contact markers and skeleton rest records preserved. Final sword-wrist error from idle reduced from 34.562 degrees to under 0.1 degrees. Disposable profiles only.
+- Evidence: `.test-artifacts/047/polish-20261007/` includes two new MP4 reviews, pose sheets, logs, comparison and final SHA-256 inventory. Local installer is current for this continuation; compiled successfully, exported EXE/PCK tested. No installation-wizard replay or normal-save access.
+- Next steps / handoff: side/rear art still needs modeling and surface detail; human visual acceptance and all-screen release checks remain open. Existing recording shutdown ObjectDB warning is tracked separately. Initial stale-cache/capture-write/AVI-aspect issues were corrected for final evidence; see verification notes. No stable-FPS or finished cinematic-quality claim. Locks released after the local handoff.
+
+## 2026-10-07 | Yonatan / Codex | Executioner production material pass, work in progress
+- Branch: `feat/yonatan-046-relic-feedback`; publication, push and merge remain held. The active character goal is not complete.
+- Implemented: finer cloth and engraved bronze atlas; smooth obsidian mask with fine veins; deeper hood brow; continuous, closed folded cloth cowl; corrected chest clearance; narrow breastplate UV regions preserving engraving proportions; subtle coat-edge trim. Real geometry and rig remain the source of movement. This pass changes no action lengths, contact markers or gameplay rules.
+- Files: `scripts/art/executioner_tailored_wardrobe.py`; regenerated character GLB, motion samples, editable Blender source and manifest; material atlas v3 and exact prompt; `scripts/combat/executioner_surface_review.gd` accepts an isolated review-output directory; pipeline and verification documentation.
+- Verification: Blender `validation-material-v3-sewn.log` passes 155010 skin/pose checks, 2240 deformation-bound samples, nine idle central-chest clearance rays and closed outward cowl topology. Native `turns-material-v3-sewn.log` captures eight directions across six poses. Equipped review passes 1830 checks and 21 poses, before only the cowl seam topology fix. Final native feedback passes 1763 checks, zero errors, including actual Twin contacts, capped lifesteal and transfer timing. All profiles isolated; no normal-save access.
+- Art source: built-in ImageGen generated `executioner_surface_atlas_v3.png`; exact prompt in `three_d/source/material_prompt_v3.txt`. Its material detail is applied to closed, skinned Blender geometry.
+- Next work: original-art fidelity is still incomplete; refine the character's painted material detail and pose-to-pose motion, improve frame pacing, then refresh and verify the exported payload. Existing installer/video is stale for this production model. Keep the active path reservation during the ongoing goal; no release-ready or final visual-acceptance claim.
+
+## 2026-10-07 | Yonatan / Codex | Painted PBR bake and live quality integration, ongoing goal
+- Branch: `feat/yonatan-046-relic-feedback`; no publication, merge, push, version bump or new installer. Goal remains active and locks remain reserved for continuing character work.
+- Implemented: aligned painted detail baked onto the existing closed mesh, with visibility checks retaining occluded surfaces; packed 2048px diffuse, roughness/metal and emission maps; two runtime meshes/three surfaces, eight character draw calls including particles. The normal actor loads the painted GLB. The original sectional model remains the modeling/motion baseline. No silhouette topology, bone pose or combat logic is generated from the image.
+- Implemented: existing High/Balanced/Performance setting now sizes character and separate relic viewports immediately, preserves world framing, and adjusts AA/self-shadow. Updated settings description. QA rejects wrapped/invalid GPU timing results and begins character measurement after viewport sizing.
+- Files: `scripts/art/paint_executioner_materials.py`; painted surface source and exact ImageGen prompt; three baked maps and imported copies; painted GLB, editable Blender source and material manifest; `executioner_3d_actor.gd`, `relic_3d_view.gd`, `executioner_3d_review.gd`, `relic_animation_test.gd`, `settings_panel.gd`; pipeline/verification docs.
+- Verification: painted source 155010 skin/pose checks; all 54177 source vertex coordinates unchanged. 48 native angle/pose views. Default native equipped review 1830 checks/21 poses, zero failures. Quality review 1899 checks, zero failures, including five screen anchors and separate relic projection across three presets. Complete catalog passes at High and Balanced, including fast/reduced motion and recovery. First painted High run 34.89 FPS/p95 36.08ms; full Balanced 39.60 FPS/p95 34.35ms. Invalid GPU aggregate in that Balanced run was discarded; later corrected three-sequence diagnostic has zero invalid GPU samples. Runs are not a controlled A/B and do not prove stable 60 FPS. Disposable profiles only.
+- Handoff: actual source character is richer and remains fully rigged; motion/chamber mechanics and frame pacing still need work. Existing exported payload, installer and movies are stale. Built-in ImageGen supplied the aligned paint source; Blender performed the UV/PBR bake. Final visual acceptance remains open.
+
+## 2026-10-07 | Yonatan / Codex | Continuous melee body mechanics, ongoing goal
+- Branch: `feat/yonatan-046-relic-feedback`; local work only. Publication, merge and push remain held. Character-production reservation remains active for the continuing goal.
+- Completed: raised chamber and extended sword contact; two-handed hammer. Replaced intermediate pose stops with time-aware cubic local rotation/pelvis curves, a preceding hip drive, rearward preparation shift and forward impact compression. Replant support feet after interpolation. Enforce the hammer handle constraint after rotation filtering, rebuild twist/finger descendants, use a reachable chest-level hold and blend grip acquisition/release.
+- Completed: animation-only painted-source refresh verifies exact geometry, weights and bind matrices, preserves editable drivers/PBR maps, and retains all 16 copied actions with fake users. QA now checks every frame of the hammer hold, captures 36 equipped poses and can record four real melee relics including both Twin Blades contacts. Hidden diagnostic lifecycle row prevents test-only UI clutter in movies; its orphan assertions remain active.
+- Files: `scripts/art/build_executioner_3d.py`, `paint_executioner_materials.py`; character motion data/manifest, original and painted Blender/GLB assets; `scripts/combat/motion_quality_test.gd`, `executioner_3d_review.gd`, `relic_animation_test.gd`; `docs/executioner-3d.md`, `docs/verification-047.md`, this handoff.
+- Verification: final saved source passes 155010 skin/pose/control checks. Exact geometry/skin/rest verification passes during painted refresh. All rest bones, action durations/contact markers and twelve non-melee clips are unchanged. Diagnostic source checks: 128 dense handle samples, maximum separation 0.00016m, largest local melee rotation step 13.06 degrees. Native imported motion: 280031 checks, zero failures. Equipped view: 1845 checks, 36 renders. Real combat feedback: 6245 checks, zero errors, independent Twin Blades contacts, statuses, capped lifesteal, transfer timing and thorns ordering. All profiles isolated; normal saves untouched.
+- Verification limits: initial native checks caught grip drift, unreachable early support and a release snap; corrected versions pass the stricter tests. Clean four-relic battle capture completes in `body-flow-film-clean.log`; `Executioner-Body-Flow-Review.mp4` decodes all 761 frames/25.37s at fixed 30FPS. Diagnostic UI is hidden. Both clean overview sheets, dense Iron Strike frames and enlarged equipped poses were inspected. Fixed simulation capture is not FPS evidence, and sampled inspection is not every-frame visual approval. Continuous visual acceptance remains open.
+- Handoff: character still needs final art/motion acceptance and real-time frame pacing work. Previous 35–40 FPS results are not refreshed performance evidence for these actions. Exported payload/installer remain stale; no release-ready or full-game-polish claim.
+
+## 2026-10-07 | Yonatan / Codex | Sustained rig motion and current packaged verification
+- Branch: `feat/yonatan-046-relic-feedback`; ongoing character goal, publication/push/merge held. Active production reservation retained. Normal saves and installed game untouched.
+- Completed: actual Blender idle breathing through spine/hips/hands; distinct sustained chalice, bell, crown, channel and block poses; animated block finger closure/release; subtle Siphon body/palm pulse. All durations/contact markers/rest bones and nine other clips remain unchanged. Refreshed both original and painted native animation assets without changing geometry/weights/material maps.
+- Completed: crop unused character viewport transparency while preserving skin detail/horizontal reach: High 1200x709, Balanced 900x532, Performance 720x425, camera span 3.7m. Ritual/thrown overlays retain full-height budgets and 4.7m span with independent projection. Shared held-weapon depth remains intact. Profiling fixture can isolate character drawing and reports p95 wall-frame duration; disabled viewport is excluded from timing measurements.
+- Files: `scripts/art/build_executioner_3d.py`; generated Blender sources/GLBs, motion data/manifest; `scripts/combat/executioner_3d_actor.gd`, `relic_3d_view.gd`, `executioner_3d_review.gd`, `relic_animation_test.gd`, `motion_quality_test.gd`; pipeline/verification docs and this handoff. Local payload/launcher/media/hashes are ignored artifacts under `.test-artifacts/047/proper-character/`.
+- Verification: saved source 155010 checks; exact painted-source geometry/skin/rest verification; native motion 280038 checks/zero failures; projection/quality 1899 checks/zero failures, including comparison to former five screen anchors. Full catalog, fast/reduced motion, recovery and blocked lifesteal pass. Source nine-sequence recording decodes 1359 frames/45.30s; sampled normal-scale overhead/tether views inspected.
+- Packaged verification: current PCK 385317028 bytes plus the established official Godot runtime, staged in `current-payload/`; native motion 280038 checks/zero failures, verbose feedback 6416 checks/zero errors and clean exit. Direct-frame packaged capture completes all nine sequences and exits without warnings; `Executioner-Payload-Review.mp4` decodes 1359 frames/45.30s. Three packaged overview sheets inspected. Private `Preview Overkill.cmd` uses its own `.tools/042-audit-profile/047-character-preview` saves. Not an installed/published delivery.
+- Diagnostic limits: native built-in AVI produced malformed JPEG packets and an exit object warning; it is invalid review media. Direct-frame replacement and verbose feedback exit cleanly. Today's short 32.11/43.70/40.47 FPS diagnostics ran alongside the installed Overkill process (PID 62052, started 14:47), so they are not isolated performance evidence. Requested user closure of that session; it remains untouched and clean FPS measurement is pending.
+- Handoff: final character art/motion acceptance, clean real-time performance and updated installer remain open. No stable-60FPS, full-campaign/all-screen approval, source-commit release or final-ready claim. Next rendering investigation: Siphon currently rebuilds its procedural tube mesh each frame; assess cost with the installed game closed before optimizing.
+
+## 2026-10-07 | Yonatan / Codex | Hood proportion and persistent Siphon geometry
+- Branch: `feat/yonatan-046-relic-feedback`; ongoing goal, publication/push/merge held. Installed process PID 62052 still running and untouched; closure request remains pending. Production reservations retained.
+- Completed: narrower/shorter real hood shell (radius 0.152m, height 0.360m), retaining the recessed mask, sewn return, navy identity and rig. Full painted-material rebake against the new geometry. Saved before/after source assets and native silhouette comparison for review.
+- Completed: Siphon reuses one indexed 25-ring/10-side mesh. A spatial shader applies the existing Blender-authored extension/energy values to the same curved tube, moving radius pulse and artwork UVs. Dynamic bounds follow the live endpoints. Removed per-frame SurfaceTool construction, normal generation and mesh replacement; retained material/emission behavior. Actual-transfer QA checks mesh identity remains constant and bounds include the live hand.
+- Files: `scripts/art/executioner_tailored_wardrobe.py`; original/painted Blender sources, GLBs, motion data/manifest and rebaked maps; `assets/shaders/combat/siphon_tether.gdshader`/UID; `scripts/combat/relic_3d_view.gd`, `relic_animation_test.gd`; pipeline/verification docs, ACTIVE_WORK and this handoff. Ignored local payload/media/hashes under `.test-artifacts/047/proper-character/`.
+- Verification: saved Blender skin/pose/control 155010 checks; closed outward-facing hood and 2240 animated bounds samples pass. Native motion 280038 checks/zero failures; skeleton and 16 durations/contact markers unchanged. Full-turn fixture produces 48 angle/pose views; front/profile/rear/impact samples inspected. Native persistent-tether feedback 1303 checks/zero errors, visible conduit/energy render inspected. Complete catalog, fast/reduced motion, recovery and retained mesh through actual transfer pass.
+- Packaged verification: refreshed ignored current payload; motion 280038 checks/zero failures; rendered feedback 1395 checks/zero errors. Both exit 0 without shader/shutdown errors. Local isolated preview launcher remains available. Previous packaged movies and installer are older than this geometry/shader correction.
+- Handoff: final visual acceptance, clean frame pacing, updated full packaged recording and installer remain open. No measured FPS improvement claim while the installed game is running; no final-ready or release-delivered claim. Continue source/material polish or wait for confirmed installed-session closure before isolated benchmarks.
+
+## 2026-10-08 | Yonatan / Codex | Reference-fidelity character refinement
+- Branch / PR: `feat/yonatan-046-relic-feedback`, continuation of existing uncommitted work; no new PR, push, merge or public release. User explicitly authorized takeover of the stopped character session.
+- Completed: closed/deeper hood crown and brow, recessed mask, turned coat lapels, longer curved coat panels, continuous greaves, charcoal-teal cloth and aged armor materials. Four 4K PBR maps plus isolated cloth color, separate matte non-emitting cloth material and anisotropic filtering. Temporary joined bake mesh speeds atlas generation while preserving all 28 editable source components and exact coordinates/skin weights.
+- Completed: planted idle weight transfer, opposing torso movement, small head attention and relaxed finger movement. Bypassed causal capture smoothing only for the analytic idle so its loop closes exactly; added a permanent closure regression check. All 15 active clips, all 16 durations/contact markers and the complete bind skeleton are unchanged.
+- Files modified / added: `scripts/art/executioner_tailored_wardrobe.py`, `build_executioner_3d.py`, `paint_executioner_materials.py`, `validate_executioner_3d.py`; `scripts/combat/executioner_3d_actor.gd`, `executioner_3d_review.gd`; generated character GLBs, Blender sources, motion data and material maps under `assets/characters/executioner/three_d/`; `docs/executioner-3d.md`, `docs/verification-048-character.md`, `UPDATE_LOG.md`, this log and `ACTIVE_WORK.md`. Earlier unrelated working changes were preserved.
+- Verification: 160268 saved-source checks, 2240 garment-bound samples, exact baked-source geometry/skin parity and five packed 4K maps; native three-preset material/projection review 1944 checks with zero failures; exported-pack motion 280042 checks with zero failures; ten exported combat sequences complete, including Twin Blades. Inspected native portraits, comparison frames and battle frames. Both MP4s decode without errors.
+- Review artifacts: `.test-artifacts/048-character/Executioner-Reference-Idle.mp4` (193 frames, two idle loops), `Executioner-Combat.mp4` (1591 frames, ten sequences), current isolated launcher at `payload/Preview Character Build.cmd`, GLB/PCK hashes in `artifact-hashes.json`. Captures use fixed simulation sampling, not measured real-time FPS. The previous quality fixture's bell above the hood is a deliberate prop test, not the character's hood geometry.
+- Handoff / limits: closer materials and garment form, but finer sculpted ornament, organic garment construction, asymmetry and intricate glow still fall short of the illustration. Active choreography was preserved, not redesigned. Relic refinement, final art acceptance, clean frame pacing and installer/release delivery remain open. Existing publication hold preserved; public v0.45.0 downloads are unchanged. All reservations belonging to this character pass are released; earlier relic reservations remain. No normal player saves were used.
+
+## 2026-10-08 | Yonatan / Codex | Meshy character working copy
+- Branch / PR: `feat/yonatan-meshy-character`, isolated managed worktree from freshly pulled main. Local only; no PR, push, merge, or gameplay release. Existing dirty checkout and relic reservations preserved.
+- Completed: UV-verified PBR restoration from the remeshed download; removal of whole-body emission; preserved 23-joint skin; corrected Blender bone display lengths; editable hand/foot IK targets and poles; supplied walk/run floor correction; new Idle and first Jump_Down/Guard_Raise studies. Five baked clips exported to GLB.
+- Files modified / added: `scripts/art/prepare_meshy_character.py`, `validate_meshy_character.py`, `scripts/combat/meshy_character_review.gd`, `scenes/meshy_character_review.tscn`, `docs/meshy-character.md`, local assets under `assets/characters/meshy/`, metadata and coordination/update logs. Large generated files excluded from Git.
+- Verification: 149 saved-source checks pass. Native Godot imports 23 bones and all five clip durations; 300-frame fixed-step playback completes with empty stderr. Native front/locomotion/landing/guard frames inspected. Ten-second MP4 fully decodes without errors. Exact delivered standalone project passes import/startup. All three original Meshy input SHA-256 hashes are unchanged.
+- User package: original checkout `character 3d concept image - meshi/Prepared_Meshy_Character/` contains GLB, packed Blender source, motion video, and preview launcher. It uses the existing local Godot executable and no gameplay autoloads/saves.
+- Next steps / handoff: finger articulation, independent cloth rigging, garment/self-intersection cleanup, full clock-top entrance, attacks/relic motions and battle integration remain. Jump_Down is a vertical landing study; Guard_Raise has no shield or gameplay effect attached. High-poly normal texture needs a UV bake. No stable-FPS, final animation/visual acceptance, installed update, or release-complete claim. Existing publication hold is unchanged. This chat's Meshy reservations are released.
+## 2026-10-08 | Yonatan / Codex - Meshy in-game preview
+- Branch: feat/yonatan-meshy-character, isolated worktree C:/Users/Yonatan/.codex/worktrees/meshy-character/Overkill. No PR/push/publication/merge.
+- Completed: Meshy actor replaces player in real arena; transparent 3D rendering, projected hand anchors, clock perch/drop/walk intro gated before relic decisions, guard/interim attack/hit/death handling, replayable standalone battle, isolated save directory.
+- Files: scripts/combat/meshy_battle_actor.gd, meshy_battle_preview.gd, illustrated_stage.gd, battle_intro_sequence.gd; scenes/meshy_battle_preview.tscn; project.godot; VERSION; export_presets.cfg; installer/meshy-preview.iss; assets/characters/meshy/.gitignore; docs/meshy-character.md.
+- Verification: source/native and final exported Windows payload exit 0, stderr empty. All 29 relic contact/recovery profiles; actual hand bone projections; simultaneous attack/hit at normal and fast speeds; reduced-motion entrance skip; death completion. Controlled REL-04 offer tested actual selection: 7 Block, 4 enemy damage, 3 Block left, HP unchanged, turn 2. REL-01 applies exactly 6 HP damage. Native screenshots and replay panel inspected.
+- Local build: 0.49.0-meshy-preview, Windows runtime + PCK + independently named installer. Installer compiled successfully; installation not tested. Delivery folder: character 3d concept image - meshi/Prepared_Meshy_Character/Battle_Preview_0.49.0 in the original workspace. Exact source commit and SHA-256 manifest accompany the files.
+- Handoff: first visual integration only; attack/hit/death gestures are interim, not finished per-relic authored animations. No full campaign, human playthrough or stable-FPS certification. Baseline main 0.45 plus Meshy branch; other dirty 0.46-0.48 work and prior relic reservations untouched.
+- Publication: existing hold retained. GitHub release, reviewed default-branch download-link PR and remote asset verification are pending; this is not a delivered public gameplay update. Existing v0.45.0-test remains the public installer.
+- Locks released for this Meshy integration.
+
+
+## 2026-10-08 | Yonatan / Codex - 0.50.0 publication verified
+- Published prerelease: https://github.com/UnKami/Overkill/releases/tag/v0.50.0-test
+- Exact tested/tagged gameplay source: 0b675b5af4ddd7246637210d52f14af27d62bd65. Draft source PR: https://github.com/UnKami/Overkill/pull/34 (not merged).
+- All five public assets returned HTTP 200 and matching GitHub/local byte sizes and SHA-256 digests. Portable archive executable and PCK matched the tested files.
+- Installer: OverkillSetup-0.50.0.exe, 388966735 bytes, SHA-256 e90fadf70f1cb72f34516fcf87185a07617e7938d95b812c3aa102a8ea7efeed.
+- Documentation-only PR https://github.com/UnKami/Overkill/pull/35 reviewed and merged at 8a98d9e8ef471c83c4e94d3fc343bb10d0626abc. Main's README, installer README, UPDATE_LOG and encounter-050 notes verified after merge.
+- Final scope: lighting-polished focused Meshy battle playtest; provisional combat gestures and other limits remain explicit. No gameplay merge, full campaign/FPS claim, or installer-installation claim.
+- All locks for this lighting/release task are released. Prior relic reservations and the other dirty checkout remain preserved.
+

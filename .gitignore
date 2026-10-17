@@ -27,19 +27,27 @@ firebase-debug.log
 
 # Build artifacts — rebuilt by scripts/release/build_and_deploy.sh, not tracked
 /build/
-/installer/OverkillSetup-*.exe
-/installer/*.exe
-/public/downloads/*.exe
+*.exe
+*.pck
+*.zip
+/public/downloads/
 *.log
 
 .tools/
 artifacts/
 /.test-artifacts/
-/installer/Overkill-*-Windows.zip
 /installer/*.sha256
 
 # Trailer outputs: keep the editable capture/render scripts, not generated media
 /trailer/*.mp4
 /trailer/captures/
 /trailer/*contact-sheet.jpg
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Concept & external AI generative raw assets
+character 3d concept image - meshi/
+concept art/
 

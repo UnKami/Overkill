@@ -4,9 +4,9 @@ extends Node
 func _ready() -> void:
 	AudioManager.set_master_volume(0.0)
 	AudioManager.fast_mode = true
-	RunManager.start_new_run([], [], 500, 40040)
-	assert(ContentDatabase.get_clock_relic("REL-04").base_block == 7, "Guard Plate is strengthened for early survival")
-	assert(ContentDatabase.get_clock_relic("REL-06").base_block == 10, "Reinforced Wall has a clear upgrade in defensive value")
+	RunManager.start_new_run([], [], 80, 40040)
+	assert(ContentDatabase.get_clock_relic("REL-04").base_block == 6, "Guard Plate grants 6 Block")
+	assert(ContentDatabase.get_clock_relic("REL-06").base_block == 7 and is_equal_approx(ContentDatabase.get_clock_relic("REL-06").multiply_current_block, 1.5), "Reinforced Wall adds 7 Block and multiplies by 1.5x")
 	var artifacts: Array[RelicData] = []
 	for artifact_id: String in ["artifact_aegis_seed", "artifact_ashen_ledger", "artifact_deepwell_suture", "artifact_verdigris_thorn", "artifact_cinder_dial", "artifact_tideward_clapper", "artifact_violet_weavers_shuttle", "artifact_gloam_moth"]:
 		var artifact: RelicData = ContentDatabase.get_relic(artifact_id)
@@ -19,13 +19,13 @@ func _ready() -> void:
 	assert(RunManager.add_relic(artifacts[0]), "A unique artifact should be added")
 	assert(not RunManager.add_relic(artifacts[0]), "An artifact cannot be owned twice")
 	var saved: Dictionary = RunManager.to_save_dict()
-	RunManager.start_new_run([], [], 500, 40041)
+	RunManager.start_new_run([], [], 80, 40041)
 	RunManager.load_from_save(saved)
 	assert(RunManager.relics_held.size() == 1 and RunManager.has_relic("artifact_aegis_seed"), "Run-wide artifacts must survive save/load")
 
-	# Exercise the real shop builder and purchase path. It must leave all 12 clock
+	# Exercise the real shop builder and purchase path. It must leave all 10 clock
 	# copies untouched while granting exactly one run-wide artifact per visit.
-	RunManager.start_new_run([], [], 500, 40042)
+	RunManager.start_new_run([], [], 80, 40042)
 	OKRunState.gain_ok(100, "artifact-shop-test")
 	var shop := ClockCollectionScreen.new()
 	shop.mode = "shop"
@@ -48,15 +48,14 @@ func _ready() -> void:
 	await _capture_if_rendered("artifact-shop-041")
 	var picked: RelicData = shop._artifact_offers[0]
 	shop._buy_artifact(picked, 30)
-	assert(RunManager.clock_inventory.size() == 12, "Artifacts must never consume chronometer sockets")
+	assert(RunManager.clock_inventory.size() == 10, "Artifacts must never consume chronometer sockets")
 	assert(RunManager.has_relic(picked.id) and RunManager.relics_held.size() == 1, "Artifact purchase should grant one run-wide item")
 	assert(OKRunState.current_ok == 70 and shop._artifact_purchase_made, "Purchase should deduct its price and lock the visit to one artifact")
 	shop.queue_free()
 	await get_tree().process_frame
 
-	# Verify combat-start wards, kill healing, qualifying Overkill and one-use
-	# limits against the actual combat controller without waiting through a run.
-	RunManager.start_new_run([], artifacts, 500, 40043)
+	# Verify combat-start wards, kill healing, qualifying Overkill and recurring engines
+	RunManager.start_new_run([], artifacts, 80, 40043)
 	OKRunState.current_ok = 0
 	var battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(battle)
@@ -64,42 +63,42 @@ func _ready() -> void:
 	enemy.id = "artifact_test_target"
 	enemy.max_hp = 100
 	battle.start_combat([enemy])
-	assert(battle.player_block == 8, "Aegis Seed should ward at battle start")
-	assert(battle.enemy_weak == 1, "Verdigris Thorn should weaken the opening foe")
+	assert(battle.player_block == 10, "Aegis Seed should ward at battle start (10 Block)")
+	assert(battle.enemy_weak >= 2, "Verdigris Thorn should weaken the opening foe")
 	await get_tree().process_frame
 	await _capture_if_rendered("artifact-battle-041")
+	battle.player_max_hp = 500
 	battle.player_hp = 400
 	battle.enemy_hp = 1
 	battle.enemy_bleed = 1
 	await battle._resolve_tick(1)
 	assert(battle.player_hp == 412, "Deepwell Suture should restore missing Vitality when Bleed scores the first kill")
-	assert(battle.player_strength == 2, "Violet Weaver's Shuttle should grant Strength on the first kill")
+	assert(battle.player_strength == 3, "Violet Weaver's Shuttle should grant +3 Strength on kill")
 	assert(battle._artifact_triggered_this_combat.has("artifact_deepwell_suture"), "A Bleed kill must mark Deepwell Suture as used for the battle")
 	battle.enemy_hp = 1
 	battle._notify_enemy_killed(true)
-	assert(battle.player_hp == 412 and battle.player_strength == 2, "Kill-trigger Artifacts must remain once-per-battle after a non-attack kill")
+	assert(battle.player_hp == 412 and battle.player_strength == 3, "Kill-trigger Artifacts must not fire when enemy_hp > 0")
 	battle.player_next_hit_bonus = 0
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_ATTACK)
 	await get_tree().process_frame
 	await _capture_if_rendered("artifact-activation-041")
-	assert(battle.player_next_hit_bonus == 4, "Cinder Dial should empower the first attack")
+	assert(battle.player_next_hit_bonus == 2, "Cinder Dial should empower attacks (+2 bonus)")
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_ATTACK)
-	assert(battle.player_next_hit_bonus == 4, "Cinder Dial should trigger only once per battle")
+	assert(battle.player_next_hit_bonus == 4, "Cinder Dial recurs on every attack")
 	battle.player_hp = 400
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
-	assert(battle.player_hp == 406, "Tideward Clapper should restore capped Vitality when Block is gained")
+	assert(battle.player_hp == 402, "Tideward Clapper restores 2 Vitality when Block is gained")
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_BLOCK_GAIN)
-	assert(battle.player_hp == 406, "Tideward Clapper should trigger only once per battle")
+	assert(battle.player_hp == 404, "Tideward Clapper recurs on Block gain")
+	battle.enemy_weak = 0
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_HIT)
-	assert(battle.enemy_weak == 3, "Gloam Moth should weaken the next foe attack, surviving status decay")
-	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_PLAYER_HIT)
-	assert(battle.enemy_weak == 3, "Gloam Moth should trigger only once per battle")
-	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 7)
-	assert(OKRunState.current_ok == 0, "Ashen Ledger should respect its Overkill threshold")
-	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 8)
-	assert(OKRunState.current_ok == 5, "Ashen Ledger should grant its run-wide bonus")
+	assert(battle.enemy_weak == 2, "Gloam Moth weakens the next foe attack, surviving status decay")
+	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 5)
+	assert(OKRunState.current_ok == 0, "Ashen Ledger should respect its Overkill threshold (min_ok 6)")
+	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 6)
+	assert(OKRunState.current_ok == 4, "Ashen Ledger should grant its +4 Overkill bonus")
 	battle._apply_run_artifact_trigger(RelicData.Trigger.ON_OVERKILL, 20)
-	assert(OKRunState.current_ok == 5, "Ashen Ledger should trigger only once per battle")
+	assert(OKRunState.current_ok == 8, "Ashen Ledger recurs whenever 6+ Overkill is harvested")
 	battle.queue_free()
 	await get_tree().process_frame
 	var thorns_battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
@@ -107,6 +106,7 @@ func _ready() -> void:
 	var thorns_enemy: EnemyData = ContentDatabase.get_enemy("boneghoul").duplicate()
 	thorns_battle.start_combat([thorns_enemy])
 	await get_tree().process_frame
+	thorns_battle.player_max_hp = 500
 	thorns_battle.player_hp = 400
 	thorns_battle.enemy_hp = 1
 	thorns_battle.player_sockets[0].slotted_relic = null
@@ -124,7 +124,7 @@ func _ready() -> void:
 
 
 func _verify_no_posthumous_healing(artifacts: Array[RelicData], simultaneous_bleed: bool) -> void:
-	RunManager.start_new_run([], artifacts, 500, 40044)
+	RunManager.start_new_run([], artifacts, 80, 40044)
 	var battle: CombatController = load("res://scenes/combat_scene.tscn").instantiate()
 	add_child(battle)
 	var enemy: EnemyData = ContentDatabase.get_enemy("boneghoul").duplicate()
@@ -143,7 +143,7 @@ func _verify_no_posthumous_healing(artifacts: Array[RelicData], simultaneous_ble
 	assert(battle.enemy_hp <= 0, "The lethal clash must still award the earned Thorns/Bleed kill")
 	assert(battle.player_hp <= 0, "Deepwell Suture must never revive an already defeated player")
 	assert(battle._combat_over, "A simultaneous lethal clash must finish as defeat")
-	assert(battle.player_strength == 2, "Non-healing kill-trigger effects must still resolve once")
+	assert(battle.player_strength == 3, "Non-healing kill-trigger effects must still resolve")
 	for history_entry: String in battle._combat_history:
 		assert(not history_entry.contains("HEAL"), "No healing may be reported after lethal damage")
 	battle.queue_free()

@@ -37,7 +37,7 @@ static func show_dialog(parent: Node, card: CardData, on_confirm: Callable) -> v
 	instance._setup(card)
 
 
-static func show_relic_dialog(parent: Node, current: ClockRelicData, upgraded: ClockRelicData, on_confirm: Callable) -> void:
+static func show_relic_dialog(parent: Node, current: ClockRelicData, upgraded: ClockRelicData, on_confirm: Callable, can_upgrade: bool = true) -> void:
 	var scene: PackedScene = load(SCENE_PATH)
 	var instance: UpgradePreviewDialog = scene.instantiate()
 	parent.add_child(instance)
@@ -45,6 +45,8 @@ static func show_relic_dialog(parent: Node, current: ClockRelicData, upgraded: C
 	instance.completed.connect(instance.queue_free)
 	instance.cancelled.connect(instance.queue_free)
 	instance._setup_relic(current, upgraded)
+	instance._confirm_button.disabled = not can_upgrade
+	if not can_upgrade: instance._confirm_button.text = "UPGRADE USED THIS VISIT"
 
 
 func _ready() -> void:
@@ -178,7 +180,7 @@ func show_relic_success() -> void:
 	_upgraded_slot.modulate = Color.WHITE
 	_cancel_button.hide()
 	_confirm_button.disabled = false
-	_confirm_button.text = "RETURN TO JOURNEY"
+	_confirm_button.text = "BACK TO RELICS"
 	_background_button.disabled = false
 
 

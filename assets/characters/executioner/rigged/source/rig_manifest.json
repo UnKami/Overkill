@@ -1,7 +1,7 @@
 {
   "format": "overkill_blender_skin_v2",
   "fps": 60,
-  "authoring": "Blender armature modifier; 18 bones; connected IK limbs; weighted joint overlaps; 60 Hz motion",
+  "authoring": "Blender armature modifier; 20 bones; clavicle-led shoulders; rigid pauldrons; connected IK limbs; weighted joint overlaps; 60 Hz motion",
   "atlas_size": [
     1254,
     1254
@@ -15,12 +15,21 @@
   "motion_quality": {
     "continuous_ik": true,
     "elbow_max_degrees": 112,
-    "grounded_anticipation": true
+    "grounded_anticipation": true,
+    "clavicle_articulation": true,
+    "parent_space_ik": true,
+    "anatomical_source_axes": true,
+    "rigid_shoulder_caps": true,
+    "elbow_signs": {
+      "near": -1,
+      "far": -1
+    }
   },
   "bones": [
     {
       "name": "root",
       "parent": "",
+      "length": 36.0,
       "rest": [
         0.0,
         0.0
@@ -29,6 +38,7 @@
     {
       "name": "pelvis",
       "parent": "root",
+      "length": 71.0,
       "rest": [
         0.0,
         -224.0
@@ -37,6 +47,7 @@
     {
       "name": "spine",
       "parent": "pelvis",
+      "length": 108.29589,
       "rest": [
         0.0,
         -71.0
@@ -45,6 +56,7 @@
     {
       "name": "head",
       "parent": "spine",
+      "length": 36.0,
       "rest": [
         8.0,
         -108.0
@@ -53,6 +65,7 @@
     {
       "name": "cloak_upper",
       "parent": "spine",
+      "length": 131.30879,
       "rest": [
         -15.0,
         -21.0
@@ -61,22 +74,34 @@
     {
       "name": "cloak_lower",
       "parent": "cloak_upper",
+      "length": 36.0,
       "rest": [
         -9.0,
         131.0
       ]
     },
     {
-      "name": "arm_far",
+      "name": "clavicle_far",
       "parent": "spine",
+      "length": 28.30194,
       "rest": [
-        -46.0,
-        -75.0
+        -22.0,
+        -60.0
+      ]
+    },
+    {
+      "name": "arm_far",
+      "parent": "clavicle_far",
+      "length": 80.49844,
+      "rest": [
+        -24.0,
+        -15.0
       ]
     },
     {
       "name": "forearm_far",
       "parent": "arm_far",
+      "length": 75.18643,
       "rest": [
         -36.0,
         72.0
@@ -85,6 +110,7 @@
     {
       "name": "hand_far",
       "parent": "forearm_far",
+      "length": 36.0,
       "rest": [
         -18.0,
         73.0
@@ -93,6 +119,7 @@
     {
       "name": "thigh_far",
       "parent": "pelvis",
+      "length": 103.12128,
       "rest": [
         -28.0,
         4.0
@@ -101,6 +128,7 @@
     {
       "name": "shin_far",
       "parent": "thigh_far",
+      "length": 88.95505,
       "rest": [
         -35.0,
         97.0
@@ -109,6 +137,7 @@
     {
       "name": "foot_far",
       "parent": "shin_far",
+      "length": 36.0,
       "rest": [
         -13.0,
         88.0
@@ -117,6 +146,7 @@
     {
       "name": "thigh_near",
       "parent": "pelvis",
+      "length": 102.14206,
       "rest": [
         29.0,
         4.0
@@ -125,6 +155,7 @@
     {
       "name": "shin_near",
       "parent": "thigh_near",
+      "length": 89.20202,
       "rest": [
         32.0,
         97.0
@@ -133,32 +164,45 @@
     {
       "name": "foot_near",
       "parent": "shin_near",
+      "length": 36.0,
       "rest": [
         -6.0,
         89.0
       ]
     },
     {
-      "name": "arm_near",
+      "name": "clavicle_near",
       "parent": "spine",
+      "length": 27.31301,
       "rest": [
-        47.0,
-        -71.0
+        22.0,
+        -60.0
+      ]
+    },
+    {
+      "name": "arm_near",
+      "parent": "clavicle_near",
+      "length": 79.555,
+      "rest": [
+        25.0,
+        -11.0
       ]
     },
     {
       "name": "forearm_near",
       "parent": "arm_near",
+      "length": 78.29432,
       "rest": [
-        33.0,
+        20.0,
         77.0
       ]
     },
     {
       "name": "hand_near",
       "parent": "forearm_near",
+      "length": 36.0,
       "rest": [
-        20.0,
+        33.0,
         71.0
       ]
     }

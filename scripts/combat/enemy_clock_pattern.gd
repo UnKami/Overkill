@@ -17,6 +17,7 @@ static func has_twin(enemy: EnemyData) -> bool:
 static func create(enemy: EnemyData) -> Array[ClockSocketData]:
 	var result: Array[ClockSocketData] = []
 	var kind := profile(enemy)
+	var is_elite_or_boss: bool = kind in ["chainbinder", "sentinel", "bulwark", "reverse", "siphon", "twin", "eclipse"]
 	for hour in range(1, 10):
 		var s := ClockSocketData.new()
 		s.hour_index = hour
@@ -56,6 +57,29 @@ static func create(enemy: EnemyData) -> Array[ClockSocketData]:
 			"twin", "eclipse":
 				if beat == 1: s.intent_block = 6
 				else: s.intent_damage = 6 if kind == "twin" else 8
+
+		# Sector Climax Escalation (Hours 6 and 9) so sectors build toward a crescendo
+		if hour == 6:
+			if s.intent_damage > 0:
+				s.intent_damage = maxi(s.intent_damage + 1, int(round(float(s.intent_damage) * 1.22)))
+			if s.intent_block > 0:
+				s.intent_block = maxi(s.intent_block + 1, int(round(float(s.intent_block) * 1.20)))
+			if kind in ["chainbinder", "bulwark", "siphon", "eclipse"]:
+				s.is_hazard = true
+		elif hour == 9:
+			if s.intent_damage > 0:
+				s.intent_damage = maxi(s.intent_damage + 2, int(round(float(s.intent_damage) * 1.32)))
+			if s.intent_block > 0:
+				s.intent_block = maxi(s.intent_block + 2, int(round(float(s.intent_block) * 1.30)))
+			else:
+				s.intent_block = 4 if is_elite_or_boss else 2
+			if kind in ["stalker", "corrosion", "shards"] and s.intent_vulnerable == 0:
+				s.intent_vulnerable = 1
+			elif is_elite_or_boss:
+				s.intent_strength += 1
+			if kind in ["sentinel", "reverse", "twin", "eclipse"]:
+				s.is_hazard = true
+
 		var parts: PackedStringArray = []
 		if s.intent_damage > 0: parts.append("%d damage%s" % [s.intent_damage, " × %d" % s.intent_hits if s.intent_hits > 1 else ""])
 		if s.intent_block > 0: parts.append("%d guard" % s.intent_block)
@@ -64,6 +88,7 @@ static func create(enemy: EnemyData) -> Array[ClockSocketData]:
 		if s.intent_vulnerable > 0: parts.append("%d vulnerable" % s.intent_vulnerable)
 		if s.intent_bleed > 0: parts.append("%d bleed" % s.intent_bleed)
 		if s.is_siphon: parts.append("drain 25% Overkill on HP damage")
+		if s.is_hazard: parts.append("hazard (50% recoil)")
 		s.intent_label = " · ".join(parts)
 		result.append(s)
 	return result

@@ -29,6 +29,8 @@ func _ready() -> void:
 			p.slotted_relic = relic
 			p.is_hazard = modifier == 1
 			p.multiplier = 1.5 if modifier else 1.0
+			battle.player_sockets[1].multiplier = 1.0
+			battle.player_sockets[8].slotted_relic = null
 			var index: int = EnemyClockPattern.hour_for(1,battle._active_enemy())
 			var e: ClockSocketData = battle.enemy_sockets[index-1]
 			e.intent_revealed = true
@@ -52,6 +54,7 @@ func _ready() -> void:
 		battle.player_max_hp = 600
 		battle.enemy_hp = 1000
 		for slot: ClockSocketData in battle.enemy_sockets: slot.intent_revealed = true
+		for p_slot: ClockSocketData in battle.player_sockets: p_slot.multiplier = 1.0
 		battle.player_sockets[0].slotted_relic = ContentDatabase.get_clock_relic("REL-14")
 		battle.player_sockets[1].slotted_relic = ContentDatabase.get_clock_relic("REL-04")
 		battle.player_sockets[2].slotted_relic = ContentDatabase.get_clock_relic("REL-02")
@@ -69,7 +72,7 @@ func _ready() -> void:
 	assert(DecisionPreview.intent(hidden) == "Unrevealed action")
 	assert(not hidden.intent_revealed,"Preview exposed future action")
 	await _verify_edge_forecast("REL-02", 1, 0, 3, 7, 0)
-	await _verify_edge_forecast("REL-11", 40, 5, 0, 0, 21)
+	await _verify_edge_forecast("REL-11", 40, 5, 0, 10, 19)
 	await _verify_siphon_forecast(8, 100, 70)
 	await _verify_siphon_forecast(4, 75, 66)
 	await _verify_siphon_forecast(0, 57, 62)

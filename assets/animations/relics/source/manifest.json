@@ -33,5 +33,268 @@
   ],
   "bone_count": 6,
   "fps": 60,
-  "source": "scripts/art/build_relic_choreography.py"
+  "source": "scripts/art/build_relic_choreography.py",
+  "models": {
+    "REL-01": {
+      "texture": "rel_01_iron_strike_object.png",
+      "grip_uv": [
+        0.7974481658692185,
+        0.7894736842105263
+      ],
+      "sprite_rotation": 0.72,
+      "collection": "REL-01.iron_strike"
+    },
+    "REL-02": {
+      "texture": "rel_01_iron_strike_object.png",
+      "grip_uv": [
+        0.7974481658692185,
+        0.7894736842105263
+      ],
+      "sprite_rotation": 0.72,
+      "collection": "REL-02.twin_blades"
+    },
+    "REL-03": {
+      "texture": "rel_03_heavy_hammer_object.png",
+      "grip_uv": [
+        0.5,
+        0.8
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-03.heavy_hammer"
+    },
+    "REL-04": {
+      "texture": "rel_04_guard_plate_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-04.guard_plate"
+    },
+    "REL-05": {
+      "texture": "rel_05_spiked_buckler_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-05.spiked_buckler"
+    },
+    "REL-06": {
+      "texture": "rel_06_reinforced_wall_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-06.reinforced_wall"
+    },
+    "REL-07": {
+      "texture": "rel_07_rusting_spike_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-07.rusting_spike"
+    },
+    "REL-08": {
+      "texture": "rel_08_momentum_spring_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-08.momentum_spring"
+    },
+    "REL-09": {
+      "texture": "rel_09_corrosive_oil_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-09.corrosive_oil"
+    },
+    "REL-10": {
+      "texture": "rel_10_kinetic_battery_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-10.kinetic_battery"
+    },
+    "REL-11": {
+      "texture": "rel_11_execution_wedge_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-11.execution_wedge"
+    },
+    "REL-12": {
+      "texture": "rel_12_recoil_piston_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-12.recoil_piston"
+    },
+    "REL-13": {
+      "texture": "rel_13_blood_siphon_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-13.vital_siphon"
+    },
+    "REL-14": {
+      "texture": "rel_14_overdrive_piston_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-14.overdrive_piston"
+    },
+    "REL-15": {
+      "texture": "rel_15_bastion_bell_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-15.bastion_bell"
+    },
+    "REL-16": {
+      "texture": "rel_16_war_crown_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-16.war_crown"
+    },
+    "REL-17": {
+      "texture": "rel_17_withering_censer_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-17.withering_censer"
+    },
+    "REL-18": {
+      "texture": "rel_18_blood_tithe_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-18.blood_tithe"
+    },
+    "REL-19": {
+      "texture": "rel_19_butchers_abacus_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-19.butchers_abacus"
+    },
+    "REL-20": {
+      "texture": "rel_20_crimson_reservoir_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-20.crimson_reservoir"
+    },
+    "REL-21": {
+      "texture": "rel_21_hex_bloom_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-21.hex_bloom"
+    },
+    "REL-22": {
+      "texture": "rel_22_miasma_ward_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-22.miasma_ward"
+    },
+    "REL-23": {
+      "texture": "rel_23_rupture_needle_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-23.rupture_needle"
+    },
+    "REL-24": {
+      "texture": "rel_24_siege_prism_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-24.siege_prism"
+    },
+    "REL-25": {
+      "texture": "rel_25_oath_chalice_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-25.oath_chalice"
+    },
+    "REL-26": {
+      "texture": "rel_26_debt_leech_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-26.debt_leech"
+    },
+    "REL-27": {
+      "texture": "rel_27_last_bell_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-27.last_bell"
+    },
+    "REL-28": {
+      "texture": "rel_28_debt_crown_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-28.debt_crown"
+    },
+    "REL-29": {
+      "texture": "rel_29_zenith_prism_object.png",
+      "grip_uv": [
+        0.5,
+        0.5
+      ],
+      "sprite_rotation": 0,
+      "collection": "REL-29.zenith_prism"
+    }
+  }
 }

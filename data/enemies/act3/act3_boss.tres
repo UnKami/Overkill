@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="1"]
 script = ExtResource("3_effect")
 effect_type = 0
-value = 28
+value = 25
 status_id = ""
 keyword_icon_override = ""
 
@@ -15,7 +15,7 @@ keyword_icon_override = ""
 script = ExtResource("2_move")
 move_id = "reliquary_crack"
 intent_type = 0
-intent_value = 28
+intent_value = 25
 effects = Array[Resource]([SubResource("1")])
 hit_count = 1
 
@@ -24,10 +24,10 @@ script = ExtResource("1_enemy")
 id = "act3_boss"
 display_name = "The Cracked Reliquary"
 tier = 2
-max_hp = 100
-hp_variance = Vector2i(300, 380)
+max_hp = 210
+hp_variance = Vector2i(200, 220)
 move_pool = Array[Resource]([SubResource("2")])
 move_pattern = 0
 tempered = false
-overkill_death_threshold = 270
+overkill_death_threshold = 100
 art_id = "cracked_reliquary_crystalline"

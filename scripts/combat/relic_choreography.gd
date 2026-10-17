@@ -2,6 +2,11 @@ class_name RelicChoreography extends Node2D
 ## Presentation only. Every prop track is evaluated in Blender and sampled
 ## from its editable six-bone action; damage/status changes stay in controller.
 ## Normal playback uses authored seconds. Fast Mode is the explicit 2x option.
+signal transfer_arrived
+var _transfer_delivered: bool = false
+var _combo_hold: bool = false
+var _combo_second: bool = false
+
 const TRACK_SOURCE: Script = preload("res://assets/animations/relics/relic_tracks.gd")
 const PURPLE := Color("b76cff")
 const BLUE := Color("65caff")
@@ -18,6 +23,7 @@ var _running: bool = false
 var _resolved: bool = false
 var _contact: bool = false
 var _finished: bool = false
+var _relic_skeleton: Skeleton2D
 var _prop: Node2D
 var _extra: Node2D
 var _hanger: Node2D
@@ -37,6 +43,7 @@ var _release_rotation: float = 0.0
 var _siphon_tube: Polygon2D
 var _siphon_enemy: Node2D
 var _siphon_hand: Node2D
+var _native_view: Relic3DView
 
 
 static func create(stage: Node, canvas: Control, selected_relic: ClockRelicData) -> RelicChoreography:
@@ -56,42 +63,50 @@ static func create(stage: Node, canvas: Control, selected_relic: ClockRelicData)
 
 
 func _build() -> void:
-	_texture = RelicArt.load_texture(relic.art_id)
-	_prop = Node2D.new()
-	_prop.name = "BlenderPropBone"
-	add_child(_prop)
-	_extra = Node2D.new()
-	_extra.name = "BlenderSecondaryBone"
-	add_child(_extra)
-	_hanger = Node2D.new()
-	_hanger.name = "StationaryBellYoke"
-	add_child(_hanger)
+	_texture = RelicArt.load_texture(ContentDatabase.get_clock_relic("REL-01").art_id if _model == "blades" else relic.art_id)
+	_relic_skeleton = Skeleton2D.new()
+	_relic_skeleton.name = "RelicSkeleton"
+	add_child(_relic_skeleton)
+	_hanger = _create_relic_bone("root",_relic_skeleton)
+	_prop = _create_relic_bone("prop",_hanger)
+	_extra = _create_relic_bone("secondary",_hanger)
+	for bone_name: String in ["flow","aura","tether"]:
+		_create_relic_bone(bone_name,_hanger)
 	if _texture != null and _model == "bell" and relic.id == "REL-15":
 		_build_articulated_bell()
 	elif _texture != null:
 		var sprite := Sprite2D.new()
 		sprite.texture = _texture
 		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		var width: float = 158.0 if _model in ["sword", "hammer", "wedge"] else 128.0
+		var width: float = 158.0 if _model in ["sword", "blades", "hammer", "wedge"] else 128.0
 		sprite.scale = Vector2.ONE * width / float(maxi(_texture.get_width(), _texture.get_height()))
-		if _model in ["sword", "hammer", "wedge"]:
+		if _model in ["sword", "blades", "hammer", "wedge"]:
 			# The hilt, rather than the picture centre, is bound to the hand.
-			sprite.offset = -Vector2(_texture.get_size()) * Vector2(0.30, 0.30)
-			sprite.rotation = 0.72
+			var grip: Array = _clip.get("grip_uv",[.5,.5])
+			sprite.offset = Vector2(_texture.get_size())*(Vector2(.5,.5)-Vector2(float(grip[0]),float(grip[1])))
+			sprite.rotation = float(_clip.get("sprite_rotation",0.0))
 		_prop.add_child(sprite)
 		if _model == "blades":
 			var second: Sprite2D = sprite.duplicate() as Sprite2D
-			second.position = Vector2(-24, 22)
-			second.rotation = -0.35
-			_prop.add_child(second)
+			_extra.add_child(second)
 	_prop.modulate.a = 0.0
 	_extra.modulate.a = 0.0
-	_hanger.modulate.a = 0.0
+	_hanger.modulate.a = 0.0 if _model == "bell" else 1.0
 	if _model == "siphon" and relic.id == "REL-13" and _texture != null:
 		_build_siphon_parts()
 	var actor: CanvasItem = _player()
 	if actor != null:
 		_initial_tint = actor.modulate
+	if actor is Executioner3DActor:
+		_native_view = Relic3DView.new()
+		_native_view.name = "PhysicalRelic3D"
+		add_child(_native_view)
+		_native_view.configure(actor as Executioner3DActor,relic.id,_model)
+		# Keep the existing bone controls for event timing and diagnostics, but
+		# render only the genuine volume meshes in the native 3D pass.
+		for parent: Node2D in [_prop,_extra,_hanger]:
+			for child: Node in parent.get_children():
+				if child is Sprite2D or child is Polygon2D: (child as CanvasItem).hide()
 	_particles = CPUParticles2D.new()
 	_particles.name = "RelicEssenceParticles"
 	_particles.texture = AmbientMotion._get_glow_texture()
@@ -109,6 +124,15 @@ func _build() -> void:
 	_particles.local_coords = false
 	add_child(_particles)
 
+
+func _create_relic_bone(bone_name: String, parent: Node2D) -> Bone2D:
+	var bone := Bone2D.new()
+	bone.name = bone_name
+	bone.set_autocalculate_length_and_angle(false)
+	bone.length = 30.0
+	bone.rest = Transform2D.IDENTITY
+	parent.add_child(bone)
+	return bone
 
 func _build_articulated_bell() -> void:
 	# UV-mapped shell, yoke, rim and clapper articulate independently. The source
@@ -196,7 +220,11 @@ func _update_siphon_parts() -> void:
 			var tangent: Vector2 = (centerline[mini(index+1,count)]-centerline[maxi(index-1,0)]).normalized()
 			var normal := Vector2(-tangent.y,tangent.x)
 			var sign_value: float = 1.0 if edge == 0 else -1.0
-			vertices.append(centerline[index]+normal*9*sign_value)
+			var orb_progress: float = clampf(float(_sample("secondary")[0])/100.0,0.0,1.0)
+			var bulge: float = 0.0
+			if relic.id == "REL-13" and int(_outcome.get("damage_dealt",0)) > 0:
+				bulge = exp(-pow((progress-orb_progress)/.09,2.0))*20.0*float(_sample("secondary")[5])
+			vertices.append(centerline[index]+normal*(9.0+bulge)*sign_value)
 			# UVs follow the existing purple hose, so its crystalline material
 			# stretches with the articulated conduit, not an unrelated beam.
 			var uv_center: Vector2 = Vector2(470,460).lerp(Vector2(839,800),progress)
@@ -220,7 +248,19 @@ func play_prepare() -> void:
 
 ## Call at the same instant as stage.attack(true, profile), never after a
 ## separate summon wait. Iron Strike's first 1.5 seconds are its summon beat.
-func start_attack(_profile: Dictionary = {}) -> void:
+func start_attack(profile: Dictionary = {}) -> void:
+	if _model == "blades":
+		_clip = _clip.duplicate()
+		_clip["actor_action"] = str(profile.get("rig_action", "twin_right"))
+		_combo_second = int(profile.get("hit_index",0)) > 0
+		_combo_hold = int(profile.get("hit_index",0)) < int(profile.get("hit_count",1))-1
+		_running = false
+		_finished = false
+		_resolved = false
+		_contact = false
+		_notified_resolve = false
+		_restored = false
+		_target_frozen = false
 	_start()
 
 
@@ -255,7 +295,10 @@ func play_resolve(outcome: Dictionary = {}) -> void:
 
 
 func _process(delta: float) -> void:
-	if not _running or _finished:
+	if not _running:
+		return
+	if _finished:
+		if _combo_hold: _apply_frame()
 		return
 	var speed: float = AudioManager.animation_speed_scale()
 	_clock += delta * speed
@@ -265,6 +308,9 @@ func _process(delta: float) -> void:
 		if not _target_frozen:
 			_enemy_at_contact = _enemy()
 			_target_frozen = true
+	if _model == "siphon" and relic.id == "REL-13" and _resolved and not _transfer_delivered and _clock >= float(_clip.transfer_end):
+		_transfer_delivered = true
+		transfer_arrived.emit()
 	if _clock >= float(_clip.duration):
 		_clock = float(_clip.duration)
 		_finished = true
@@ -288,12 +334,18 @@ func _sample(track_name: String) -> Array:
 
 
 func _apply_frame() -> void:
+	for control_name: String in ["flow","aura","tether"]:
+		var control: Bone2D = _hanger.get_node(control_name) as Bone2D
+		var track: Array = _sample(control_name)
+		control.position = Vector2(float(track[0]),float(track[1]))
+		control.rotation = float(track[2])
+		control.scale = Vector2(float(track[3]),float(track[4]))
 	var prop_track: Array = _sample("prop")
 	var secondary: Array = _sample("secondary")
 	var flow: Array = _sample("flow")
 	var origin: Vector2 = _anchor(str(_clip.anchor))
 	var destination: Vector2 = _enemy_at_contact if _target_frozen else _enemy()
-	var is_thrown: bool = str(_clip.anchor) == "hand" and _model not in ["sword", "hammer", "wedge"]
+	var is_thrown: bool = str(_clip.anchor) == "hand" and _model not in ["sword", "blades", "hammer", "wedge"]
 	var hand_rotation: float = 0.0
 	var player_actor: CanvasItem = _player()
 	if player_actor != null and player_actor.has_method("get_hand_global_rotation"):
@@ -306,28 +358,49 @@ func _apply_frame() -> void:
 		else:
 			if not _released:
 				_released = true
-				_launch = origin
-				_release_rotation = hand_rotation
+				if player_actor != null and player_actor.has_method("sample_grip_transform"):
+					var grip: Transform2D = player_actor.call("sample_grip_transform",str(_clip.actor_action),release_time)
+					_launch = grip.origin
+					_release_rotation = grip.get_rotation()
+				else:
+					_launch = origin
+					_release_rotation = hand_rotation
 			var travel: float = clampf(float(flow[0]) / 100.0, 0.0, 1.0)
 			origin = _launch.lerp(destination, travel)
 			if not AudioManager.reduced_motion:
 				origin.y -= 4.0 * travel * (1.0 - travel) * 45.0
 	var offset := Vector2(float(prop_track[0]), float(prop_track[1]))
-	if _model in ["sword", "hammer", "wedge"]:
+	if _model in ["sword", "blades", "hammer", "wedge"]:
 		offset = Vector2.ZERO
 	_prop.position = to_local(origin) + offset
 	_prop.rotation = 0.0 if AudioManager.reduced_motion else float(prop_track[2])
 	if not AudioManager.reduced_motion:
-		if _model in ["sword", "hammer", "wedge"]:
+		if _model in ["sword", "blades", "hammer", "wedge"]:
 			_prop.rotation += hand_rotation
 		elif is_thrown:
 			var travel_weight: float = clampf(float(flow[0]) / 100.0, 0.0, 1.0)
 			_prop.rotation += lerp_angle(_release_rotation, 0.0, travel_weight) if _released else hand_rotation
 	_prop.scale = Vector2(float(prop_track[3]), float(prop_track[4]))
 	_prop.modulate.a = float(prop_track[5])
+	if _model == "blades" and ((_combo_hold and _clock > 1.5) or (_combo_second and _clock < float(_clip.duration)-.2)):
+		_prop.modulate.a = 1.0
 	if AudioManager.reduced_motion and is_thrown:
 		_prop.position = to_local(destination if _contact else _anchor("hand"))
 	_last_prop = _prop.position
+	if _model == "blades" and player_actor != null:
+		if (_combo_hold and _clock > 1.5) or (_combo_second and _clock < 1.5): _prop.scale = Vector2.ONE
+		var swinging_left: bool = str(_clip.actor_action) == "twin_left"
+		if not AudioManager.reduced_motion and swinging_left: _prop.rotation = hand_rotation - .72
+		_extra.position = to_local(player_actor.call("anchor_position", "hand_far", true))
+		var far_angle: float = 0.0
+		if player_actor is Executioner3DActor:
+			far_angle = (player_actor as Executioner3DActor).sample_grip_transform(str(_clip.actor_action),_clock,"hand_far").get_rotation()
+		else:
+			var far_bone: Bone2D = player_actor.get("_bone_names")["hand_far"]
+			far_angle = far_bone.global_rotation
+		_extra.rotation = far_angle + (float(secondary[2]) if swinging_left else -.72) if not AudioManager.reduced_motion else 0.0
+		_extra.scale = _prop.scale
+		_extra.modulate.a = _prop.modulate.a
 	if _model == "bell":
 		_extra.position = to_local(_anchor("head")) + Vector2(float(secondary[0]),float(secondary[1]))
 		if relic.id == "REL-15":
@@ -336,6 +409,9 @@ func _apply_frame() -> void:
 		_extra.modulate.a = float(secondary[5])
 		_hanger.position = to_local(_anchor("head")) + Vector2(0, -103)
 		_hanger.modulate.a = _prop.modulate.a
+	# Authored anchors are in cue space; the skeleton stores parent-relative transforms.
+	_prop.position -= _hanger.position
+	_extra.position -= _hanger.position
 	var aura: Array = _sample("aura")
 	var amount: float = float(aura[5])
 	if _model == "siphon" and _resolved and int(_outcome.get("damage_dealt",0)) <= 0:
@@ -345,14 +421,25 @@ func _apply_frame() -> void:
 		aura_color = Color("ee528d")
 	var actor: CanvasItem = _player()
 	if actor != null:
-		var tint: Color = _initial_tint.lerp(aura_color.lightened(.25), amount * .38)
+		var tint: Color = _initial_tint.lerp(aura_color.lightened(.25), amount * (.16 if _native_view != null else .38))
 		tint.a = actor.modulate.a
 		actor.modulate = tint
+		if actor.has_method("set_relic_aura"): actor.call("set_relic_aura",aura_color,amount)
 	_particles.position = to_local(_anchor("body"))
 	_particles.color = aura_color
 	_particles.speed_scale = AudioManager.animation_speed_scale()
-	_particles.emitting = amount > 0.2 and not _finished and not AudioManager.reduced_motion
+	_particles.emitting = amount > 0.2 and not _finished and not AudioManager.reduced_motion and relic.id != "REL-13"
 	_update_siphon_parts()
+	if _native_view != null:
+		_native_view.present(_prop.global_position,_extra.global_position,_hanger.global_position,_prop.global_rotation,_extra.global_rotation,_prop.scale,_extra.scale,_prop.modulate.a,_extra.modulate.a,_hanger.modulate.a,_model in ["sword","blades","hammer","wedge"])
+		if _siphon_enemy != null:
+			_siphon_enemy.hide()
+			_siphon_hand.hide()
+			_siphon_tube.hide()
+			var tether_track: Array = _sample("tether")
+			var energy_track: Array = _sample("secondary")
+			var life_energy: float = float(energy_track[5]) if _resolved and int(_outcome.get("damage_dealt",0))>0 else 0.0
+			_native_view.present_tether(_enemy_at_contact,_anchor("hand"),float(tether_track[0])/100.0,float(energy_track[0])/100.0,float(tether_track[5]),life_energy)
 
 
 func _draw() -> void:
@@ -387,7 +474,18 @@ func _draw() -> void:
 		# The channel grows from the embedded enemy end toward the hand.
 		# Pulses then travel in that same enemy -> player direction.
 		var transferring: bool = extension >= .98 and int(_outcome.get("damage_dealt",0)) > 0
-		_draw_conduit(enemy, end, PURPLE, float(tether[5]), .12, false, transferring)
+		if relic.id == "REL-13" and _native_view == null:
+			if transferring and float(_sample("secondary")[5]) > .01:
+				var energy: Array = _sample("secondary")
+				var progress: float = clampf(float(energy[0])/100.0,0.0,1.0)
+				var orb: Vector2 = enemy.lerp(hand,progress)
+				orb.y += sin(progress*PI)*enemy.distance_to(hand)*.12
+				var opacity: float = float(energy[5])
+				draw_circle(orb,30.0,Color(GREEN,opacity*.14))
+				draw_circle(orb,21.0,Color(GREEN,opacity*.55))
+				draw_circle(orb,13.0,Color(GREEN.lightened(.45),opacity))
+		elif relic.id != "REL-13":
+			_draw_conduit(enemy, end, PURPLE, float(tether[5]), .12, false, transferring)
 	if _model == "bell" and _clock > .5 and _clock < 2.5 and not AudioManager.reduced_motion:
 		var ring: float = fmod((_clock - .5) * 1.5, 1.0)
 		for index: int in 3:
@@ -467,7 +565,7 @@ func _spawn_outcome_labels() -> void:
 		_fly_label("+%d STRENGTH" % gained_strength,PURPLE,_anchor("body"),delay)
 		delay += .18
 	var healed: int = int(_outcome.get("healed",0))
-	if healed > 0:
+	if healed > 0 and relic.id != "REL-13":
 		_fly_label("+%d HEAL" % healed,PURPLE,_enemy_at_contact,.55)
 	var multiplier: int = int(_outcome.get("next_attack_multiplier",1))
 	if multiplier > 1:
@@ -559,6 +657,7 @@ func _restore_tint() -> void:
 		var tint: Color = _initial_tint
 		tint.a = actor.modulate.a
 		actor.modulate = tint
+		if actor.has_method("set_relic_aura"): actor.call("set_relic_aura",Color.WHITE,0.0)
 
 
 func dispose() -> void:

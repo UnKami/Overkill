@@ -16,14 +16,14 @@ const CHOICES: Array[Dictionary] = [
 	{
 		"title": "BANK THE SPARK",
 		"effect": "gain_overkill",
-		"action": "GAIN 10 OVERKILL",
+		"action": "+15 OVERKILL",
 		"accent": Color("79d7df"),
 		"scenery": "res://assets/screens/cinematic/event_overflowing_cache.jpg",
 	},
 	{
 		"title": "REINFORCE THE FRAME",
 		"effect": "gain_vitality",
-		"action": "GAIN 3 MAX VITALITY",
+		"action": "+8 MAX VITALITY (AND HEAL 8 HP)",
 		"accent": Color("d78e78"),
 		"scenery": "res://assets/screens/cinematic/event_humming_shrine.jpg",
 	},
@@ -177,13 +177,13 @@ func _choose(effect_id: String, selected: PanelContainer) -> void:
 			await get_tree().create_timer(0.42).timeout
 			resolved.emit(effect_id)
 		"gain_overkill":
-			OKRunState.gain_ok(10, "pre_battle_offer")
-			_result.text = "+10 OVERKILL BANKED  ·  THE SPARK IS YOURS"
+			OKRunState.gain_ok(15, "pre_battle_offer")
+			_result.text = "+15 OVERKILL BANKED  ·  THE SPARK IS YOURS"
 			_continue.show()
 			_continue.grab_focus()
 		"gain_vitality":
-			RunManager.apply_max_hp_change(3)
-			_result.text = "+3 MAX VITALITY  ·  FRAME RESTORED"
+			RunManager.apply_max_hp_change(8)
+			_result.text = "+8 MAX VITALITY & HEALED 8 HP  ·  FRAME RESTORED"
 			_continue.show()
 			_continue.grab_focus()
 

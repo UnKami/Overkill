@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Strength"]
 script = ExtResource("2_effect")
 effect_type = 10
-value = 2
+value = 3
 
 [resource]
 script = ExtResource("1_relic")
@@ -14,6 +14,6 @@ id = "artifact_violet_weavers_shuttle"
 display_name = "Violet Weaver's Shuttle"
 trigger = 0
 effects = Array[Resource]([SubResource("Strength")])
-condition_data = {"essence": "purple", "once_per_combat": true}
-flavor_text = "The first fallen foe is woven into a stronger thread."
+condition_data = {"essence": "purple"}
+flavor_text = "Whenever a foe falls, weaves their severed thread into +3 Strength."
 art_id = "run_wide/violet_weavers_shuttle"

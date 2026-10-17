@@ -6,11 +6,12 @@
 script = ExtResource("1_script")
 id = "REL-12"
 name = "Recoil Piston"
-tier = 0
+tier = 1
 role = 0
 primary_essence = 0
 secondary_essence = 1
-description = "Deal 5 Damage. Gain Block equal to Overkill dealt."
+description = "Deal 6 damage. +100% of your current Block as bonus damage. Gain Block equal to Overkill dealt."
 art_id = "rel_12_recoil_piston"
-base_damage = 5
+base_damage = 6
 recoil_block_on_overkill = true
+damage_per_current_block_pct = 1.0

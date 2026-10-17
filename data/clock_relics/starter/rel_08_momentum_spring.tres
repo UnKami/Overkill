@@ -6,9 +6,10 @@
 script = ExtResource("1_script")
 id = "REL-08"
 name = "Momentum Spring"
-tier = 0
+tier = 1
 role = 2
 primary_essence = 2
-description = "Gain +2 Strength for the remainder of this sweep."
+description = "Gain +2 Strength. Charge next Hour socket by +0.5× multiplier."
 art_id = "rel_08_momentum_spring"
 apply_strength = 2
+charge_next_socket_multiplier = 0.5
