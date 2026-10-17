@@ -27,6 +27,7 @@ TutorialCallout="*res://scripts/autoload/tutorial_callout.gd"
 ContentDatabase="*res://scripts/autoload/content_database.gd"
 RunManager="*res://scripts/autoload/run_manager.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+LeaderboardManager="*res://scripts/autoload/leaderboard_manager.gd"
 AudioManager="*res://scripts/autoload/audio_manager.gd"
 GameFlow="*res://scripts/autoload/game_flow.gd"
 

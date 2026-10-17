@@ -73,20 +73,83 @@ func _ready() -> void:
 	_add_stat(stats, "BOUND RELICS", str(RunManager.clock_inventory.size()))
 	_add_stat(stats, "BEST KILL", str(OKRunState.best_single_hit_ok_this_run))
 	_add_stat(stats, "BEST TURN", str(OKRunState.best_turn_total_ok_this_run))
-	_add_stat(stats, "OVERKILL EARNED", str(OKRunState.current_ok + total_spent))
+	var total_earned: int = OKRunState.current_ok + total_spent
+	_add_stat(stats, "OVERKILL EARNED", str(total_earned))
 	_add_stat(stats, "OVERKILL SPENT", str(total_spent))
 	_add_stat(stats, "OVERKILL BANKED", str(OKRunState.current_ok))
+
+	# Record completed run in LeaderboardManager and calculate global placement
+	var run_rank: int = -1
+	if LeaderboardManager != null:
+		run_rank = LeaderboardManager.record_run_completed(
+			total_earned,
+			RunManager.act_number,
+			_won,
+			RunManager.clock_inventory.size()
+		)
+
+	# Global Leaderboard Standing Card
+	var ldr_plate := PanelContainer.new()
+	ldr_plate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var ldr_style := StyleBoxFlat.new()
+	ldr_style.bg_color = Color("102b28e6") if (run_rank > 0 and run_rank <= 3) else Color("091822f0")
+	ldr_style.border_color = Color("67e68d") if (run_rank > 0 and run_rank <= 3) else Color("c9aa76b3")
+	ldr_style.set_border_width_all(2)
+	ldr_style.set_corner_radius_all(6)
+	ldr_style.content_margin_left = 18
+	ldr_style.content_margin_right = 18
+	ldr_style.content_margin_top = 10
+	ldr_style.content_margin_bottom = 10
+	ldr_plate.add_theme_stylebox_override("panel", ldr_style)
+	stack.add_child(ldr_plate)
+	stack.move_child(ldr_plate, stats.get_index() + 1)
+
+	var ldr_vbox := VBoxContainer.new()
+	ldr_vbox.add_theme_constant_override("separation", 4)
+	ldr_plate.add_child(ldr_vbox)
+
+	var ldr_row1 := HBoxContainer.new()
+	ldr_vbox.add_child(ldr_row1)
+	var rank_tag := ScreenDesign.label(ldr_row1, "GLOBAL RUN PLACEMENT", 13, ScreenDesign.CYAN)
+	rank_tag.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var rank_text: String = "#%d 👑" % run_rank if run_rank == 1 else ("#%d" % run_rank if run_rank > 0 else "RECORDED")
+	var rank_val := ScreenDesign.label(ldr_row1, rank_text, 22, ScreenDesign.GOLD if run_rank <= 3 else ScreenDesign.TEXT, true)
+
+	var ldr_row2 := HBoxContainer.new()
+	ldr_vbox.add_child(ldr_row2)
+	var avg_text: String = "CAREER AVERAGE: %.1f OK / run  (Lifetime: %d OK across %d runs)" % [
+		LeaderboardManager.get_average_overkill(),
+		LeaderboardManager.lifetime_overkill,
+		LeaderboardManager.runs_started
+	] if LeaderboardManager else ""
+	var career_lbl := ScreenDesign.label(ldr_row2, avg_text, 12, ScreenDesign.MUTED)
+	career_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Dedicated Leaderboard Modal Button
+	var ldr_btn := Button.new()
+	ldr_btn.text = "🏆 VIEW GLOBAL LEADERBOARD"
+	ldr_btn.custom_minimum_size.y = 48
+	ldr_btn.pressed.connect(func() -> void:
+		if LeaderboardManager != null:
+			LeaderboardManager.show_leaderboard("runs")
+	)
+	stack.add_child(ldr_btn)
+	stack.move_child(ldr_btn, ldr_plate.get_index() + 1)
+
 	_return_button.text = "RETURN TO THE CHRONOFORGE"
-	_return_button.custom_minimum_size.y = 62
+	_return_button.custom_minimum_size.y = 56
 
 	_return_button.pressed.connect(func() -> void: GameFlow.goto_title())
 
-	# This is the moment a run resolves - the panel gets a reveal punch
-	# (an action beat), then the screen settles into slow idle motion:
-	# cyan-dominant embers for victory, amber-dominant (dying fire) for
-	# defeat, mirroring the win/lose key art's color balance.
+	# Reveal run summary panel
 	ScreenDesign.reveal(_panel)
 	_return_button.grab_focus()
+
+	# Automatically display global leaderboard modal after run concludes
+	get_tree().create_timer(0.6).timeout.connect(func() -> void:
+		if is_instance_valid(self) and LeaderboardManager != null:
+			LeaderboardManager.show_leaderboard("runs")
+	)
 
 
 func _add_stat(parent: GridContainer, caption: String, value: String) -> void:

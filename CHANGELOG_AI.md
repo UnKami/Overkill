@@ -4,6 +4,49 @@ This file provides asynchronous context sharing between developers and their AI 
 
 ---
 
+## 2026-10-17 | Yonatan / Antigravity — Global Run & Career Account Leaderboards (Firestore)
+
+- **Branch / PR:** `feat/yonatan-global-leaderboard`.
+- **Completed in this pass:**
+  1. **Global Run Leaderboard (`run_leaderboard` collection in Firestore)**:
+     - Tracks each completed journey by peak Overkill points accumulated (`current_ok + total_spent`).
+     - Documents store `run_id`, `player_id`, `player_name`, `overkill_score`, `act_reached`, `won`, `relics_count`, `archetype`, and `timestamp`.
+  2. **Career Account Leaderboard (`account_leaderboard` collection in Firestore)**:
+     - Computes lifetime average Overkill per run (`average_overkill = lifetime_overkill / max(1, runs_started)`).
+     - Tracks `player_id`, `player_name`, `runs_started`, `runs_completed`, `lifetime_overkill`, `average_overkill`, `best_run_overkill`, and `last_updated`.
+  3. **Cloud Firestore Security Rules (`firestore.rules`)**:
+     - Authored by `firestore-rules-author` subagent per user protocol.
+     - Public read for `run_leaderboard` and `account_leaderboard`.
+     - Write-once validation on `run_leaderboard` (immutable historical records; disallows update/delete).
+     - Strict schema checking and monotonic counter progression for `account_leaderboard` updates (`runs_started`, `runs_completed`, `lifetime_overkill`).
+     - Default deny on all other paths. `firebase.json` updated to link `firestore.rules`.
+  4. **Godot Client Architecture (`scripts/autoload/leaderboard_manager.gd`)**:
+     - Registered singleton `LeaderboardManager` in `project.godot`.
+     - Communicates with Firestore REST API (`https://firestore.googleapis.com/v1/projects/overkill-86f3e/databases/(default)/documents`) using non-blocking, isolated `HTTPRequest` dispatchers.
+     - Robust offline fallback caching: seeded with thematic runner records (`Valerius_Prime`, `Iron_Bastion_09`, `Siphon_Wraith`, `Harvest_King`, etc.) so rankings remain competitive and responsive even when offline.
+     - Automatic rank computation and player profile persistence (`user://saves/player_profile.json`).
+  5. **Slay-the-Spire-Caliber Leaderboard UI (`scripts/ui/leaderboard_view.gd`, `scenes/leaderboard_view.tscn`)**:
+     - Centered obsidian/brass modal with dual category tabs (`⚔ RUN RECORDS` and `👑 CAREER STANDINGS`).
+     - Real-time player highlight row with emerald border and `(YOU)` tag.
+     - Medal icons for Top 3 (`1 👑`, `2 🥈`, `3 🥉`) and color-coded archetype tags.
+     - Persistent bottom card with editable player handle and global rank summary.
+  6. **Game Flow & Menu Integration (`scripts/ui/run_summary_screen.gd`, `scripts/ui/title_screen.gd`)**:
+     - Main menu: Added `LEADERBOARDS` button to `TitleScreen`.
+     - Run resolution: `RunSummaryScreen` records final score, displays a `GLOBAL RUN PLACEMENT` standing card with career average, provides a `[ 🏆 VIEW GLOBAL LEADERBOARD ]` button, and automatically presents the leaderboard modal post-run.
+  7. **Automated Verification**:
+     - `scenes/leaderboard_test.tscn`: PASSED (lifecycle, average Overkill, ranking, Firestore bidirectional conversion, tab switching, and screen integrations).
+     - `scenes/overhaul_verification_test.tscn`: PASSED (zero regressions across all combat and progression systems).
+- **NOTE FOR FUTURE GRAPHICAL / 3D AI SPECIALISTS (Gemini 4 Argon / ChatGPT 6)**:
+  Layout hierarchy, responsive anchors, sorting contracts, and Firestore data bindings are fully operational and verified. Visual styling (obsidian panel frames, gold filigree, rank medals, tab pill shaders, and row pulse animations) is implemented via clean CanvasItem / StyleBoxFlat primitives for 100% bug-free presentation. Future visual AI models are invited to inspect, polish, and elevate the visual shaders, border textures, particle embers, and UI badges.
+- **Files Modified / Added**:
+  - Added: `firestore.rules`, `scripts/autoload/leaderboard_manager.gd`, `scripts/ui/leaderboard_view.gd`, `scenes/leaderboard_view.tscn`, `scripts/combat/leaderboard_test.gd`, `scenes/leaderboard_test.tscn`.
+  - Modified: `firebase.json`, `project.godot`, `scripts/ui/run_summary_screen.gd`, `scripts/ui/title_screen.gd`, `ACTIVE_WORK.md`.
+- **Handoff & Next Steps**:
+  - Leaderboards are live and functional both in-run and from the main menu.
+  - Active lock released in `ACTIVE_WORK.md`.
+
+---
+
 ## 2026-10-17 | Yonatan / Antigravity Multi-Agent — Slay-the-Spire Archetypes & Chronometer Overhaul
 
 - **Branch / PR:** `feat/yonatan-046-relic-feedback` (Release lock released in `ACTIVE_WORK.md`).

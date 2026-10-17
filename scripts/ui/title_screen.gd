@@ -23,6 +23,7 @@ func _ready() -> void:
 	_continue_button.visible = SaveManager.has_run_save()
 	_new_run_button = ScreenDesign.button(column,"NEW JOURNEY   ›",_new_journey,not _continue_button.visible)
 	ScreenDesign.button(column,"SETTINGS",func() -> void: GameFlow.open_settings())
+	ScreenDesign.button(column,"LEADERBOARDS",func() -> void: LeaderboardManager.show_leaderboard())
 	ScreenDesign.button(column,"QUIT GAME",func() -> void: get_tree().quit())
 	if _continue_button.visible:
 		var data := SaveManager.load_run()

@@ -1,0 +1,199 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: run_leaderboard
+// Document ID: {runId} (string, 8 to 64 chars)
+// Purpose: Single-run scores submitted when a run concludes.
+// Fields:
+//   - run_id: string (required, 8-64 chars, immutable, must match document ID)
+//   - player_id: string (required, 8-64 chars, player identifier)
+//   - player_name: string (required, 1-24 chars, display name)
+//   - overkill_score: int (required, 0 to 1,000,000, score earned during run)
+//   - act_reached: int (required, 1 to 10, highest act reached in run)
+//   - won: bool (required, whether run was victorious)
+//   - relics_count: int (required, 0 to 30, relics accumulated in run)
+//   - timestamp: int | timestamp (required, epoch milliseconds or server timestamp)
+//   - archetype: string (optional, 1 to 32 chars, character/deck archetype)
+//
+// Collection: account_leaderboard
+// Document ID: {playerId} (string, 8 to 64 chars)
+// Purpose: Career aggregate statistics across all runs for a player.
+// Fields:
+//   - player_id: string (required, 8-64 chars, immutable, must match document ID)
+//   - player_name: string (required, 1-24 chars, display name)
+//   - runs_started: int (required, >= 1, monotonic counter)
+//   - runs_completed: int (required, >= 0, <= runs_started, monotonic counter)
+//   - lifetime_overkill: int (required, >= 0, monotonic counter)
+//   - average_overkill: number (required, >= 0, average score per run)
+//   - best_run_overkill: int (required, >= 0, highest single-run score)
+//   - last_updated: int | timestamp (required, epoch milliseconds or server timestamp)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions & Common Checks
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    function isValidTimestampValue(val) {
+      return (val is int && val > 0) || val is timestamp;
+    }
+
+    // ===============================================================
+    // Domain Validators: run_leaderboard
+    // ===============================================================
+
+    function isValidRun(data, runId) {
+      return hasRequiredFields(data, [
+        'run_id',
+        'player_id',
+        'player_name',
+        'overkill_score',
+        'act_reached',
+        'won',
+        'relics_count',
+        'timestamp'
+      ]) &&
+      hasOnlyAllowedFields(data, [
+        'run_id',
+        'player_id',
+        'player_name',
+        'overkill_score',
+        'act_reached',
+        'won',
+        'relics_count',
+        'timestamp',
+        'archetype'
+      ]) &&
+      data.run_id is string &&
+      data.run_id == runId &&
+      data.run_id.size() >= 8 &&
+      data.run_id.size() <= 64 &&
+      data.player_id is string &&
+      data.player_id.size() >= 8 &&
+      data.player_id.size() <= 64 &&
+      data.player_name is string &&
+      data.player_name.size() > 0 &&
+      data.player_name.size() <= 24 &&
+      data.overkill_score is int &&
+      data.overkill_score >= 0 &&
+      data.overkill_score <= 1000000 &&
+      data.act_reached is int &&
+      data.act_reached >= 1 &&
+      data.act_reached <= 10 &&
+      data.won is bool &&
+      data.relics_count is int &&
+      data.relics_count >= 0 &&
+      data.relics_count <= 30 &&
+      isValidTimestampValue(data.timestamp) &&
+      (!('archetype' in data) || (data.archetype is string && data.archetype.size() > 0 && data.archetype.size() <= 32));
+    }
+
+    // ===============================================================
+    // Domain Validators: account_leaderboard
+    // ===============================================================
+
+    function isValidAccount(data, playerId) {
+      return hasRequiredFields(data, [
+        'player_id',
+        'player_name',
+        'runs_started',
+        'runs_completed',
+        'lifetime_overkill',
+        'average_overkill',
+        'best_run_overkill',
+        'last_updated'
+      ]) &&
+      hasOnlyAllowedFields(data, [
+        'player_id',
+        'player_name',
+        'runs_started',
+        'runs_completed',
+        'lifetime_overkill',
+        'average_overkill',
+        'best_run_overkill',
+        'last_updated'
+      ]) &&
+      data.player_id is string &&
+      data.player_id == playerId &&
+      data.player_id.size() >= 8 &&
+      data.player_id.size() <= 64 &&
+      data.player_name is string &&
+      data.player_name.size() > 0 &&
+      data.player_name.size() <= 24 &&
+      data.runs_started is int &&
+      data.runs_started >= 1 &&
+      data.runs_completed is int &&
+      data.runs_completed >= 0 &&
+      data.runs_completed <= data.runs_started &&
+      data.lifetime_overkill is int &&
+      data.lifetime_overkill >= 0 &&
+      data.average_overkill is number &&
+      data.average_overkill >= 0 &&
+      data.best_run_overkill is int &&
+      data.best_run_overkill >= 0 &&
+      isValidTimestampValue(data.last_updated);
+    }
+
+    function isValidAccountUpdate(newData, oldData) {
+      return newData.player_id == oldData.player_id &&
+             newData.runs_started >= oldData.runs_started &&
+             newData.runs_completed >= oldData.runs_completed &&
+             newData.lifetime_overkill >= oldData.lifetime_overkill;
+    }
+
+    // ===============================================================
+    // Match Rules: Single-Run Global Leaderboard
+    // ===============================================================
+    match /run_leaderboard/{runId} {
+      // Public read: Anyone can browse and query leaderboards
+      allow read: if true;
+
+      // Create only: Scores cannot be modified or deleted post-submission
+      allow create: if isValidRun(request.resource.data, runId);
+      allow update, delete: if false;
+    }
+
+    // ===============================================================
+    // Match Rules: Career Account Leaderboard
+    // ===============================================================
+    match /account_leaderboard/{playerId} {
+      // Public read: Anyone can inspect career rankings
+      allow read: if true;
+
+      // Create: Initial career record creation
+      allow create: if isValidAccount(request.resource.data, playerId);
+
+      // Update: Career stats update with monotonic counter enforcement & schema validation
+      allow update: if isValidAccount(request.resource.data, playerId) &&
+                       isValidAccountUpdate(request.resource.data, resource.data);
+
+      // No deletion: Career stats cannot be erased
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Default Deny Catch-All
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
