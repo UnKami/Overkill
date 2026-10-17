@@ -17,7 +17,7 @@ This remains an unpublished art candidate. Final illustration fidelity, relic re
 
 | Partner / AI | Branch Name | Current Feature / Scope | Locked Files / Paths (DO NOT TOUCH) | Timestamp |
 | :--- | :--- | :--- | :--- | :--- |
-| *None (All locks released)* | `feat/yonatan-046-relic-feedback` | 0.48.0 Archetype Synergy & Chronometer Depth Overhaul Complete | None | 2026-10-17 |
+| Yonatan / Antigravity | `feat/yonatan-global-leaderboard` | Firestore Global Run & Career Account Leaderboards | `firestore.rules`, `scripts/autoload/leaderboard_manager.gd`, `scripts/ui/leaderboard_view.gd`, `scenes/ui/leaderboard_view.tscn`, `scripts/ui/run_summary_screen.gd`, `scripts/ui/title_screen.gd` | 2026-10-17 |
 
 Published playtest: [v0.48.0-test](https://github.com/UnKami/Overkill/releases/tag/v0.48.0-test), exact tested source `421bec75c13e418209e953bbe2ba18af272a0c2e`. All three 0.48 public downloads, sizes and SHA-256 digests passed verification. Previous releases remain available.
 
