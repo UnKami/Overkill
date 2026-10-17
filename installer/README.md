@@ -1,5 +1,13 @@
 # Windows installers
 
+## Latest full-game playtest — 0.48.0 Archetype Synergy & Chronometer Depth
+
+**[Download OverkillSetup-0.48.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/OverkillSetup-0.48.0.exe)**
+
+[Portable game folder ZIP](https://github.com/UnKami/Overkill/releases/download/v0.48.0-test/Overkill-0.48.0-Windows.zip) · [Release notes and checksums](https://github.com/UnKami/Overkill/releases/tag/v0.48.0-test) · [Update log](../UPDATE_LOG.md)
+
+Launch **Overkill** for the 0.48.0 playtest: assemble your clock sector in any order, trigger immediate progressive combo sweeps (`1`, `1 → 2`, `1 → 2 → 3`), inspect live damage and block calculations on hover, and explore four build archetypes (Chrono-Overdrive, Iron Bastion, Crimson Hemorrhage, and Overkill Harvest). See [detailed changes and notes](../docs/encounter-048.md). Exact source: `421bec75c13e418209e953bbe2ba18af272a0c2e`, immutable `v0.48.0-test` tag. The installer is unsigned; prior releases remain available for rollback.
+
 ## Latest character playtest - 0.50.0
 
 **[Download OverkillSetup-0.50.0.exe](https://github.com/UnKami/Overkill/releases/download/v0.50.0-test/OverkillSetup-0.50.0.exe)**
